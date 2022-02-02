@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private string _hostName;
 
         /// <summary>
-        /// Create a new instance of the <code>ProvisioningServiceClient</code> that exposes
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> that exposes
         /// the API to the Device Provisioning Service.
         /// </summary>
         /// <remarks>
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         ///
         /// <param name="connectionString">the <code>string</code> that cares the connection string of the Device Provisioning Service.</param>
-        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentException">if the connectionString is <code>null</code> or empty.</exception>
         public static ProvisioningServiceClient CreateFromConnectionString(string connectionString)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create a new instance of the <code>ProvisioningServiceClient</code> that exposes
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> that exposes
         /// the API to the Device Provisioning Service.
         /// </summary>
         /// <remarks>
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// <param name="connectionString">the <code>string</code> that cares the connection string of the Device Provisioning Service.</param>
         /// <param name="httpTransportSettings"> Specifies the HTTP transport settings for the request</param>
-        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentException">if the connectionString is <code>null</code> or empty.</exception>
         public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, HttpTransportSettings httpTransportSettings)
         {
@@ -112,13 +112,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create a new instance of the <code>ProvisioningServiceClient</code> from the provided hostName and <code>TokenCredential</code>
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> from the provided hostName and <c>TokenCredential</c>
         /// that exposes the API to the Device Provisioning Service.
         /// </summary>
         /// 
         /// <param name="hostName">The <code>string</code> that carries the hostName that will be used for this object</param>
-        /// <param name="credential">The <code>TokenCredential</code> that provides authentication for this object</param>
-        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <param name="credential">The <c>TokenCredential</c> that provides authentication for this object</param>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentNullException">if the credential is <code>null</code></exception>
         public static ProvisioningServiceClient Create(string hostName, TokenCredential credential)
         {
@@ -126,14 +126,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create a new instance of the <code>ProvisioningServiceClient</code> from the provided hostName and <code>TokenCredential</code>
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> from the provided hostName and <c>TokenCredential</c>
         /// that exposes the API to the Device Provisioning Service.
         /// </summary>
         /// 
         /// <param name="hostName">The <code>string</code> that carries the hostName that will be used for this object</param>
-        /// <param name="credential">The <code>TokenCredential</code> that provides authentication for this object</param>
+        /// <param name="credential">The <c>TokenCredential</c> that provides authentication for this object</param>
         /// <param name="httpTransportSettings">Specifies the HTTP transport settings for the request</param>
-        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentNullException">if the credential is <code>null</code></exception>
         public static ProvisioningServiceClient Create(string hostName, TokenCredential credential, HttpTransportSettings httpTransportSettings)
         {
@@ -146,13 +146,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create a new instance of the <code>ProvisioningServiceClient</code> from the provided hostName and <code>TokenCredential</code>
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> from the provided hostName and <c>TokenCredential</c>
         /// that exposes the API to the Device Provisioning Service.
         /// </summary>
         /// 
         /// <param name="hostName">The <code>string</code> that carries the host name that will be used for this object</param>
         /// <param name="azureSasCredential">The <code>AzureSasCredential</code> that provides authentication for this object</param>
-        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentNullException">if the azureSasCredential is <code>null</code></exception>
         public static ProvisioningServiceClient Create(string hostName, AzureSasCredential azureSasCredential)
         {
@@ -160,14 +160,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Create a new instance of the <code>ProvisioningServiceClient</code> from the provided hostName and <code>TokenCredential</code>
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> from the provided hostName and <c>TokenCredential</c>
         /// that exposes the API to the Device Provisioning Service.
         /// </summary>
         /// 
         /// <param name="hostName">The <code>string</code> that carries the host name that will be used for this object</param>
-        /// <param name="azureSasCredential">The <code>AzureSasCredential</code> that provides authentication for this object</param>
+        /// <param name="azureSasCredential">The <c>AzureSasCredential</c> that provides authentication for this object</param>
         /// <param name="httpTransportSettings">Specifies the HTTP transport settings for the request</param>
-        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentNullException">if the azureSasCredential is <code>null</code></exception>
         public static ProvisioningServiceClient Create(string hostName, AzureSasCredential azureSasCredential, HttpTransportSettings httpTransportSettings)
         {
