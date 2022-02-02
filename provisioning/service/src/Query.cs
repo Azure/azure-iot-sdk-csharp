@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
-                throw new ArgumentException("Service name cannot be empty", nameof(serviceName);
+                throw new ArgumentException("Service name cannot be empty", nameof(serviceName));
             }
 
             if (querySpecification == null)
