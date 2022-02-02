@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 using var hmac = new HMACSHA256(Convert.FromBase64String(sharedAccessKey));
                 string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
 
-                // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
+                // SharedAccessSignature sr=ENCODED(dh://mydps.azure-devices-provisioning.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
                 string token = string.Format(
                     CultureInfo.InvariantCulture,
                     "SharedAccessSignature sr={0}&sig={1}&se={2}",
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 if (!string.IsNullOrWhiteSpace(policyName))
                 {
-                    token += "&skn=" + policyName;
+                    token += "&skn=" + WebUtility.UrlEncode(policyName);
                 }
 
                 return token;
