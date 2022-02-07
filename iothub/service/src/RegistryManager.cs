@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 #if !NET451
 
@@ -26,35 +27,37 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
-    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    /// <remarks>
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
+    /// </remarks>
+    [SuppressMessage(
         "Naming",
         "CA1716:Identifiers should not match keywords",
         Justification = "Cannot change parameter names as it is considered a breaking change.")]
     public class RegistryManager : IDisposable
     {
-        private const string _adminUriFormat = "/$admin/{0}?{1}";
-        private const string _requestUriFormat = "/devices/{0}?{1}";
-        private const string _jobsUriFormat = "/jobs{0}?{1}";
-        private const string _statisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string _devicesRequestUriFormat = "/devices/?top={0}&{1}";
-        private const string _devicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string _wildcardEtag = "*";
+        private const string AdminUriFormat = "/$admin/{0}?{1}";
+        private const string RequestUriFormat = "/devices/{0}?{1}";
+        private const string JobsUriFormat = "/jobs{0}?{1}";
+        private const string StatisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string DevicesRequestUriFormat = "/devices/?top={0}&{1}";
+        private const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string WildcardEtag = "*";
 
-        private const string _continuationTokenHeader = "x-ms-continuation";
-        private const string _pageSizeHeader = "x-ms-max-item-count";
+        private const string ContinuationTokenHeader = "x-ms-continuation";
+        private const string PageSizeHeader = "x-ms-max-item-count";
 
-        private const string _twinUriFormat = "/twins/{0}?{1}";
+        private const string TwinUriFormat = "/twins/{0}?{1}";
 
-        private const string _modulesRequestUriFormat = "/devices/{0}/modules/{1}?{2}";
-        private const string _modulesOnDeviceRequestUriFormat = "/devices/{0}/modules?{1}";
-        private const string _moduleTwinUriFormat = "/twins/{0}/modules/{1}?{2}";
+        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}?{2}";
+        private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules?{1}";
+        private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}?{2}";
 
-        private const string _configurationRequestUriFormat = "/configurations/{0}?{1}";
-        private const string _configurationsRequestUriFormat = "/configurations/?top={0}&{1}";
+        private const string ConfigurationRequestUriFormat = "/configurations/{0}?{1}";
+        private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}&{1}";
 
-        private const string _applyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
@@ -70,8 +73,7 @@ namespace Microsoft.Azure.Devices
         private IHttpClientHelper _httpClientHelper;
 
         /// <summary>
-        /// Creates an instance of <see cref="RegistryManager"/>, provided for unit testing purposes only.
-        /// Use the CreateFromConnectionString method to create an instance to use the client.
+        /// Creates an instance of RegistryManager, provided for unit testing purposes only.
         /// </summary>
         public RegistryManager()
         {
@@ -97,21 +99,22 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a RegistryManager from the IoT Hub connection string.
+        /// Creates RegistryManager from an IoT hub connection string.
         /// </summary>
-        /// <param name="connectionString">The IoT Hub connection string.</param>
-        /// <returns>An RegistryManager instance.</returns>
+        /// <param name="connectionString">The IoT hub connection string.</param>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager CreateFromConnectionString(string connectionString)
         {
             return CreateFromConnectionString(connectionString, new HttpTransportSettings());
         }
 
         /// <summary>
-        /// Creates a RegistryManager from the IoT Hub connection string and transport settings
+        /// Creates an instance of RegistryManager, authenticating using an IoT hub connection string, and specifying
+        /// HTTP transport settings.
         /// </summary>
-        /// <param name="connectionString">The IoT Hub connection string.</param>
+        /// <param name="connectionString">The IoT hub connection string.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>An RegistryManager instance.</returns>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
             if (transportSettings == null)
@@ -127,15 +130,18 @@ namespace Microsoft.Azure.Devices
 #if !NET451
 
         /// <summary>
-        /// Creates an instance of RegistryManager.
+        /// Creates RegistryManager, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
-        /// <param name="hostName">IoT hub host name.</param>
-        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
-        /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
         /// <remarks>
-        /// For more information on configuring IoT hub with Azure Active Directory, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager Create(
             string hostName,
             TokenCredential credential,
@@ -156,12 +162,17 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="RegistryManager"/>.
+        /// Creates RegistryManager using a shared access signature provided and refreshed as necessary by the caller.
         /// </summary>
+        /// <remarks>
+        /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.
+        /// The <see cref="AzureSasCredential"/> object gives the SDK access to the SAS token, while the caller can update it as necessary using the
+        /// <see cref="AzureSasCredential.Update(string)"/> method.
+        /// </remarks>
         /// <param name="hostName">IoT hub host name.</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>An instance of <see cref="RegistryManager"/>.</returns>
+        /// <returns>A RegistryManager instance.</returns>
         public static RegistryManager Create(
             string hostName,
             AzureSasCredential credential,
@@ -2472,14 +2483,14 @@ namespace Microsoft.Azure.Devices
                     GetTwinUri(deviceId),
                     twin,
                     etag,
-                    etag == _wildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                    etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
                     errorMappingOverrides,
                     cancellationToken)
                 : _httpClientHelper.PatchAsync<Twin, Twin>(
                     GetTwinUri(deviceId),
                     twin,
                     etag,
-                    etag == _wildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                    etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
                     errorMappingOverrides,
                     cancellationToken);
         }
@@ -2524,14 +2535,14 @@ namespace Microsoft.Azure.Devices
                         GetModuleTwinRequestUri(deviceId, moduleId),
                         twin,
                         etag,
-                        etag == _wildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                        etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
                         errorMappingOverrides,
                         cancellationToken)
                     : _httpClientHelper.PatchAsync<Twin, Twin>(
                         GetModuleTwinRequestUri(deviceId, moduleId),
                         twin,
                         etag,
-                        etag == _wildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                        etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
                         errorMappingOverrides,
                         cancellationToken);
             }
@@ -2558,12 +2569,12 @@ namespace Microsoft.Azure.Devices
             var customHeaders = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(continuationToken))
             {
-                customHeaders.Add(_continuationTokenHeader, continuationToken);
+                customHeaders.Add(ContinuationTokenHeader, continuationToken);
             }
 
             if (pageSize != null)
             {
-                customHeaders.Add(_pageSizeHeader, pageSize.ToString());
+                customHeaders.Add(PageSizeHeader, pageSize.ToString());
             }
 
             HttpResponseMessage response = await _httpClientHelper
@@ -2602,79 +2613,79 @@ namespace Microsoft.Azure.Devices
         private static Uri GetRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(_requestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(RequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetModulesRequestUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(_modulesRequestUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ModulesRequestUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(_modulesOnDeviceRequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ModulesOnDeviceRequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetModuleTwinRequestUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(_moduleTwinUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ModuleTwinUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetConfigurationRequestUri(string configurationId)
         {
             configurationId = WebUtility.UrlEncode(configurationId);
-            return new Uri(_configurationRequestUriFormat.FormatInvariant(configurationId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ConfigurationRequestUriFormat.FormatInvariant(configurationId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetConfigurationsRequestUri(int maxCount)
         {
-            return new Uri(_configurationsRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ConfigurationsRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetApplyConfigurationOnDeviceRequestUri(string deviceId)
         {
-            return new Uri(_applyConfigurationOnDeviceUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(ApplyConfigurationOnDeviceUriFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri(string apiVersionQueryString)
         {
-            return new Uri(_requestUriFormat.FormatInvariant(string.Empty, apiVersionQueryString), UriKind.Relative);
+            return new Uri(RequestUriFormat.FormatInvariant(string.Empty, apiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetJobUri(string jobId, string apiVersion = ClientApiVersionHelper.ApiVersionQueryString)
         {
-            return new Uri(_jobsUriFormat.FormatInvariant(jobId, apiVersion), UriKind.Relative);
+            return new Uri(JobsUriFormat.FormatInvariant(jobId, apiVersion), UriKind.Relative);
         }
 
         private static Uri GetDevicesRequestUri(int maxCount)
         {
-            return new Uri(_devicesRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DevicesRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri QueryDevicesRequestUri()
         {
-            return new Uri(_devicesQueryUriFormat, UriKind.Relative);
+            return new Uri(DevicesQueryUriFormat, UriKind.Relative);
         }
 
         private static Uri GetAdminUri(string operation)
         {
-            return new Uri(_adminUriFormat.FormatInvariant(operation, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(AdminUriFormat.FormatInvariant(operation, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetStatisticsUri()
         {
-            return new Uri(_statisticsUriFormat, UriKind.Relative);
+            return new Uri(StatisticsUriFormat, UriKind.Relative);
         }
 
         private static Uri GetTwinUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(_twinUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(TwinUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static void ValidateDeviceId(Device device)

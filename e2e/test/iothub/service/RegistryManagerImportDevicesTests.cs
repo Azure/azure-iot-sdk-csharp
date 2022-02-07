@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 // should not throw due to 404, but device may not immediately appear in registry
                 Device device = null;
-                Configuration config = null;
+                //Configuration config = null;
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
@@ -145,17 +145,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 {
                     Assert.Fail($"Device {deviceId} not found in registry manager");
                 }
-                if (config == null)
-                {
-                    Assert.Fail($"Config {configId} not found in registry manager");
-                }
+                //if (config == null)
+                //{
+                //    Assert.Fail($"Config {configId} not found in registry manager");
+                //}
             }
             finally
             {
                 try
                 {
                     await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-                    await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
+                    //await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

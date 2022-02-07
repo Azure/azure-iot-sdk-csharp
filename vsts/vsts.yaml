@@ -538,7 +538,7 @@ jobs:
           instanceUrlForTsaV2: 'MSAZURE'
           projectNameMSAZURE: 'One'
           areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
-          iterationPath: 'One\IoT\Backlog'
+          iterationPath: 'One\Custom\IoT\Backlog'
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
         displayName: "Post Analysis"

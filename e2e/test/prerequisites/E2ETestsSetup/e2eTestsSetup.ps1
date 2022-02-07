@@ -450,13 +450,22 @@ if ($EnableIotHubSecuritySolution)
 #################################################################################################################################################
 
 Write-Host "`nCreating app registration $iotHubAadTestAppRegName for IoT hub data actions"
-$iotHubAadTestAppRegUrl = "http://$iotHubAadTestAppRegName"
 $iotHubDataContributorRoleId = "4fc6c259987e4a07842ec321cc9d413f"
 $iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/IotHubs/$iotHubName"
-$iotHubAadTestAppInfo = az ad sp create-for-rbac -n $iotHubAadTestAppRegUrl --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
-$iotHubAadTestAppPassword = $iotHubAadTestAppInfo.password
+$iotHubAadTestAppInfo = az ad sp create-for-rbac -n $iotHubAadTestAppRegName --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
+
 $iotHubAadTestAppId = $iotHubAadTestAppInfo.appId
+$iotHubAadTestAppPassword = $iotHubAadTestAppInfo.password
 Write-Host "`nCreated application $iotHubAadTestAppRegName with Id $iotHubAadTestAppId."
+
+#################################################################################################################################################
+# Configure AAD app to perform DPS data actions.
+#################################################################################################################################################
+
+Write-Host "`nGiving app registration $iotHubAadTestAppRegName data contributor permission on DPS instance $dpsName"
+$dpsContributorId = "dfce44e4-17b7-4bd1-a6d1-04996ec95633"
+$dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/ProvisioningServices/$dpsName"
+az role assignment create --role $dpsContributorId --assignee $iotHubAadTestAppId --scope $dpsScope
 
 #################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
