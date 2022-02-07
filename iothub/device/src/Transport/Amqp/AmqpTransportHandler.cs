@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _operationTimeout = transportSettings.OperationTimeout;
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
-            var deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>(), context.Get<ClientOptions>());
+            IDeviceIdentity deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>(), context.Get<ClientOptions>());
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 deviceIdentity,
                 onMethodCallback,
@@ -509,12 +509,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
                 }
-            } 
+            }
             else
             {
                 await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
-
         }
 
         #endregion Events
@@ -591,26 +590,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         #endregion Accept-Dispose
-
-        #region Convention-based operations
-
-        public override Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
-                "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
-                "ModuleClient.GetTwinAsync(CancellationToken cancellationToken) operations, but the properties will not be formatted " +
-                "as per DTDL terminology.");
-        }
-
-        public override Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException("This operation is currently not supported over AMQP, please use MQTT protocol instead. " +
-                "Note that you can still retrieve a client's properties using DeviceClient.GetTwinAsync(CancellationToken cancellationToken) or " +
-                "ModuleClient.GetTwinAsync(CancellationToken cancellationToken) operations, but the properties will not be formatted " +
-                "as per DTDL terminology.");
-        }
-
-        #endregion Convention-based operations
 
         #region Helpers
 

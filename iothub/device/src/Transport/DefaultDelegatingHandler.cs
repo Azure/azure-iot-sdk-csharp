@@ -31,10 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public IDelegatingHandler InnerHandler
         {
-            get
-            {
-                return _innerHandler;
-            }
+            get => _innerHandler;
             protected set
             {
                 _innerHandler = value;
@@ -201,18 +198,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
             return InnerHandler?.SendClientTwinPropertyPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult<ClientPropertiesUpdateResponse>(null);
-        }
-
-        public virtual Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return InnerHandler?.GetPropertiesAsync(payloadConvention, cancellationToken) ?? Task.FromResult<ClientProperties>(null);
-        }
-
-        public virtual Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return InnerHandler?.SendPropertyPatchAsync(reportedProperties, cancellationToken) ?? Task.FromResult<ClientPropertiesUpdateResponse>(null);
         }
 
         public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;

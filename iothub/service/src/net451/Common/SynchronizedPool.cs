@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Common
             }
             else
             {
-                PendingEntry[] newPending = new PendingEntry[localPending.Length * 2];
+                var newPending = new PendingEntry[localPending.Length * 2];
                 Array.Copy(localPending, newPending, localPending.Length);
                 this.pending = newPending;
             }

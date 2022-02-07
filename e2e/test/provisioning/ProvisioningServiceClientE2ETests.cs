@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             //This webhook won't actually work for reprovisioning, but this test is only testing that the field is accepted by the service
             var customAllocationDefinition = new CustomAllocationDefinition { ApiVersion = "2019-03-31", WebhookUrl = "https://www.microsoft.com" };
             var reprovisionPolicy = new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true };
-            var allocationPolicy = AllocationPolicy.GeoLatency;
+            AllocationPolicy allocationPolicy = AllocationPolicy.GeoLatency;
 
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok("", AttestationMechanismType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, null).ConfigureAwait(false);
         }
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
-            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, null, AllocationPolicy.Static, null, null, null);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
@@ -120,21 +120,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (attestationType == AttestationMechanismType.SymmetricKey)
             {
                 Assert.AreEqual(AttestationMechanismType.SymmetricKey, attestationMechanism.Type);
-                SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
+                var symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
                 Assert.AreEqual(((SymmetricKeyAttestation)individualEnrollment.Attestation).PrimaryKey, symmetricKeyAttestation.PrimaryKey);
                 Assert.AreEqual(((SymmetricKeyAttestation)individualEnrollment.Attestation).SecondaryKey, symmetricKeyAttestation.SecondaryKey);
             }
             else if (attestationType == AttestationMechanismType.X509)
             {
                 Assert.AreEqual(AttestationMechanismType.X509, attestationMechanism.Type);
-                X509Attestation x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
+                var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
                 Assert.AreEqual(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint);
                 Assert.AreEqual(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint);
             }
             else
             {
                 Assert.AreEqual(AttestationMechanismType.Tpm, attestationMechanism.Type);
-                TpmAttestation tpmAttestation = (TpmAttestation)attestationMechanism.GetAttestation();
+                var tpmAttestation = (TpmAttestation)attestationMechanism.GetAttestation();
                 Assert.AreEqual(((TpmAttestation)individualEnrollment.Attestation).EndorsementKey, tpmAttestation.EndorsementKey);
                 Assert.AreEqual(((TpmAttestation)individualEnrollment.Attestation).StorageRootKey, tpmAttestation.StorageRootKey);
             }
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
-            using ProvisioningServiceClient provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
 
@@ -152,14 +152,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (attestationType == AttestationMechanismType.SymmetricKey)
             {
                 Assert.AreEqual(AttestationMechanismType.SymmetricKey, attestationMechanism.Type);
-                SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
+                var symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
                 Assert.AreEqual(((SymmetricKeyAttestation)enrollmentGroup.Attestation).PrimaryKey, symmetricKeyAttestation.PrimaryKey);
                 Assert.AreEqual(((SymmetricKeyAttestation)enrollmentGroup.Attestation).SecondaryKey, symmetricKeyAttestation.SecondaryKey);
             }
             else if (attestationType == AttestationMechanismType.X509)
             {
                 Assert.AreEqual(AttestationMechanismType.X509, attestationMechanism.Type);
-                X509Attestation x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
+                var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
                 Assert.AreEqual(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetPrimaryX509CertificateInfo().SHA1Thumbprint);
                 Assert.AreEqual(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().SHA1Thumbprint, x509Attestation.GetSecondaryX509CertificateInfo().SHA1Thumbprint);
             }
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                        using ProvisioningServiceClient provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+                        using var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
                         {
                             Capabilities = capabilities,

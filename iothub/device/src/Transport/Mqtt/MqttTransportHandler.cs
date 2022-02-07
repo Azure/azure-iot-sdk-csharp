@@ -972,56 +972,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return response;
         }
 
-        public override async Task<ClientProperties> GetPropertiesAsync(PayloadConvention payloadConvention, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureValidState();
-
-            using var request = new Message();
-            string rid = Guid.NewGuid().ToString();
-            request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
-
-            using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
-
-            using var reader = new StreamReader(response.GetBodyStream(), payloadConvention.PayloadEncoder.ContentEncoding);
-            string body = reader.ReadToEnd();
-
-            try
-            {
-                ClientTwinProperties twinProperties = JsonConvert.DeserializeObject<ClientTwinProperties>(body);
-                var properties = twinProperties.ToClientProperties(payloadConvention);
-                return properties;
-            }
-            catch (JsonReaderException ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
-
-                throw;
-            }
-        }
-
-        public override async Task<ClientPropertiesUpdateResponse> SendPropertyPatchAsync(ClientPropertyCollection reportedProperties, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureValidState();
-
-            byte[] body = reportedProperties.GetPayloadObjectBytes();
-            using var bodyStream = new MemoryStream(body);
-
-            using var request = new Message(bodyStream);
-
-            string rid = Guid.NewGuid().ToString();
-            request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);
-
-            using Message message = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
-            return new ClientPropertiesUpdateResponse
-            {
-                RequestId = message.Properties[RequestIdKey],
-                Version = long.Parse(message.Properties[VersionKey], CultureInfo.InvariantCulture)
-            };
-        }
-
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -1259,7 +1209,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
                     {
                         var tlsHandler = new TlsHandler(streamFactory, clientTlsSettings);
-
                         ch.Pipeline.AddLast(
                             tlsHandler,
                             MqttEncoder.Instance,
@@ -1351,6 +1300,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
                 var clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
+
                 clientWebSocketChannel
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                     .Option(ChannelOption.AutoRead, false)
@@ -1432,7 +1382,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (!string.IsNullOrWhiteSpace(envValue))
                 {
                     string processorEventCountValue = Environment.ExpandEnvironmentVariables(envValue);
-                    if (int.TryParse(processorEventCountValue, out var processorThreadCount))
+                    if (int.TryParse(processorEventCountValue, out int processorThreadCount))
                     {
                         if (Logging.IsEnabled)
                             Logging.Info(null, $"EventLoopGroup threads count {processorThreadCount}.");

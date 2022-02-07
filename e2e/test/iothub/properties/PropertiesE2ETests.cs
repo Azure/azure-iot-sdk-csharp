@@ -206,19 +206,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             // Set a callback
             await deviceClient.
                 SubscribeToWritablePropertyUpdateRequestsAsync(
-                    (patch, context) =>
+                    patch =>
                     {
                         Assert.Fail("After having unsubscribed from receiving client property update notifications " +
                             "this callback should not have been invoked.");
 
                         return Task.FromResult(true);
-                    },
-                    null)
+                    })
                 .ConfigureAwait(false);
 
             // Unsubscribe
             await deviceClient
-                .SubscribeToWritablePropertyUpdateRequestsAsync(null, null)
+                .SubscribeToWritablePropertyUpdateRequestsAsync(null)
                 .ConfigureAwait(false);
 
             await RegistryManagerUpdateWritablePropertyAsync(testDevice.Id, propName, propValue)
@@ -261,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             string serializedActualPropertyValue = JsonConvert.SerializeObject(actualProp);
             serializedActualPropertyValue.Should().Be(JsonConvert.SerializeObject(propValue));
 
-            await deviceClient.SubscribeToWritablePropertyUpdateRequestsAsync(null, null).ConfigureAwait(false);
+            await deviceClient.SubscribeToWritablePropertyUpdateRequestsAsync(null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -278,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var writablePropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
             await deviceClient
                 .SubscribeToWritablePropertyUpdateRequestsAsync(
-                    async (writableProperties, userContext) =>
+                    async (writableProperties) =>
                     {
                         try
                         {
@@ -286,7 +285,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
                             isPropertyPresent.Should().BeTrue();
                             propertyFromCollection.Should().BeEquivalentTo(propValue);
-                            userContext.Should().BeNull();
 
                             var writablePropertyAcks = new ClientPropertyCollection();
                             foreach (KeyValuePair<string, object> writableProperty in writableProperties)
@@ -304,7 +302,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                             writablePropertyCallbackSemaphore.Release();
                         }
                     },
-                    null,
                     cts.Token)
                 .ConfigureAwait(false);
 

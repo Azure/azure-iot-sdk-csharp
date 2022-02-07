@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 using System.Threading;
 using Azure.Core;
 using Microsoft.Azure.Devices.Authentication;
@@ -19,7 +17,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
     {
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
-        private TokenCredential _credential;
+        private readonly TokenCredential _credential;
 
         public DigitalTwinTokenCredential(TokenCredential credential)
         {

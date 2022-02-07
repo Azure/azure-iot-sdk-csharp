@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// A static instance of this class.
         /// </summary>
-        public static readonly DefaultPayloadConvention Instance = new DefaultPayloadConvention();
+        public static DefaultPayloadConvention Instance { get; } = new DefaultPayloadConvention();
 
         /// <inheritdoc/>
         public override PayloadSerializer PayloadSerializer { get; } = NewtonsoftJsonPayloadSerializer.Instance;

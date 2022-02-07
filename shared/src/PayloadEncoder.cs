@@ -6,12 +6,12 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// This class specifies the byte encoding for the payload.
+    /// Specifies the byte encoding for the payload.
     /// </summary>
     /// <remarks>
-    /// The encoder is responsible for encoding all of your objects into the correct bytes for the <see cref="PayloadConvention"/> that uses it.
+    /// The encoder is responsible for encoding all objects into the correct bytes for the <see cref="PayloadConvention"/> that uses it.
     /// <para>
-    /// By default we have implemented the <see cref="Utf8PayloadEncoder"/> class that uses <see cref="System.Text.Encoding.UTF8"/>
+    /// By default, there are implementations of the <see cref="Utf8PayloadEncoder"/> class that uses <see cref="Encoding.UTF8"/>
     /// to handle the encoding for the <see cref="DefaultPayloadConvention"/> class.
     /// </para>
     /// </remarks>

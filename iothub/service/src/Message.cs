@@ -368,7 +368,7 @@ namespace Microsoft.Azure.Devices
             if (_bodyStream is BufferListStream listStream)
             {
                 // We can trust Amqp bufferListStream.Length;
-                var bytes = new byte[listStream.Length];
+                byte[] bytes = new byte[listStream.Length];
                 listStream.Read(bytes, 0, bytes.Length);
                 return bytes;
             }

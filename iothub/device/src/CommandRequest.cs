@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
@@ -11,35 +12,42 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class CommandRequest
     {
-        private readonly byte[] _data;
+        private readonly ReadOnlyCollection<byte> _payload;
         private readonly PayloadConvention _payloadConvention;
+
+        /// <summary>
+        /// Public constructor provided only for mocking purposes.
+        /// </summary>
+        public CommandRequest()
+        {
+        }
 
         internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] data = default)
         {
             CommandName = commandName;
             ComponentName = componentName;
-            _data = data;
+            _payload = new ReadOnlyCollection<byte>(data);
             _payloadConvention = payloadConvention;
         }
 
         /// <summary>
         /// The name of the component that is command is invoked on.
         /// </summary>
-        public string ComponentName { get; private set; }
+        public string ComponentName { get; }
 
         /// <summary>
         /// The command name.
         /// </summary>
-        public string CommandName { get; private set; }
+        public string CommandName { get; }
 
         /// <summary>
         /// The command request data.
         /// </summary>
         /// <typeparam name="T">The type to cast the command request data to.</typeparam>
         /// <returns>The command request data.</returns>
-        public T GetData<T>()
+        public T GetPayload<T>()
         {
-            string dataAsJson = DataAsJson;
+            string dataAsJson = GetPayloadAsString();
 
             return dataAsJson == null
                 ? default
@@ -52,16 +60,21 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>
         /// The command request data bytes.
         /// </returns>
-        public byte[] GetDataAsBytes()
+        public ReadOnlyCollection<byte> GetPayloadAsBytes()
         {
             // Need to return a clone of the array so that consumers
             // of this library cannot change its contents.
-            return (byte[])_data.Clone();
+            return _payload;
         }
 
         /// <summary>
-        /// The command data in Json format.
+        /// The command data as a string.
         /// </summary>
-        public string DataAsJson => (_data == null || _data.Length == 0) ? null : Encoding.UTF8.GetString(_data);
+        public string GetPayloadAsString()
+        {
+            return _payload.Count == 0
+                ? null
+                : _payloadConvention.PayloadEncoder.ContentEncoding.GetString(GetPayloadAsBytes().ToArray());
+        }
     }
 }

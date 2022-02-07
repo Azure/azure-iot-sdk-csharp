@@ -21,18 +21,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task BulkOperations_UpdateTwins2Device_Ok()
         {
-            var tagName = Guid.NewGuid().ToString();
-            var tagValue = Guid.NewGuid().ToString();
+            string tagName = Guid.NewGuid().ToString();
+            string tagValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             Twin twin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
 
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            var result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -48,18 +48,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task BulkOperations_UpdateTwins2DevicePatch_Ok()
         {
-            var tagName = Guid.NewGuid().ToString();
-            var tagValue = Guid.NewGuid().ToString();
+            string tagName = Guid.NewGuid().ToString();
+            string tagValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-            Twin twin = new Twin();
+            var twin = new Twin();
             twin.DeviceId = testDevice.Id;
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            var result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -75,18 +75,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
-            var tagName = Guid.NewGuid().ToString();
-            var tagValue = Guid.NewGuid().ToString();
+            string tagName = Guid.NewGuid().ToString();
+            string tagValue = Guid.NewGuid().ToString();
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            var result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -103,19 +103,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
-            var tagName = Guid.NewGuid().ToString();
-            var tagValue = Guid.NewGuid().ToString();
+            string tagName = Guid.NewGuid().ToString();
+            string tagValue = Guid.NewGuid().ToString();
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             var twin = new Twin();
             twin.DeviceId = testModule.DeviceId;
             twin.ModuleId = testModule.Id;
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            var result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -131,9 +131,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private string ResultErrorsToString(BulkRegistryOperationResult result)
         {
-            var errorString = "";
+            string errorString = "";
 
-            foreach (var error in result.Errors)
+            foreach (DeviceRegistryOperationError error in result.Errors)
             {
                 errorString += $"\t{error.ErrorCode} : {error.ErrorStatus}\n";
             }

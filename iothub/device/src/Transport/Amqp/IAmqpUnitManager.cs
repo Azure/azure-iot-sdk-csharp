@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal interface IAmqpUnitManager
     {
         AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity,
+            IDeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<AmqpMessage, string, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,

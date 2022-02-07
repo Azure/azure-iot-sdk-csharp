@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Amqp.Transport
 
         protected override bool CloseInternal()
         {
-            var webSocketState = this.webSocket.State;
+            IotHubClientWebSocket.WebSocketState webSocketState = this.webSocket.State;
             if (webSocketState != IotHubClientWebSocket.WebSocketState.Closed && webSocketState != IotHubClientWebSocket.WebSocketState.Aborted)
             {
                 this.CloseInternalAsync().Fork();
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Amqp.Transport
                 return;
             }
 
-            Task<int> taskResult = (Task<int>)result;
+            var taskResult = (Task<int>)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
 
             this.ReadTaskDone(taskResult, args);
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Amqp.Transport
                 return;
             }
 
-            Task taskResult = (Task)result;
+            var taskResult = (Task)result;
             var args = (TransportAsyncCallbackArgs)taskResult.AsyncState;
             WriteTaskDone(taskResult, args);
             args.CompletedCallback(args);
@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Amqp.Transport
 
         void ThrowIfNotOpen()
         {
-            var webSocketState = this.webSocket.State;
+            IotHubClientWebSocket.WebSocketState webSocketState = this.webSocket.State;
             if (webSocketState == IotHubClientWebSocket.WebSocketState.Open)
             {
                 return;
