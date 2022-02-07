@@ -150,8 +150,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         internal static Query CreateQuery(
-            string hostName,
-            IAuthorizationHeaderProvider headerProvider,
+            ServiceConnectionString provisioningConnectionString,
             QuerySpecification querySpecification,
             HttpTransportSettings httpTransportSettings,
             CancellationToken cancellationToken,
@@ -169,7 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_015: [The CreateQuery shall return a new Query for IndividualEnrollments.] */
-            return new Query(hostName, headerProvider, ServiceName, querySpecification, httpTransportSettings, pageSize, cancellationToken);
+            return new Query(provisioningConnectionString, ServiceName, querySpecification, httpTransportSettings, pageSize, cancellationToken);
         }
 
         private static Uri GetEnrollmentUri(string registrationId)

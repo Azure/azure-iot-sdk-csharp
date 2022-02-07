@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <Version>1.14.0</Version>
+    <Version>1.14.1</Version>
     <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
