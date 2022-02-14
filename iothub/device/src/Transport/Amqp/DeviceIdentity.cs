@@ -4,7 +4,7 @@
 using System.Net;
 using Microsoft.Azure.Devices.Client.Extensions;
 
-namespace Microsoft.Azure.Devices.Client.Transport
+namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     /// <summary>
     /// Device configurations
@@ -12,16 +12,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// - connection string
     /// - transport settings
     /// </summary>
-    internal class DeviceIdentity
+    internal class DeviceIdentity : IDeviceIdentity
     {
-        internal IotHubConnectionString IotHubConnectionString { get; }
-        internal AmqpTransportSettings AmqpTransportSettings { get; }
-        internal ProductInfo ProductInfo { get; }
-        internal AuthenticationModel AuthenticationModel { get; }
-        internal string Audience { get; }
-        internal ClientOptions Options { get; }
+        public IotHubConnectionString IotHubConnectionString { get; }
+        public AmqpTransportSettings AmqpTransportSettings { get; }
+        public ProductInfo ProductInfo { get; }
+        public AuthenticationModel AuthenticationModel { get; }
+        public string Audience { get; }
+        public ClientOptions Options { get; }
 
-        internal DeviceIdentity(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo, ClientOptions options)
+        internal DeviceIdentity(
+            IotHubConnectionString iotHubConnectionString,
+            AmqpTransportSettings amqpTransportSettings,
+            ProductInfo productInfo,
+            ClientOptions options)
         {
             IotHubConnectionString = iotHubConnectionString;
             AmqpTransportSettings = amqpTransportSettings;
@@ -31,14 +35,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (amqpTransportSettings.ClientCertificate == null)
             {
                 Audience = CreateAudience(IotHubConnectionString);
-                if (iotHubConnectionString.SharedAccessKeyName == null)
-                {
-                    AuthenticationModel = AuthenticationModel.SasIndividual;
-                }
-                else
-                {
-                    AuthenticationModel = AuthenticationModel.SasGrouped;
-                }
+                AuthenticationModel = iotHubConnectionString.SharedAccessKeyName == null
+                    ? AuthenticationModel.SasIndividual
+                    : AuthenticationModel.SasGrouped;
             }
             else
             {
@@ -61,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        internal bool IsPooling()
+        public bool IsPooling()
         {
             return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling ?? false);
         }

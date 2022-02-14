@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
             return SendEventAsync(telemetryMessage, cancellationToken);
         }
 
-        internal Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken)
         {
             // Subscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
@@ -56,14 +56,19 @@ namespace Microsoft.Azure.Devices.Client
                     commandRequest = new CommandRequest(payloadConvention: PayloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
                 }
 
-                CommandResponse commandResponse = await callback.Invoke(commandRequest, userContext).ConfigureAwait(false);
+                CommandResponse commandResponse = await callback.Invoke(commandRequest).ConfigureAwait(false);
                 commandResponse.PayloadConvention = PayloadConvention;
-                return commandResponse.ResultAsBytes != null
-                    ? new MethodResponse(commandResponse.ResultAsBytes, commandResponse.Status)
+                return commandResponse.GetPayloadAsBytes() != null
+                    ? new MethodResponse(commandResponse.GetPayloadAsBytes(), commandResponse.Status)
                     : new MethodResponse(commandResponse.Status);
             });
 
-            return SetMethodDefaultHandlerAsync(methodDefaultCallback, userContext, cancellationToken);
+            // We pass in a null context to the internal API because the updated SubscribeToCommandsAsync API
+            // does not require you to pass in a user context.
+            // Since SubscribeToCommandsAsync callback is invoked for all command invocations,
+            // the user context passed in would be the same for all scenarios.
+            // This user context can be set at a class level instead.
+            return SetMethodDefaultHandlerAsync(methodDefaultCallback, null, cancellationToken);
         }
 
         internal async Task<ClientProperties> GetClientTwinPropertiesAsync(CancellationToken cancellationToken)
@@ -105,19 +110,22 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken)
+        internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken)
         {
             // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
-            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback((twinCollection, userContext) =>
+            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback(async (twinCollection, userContext) =>
             {
                 // convert a TwinCollection to PropertyCollection
                 var propertyCollection = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(twinCollection, PayloadConvention);
-                callback.Invoke(propertyCollection, userContext);
-
-                return TaskHelpers.CompletedTask;
+                await callback.Invoke(propertyCollection).ConfigureAwait(false);
             });
 
-            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, userContext, cancellationToken);
+            // We pass in a null context to the internal API because the updated SubscribeToWritablePropertyUpdateRequestsAsync API
+            // does not require you to pass in a user context.
+            // Since SubscribeToWritablePropertyUpdateRequestsAsync callback is invoked for all property update events,
+            // the user context passed in would be the same for all scenarios.
+            // This user context can be set at a class level instead.
+            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, null, cancellationToken);
         }
     }
 }

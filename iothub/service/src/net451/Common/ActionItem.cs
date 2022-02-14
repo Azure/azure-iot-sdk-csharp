@@ -215,14 +215,14 @@ namespace Microsoft.Azure.Devices.Common
             [Fx.Tag.SecurityNote(Critical = "Called by the scheduler without any user context on the stack")]
             static void InvokeWithoutContext(object state)
             {
-                ActionItem tempState = (ActionItem)state;
+                var tempState = (ActionItem)state;
                 tempState.Invoke();
                 tempState.isScheduled = false;
             }
             [Fx.Tag.SecurityNote(Critical = "Called after applying the user context on the stack")]
             static void OnContextApplied(object o)
             {
-                ActionItem tempState = (ActionItem)o;
+                var tempState = (ActionItem)o;
                 tempState.Invoke();
                 tempState.isScheduled = false;
             }

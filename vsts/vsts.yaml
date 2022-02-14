@@ -17,9 +17,9 @@ resources:
     clean: true
 
 jobs:
-  ### Linux build ###
-  - job: LINUX
-    displayName: Linux
+  ### Linux build 1 ###
+  - job: LINUX1
+    displayName: Linux pri 1 .NET targets
     timeoutInMinutes: 75
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
@@ -29,8 +29,6 @@ jobs:
           FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.18:
-          FRAMEWORK: netcoreapp2.1.18
 
     condition: succeeded()
     pool:
@@ -125,9 +123,113 @@ jobs:
 
         condition: always()
 
-  ### Windows build ###
-  - job: WINDOWS
-    displayName: Windows
+  ### Linux build 2 ###
+  - job: LINUX2
+    displayName: Linux pri 2 .NET targets
+    timeoutInMinutes: 75
+    strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
+      maxParallel: 100
+      matrix:
+        .Net Core 2.1.18:
+          FRAMEWORK: netcoreapp2.1.18
+
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    pool:
+      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
+      vmImage: ubuntu-20.04
+    steps:
+      - task: Docker@1
+        displayName: "Start TPM Simulator"
+        inputs:
+          containerregistrytype: "Container Registry"
+          command: "Run an image"
+          imageName: aziotbld/testtpm
+          containerName: "testtpm-instance"
+
+          ports: |
+            127.0.0.1:2321:2321
+            127.0.0.1:2322:2322
+
+          restartPolicy: unlessStopped
+
+      - task: Docker@1
+        displayName: "Start Test Proxy"
+        inputs:
+          containerregistrytype: "Container Registry"
+          command: "Run an image"
+          imageName: aziotbld/testproxy
+          containerName: "testproxy-instance"
+          ports: "127.0.0.1:8888:8888"
+          restartPolicy: unlessStopped
+
+      - powershell: ./vsts/gatedBuild.ps1
+        displayName: build
+        env:
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
+          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
+          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
+          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          HUB_CHAIN_DEVICE_PFX_CERTIFICATE: $(HUB-CHAIN-DEVICE-PFX-CERTIFICATE)
+          HUB_CHAIN_ROOT_CA_CERTIFICATE: $(HUB-CHAIN-ROOT-CA-CERTIFICATE)
+          HUB_CHAIN_INTERMEDIATE1_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          HUB_CHAIN_INTERMEDIATE2_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          E2E_IKEY: $(E2E-IKEY)
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
+          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+
+      - task: CopyFiles@2
+        displayName: "Copy files to the artifacts folder"
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.trx"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
+        inputs:
+          ArtifactName: testresults_linux_$(FRAMEWORK)
+
+        condition: always()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Test Results **/*.trx"
+        inputs:
+          testRunner: VSTest
+          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
+          testResultsFiles: "**/*.trx"
+
+        condition: always()
+
+  ### Windows build 1 ###
+  - job: WINDOWS1
+    displayName: Windows pri 1 .NET targets
     timeoutInMinutes: 75
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
@@ -137,14 +239,117 @@ jobs:
           FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.18:
-          FRAMEWORK: netcoreapp2.1.18
-        .Net Framework 4.7.2:
-          FRAMEWORK: net472
         .Net Framework 4.5.1:
           FRAMEWORK: net451
 
     condition: succeeded()
+    pool:
+      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
+      vmImage: windows-2019
+    steps:
+      - script: |
+          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+          sn -Vr *,31bf3856ad364e35
+
+        displayName: "Disable strong name validation"
+
+      - script: |
+          choco install -y squid
+
+        displayName: "Install Squid"
+
+      - powershell: ./vsts/start_tpm_windows.ps1
+        displayName: "Start TPM Simulator"
+
+      - powershell: ./vsts/gatedBuild.ps1
+        displayName: build
+        env:
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          DPS_IDSCOPE: $(DPS-IDSCOPE)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
+          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
+          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
+          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          HUB_CHAIN_DEVICE_PFX_CERTIFICATE: $(HUB-CHAIN-DEVICE-PFX-CERTIFICATE)
+          HUB_CHAIN_ROOT_CA_CERTIFICATE: $(HUB-CHAIN-ROOT-CA-CERTIFICATE)
+          HUB_CHAIN_INTERMEDIATE1_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          HUB_CHAIN_INTERMEDIATE2_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          E2E_IKEY: $(E2E-IKEY)
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
+          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+
+      - task: CopyFiles@2
+        displayName: "Copy TRX files to the artifacts folder"
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.trx"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
+        condition: always()
+
+      - task: CopyFiles@2
+        displayName: "Copy ETL files to the artifacts folder"
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.etl"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Artifact: testresults"
+        inputs:
+          ArtifactName: testresults_windows_$(FRAMEWORK)
+
+        condition: always()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Test Results **/*.trx"
+        inputs:
+          testRunner: VSTest
+          testResultsFiles: "**/*.trx"
+          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
+          platform: Windows
+          configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
+
+        condition: always()
+
+  ### Windows build 2 ###
+  - job: WINDOWS2
+    displayName: Windows pri 2 .NET targets
+    timeoutInMinutes: 75
+    strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
+      maxParallel: 100
+      matrix:
+        .Net Core 2.1.18:
+          FRAMEWORK: netcoreapp2.1.18
+        .Net Framework 4.7.2:
+          FRAMEWORK: net472
+
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: windows-2019
@@ -333,7 +538,7 @@ jobs:
           instanceUrlForTsaV2: 'MSAZURE'
           projectNameMSAZURE: 'One'
           areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
-          iterationPath: 'One\IoT\Backlog'
+          iterationPath: 'One\Custom\IoT\Backlog'
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
         displayName: "Post Analysis"

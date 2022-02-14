@@ -158,9 +158,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private static bool IsTlsSecurity(Exception singleException)
         {
             if (// WinHttpException (0x80072F8F): A security error occurred.
-                (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (singleException.HResult == unchecked((int)0x80072F8F))) ||
+                (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && singleException.HResult == unchecked((int)0x80072F8F))
+                ||
                 // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
-                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (singleException.HResult == 60)) ||
+                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && singleException.HResult == 60)
+                ||
                 singleException is AuthenticationException)
             {
                 return true;

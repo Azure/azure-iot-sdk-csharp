@@ -43,23 +43,40 @@ public abstract class PayloadSerializer {
 }
 
 public sealed class DefaultPayloadConvention : PayloadConvention {
+<<<<<<< HEAD
     public static readonly DefaultPayloadConvention Instance;
     public DefaultPayloadConvention();
+=======
+    public DefaultPayloadConvention();
+    public static DefaultPayloadConvention Instance { get; }
+>>>>>>> previews/pnpApi
     public override PayloadEncoder PayloadEncoder { get; }
     public override PayloadSerializer PayloadSerializer { get; }
 }
 
 public class Utf8PayloadEncoder : PayloadEncoder {
+<<<<<<< HEAD
     public static readonly Utf8PayloadEncoder Instance;
     public Utf8PayloadEncoder();
     public override Encoding ContentEncoding { get; }
+=======
+    public Utf8PayloadEncoder();
+    public override Encoding ContentEncoding { get; }
+    public static Utf8PayloadEncoder Instance { get; }
+>>>>>>> previews/pnpApi
     public override byte[] EncodeStringToByteArray(string contentPayload);
 }
 
 public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
+<<<<<<< HEAD
     public static readonly NewtonsoftJsonPayloadSerializer Instance;
     public NewtonsoftJsonPayloadSerializer();
     public override string ContentType { get; }
+=======
+    public NewtonsoftJsonPayloadSerializer();
+    public override string ContentType { get; }
+    public static NewtonsoftJsonPayloadSerializer Instance { get; }
+>>>>>>> previews/pnpApi
     public override T ConvertFromObject<T>(object objectToConvert);
     public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public override T DeserializeToType<T>(string stringToDeserialize);
@@ -69,7 +86,10 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
     protected PayloadCollection();
+<<<<<<< HEAD
     public IDictionary<string, object> Collection { get; private set; }
+=======
+>>>>>>> previews/pnpApi
     public PayloadConvention Convention { get; internal set; }
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
@@ -121,12 +141,11 @@ public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancell
 public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Sets the global listener for Writable properties
+/// Sets the listener for writable property update events.
 /// </summary>
-/// <param name="callback">The global call back to handle all writable property updates.</param>
-/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="callback">The callback to handle all writable property updates for the client.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default);
+public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default);
 ```
 
 #### All related types
@@ -134,8 +153,8 @@ public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCo
 ```csharp
 public class ClientProperties {
     public ClientProperties();
-    public ClientPropertyCollection ReportedFromClient { get; private set; }
-    public ClientPropertyCollection WritablePropertyRequests { get; private set; }
+    public ClientPropertyCollection ReportedFromClient { get; }
+    public ClientPropertyCollection WritablePropertyRequests { get; }
 }
 
 public class ClientPropertyCollection : PayloadCollection {
@@ -199,7 +218,9 @@ public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationTo
 ```csharp
 public class TelemetryCollection : PayloadCollection {
     public TelemetryCollection();
+    public void Add(IDictionary<string, object> telemetryValues);
     public override void Add(string telemetryName, object telemetryValue);
+    public void AddOrUpdate(IDictionary<string, object> telemetryValues);
     public override void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 
@@ -214,28 +235,29 @@ public sealed class TelemetryMessage : MessageBase {
 
 ```csharp
 /// <summary>
-/// Set the global command callback handler.
+/// Sets the listener for command invocation requests.
 /// </summary>
-/// <param name="callback">A method implementation that will handle the incoming command.</param>
-/// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+/// <param name="callback">The callback to handle all incoming commands for the client.</param>
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-public Task SubscribeToCommandsAsync(Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext, CancellationToken cancellationToken = default);
+public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken = default);
 ```
 #### All related types
 
 ```csharp
 public sealed class CommandRequest {
-    public string CommandName { get; private set; }
-    public string ComponentName { get; private set; }
-    public string DataAsJson { get; }
-    public T GetData<T>();
-    public byte[] GetDataAsBytes();
+    public CommandRequest();
+    public string CommandName { get; }
+    public string ComponentName { get; }
+    public T GetPayload<T>();
+    public ReadOnlyCollection<byte> GetPayloadAsBytes();
+    public string GetPayloadAsString();
 }
 
 public sealed class CommandResponse {
+    public CommandResponse();
     public CommandResponse(int status);
-    public CommandResponse(object result, int status);
-    public string ResultAsJson { get; }
-    public int Status { get; private set; }
+    public CommandResponse(object payload, int status);
+    public object Payload { get; }
+    public int Status { get; }
 }
 ```

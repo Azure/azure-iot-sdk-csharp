@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
-            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings();
+            var transportSettings = new ServiceClientTransportSettings();
             transportSettings.AmqpProxy = new WebProxy(s_proxyServerAddress);
             transportSettings.HttpProxy = new WebProxy(s_proxyServerAddress);
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
-            HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
+            var httpTransportSettings = new HttpTransportSettings();
             httpTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
 
             await RegistryManager_AddDevice(httpTransportSettings).ConfigureAwait(false);
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
-            HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
+            var httpTransportSettings = new HttpTransportSettings();
             httpTransportSettings.Proxy = new WebProxy(s_proxyServerAddress);
 
             await JobClient_ScheduleAndRunTwinJob(httpTransportSettings).ConfigureAwait(false);
@@ -58,8 +58,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
+            using (var serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings))
             {
                 (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
                 await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             string deviceName = DevicePrefix + Guid.NewGuid();
 
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(s_connectionString, httpTransportSettings))
+            using (var registryManager = RegistryManager.CreateFromConnectionString(s_connectionString, httpTransportSettings))
             {
                 await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
                 await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
@@ -82,11 +82,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private async Task JobClient_ScheduleAndRunTwinJob(HttpTransportSettings httpTransportSettings)
         {
-            Twin twin = new Twin(JobDeviceId);
+            var twin = new Twin(JobDeviceId);
             twin.Tags = new TwinCollection();
             twin.Tags[JobTestTagName] = JobDeviceId;
 
-            using (JobClient jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings))
+            using (var jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings))
             {
                 int tryCount = 0;
                 while (true)
@@ -111,9 +111,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private (Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
         {
-            var messageId = Guid.NewGuid().ToString();
-            var payload = Guid.NewGuid().ToString();
-            var p1Value = Guid.NewGuid().ToString();
+            string messageId = Guid.NewGuid().ToString();
+            string payload = Guid.NewGuid().ToString();
+            string p1Value = Guid.NewGuid().ToString();
 
             Logger.Trace($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))

@@ -1894,7 +1894,6 @@ namespace Microsoft.Azure.Devices.Client
         public void Dispose()
         {
             InnerHandler?.Dispose();
-            InnerHandler = null;
             _methodsSemaphore?.Dispose();
             _moduleReceiveMessageSemaphore?.Dispose();
             _fileUploadHttpTransportHandler?.Dispose();

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// It is the result of any query for the provisioning service. This class will parse the result and
     ///     return it in a best format possible. For the known formats in <see cref="QueryResultType"/>, you can
-    ///     just cast the items. In case of <b>unknown</b> type, the items will contain a list of <code>string</code>
+    ///     just cast the items. In case of <b>unknown</b> type, the items will contain a list of <c>string</c>
     ///     and you shall parse it by your own.
     ///
     /// The provisioning service query result is composed by 2 system properties and a body. This class exposes
@@ -22,14 +22,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///
     /// The system properties are:
     /// <list type="bullet">
-    ///     <item><b>type:</b>
+    ///     <item>
+    ///     <description><b>type:</b>
     ///         Identify the type of the content in the body. You can use it to cast the objects
     ///         in the items list. See <see cref="QueryResultType"/> for the possible types and classes
-    ///         to cast.</item>
-    ///     <item><b>continuationToken:</b>
+    ///         to cast.</description>
+    ///     </item>
+    ///     <item>
+    ///     <description><b>continuationToken:</b>
     ///         Contains the token the uniquely identify the next page of information. The
     ///         service will return the next page of this query when you send a new query with
-    ///         this token.</item>
+    ///         this token.</description>
+    ///     </item>
     /// </list>
     ///
     /// And the body is a JSON list of the specific <b>type</b>. For instance, if the system

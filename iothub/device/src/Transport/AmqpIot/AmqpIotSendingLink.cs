@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
 
             Outcome outcome;
-            using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
+            using (var amqpMessage = AmqpMessage.Create(messageList))
             {
                 amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
                 outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
@@ -228,10 +228,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(
-            string correlationId,
-            Stream reportedProperties,
-            CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(string correlationId, Stream reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
             {

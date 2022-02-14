@@ -6,14 +6,14 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// A UTF-8 <see cref="PayloadEncoder"/> implementation.
+    /// A UTF-8 PayloadEncoder implementation.
     /// </summary>
     public class Utf8PayloadEncoder : PayloadEncoder
     {
         /// <summary>
         /// The default instance of this class.
         /// </summary>
-        public static readonly Utf8PayloadEncoder Instance = new Utf8PayloadEncoder();
+        public static Utf8PayloadEncoder Instance { get; } = new Utf8PayloadEncoder();
 
         /// <inheritdoc/>
         public override Encoding ContentEncoding => Encoding.UTF8;

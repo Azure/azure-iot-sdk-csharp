@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private JObject ComposeAzureSecurityCenterForIoTSecurityMessagePayload(string eventId)
         {
-            var now = DateTime.UtcNow;
+            DateTime now = DateTime.UtcNow;
             return new JObject
             {
                 { "AgentVersion", "0.0.1" },

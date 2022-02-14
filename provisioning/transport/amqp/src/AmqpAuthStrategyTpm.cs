@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             byte[] ekBuffer = _security.GetEndorsementKey();
             byte[] srkBuffer = _security.GetStorageRootKey();
-            SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _security);
+            var tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _security);
             saslProvider.AddHandler(tpmHandler);
 
             return settings;

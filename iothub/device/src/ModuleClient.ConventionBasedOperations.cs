@@ -36,15 +36,12 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
         /// <summary>
-        /// Set the global command callback handler.
+        /// Sets the listener for command invocation requests.
         /// </summary>
-        /// <param name="callback">A method implementation that will handle the incoming command.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="callback">The callback to handle all incoming commands for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToCommandsAsync(
-            Func<CommandRequest, object, Task<CommandResponse>> callback, object userContext,
-            CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToCommandsAsync(callback, userContext, cancellationToken);
+        public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToCommandsAsync(callback, cancellationToken);
 
         /// <summary>
         /// Retrieve the client properties.
@@ -65,12 +62,11 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
-        /// Sets the global listener for writable property update events.
+        /// Sets the listener for writable property update events.
         /// </summary>
-        /// <param name="callback">The global call back to handle all writable property updates.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, object, Task> callback, object userContext, CancellationToken cancellationToken = default)
-            => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, userContext, cancellationToken);
+        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default)
+            => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, cancellationToken);
     }
 }

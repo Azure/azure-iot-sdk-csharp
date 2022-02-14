@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void EnrollmentGroupConstructorSucceed()
         {
             // arrange - act
-            EnrollmentGroup individualEnrollment = new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509RootAttestation);
+            var individualEnrollment = new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509RootAttestation);
 
             // assert
             Assert.AreEqual(SampleEnrollmentGroupId, individualEnrollment.EnrollmentGroupId);

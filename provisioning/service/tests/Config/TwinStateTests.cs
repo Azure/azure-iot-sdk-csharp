@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TwinCollection desiredProperties = null;
 
             // act
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // assert
             Assert.IsNull(initialTwin.Tags);
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TwinCollection desiredProperties = null;
 
             // act
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // assert
             Assert.AreEqual(tags, initialTwin.Tags);
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TwinCollection desiredProperties = SampleDesiredProperties;
 
             // act
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // assert
             Assert.IsNull(initialTwin.Tags);
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TwinCollection desiredProperties = SampleDesiredProperties;
 
             // act
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // assert
             Assert.AreEqual(tags, initialTwin.Tags);
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // arrange
             TwinCollection tags = SampleTags;
             TwinCollection desiredProperties = null;
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // act
             string jsonResult = JsonConvert.SerializeObject(initialTwin);
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // arrange
             TwinCollection tags = null;
             TwinCollection desiredProperties = SampleDesiredProperties;
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // act
             string jsonResult = JsonConvert.SerializeObject(initialTwin);
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // arrange
             TwinCollection tags = SampleTags;
             TwinCollection desiredProperties = SampleDesiredProperties;
-            TwinState initialTwin = new TwinState(tags, desiredProperties);
+            var initialTwin = new TwinState(tags, desiredProperties);
 
             // act
             string jsonResult = JsonConvert.SerializeObject(initialTwin);

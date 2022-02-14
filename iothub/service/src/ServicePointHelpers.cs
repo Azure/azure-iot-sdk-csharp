@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
 #if !NET451
                     httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
 #endif
-                    var servicePoint = ServicePointManager.FindServicePoint(baseUri);
+                    ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
 #if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
