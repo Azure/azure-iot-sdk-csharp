@@ -36,6 +36,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static CancellationTokenSource s_cancellationTokenSource;
 
+        // A safe initial value for caching the twin desired properties version is 1, so the client
+        // will process all previous property change requests and initialize the device application
+        // after which this version will be updated to that, so we have a high water mark of which version number
+        // has been processed.
+        private static long s_localDesiredPropertyVersion = 1;
+
         public DeviceReconnectionSample(List<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
         {
             _logger = logger;
@@ -131,6 +137,30 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     exceptionsToBeIgnored: _exceptionsToBeIgnored,
                     cancellationToken: cancellationToken);
                 _logger.LogDebug($"The client instance has been opened.");
+
+                // The client retrieves twin values when it is initialized.
+                Twin twin = null;
+                await RetryOperationHelper.RetryTransientExceptionsAsync(
+                    operationName: "GetTwin",
+                    asyncOperation: async () => 
+                    {
+                        twin = await s_deviceClient.GetTwinAsync();
+                        TwinCollection twinCollection = twin.Properties.Desired;
+                        long serverDesiredPropertyVersion = twinCollection.Version;
+
+                        // Check if the desired property version is outdated on the local side.
+                        if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
+                        { 
+                            _logger.LogDebug($"The desired property version was changed from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
+                            await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
+                        }
+                    },
+                    shouldExecuteOperation: () => IsDeviceConnected,
+                    logger: _logger,
+                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
+                    cancellationToken: cancellationToken);
+                _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
+                _logger.LogDebug("The client has retrieved the twin state after establishing connection to IoT hub. ");
 
                 // You will need to subscribe to the client callbacks any time the client is initialized.
                 await RetryOperationHelper.RetryTransientExceptionsAsync(
@@ -235,6 +265,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogInformation($"Setting property {desiredProperty.Key} to {desiredProperty.Value}.");
                     reportedProperties[desiredProperty.Key] = desiredProperty.Value;
                 }
+
+                s_localDesiredPropertyVersion = twinUpdateRequest.Version;
+                _logger.LogDebug($"The desired property version on local is currently {s_localDesiredPropertyVersion}.");
 
                 // For the purpose of this sample, we'll blindly accept all twin property write requests.
                 await RetryOperationHelper.RetryTransientExceptionsAsync(
