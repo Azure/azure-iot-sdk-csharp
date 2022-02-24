@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         // Case 3a:
                         // Check if the retrieved value is a writable property update acknowledgment
-                        var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
+                        var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromJsonObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
 
                         if (typeof(IWritablePropertyResponse).IsAssignableFrom(typeof(T)))
                         {
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client
                     // Case 3b, 3c:
                     // If the value is neither a writable property nor can be cast to <T> directly, we need to try to convert it using the serializer.
                     // If it can be successfully converted, go ahead and return it.
-                    value = Convention.PayloadSerializer.ConvertFromObject<T>(retrievedPropertyValue);
+                    value = Convention.PayloadSerializer.ConvertFromJsonObject<T>(retrievedPropertyValue);
                     return true;
                 }
                 catch

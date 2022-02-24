@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.ApiTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
+namespace Microsoft.Azure.Devices.Client.Tests.ConnectionString
 {
     [TestClass]
     [TestCategory("Unit")]

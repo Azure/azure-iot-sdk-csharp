@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <inheritdoc/>
-        public override T ConvertFromObject<T>(object objectToConvert)
+        public override T ConvertFromJsonObject<T>(object objectToConvert)
         {
             var token = JToken.FromObject(objectToConvert);
 
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <inheritdoc/>
-        public override bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue)
+        public override bool TryGetNestedJsonObjectValue<T>(object nestedObject, string propertyName, out T outValue)
         {
             outValue = default;
             if (nestedObject == null

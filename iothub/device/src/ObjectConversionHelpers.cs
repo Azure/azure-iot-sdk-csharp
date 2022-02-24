@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
                 // If it can be successfully converted, go ahead and return it.
-                value = payloadConvention.PayloadSerializer.ConvertFromObject<T>(objectToCastOrConvert);
+                value = payloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(objectToCastOrConvert);
                 return true;
             }
             catch

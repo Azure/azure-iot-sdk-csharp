@@ -8,7 +8,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -699,7 +699,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             testPropertyCollection.AddComponentProperties("testComponent", null);
 
             // assert
-            bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property2Value);
+            bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int _);
             iscomponentValueRetrieved.Should().BeFalse();
 
             bool iscomponentRetrieved = testPropertyCollection.TryGetValue<object>("testComponent", out object componentValue);
@@ -804,7 +804,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ClientPropertyCollect_AddRawClassSuccess()
+        public void ClientPropertyCollection_AddRawClassSuccess()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
@@ -827,13 +827,5 @@ namespace Microsoft.Azure.Devices.Client.Test
             isNamePresent.Should().BeTrue();
             name.Should().Be("testProperty");
         }
-    }
-
-    internal class CustomClientProperty
-    {
-        // The properties in here need to be public otherwise NewtonSoft.Json cannot serialize and deserialize them properly.
-        public int Id { get; set; }
-
-        public string Name { get; set; }
     }
 }

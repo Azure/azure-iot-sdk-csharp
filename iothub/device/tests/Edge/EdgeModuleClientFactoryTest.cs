@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Microsoft.Azure.Devices.Client.Test.Edge
+namespace Microsoft.Azure.Devices.Client.Tests.Edge
 {
     [TestClass]
     [TestCategory("Unit")]

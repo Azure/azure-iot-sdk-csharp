@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     return nestedDictionary.TryGetValue(propertyName, out var _);
                 }
-                return Convention.PayloadSerializer.TryGetNestedObjectValue<object>(component, propertyName, out _);
+                return Convention.PayloadSerializer.TryGetNestedJsonObjectValue<object>(component, propertyName, out _);
             }
             return Collection.TryGetValue(propertyName, out _);
         }
@@ -294,16 +294,16 @@ namespace Microsoft.Azure.Devices.Client
                         // If not, then the retrieved nested dictionary is actually a root-level property of type map.
                         if (Convention
                             .PayloadSerializer
-                            .TryGetNestedObjectValue(componentProperties, ConventionBasedConstants.ComponentIdentifierKey, out string componentIdentifierValue)
+                            .TryGetNestedJsonObjectValue(componentProperties, ConventionBasedConstants.ComponentIdentifierKey, out string componentIdentifierValue)
                             && componentIdentifierValue == ConventionBasedConstants.ComponentIdentifierValue)
                         {
-                            Convention.PayloadSerializer.TryGetNestedObjectValue(componentProperties, propertyName, out object retrievedPropertyValue);
+                            Convention.PayloadSerializer.TryGetNestedJsonObjectValue(componentProperties, propertyName, out object retrievedPropertyValue);
 
                             try
                             {
                                 // Case 3a:
                                 // Check if the retrieved value is a writable property update acknowledgment
-                                var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
+                                var newtonsoftWritablePropertyResponse = Convention.PayloadSerializer.ConvertFromJsonObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
 
                                 if (typeof(IWritablePropertyResponse).IsAssignableFrom(typeof(T)))
                                 {
@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client
                             // Case 3b, 3c:
                             // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
                             // If it can be successfully converted, go ahead and return it.
-                            if (Convention.PayloadSerializer.TryGetNestedObjectValue<T>(componentProperties, propertyName, out propertyValue))
+                            if (Convention.PayloadSerializer.TryGetNestedJsonObjectValue<T>(componentProperties, propertyName, out propertyValue))
                             {
                                 return true;
                             }
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Client
                 // Check if the property value is for a root property or a component property.
                 // A component property be a JObject and will have the "__t": "c" identifiers.
                 bool isComponentProperty = propertyValueAsObject is JObject
-                    && payloadConvention.PayloadSerializer.TryGetNestedObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+                    && payloadConvention.PayloadSerializer.TryGetNestedJsonObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
                 if (isComponentProperty)
                 {

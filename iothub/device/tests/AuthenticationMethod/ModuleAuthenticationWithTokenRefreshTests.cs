@@ -8,7 +8,7 @@ using System.Diagnostics;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]

@@ -7,14 +7,14 @@ using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class TelemetryCollectionTests
     {
         [TestMethod]
-        public void AddNullTelemetryNameThrows()
+        public void TelemetryCollection_Add_NullTelemetryNameThrows()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddOrUpdateNullTelemetryNameThrows()
+        public void TelemetryCollection_AddOrUpdate_NullTelemetryNameThrows()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddNullTelemetryValueSuccess()
+        public void TelemetryCollection_Add_NullTelemetryValueSuccess()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddOrUpdateNullTelemetryValueSuccess()
+        public void TelemetryCollection_AddOrUpdate_NullTelemetryValueSuccess()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddTelemetryValueAlreadyExistsThrows()
+        public void TelemetryCollection_Add_TelemetryValueAlreadyExistsThrows()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddOrUpdateTelemetryValueAlreadyExistsSuccess()
+        public void TelemetryCollection_AddOrUpdate_TelemetryValueAlreadyExistsSuccess()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddNullTelemetryCollectionThrows()
+        public void TelemetryCollection_Add_NullTelemetryCollectionThrows()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddOrUpdateNullTelemetryCollectionThrows()
+        public void TelemetryCollection_AddOrUpdate_NullTelemetryCollectionThrows()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddTelemetryCollectionAlreadyExistsThrows()
+        public void TelemetryCollection_Add_TelemetryCollectionAlreadyExistsThrows()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AddOrUpdateTelemetryCollectionAlreadyExistsSuccess()
+        public void TelemetryCollection_AddOrUpdate_TelemetryCollectionAlreadyExistsSuccess()
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
