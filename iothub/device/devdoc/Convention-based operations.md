@@ -43,40 +43,23 @@ public abstract class PayloadSerializer {
 }
 
 public sealed class DefaultPayloadConvention : PayloadConvention {
-<<<<<<< HEAD
-    public static readonly DefaultPayloadConvention Instance;
-    public DefaultPayloadConvention();
-=======
     public DefaultPayloadConvention();
     public static DefaultPayloadConvention Instance { get; }
->>>>>>> previews/pnpApi
     public override PayloadEncoder PayloadEncoder { get; }
     public override PayloadSerializer PayloadSerializer { get; }
 }
 
 public class Utf8PayloadEncoder : PayloadEncoder {
-<<<<<<< HEAD
-    public static readonly Utf8PayloadEncoder Instance;
-    public Utf8PayloadEncoder();
-    public override Encoding ContentEncoding { get; }
-=======
     public Utf8PayloadEncoder();
     public override Encoding ContentEncoding { get; }
     public static Utf8PayloadEncoder Instance { get; }
->>>>>>> previews/pnpApi
     public override byte[] EncodeStringToByteArray(string contentPayload);
 }
 
 public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
-<<<<<<< HEAD
-    public static readonly NewtonsoftJsonPayloadSerializer Instance;
-    public NewtonsoftJsonPayloadSerializer();
-    public override string ContentType { get; }
-=======
     public NewtonsoftJsonPayloadSerializer();
     public override string ContentType { get; }
     public static NewtonsoftJsonPayloadSerializer Instance { get; }
->>>>>>> previews/pnpApi
     public override T ConvertFromObject<T>(object objectToConvert);
     public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null);
     public override T DeserializeToType<T>(string stringToDeserialize);
@@ -86,10 +69,6 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
 
 public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
     protected PayloadCollection();
-<<<<<<< HEAD
-    public IDictionary<string, object> Collection { get; private set; }
-=======
->>>>>>> previews/pnpApi
     public PayloadConvention Convention { get; internal set; }
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
