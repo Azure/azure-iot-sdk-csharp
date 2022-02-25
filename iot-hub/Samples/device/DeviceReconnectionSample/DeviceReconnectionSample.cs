@@ -138,30 +138,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     cancellationToken: cancellationToken);
                 _logger.LogDebug($"The client instance has been opened.");
 
-                // The client retrieves twin values when it is initialized.
-                Twin twin = null;
-                await RetryOperationHelper.RetryTransientExceptionsAsync(
-                    operationName: "GetTwin",
-                    asyncOperation: async () => 
-                    {
-                        twin = await s_deviceClient.GetTwinAsync();
-                        TwinCollection twinCollection = twin.Properties.Desired;
-                        long serverDesiredPropertyVersion = twinCollection.Version;
-
-                        // Check if the desired property version is outdated on the local side.
-                        if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
-                        { 
-                            _logger.LogDebug($"The desired property version was changed from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
-                            await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
-                        }
-                    },
-                    shouldExecuteOperation: () => IsDeviceConnected,
-                    logger: _logger,
-                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                    cancellationToken: cancellationToken);
-                _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
-                _logger.LogDebug("The client has retrieved the twin state after establishing connection to IoT hub. ");
-
                 // You will need to subscribe to the client callbacks any time the client is initialized.
                 await RetryOperationHelper.RetryTransientExceptionsAsync(
                     operationName: "SubscribeTwinUpdates",
@@ -176,8 +152,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // It is not good practice to have async void methods, however, DeviceClient.SetConnectionStatusChangesHandler() event handler signature has a void return type.
         // As a result, any operation within this block will be executed unmonitored on another thread.
-        // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock
-        // before attempting to initialize or dispose the device client instance.
+        // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
+        // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
         private async void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
         {
             _logger.LogDebug($"Connection status changed: status={status}, reason={reason}");
@@ -187,6 +163,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 case ConnectionStatus.Connected:
                     _logger.LogDebug("### The DeviceClient is CONNECTED; all operations will be carried out as normal.");
+
+                    // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
+                    // This can get back "lost" twin updates in a device reconnection from status like Disconnected_Retrying or Disconnected.
+                    await GetTwinAndDetectChangesAsync(s_cancellationTokenSource.Token);
+                    _logger.LogDebug("The client has retrieved twin values after the connection status changes into CONNECTED. ");
                     break;
 
                 case ConnectionStatus.Disconnected_Retrying:
@@ -247,6 +228,38 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     _logger.LogError("### This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.");
                     break;
             }
+        }
+
+        private async Task GetTwinAndDetectChangesAsync(CancellationToken cancellationToken)
+        {
+            Twin twin = null;
+
+            // Allow a single thread to call GetTwin here
+            await _initSemaphore.WaitAsync(cancellationToken);
+            
+            await RetryOperationHelper.RetryTransientExceptionsAsync(
+                operationName: "GetTwin",
+                asyncOperation: async () => 
+                {
+                    twin = await s_deviceClient.GetTwinAsync();
+                    _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
+
+                    TwinCollection twinCollection = twin.Properties.Desired;
+                    long serverDesiredPropertyVersion = twinCollection.Version;
+
+                    // Check if the desired property version is outdated on the local side.
+                    if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
+                    { 
+                        _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
+                        await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
+                    }
+                },
+                shouldExecuteOperation: () => IsDeviceConnected,
+                logger: _logger,
+                exceptionsToBeIgnored: _exceptionsToBeIgnored,
+                cancellationToken: cancellationToken);
+
+            _initSemaphore.Release();
         }
 
         private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
