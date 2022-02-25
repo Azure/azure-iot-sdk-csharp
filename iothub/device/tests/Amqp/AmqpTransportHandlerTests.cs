@@ -9,12 +9,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+using Microsoft.Azure.Devices.Client.Tests.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     [TestClass]
     [TestCategory("Unit")]

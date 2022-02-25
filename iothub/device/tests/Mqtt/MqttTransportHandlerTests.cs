@@ -13,14 +13,14 @@ using DotNetty.Codecs.Mqtt.Packets;
 using DotNetty.Transport.Channels;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+using Microsoft.Azure.Devices.Client.Tests.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NSubstitute;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     [TestClass]
     [TestCategory("Unit")]

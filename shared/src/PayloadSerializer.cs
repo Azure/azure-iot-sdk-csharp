@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Shared
         public abstract T DeserializeToType<T>(string stringToDeserialize);
 
         /// <summary>
-        /// Converts the object using the serializer.
+        /// Converts the JSON object using the serializer.
         /// </summary>
         /// <remarks>
         /// This class is used by the PayloadCollection-based classes to attempt to convert from the native serializer type
@@ -49,24 +49,24 @@ namespace Microsoft.Azure.Devices.Shared
         /// When implementing this, be aware of what type the serializer will use for anonymous types.
         /// </remarks>
         /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="objectToConvert">The object to convert.</param>
+        /// <param name="jsonObjectToConvert">The object to convert.</param>
         /// <returns>A converted object</returns>
-        public abstract T ConvertFromObject<T>(object objectToConvert);
+        public abstract T ConvertFromJsonObject<T>(object jsonObjectToConvert);
 
         /// <summary>
-        /// Gets a nested property from the serialized data.
+        /// Gets a nested property from the serialized JSON data.
         /// </summary>
         /// <remarks>
-        /// This is used by the PayloadCollection-based classes to attempt to get a property of the underlying object.
+        /// This is used by the PayloadCollection-based classes to attempt to get a property of the underlying JSON object.
         /// An example of this would be a property under the component.
         /// </remarks>
         /// <typeparam name="T">The type to convert the retrieved property to.</typeparam>
-        /// <param name="nestedObject">The object that might contain the nested property.
+        /// <param name="nestedJsonObject">The object that might contain the nested property.
         /// This needs to be in the json object equivalent format as required by the serializer or the string representation of it.</param>
         /// <param name="propertyName">The name of the property to be retrieved.</param>
         /// <param name="outValue">The retrieved value.</param>
         /// <returns>True if the nested object contains an element with the specified key, otherwise false.</returns>
-        public abstract bool TryGetNestedObjectValue<T>(object nestedObject, string propertyName, out T outValue);
+        public abstract bool TryGetNestedJsonObjectValue<T>(object nestedJsonObject, string propertyName, out T outValue);
 
         /// <summary>
         /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer.

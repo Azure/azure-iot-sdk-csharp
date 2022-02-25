@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     public class ServerWebSocketChannel : AbstractChannel
     {

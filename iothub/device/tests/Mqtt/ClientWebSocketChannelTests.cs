@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Handlers.Logging;
     using DotNetty.Transport.Channels;
+    using Microsoft.Azure.Devices.Client.Tests;
+    using Microsoft.Azure.Devices.Client.Tests.Mqtt;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

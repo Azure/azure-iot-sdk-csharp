@@ -4,13 +4,13 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+    using Microsoft.Azure.Devices.Client.Tests.ConnectionString;
     using Microsoft.Azure.Devices.Client.Transport;
 
     [TestClass]

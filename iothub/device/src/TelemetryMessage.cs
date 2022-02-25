@@ -16,13 +16,8 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class TelemetryMessage : MessageBase
     {
         /// <summary>
-        /// Gets or sets the <see cref="TelemetryCollection"/> for this <see cref="TelemetryMessage"/>
-        /// </summary>
-        /// <value>A telemetry collection that will be set as the message payload.</value>
-        public TelemetryCollection Telemetry { get; set; } = new TelemetryCollection();
-
-        /// <summary>
-        /// A convenience constructor that allows you to set the <see cref="MessageBase.ComponentName"/> of this <see cref="TelemetryMessage"/>
+        /// A convenience constructor that allows you to set the <see cref="MessageBase.ComponentName"/>
+        /// of this <see cref="TelemetryMessage"/>.
         /// </summary>
         /// <param name="componentName">The name of the component.</param>
         public TelemetryMessage(string componentName = default)
@@ -33,6 +28,12 @@ namespace Microsoft.Azure.Devices.Client
                 ComponentName = componentName;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="TelemetryCollection"/> for this <see cref="TelemetryMessage"/>
+        /// </summary>
+        /// <value>A telemetry collection that will be set as the message payload.</value>
+        public TelemetryCollection Telemetry { get; set; } = new TelemetryCollection();
 
         /// <inheritdoc/>
         public override Stream GetBodyStream()

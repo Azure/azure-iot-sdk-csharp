@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -53,13 +53,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(SocketException), () => new SocketException(1) },
             { typeof(HttpRequestException), () => new HttpRequestException() },
             { typeof(WebException), () => new WebException() },
-            { typeof(AmqpException), () => new AmqpException(new Amqp.Framing.Error()) },
+            { typeof(AmqpException), () => new AmqpException(new Microsoft.Azure.Amqp.Framing.Error()) },
             { typeof(WebSocketException), () => new WebSocketException(1) },
             { typeof(TestSecurityException), () => new Exception(
-                                                            "Test top level",
-                                                            new Exception(
-                                                                "Inner exception",
-                                                                new AuthenticationException()))
+                "Test top level",
+                new Exception(
+                    "Inner exception",
+                    new AuthenticationException()))
             },
             { typeof(TestDerivedException), () => new TestDerivedException() },
         };

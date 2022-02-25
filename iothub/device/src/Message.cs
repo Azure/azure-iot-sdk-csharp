@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Used to specify the content type of the message.
+        /// Used to specify the content type of the message payload.
         /// </summary>
         public string ContentType
         {

@@ -5,7 +5,7 @@ using System;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     public class ExponentialBackoffTests
