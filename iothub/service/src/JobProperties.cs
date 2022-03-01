@@ -8,7 +8,8 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains properties of a Job.
-    /// See online <a href="https://docs.microsoft.com/rest/api/iothub/service/createimportexportjob">documentation</a> for more infomration.
+    /// See online <a href="https://docs.microsoft.com/en-us/rest/api/iothub/service/createimportexportjob">documentation</a>
+    /// for more infomration.
     /// </summary>
     public class JobProperties
     {

@@ -10,7 +10,8 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Shared;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
