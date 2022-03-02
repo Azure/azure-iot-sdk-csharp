@@ -52,7 +52,7 @@ Due to security considerations, build logs are not publicly available.
 
 > Note:  
 > 1. In addition to stable builds we also release pre-release builds that contain preview features. You can find details about the preview features released by looking at the [release notes](https://github.com/Azure/azure-iot-sdk-csharp/releases). It is not recommended to take dependency on preview NuGets for production applications as breaking changes can be introduced in preview packages.
-> 2. Device streaming feature is not being included in our newer preview releases as there is no active development going on in the service. For more details on the feature, see [here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-device-streams-overview).
+> 2. Device streaming feature is not being included in our newer preview releases as there is no active development going on in the service. For more details on the feature, see [here](https://docs.microsoft.com/azure/iot-hub/iot-hub-device-streams-overview).
 >  
 >       This feature has not been included in any preview release after [2020-10-14](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/preview_2020-10-14). However, the feature is still available under [previews/deviceStreaming branch](https://github.com/Azure/azure-iot-sdk-csharp/tree/previews/deviceStreaming).  
 >  

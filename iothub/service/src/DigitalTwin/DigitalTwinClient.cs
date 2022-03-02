@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices
         /// Updates a digital twin.
         /// </summary>
         /// <remarks>
-        /// For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </remarks>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>

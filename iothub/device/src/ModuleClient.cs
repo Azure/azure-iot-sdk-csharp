@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
         /// <param name="messages">The messages.</param>
         /// <returns>The task containing the event</returns>
@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>/// Sends a batch of events to IoT hub. Requires AMQP or AMQP over WebSockets.
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>/// Sends a batch of events to IoT hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -662,7 +662,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>
@@ -673,7 +673,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/en-us/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>

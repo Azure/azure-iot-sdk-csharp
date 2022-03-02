@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot Reject or Abandon messages over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public Task<Message> ReceiveAsync() => InternalClient.ReceiveAsync();
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot reject or abandon messages over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot reject or abandon messages over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <returns>The received message or null if there was no message until the specified time has elapsed.</returns>
         public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot abandon a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         public Task AbandonAsync(string lockToken) => InternalClient.AbandonAsync(lockToken);
@@ -393,7 +393,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot abandon a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot abandon a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="message">The message to abandon.</param>
         public Task AbandonAsync(Message message) => InternalClient.AbandonAsync(message);
@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot abandon a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="message">The message to abandon.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -427,7 +427,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot reject a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         public Task RejectAsync(string lockToken) => InternalClient.RejectAsync(lockToken);
@@ -437,7 +437,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot Reject a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <param name="lockToken">The message lockToken.</param>
@@ -449,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot reject a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="message">The message.</param>
         public Task RejectAsync(Message message) => InternalClient.RejectAsync(message);
@@ -459,7 +459,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// You cannot reject a message over MQTT protocol.
-        /// For more details, see https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
+        /// For more details, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle.
         /// </remarks>
         /// <param name="message">The message to reject.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -549,7 +549,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.UploadToBlobAsync(blobName, source, cancellationToken);
 
         /// <summary>
-        /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device. See <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>
+        /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>
         /// </summary>
         /// <param name="request">The request details for getting the SAS URI, including the destination blob name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.GetFileUploadSasUriAsync(request, cancellationToken);
 
         /// <summary>
-        /// Notify IoT Hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
+        /// Notify IoT Hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
         /// </summary>
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
