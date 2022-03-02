@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Setting a will message is a way for clients to notify other subscribed clients about ungraceful disconnects in an appropriate way.
         /// In response to the ungraceful disconnect, the service will send the last-will message to the configured telemetry channel.
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
-        /// For more details, refer to https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
         public bool HasWill { get; set; }
 
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         /// <remarks>
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
-        /// For more details, refer to https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
         public IWillMessage WillMessage { get; set; }
 

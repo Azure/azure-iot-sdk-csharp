@@ -397,7 +397,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT Hub.
         /// This call is made over AMQP.
-        /// For more information see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
+        /// For more information see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
         /// </summary>
         /// <returns>An instance of <see cref="FeedbackReceiver{FeedbackBatch}"/>.</returns>
         public virtual FeedbackReceiver<FeedbackBatch> GetFeedbackReceiver()
@@ -408,7 +408,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Get the <see cref="FileNotificationReceiver{FileNotification}"/> which can deliver notifications for file upload operations.
         /// This call is made over AMQP.
-        /// For more information see <see href = "https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload#file-upload-notifications"/>.
+        /// For more information see <see href = "https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#file-upload-notifications"/>.
         /// </summary>
         /// <returns>An instance of <see cref="FileNotificationReceiver{FileNotification}"/>.</returns>
         public virtual FileNotificationReceiver<FileNotification> GetFileNotificationReceiver()

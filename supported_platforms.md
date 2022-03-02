@@ -36,7 +36,7 @@ OS name: "windows server 2019", version: "10.0", arch: "amd64", family: "windows
 
 ## Ubuntu 20.04
 
-Note that, while we only directly test on Ubuntu 20.04, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/en-us/dotnet/core/install/linux). 
+Note that, while we only directly test on Ubuntu 20.04, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/dotnet/core/install/linux). 
 
 Nightly test platform details:
 

@@ -24,9 +24,9 @@ For more information, check out this article about [best practices with .NET and
 Also follow the instructions on how to [enable and disable ciphers].
 
 [.NET Framework 4.5.1 is no longer supported]: https://devblogs.microsoft.com/dotnet/support-ending-for-the-net-framework-4-4-5-and-4-5-1/
-[TLS registry settings]: https://docs.microsoft.com/en-us/windows-server/security/tls/tls-registry-settings
-[best practices with .NEt and TLS]: https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls
-[enable and disable ciphers]: https://support.microsoft.com/en-us/help/245030/how-to-restrict-the-use-of-certain-cryptographic-algorithms-and-protoc
+[TLS registry settings]: https://docs.microsoft.com/windows-server/security/tls/tls-registry-settings
+[best practices with .NEt and TLS]: https://docs.microsoft.com/dotnet/framework/network-programming/tls
+[enable and disable ciphers]: https://support.microsoft.com/help/245030/how-to-restrict-the-use-of-certain-cryptographic-algorithms-and-protoc
 
 ### Linux Instructions
 

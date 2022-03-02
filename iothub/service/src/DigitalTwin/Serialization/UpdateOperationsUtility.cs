@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Serialization
 
         /// <summary>
         /// Include an add property operation.
-        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Serialization
 
         /// <summary>
         /// Include a replace property operation.
-        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Serialization
 
         /// <summary>
         /// Include a remove operation.
-        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Serialization
 
         /// <summary>
         /// Include an add component operation.
-        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </summary>
         /// <remarks>
         /// This utility appends the "$metadata" identifier to the property values,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Serialization
 
         /// <summary>
         /// Include a replace component operation.
-        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// Learn more about managing digital twins here <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </summary>
         /// <remarks>
         /// This utility appends the "$metadata" identifier to the property values,
