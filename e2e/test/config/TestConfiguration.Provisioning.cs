@@ -1,8 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Globalization;
+using System.Net;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using Microsoft.Azure.Devices.E2ETests.Provisioning;
+
+#if !NET451
+
+using Azure.Identity;
+
+#endif
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -13,6 +24,34 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string CertificatePassword => GetValue("DPS_X509_PFX_CERTIFICATE_PASSWORD");
 
             public static string ConnectionString => GetValue("PROVISIONING_CONNECTION_STRING");
+
+            public static string GetProvisioningHostName()
+            {
+                var connectionString = new ConnectionStringParser(ConnectionString);
+                return connectionString.ProvisioningHostName;
+            }
+
+#if !NET451
+
+            public static ClientSecretCredential GetClientSecretCredential()
+            {
+                return new ClientSecretCredential(
+                    GetValue("MSFT_TENANT_ID"),
+                    GetValue("IOTHUB_CLIENT_ID"),
+                    GetValue("IOTHUB_CLIENT_SECRET"));
+            }
+
+#endif
+
+            public static string GetProvisioningSharedAccessSignature(TimeSpan timeToLive)
+            {
+                var connectionString = new ConnectionStringParser(ConnectionString);
+                return GenerateSasToken(
+                    connectionString.ProvisioningHostName,
+                    connectionString.SharedAccessKey,
+                    timeToLive,
+                    connectionString.SharedAccessKeyName);
+            }
 
             public static string GlobalDeviceEndpoint =>
                 GetValue("DPS_GLOBALDEVICEENDPOINT", "global.azure-devices-provisioning.net");
@@ -38,6 +77,37 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string FarAwayIotHubHostName => GetValue("FAR_AWAY_IOTHUB_HOSTNAME");
 
             public static string CustomAllocationPolicyWebhook => GetValue("CUSTOM_ALLOCATION_POLICY_WEBHOOK");
+
+            private static string GenerateSasToken(string resourceUri, string sharedAccessKey, TimeSpan timeToLive, string policyName = default)
+            {
+                // Calculate expiry value for token
+                var epochTime = new DateTime(1970, 1, 1);
+                DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
+                TimeSpan secondsFromEpochTime = expiresOn.Subtract(epochTime);
+                long seconds = Convert.ToInt64(secondsFromEpochTime.TotalSeconds, CultureInfo.InvariantCulture);
+                string expiry = Convert.ToString(seconds, CultureInfo.InvariantCulture);
+
+                string stringToSign = WebUtility.UrlEncode(resourceUri) + "\n" + expiry;
+
+                using var hmac = new HMACSHA256(Convert.FromBase64String(sharedAccessKey));
+                string signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+
+                // SharedAccessSignature sr=ENCODED(dh://mydps.azure-devices-provisioning.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
+                string token = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "SharedAccessSignature sr={0}&sig={1}&se={2}",
+                    WebUtility.UrlEncode(resourceUri),
+                    WebUtility.UrlEncode(signature),
+                    expiry);
+
+                // add policy name only if user chooses to include it
+                if (!string.IsNullOrWhiteSpace(policyName))
+                {
+                    token += "&skn=" + WebUtility.UrlEncode(policyName);
+                }
+
+                return token;
+            }
         }
     }
 }

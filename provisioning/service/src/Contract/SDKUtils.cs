@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal class SDKUtils
     {
-        private const string ApiVersionProvisioning = "2019-03-31";
+        private const string ApiVersionProvisioning = "2021-10-01";
         public const string ApiVersionQueryString = CustomHeaderConstants.ApiVersion + "=" + ApiVersionProvisioning;
     }
 }
