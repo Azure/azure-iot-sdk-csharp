@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task CloseAsync() => InternalClient.CloseAsync();
 
         /// <summary>
-        /// Close the DeviceClient instance
+        /// Close the DeviceClient instance.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => InternalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token.
+        /// Receive a message from the device queue using a timeout.
         /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
         /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// </summary>
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync(TimeSpan timeout) => InternalClient.ReceiveAsync(timeout);
 
         /// <summary>
-        /// Sets a new delegate for receiving a message from the device queue using the default timeout.
+        /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
         /// After handling a received message, a client should call <see cref="CompleteAsync(Message, CancellationToken)"/>,
         /// <see cref="AbandonAsync(Message, CancellationToken)"/>, or <see cref="RejectAsync(Message, CancellationToken)"/>, and then dispose the message.
         /// If a null delegate is passed, it will disable the callback triggered on receiving messages from the service.
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task AbandonAsync(string lockToken) => InternalClient.AbandonAsync(lockToken);
 
         /// <summary>
-        /// Puts a received message back onto the device queue
+        /// Puts a received message back onto the device queue.
         /// </summary>
         /// <remarks>
         /// You cannot abandon a message over MQTT protocol.
@@ -474,7 +474,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="TimeoutException">Thrown if the service does not respond to the request within the timeout specified for the operation.
         /// The timeout values are largely transport protocol specific. Check the corresponding transport settings to see if they can be configured.
         /// The operation timeout for the client can be set using <see cref="OperationTimeoutInMilliseconds"/>.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
