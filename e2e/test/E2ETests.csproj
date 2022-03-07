@@ -79,7 +79,7 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.16.0-preview-001" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.18.0-preview-001" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.15.0-preview-001" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.19.0-preview-001" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.19.1-preview-001" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 </Project>
