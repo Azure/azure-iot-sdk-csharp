@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown if the service does not respond to the request before the expiration of the passed <see cref="CancellationToken"/>.
         /// If a cancellation token is not supplied to the operation call, a cancellation token with an expiration time of 4 minutes is used.
         /// </exception>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
