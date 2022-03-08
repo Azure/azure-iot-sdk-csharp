@@ -139,6 +139,30 @@ jobs:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: Docker@1
         displayName: "Start TPM Simulator"
         inputs:
@@ -354,6 +378,30 @@ jobs:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: windows-2019
     steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
