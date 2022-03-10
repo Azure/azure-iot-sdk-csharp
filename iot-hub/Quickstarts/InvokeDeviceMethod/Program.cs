@@ -4,6 +4,7 @@
 // This application uses the Azure IoT Hub service SDK for .NET
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service
 
+using CommandLine;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,21 +19,29 @@ namespace InvokeDeviceMethod
     {
         private static ServiceClient s_serviceClient;
         
-        // Connection string for your IoT Hub
-        // az iot hub show-connection-string --hub-name {your iot hub name} --policy-name service
-        private static string s_connectionString = "{Your service connection string here}";
-
         private static async Task Main(string[] args)
         {
-            Console.WriteLine("IoT Hub Quickstarts #2 - InvokeDeviceMethod application.");
+            Console.WriteLine("IoT Hub Quickstarts - InvokeDeviceMethod application.");
+
+            // Parse sample parameters
+            Parameters parameters = null;
+            ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
+                .WithParsed(parsedParams =>
+                {
+                    parameters = parsedParams;
+                })
+                .WithNotParsed(errors =>
+                {
+                    Environment.Exit(1);
+                });
 
             // This sample accepts the service connection string as a parameter, if present
-            ValidateConnectionString(args);
+            ValidateConnectionString(parameters.HubConnectionString);
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
-            s_serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString);
+            s_serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
 
-            await InvokeMethodAsync();
+            await InvokeMethodAsync(parameters.DeviceId);
 
             s_serviceClient.Dispose();
 
@@ -41,7 +50,7 @@ namespace InvokeDeviceMethod
         }
 
         // Invoke the direct method on the device, passing the payload
-        private static async Task InvokeMethodAsync()
+        private static async Task InvokeMethodAsync(string deviceId)
         {
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval")
             {
@@ -49,38 +58,27 @@ namespace InvokeDeviceMethod
             };
             methodInvocation.SetPayloadJson("10");
 
+            Console.WriteLine($"\nInvoking direct method for device: {deviceId}");
+
             // Invoke the direct method asynchronously and get the response from the simulated device.
-            var response = await s_serviceClient.InvokeDeviceMethodAsync("MyDotnetDevice", methodInvocation);
+            var response = await s_serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
 
             Console.WriteLine($"\nResponse status: {response.Status}, payload:\n\t{response.GetPayloadAsJson()}");
+
         }
 
-        private static void ValidateConnectionString(string[] args)
+        private static void ValidateConnectionString(string hubConnectionString)
         {
-            if (args.Any())
+            try
             {
-                try
-                {
-                    var cs = IotHubConnectionStringBuilder.Create(args[0]);
-                    s_connectionString = cs.ToString();
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine($"Error: Unrecognizable parameter '{args[0]}' as connection string.");
-                    Environment.Exit(1);
-                }
+                _ = IotHubConnectionStringBuilder.Create(hubConnectionString);
             }
-            else
+            catch (Exception)
             {
-                try
-                {
-                    _ = IotHubConnectionStringBuilder.Create(s_connectionString);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("This sample needs a device connection string to run. Program.cs can be edited to specify it, or it can be included on the command-line as the only parameter.");
-                    Environment.Exit(1);
-                }
+                Console.WriteLine("An IoT Hub connection string needs to be specified, " +
+                    "please set the environment variable \"IOTHUB_CONNECTION_STRING\" " +
+                    "or pass in \"-s | --HubConnectionString\" through command line.");
+                Environment.Exit(1);
             }
         }
     }
