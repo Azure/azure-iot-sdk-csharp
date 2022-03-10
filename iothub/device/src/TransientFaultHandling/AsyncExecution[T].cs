@@ -37,108 +37,128 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     {
         internal const int MinimumTimeBetweenRetriesMiliseconds = 1000;
 
-        private readonly Func<Task<TResult>> taskFunc;
+        protected static readonly TaskContinuationOptions s_taskContinuationOption = 
+#if NET451
+            TaskContinuationOptions.ExecuteSynchronously;
+#else
+            TaskContinuationOptions.RunContinuationsAsynchronously;
+#endif
 
-        private readonly ShouldRetry shouldRetry;
+        private readonly Func<Task<TResult>> _taskFunc;
+        private readonly ShouldRetry _shouldRetry;
+        private readonly Func<Exception, bool> _isTransient;
+        private readonly Action<int, Exception, TimeSpan> _onRetrying;
+        private readonly bool _shouldFastFirstRetry;
+        private readonly CancellationToken _cancellationToken;
+        private readonly Stopwatch _stopwatch;
+        private Task<TResult> _previousTask;
+        private int _retryCount;
 
-        private readonly Func<Exception, bool> isTransient;
-
-        private readonly Action<int, Exception, TimeSpan> onRetrying;
-
-        private readonly bool fastFirstRetry;
-
-        private readonly CancellationToken cancellationToken;
-
-        private readonly Stopwatch stopwatch;
-
-        private Task<TResult> previousTask;
-
-        private int retryCount;
-
-        public AsyncExecution(Func<Task<TResult>> taskFunc, ShouldRetry shouldRetry, Func<Exception, bool> isTransient, Action<int, Exception, TimeSpan> onRetrying, bool fastFirstRetry, CancellationToken cancellationToken)
+        public AsyncExecution(
+            Func<Task<TResult>> taskFunc,
+            ShouldRetry shouldRetry,
+            Func<Exception, bool> isTransient,
+            Action<int, Exception, TimeSpan> onRetrying,
+            bool fastFirstRetry,
+            CancellationToken cancellationToken)
         {
-            this.taskFunc = taskFunc;
-            this.shouldRetry = shouldRetry;
-            this.isTransient = isTransient;
-            this.onRetrying = onRetrying;
-            this.fastFirstRetry = fastFirstRetry;
-            this.cancellationToken = cancellationToken;
-            this.stopwatch = new Stopwatch();
+            _taskFunc = taskFunc;
+            _shouldRetry = shouldRetry;
+            _isTransient = isTransient;
+            _onRetrying = onRetrying;
+            _shouldFastFirstRetry = fastFirstRetry;
+            _cancellationToken = cancellationToken;
+            _stopwatch = new Stopwatch();
         }
 
         internal Task<TResult> ExecuteAsync()
         {
-            return this.ExecuteAsyncImpl(null);
+            return ExecuteAsyncImpl(null);
         }
 
         private Task<TResult> ExecuteAsyncImpl(Task ignore)
         {
-            if (this.cancellationToken.IsCancellationRequested)
+            if (_cancellationToken.IsCancellationRequested)
             {
-                if (this.previousTask != null)
+                if (_previousTask != null)
                 {
-                    return this.previousTask;
+                    return _previousTask;
                 }
-                var taskCompletionSource = new TaskCompletionSource<TResult>();
+                var taskCompletionSource = CreateTaskCompletionSource();
                 taskCompletionSource.TrySetCanceled();
                 return taskCompletionSource.Task;
             }
-            else
+
+            Task<TResult> task;
+            try
             {
-                Task<TResult> task;
-                try
-                {
-                    task = this.taskFunc();
-                }
-                catch (Exception ex)
-                {
-                    if (!this.isTransient(ex))
-                    {
-                        throw;
-                    }
-                    var taskCompletionSource2 = new TaskCompletionSource<TResult>();
-                    taskCompletionSource2.TrySetException(ex);
-                    task = taskCompletionSource2.Task;
-                }
-                if (task == null)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.TaskCannotBeNull, new object[]
-                    {
-                        "taskFunc"
-                    }), "taskFunc");
-                }
-                if (task.Status == TaskStatus.RanToCompletion)
-                {
-                    return task;
-                }
-                if (task.Status == TaskStatus.Created)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.TaskMustBeScheduled, new object[]
-                    {
-                        "taskFunc"
-                    }), "taskFunc");
-                }
-
-                stopwatch.Restart();
-
-                return task.ContinueWith<Task<TResult>>(new Func<Task<TResult>, Task<TResult>>(this.ExecuteAsyncContinueWith), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default).Unwrap<TResult>();
+                task = _taskFunc();
             }
+            catch (Exception ex) when (!_isTransient(ex))
+            {
+                var taskCompletionSource2 = CreateTaskCompletionSource();
+                taskCompletionSource2.TrySetException(ex);
+                task = taskCompletionSource2.Task;
+            }
+
+            if (task == null)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        Resources.TaskCannotBeNull,
+                        new object[]
+                        {
+                            "taskFunc"
+                        }),
+                    "taskFunc");
+            }
+
+            if (task.Status == TaskStatus.RanToCompletion)
+            {
+                return task;
+            }
+
+            if (task.Status == TaskStatus.Created)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        Resources.TaskMustBeScheduled,
+                        new object[]
+                        {
+                            "taskFunc"
+                        }),
+                    "taskFunc");
+            }
+
+            _stopwatch.Restart();
+
+            return task
+                .ContinueWith(
+                    new Func<Task<TResult>,
+                    Task<TResult>>(ExecuteAsyncContinueWith),
+                    CancellationToken.None,
+                    s_taskContinuationOption,
+                    TaskScheduler.Default)
+                .Unwrap();
         }
 
         private Task<TResult> ExecuteAsyncContinueWith(Task<TResult> runningTask)
         {
-            if (!runningTask.IsFaulted || this.cancellationToken.IsCancellationRequested)
+            if (!runningTask.IsFaulted
+                || _cancellationToken.IsCancellationRequested)
             {
                 return runningTask;
             }
-            TimeSpan zero = TimeSpan.Zero;
+            TimeSpan backoffDelay = TimeSpan.Zero;
             Exception innerException = runningTask.Exception.InnerException;
 
-            long executionTime = stopwatch.ElapsedMilliseconds;
+            long executionTime = _stopwatch.ElapsedMilliseconds;
 
             if (innerException is RetryLimitExceededException)
             {
-                var taskCompletionSource = new TaskCompletionSource<TResult>();
+                var taskCompletionSource = CreateTaskCompletionSource();
                 if (innerException.InnerException != null)
                 {
                     taskCompletionSource.TrySetException(innerException.InnerException);
@@ -149,30 +169,48 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 }
                 return taskCompletionSource.Task;
             }
-            if (!this.isTransient(innerException) || !this.shouldRetry(this.retryCount++, innerException, out zero))
+
+            if (!_isTransient(innerException)
+                || !_shouldRetry(_retryCount++, innerException, out backoffDelay))
             {
                 return runningTask;
             }
-            if (zero < TimeSpan.Zero)
+
+            if (backoffDelay < TimeSpan.Zero)
             {
-                zero = TimeSpan.Zero;
+                backoffDelay = TimeSpan.Zero;
             }
-            this.onRetrying(this.retryCount, innerException, zero);
-            this.previousTask = runningTask;
-            if (zero > TimeSpan.Zero && (this.retryCount > 1 || !this.fastFirstRetry))
+
+            _onRetrying(_retryCount, innerException, backoffDelay);
+            _previousTask = runningTask;
+
+            if (backoffDelay > TimeSpan.Zero
+                && (_retryCount > 1
+                    || !_shouldFastFirstRetry))
             {
-                if (executionTime + zero.TotalMilliseconds < MinimumTimeBetweenRetriesMiliseconds)
+                if (executionTime + backoffDelay.TotalMilliseconds < MinimumTimeBetweenRetriesMiliseconds)
                 {
                     double newBackoffTimeMiliseconds = MinimumTimeBetweenRetriesMiliseconds - executionTime;
-                    Debug.WriteLine(
-                        this.cancellationToken.GetHashCode() + " Last execution time was " + executionTime + ". Adjusting back-off time to " +
-                        newBackoffTimeMiliseconds + " to avoid high CPU/Memory spikes.");
-                    zero = TimeSpan.FromMilliseconds(newBackoffTimeMiliseconds);
+                    Debug.WriteLine($"{_cancellationToken.GetHashCode()} Last execution time was {executionTime}. Adjusting back-off time to {newBackoffTimeMiliseconds} to avoid high CPU/Memory spikes.");
+                    backoffDelay = TimeSpan.FromMilliseconds(newBackoffTimeMiliseconds);
                 }
 
-                return Task.Delay(zero).ContinueWith<Task<TResult>>(new Func<Task, Task<TResult>>(this.ExecuteAsyncImpl), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default).Unwrap<TResult>();
+                return Task
+                    .Delay(backoffDelay)
+                    .ContinueWith(new Func<Task, Task<TResult>>(ExecuteAsyncImpl), CancellationToken.None, s_taskContinuationOption, TaskScheduler.Default)
+                    .Unwrap();
             }
-            return this.ExecuteAsyncImpl(null);
+
+            return ExecuteAsyncImpl(null);
+        }
+
+        protected static TaskCompletionSource<TResult> CreateTaskCompletionSource()
+        {
+            return new TaskCompletionSource<TResult>(
+#if !NET451
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+            );
         }
     }
 }
