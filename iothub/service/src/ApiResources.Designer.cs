@@ -12,8 +12,9 @@ using System.Reflection;
 
 namespace Microsoft.Azure.Devices {
     using System;
-    
-    
+    using System.Runtime.Serialization;
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -196,7 +197,29 @@ namespace Microsoft.Azure.Devices {
                 return ResourceManager.GetString("ETagSetWhileCreatingConfiguration", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to The ETag should not be set while creating a Configuration..
+        /// </summary>
+        internal static string ETagSetWhileCreatingDeviceGroup
+        {
+            get
+            {
+                return ResourceManager.GetString("ETagSetWhileCreatingDeviceGroup", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The ETag should not be set while creating a Configuration..
+        /// </summary>
+        internal static string ETagNotSetWhileUpdatingDeviceGroup
+        {
+            get
+            {
+                return ResourceManager.GetString("ETagNotSetWhileUpdatingDeviceGroup", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to The ETag should not be set while registering the device..
         /// </summary>

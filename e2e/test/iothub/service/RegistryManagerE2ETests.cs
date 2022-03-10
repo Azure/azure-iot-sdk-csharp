@@ -559,5 +559,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Assert.Fail($"Test clean up failed: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Test basic operations of a DeviceGroup.
+        /// </summary>
+        [LoggedTestMethod]
+        public async Task RegistryManager_DeviceGroupLifecycle()
+        {
+            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            string deviceGroupName = Guid.NewGuid().ToString();
+            string deviceGroupQuery1 = "attributes.floor = 1";
+            DeviceGroup dg = new DeviceGroup()
+            {
+                Name = deviceGroupName,
+                Properties = new DeviceGroupProperties()
+                {
+                    Query = deviceGroupQuery1
+                }
+            };
+
+            await client.AddDeviceGroupAsync(dg);
+            DeviceGroup deviceGroup = await client.GetDeviceGroupAsync(deviceGroupName);
+            deviceGroup.Name.Should().Be(deviceGroupName);
+            deviceGroup.ETag.Should().NotBeNull();
+            deviceGroup.Properties.Query.Should().Be(deviceGroupQuery1);
+
+            string deviceGroupQuery2 = "attributes.floor = 2";
+            deviceGroup.Properties.Query = deviceGroupQuery2;
+            deviceGroup = await client.UpdateDeviceGroupAsync(deviceGroup);
+            deviceGroup.Name.Should().Be(deviceGroupName);
+            deviceGroup.ETag.Should().NotBeNull();
+            deviceGroup.Properties.Query.Should().Be(deviceGroupQuery2);
+
+            await client.RemoveDeviceGroupAsync(deviceGroup);
+            deviceGroup = await client.GetDeviceGroupAsync(deviceGroupName);
+            deviceGroup.Properties.Deleted.Should().BeTrue();
+        }
     }
 }

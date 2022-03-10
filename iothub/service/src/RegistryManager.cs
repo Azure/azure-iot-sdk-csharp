@@ -59,6 +59,9 @@ namespace Microsoft.Azure.Devices
 
         private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
 
+        private const string DeviceGroupUriFormat = "/deviceGroups/{0}?" + ClientApiVersionHelper.MqttApiVersionQueryString;
+        private const string DeviceGroupsUriFormat = "/deviceGroups?" + ClientApiVersionHelper.MqttApiVersionQueryString;
+
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
         private static readonly Regex s_deviceIdRegex = new Regex(
@@ -2149,6 +2152,217 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+
+        /// <summary>
+        /// Add a devicegroup to IotHub
+        /// </summary>
+        /// <param name="deviceGroupName">The DeviceGroup name</param>
+        /// <returns>DeviceGroup object.</returns>
+        public virtual Task<DeviceGroup> GetDeviceGroupAsync(string deviceGroupName)
+        {
+            return GetDeviceGroupAsync(deviceGroupName, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Add a devicegroup to IotHub
+        /// </summary>
+        /// <param name="deviceGroupName">The DeviceGroup name</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>DeviceGroup object.</returns>
+        public virtual Task<DeviceGroup> GetDeviceGroupAsync(string deviceGroupName, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, $"Getting DeviceGroup", nameof(GetDeviceGroupAsync));
+            try
+            {
+                Uri uri = GetDeviceGroupUri(deviceGroupName);
+                return _httpClientHelper.GetAsync<DeviceGroup>(
+                    uri,
+                    null,
+                    null,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(GetDeviceGroupAsync)} threw an exception: {ex}", nameof(GetDeviceGroupAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Getting job", nameof(GetDeviceGroupAsync));
+            }
+        }
+
+        /// <summary>
+        /// Add a devicegroup to IotHub
+        /// </summary>
+        /// <param name="deviceGroup">The DeviceGroup object</param>
+        /// <returns>The Updated DeviceGroup object.</returns>
+        public virtual Task<DeviceGroup> AddDeviceGroupAsync(DeviceGroup deviceGroup)
+        {
+            return AddDeviceGroupAsync(deviceGroup, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Add a devicegroup to IotHub
+        /// </summary>
+        /// <param name="deviceGroup">The DeviceGroup object</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The Updated DeviceGroup object.</returns>
+        public virtual Task<DeviceGroup> AddDeviceGroupAsync( DeviceGroup deviceGroup, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, $"Adding DeviceGroup", nameof(AddDeviceGroupAsync));
+            try
+            {
+                EnsureInstanceNotClosed();
+                if (!string.IsNullOrEmpty(deviceGroup.ETag))
+                {
+                    throw new ArgumentException(ApiResources.ETagSetWhileCreatingDeviceGroup);
+                }
+
+                return _httpClientHelper.PutAsync<DeviceGroup>(
+                    GetDeviceGroupUri(deviceGroup.Name),
+                    deviceGroup,
+                    PutOperationType.CreateEntity,
+                    null,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(AddDeviceGroupAsync)} threw an exception: {ex}", nameof(AddDeviceGroupAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Adding DeviceGroup", nameof(AddDeviceGroupAsync));
+            }
+        }
+
+        /// <summary>
+        /// Update a devicegroup to IotHub
+        /// </summary>
+        /// <param name="deviceGroup">The DeviceGroup object</param>
+        /// <returns>The Updated DeviceGroup object.</returns>
+        public virtual Task<DeviceGroup> UpdateDeviceGroupAsync(DeviceGroup deviceGroup)
+        {
+            return UpdateDeviceGroupAsync(deviceGroup, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Update DeviceGroup in IotHub
+        /// </summary>
+        /// <param name="deviceGroup">The DeviceGroup object</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The Updated DeviceGroup object.</returns>
+        public virtual Task<DeviceGroup> UpdateDeviceGroupAsync(DeviceGroup deviceGroup, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, $"Updating DeviceGroup", nameof(UpdateDeviceGroupAsync));
+            try
+            {
+                EnsureInstanceNotClosed();
+                if (string.IsNullOrEmpty(deviceGroup.ETag))
+                {
+                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDeviceGroup);
+                }
+
+                return _httpClientHelper.PutAsync<DeviceGroup>(
+                    GetDeviceGroupUri(deviceGroup.Name),
+                    deviceGroup,
+                    deviceGroup.ETag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                    null,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(UpdateDeviceGroupAsync)} threw an exception: {ex}", nameof(UpdateDeviceGroupAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Updating DeviceGroup", nameof(UpdateDeviceGroupAsync));
+            }
+        }
+
+        /// <summary>
+        /// Delete DeviceGroup in IotHub
+        /// </summary>
+        /// <param name="deviceGroup"> device group to be deleted </param>
+        /// <returns>The Updated DeviceGroup object.</returns>
+        public virtual Task RemoveDeviceGroupAsync(DeviceGroup deviceGroup)
+        {
+            return RemoveDeviceGroupAsync(deviceGroup, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Delete DeviceGroup in IotHub
+        /// </summary>
+        /// <param name="deviceGroup"> device group to be deleted </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The Updated DeviceGroup object.</returns>
+        public virtual Task RemoveDeviceGroupAsync(DeviceGroup deviceGroup, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, $"Deleting DeviceGroup", nameof(RemoveDeviceGroupAsync));
+            try
+            {
+                Uri uri = GetDeviceGroupUri(deviceGroup.Name);
+
+                return _httpClientHelper.DeleteAsync<IETagHolder>(
+                    uri,
+                    deviceGroup,
+                    null,
+                    null,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(RemoveDeviceGroupAsync)} threw an exception: {ex}", nameof(RemoveDeviceGroupAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Deleting DeviceGroup", nameof(RemoveDeviceGroupAsync));
+            }
+        }
+
+
+        /// <summary>
+        /// Get DeviceGroups
+        /// </summary>
+        /// <param name="maxpagesize"> maxpagesize </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns> IEnumberable od DeviceGroups</returns>
+        public virtual Task<IEnumerable<DeviceGroup>> GetDeviceGroupsAsync(int maxpagesize, CancellationToken cancellationToken)
+        {
+            Logging.Enter(this, $"Getting DeviceGroups", nameof(GetDeviceGroupAsync));
+            try
+            {
+                Uri uri = GetDeviceGroupsUri();
+                return _httpClientHelper.GetAsync<IEnumerable<DeviceGroup>>(
+                    uri,
+                    null,
+                    null,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(GetDeviceGroupAsync)} threw an exception: {ex}", nameof(GetDeviceGroupAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Getting DeviceGroups", nameof(GetDeviceGroupAsync));
+            }
+        }
+
+        private static Uri GetDeviceGroupUri(string deviceGroupName)
+        {
+            return new Uri(DeviceGroupUriFormat.FormatInvariant(deviceGroupName), UriKind.Relative);
+        }
+
+        private static Uri GetDeviceGroupsUri()
+        {
+            return new Uri(DeviceGroupsUriFormat, UriKind.Relative);
+        }
+
         /// <summary>
         /// Retrieves the specified Configuration object.
         /// </summary>
@@ -2428,6 +2642,128 @@ namespace Microsoft.Azure.Devices
                 Logging.Exit(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
             }
         }
+
+        /// <summary>
+        /// Gets the list of device groups the device belongs to. The device belongs to a device group if its attributes match the device group query.
+        /// </summary>
+        /// <param name="deviceId">The device Id.</param>
+        public virtual Task<IEnumerable<Device>> ListDeviceGroupsForDeviceAsync(string deviceId)
+        {
+            return ListDeviceGroupsForDeviceAsync(deviceId, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the list of device groups the device belongs to. The device belongs to a device group if its attributes match the device group query.
+        /// </summary>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        public virtual Task<IEnumerable<Device>> ListDeviceGroupsForDeviceAsync(string deviceId, CancellationToken cancellationToken)
+        {
+
+        }
+
+        /// <summary>
+        /// Gets the list of device groups the module belongs to. The module belongs to a device group if its attributes match the device group query.
+        /// </summary>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="moduleId">The Module Id.</param>
+        public virtual Task<IEnumerable<Module>> ListDeviceGroupsForModuleAsync(string deviceId,string moduleId)
+        {
+            return ListDeviceGroupsForModuleAsync(deviceId,moduleId, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets the list of device groups the module belongs to. The module belongs to a device group if its attributes match the device group query.
+        /// </summary>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="moduleId">The module Id.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        public virtual Task<IEnumerable<Module>> ListDeviceGroupsForModuleAsync(string deviceId,string moduleId , CancellationToken cancellationToken)
+        {
+          
+        }
+
+        /// <summary>
+        /// Gets the list of all members (devices and modules) in the device group.
+        /// </summary>
+        /// <param name="deviceGroupName">The DeviceGroup Name</param>
+        /// <param name="maxpagesize">maxpagesize</param>
+        public virtual Task ListDevicesAndModulesInGroupAsync(string deviceGroupName,int maxpagesize)
+        {
+
+        }
+
+
+        public virtual Task<IEnumerable<RoleAssignment>> GetRoleAssignmentAsync(int maxpagesize)
+        {
+            
+        }
+
+
+        public virtual Task<IEnumerable<RoleAssignment>> GetRoleAssignmentAsync(int maxpagesize)
+        {
+
+        }
+
+        public virtual Task<RoleAssignment> CreateRoleAssignmentAsync(RoleAssignment roleAssignment)
+        {
+
+        }
+
+        public virtual Task<RoleAssignment> UpdateRoleAssignmentAsync(RoleAssignment roleAssignment)
+        {
+
+        }
+
+        public virtual Task<TopicSpace> GetTopicSpaceAsync(string topicSpaceName)
+        {
+
+        }
+
+        public virtual Task<TopicSpaceCollection> ListTopicSpacesAsync(string topicSpaceName)
+        {
+
+        }
+
+        /// <summary>
+        /// Undelete the device group. The call is idempotent -- it will succeed even if the device group is already active (not deleted).
+        /// </summary>
+        /// <param name="deviceGroup">The DeviceGroup object</param>
+        public virtual Task<DeviceGroup> UndeleteDeviceGroupAsync(DeviceGroup deviceGroup)
+        {
+            return UndeleteDeviceGroupAsync(deviceGroup, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Undelete the device group. The call is idempotent -- it will succeed even if the device group is already active (not deleted).
+        /// </summary>
+        /// <param name="deviceGroup">The DeviceGroup object</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        public virtual Task<DeviceGroup> UndeleteDeviceGroupAsync(DeviceGroup deviceGroup, CancellationToken cancellationToken)
+        {
+
+        }
+
+        /// <summary>
+        /// Purge the device group. This is allowed for both live and soft deleted groups.This call is idempotent -- it will succeed even if the device group is already purged.
+        /// </summary>
+        /// <param name="deviceGroupName">The DeviceGroup Name</param>
+        public virtual Task PurgeDeviceGroupAsync(string deviceGroupName)
+        {
+            return PurgeDeviceGroupAsync(deviceGroupName, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Purge the device group. This is allowed for both live and soft deleted groups.This call is idempotent -- it will succeed even if the device group is already purged.
+        /// </summary>
+        /// <param name="deviceGroupName">The DeviceGroup name</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        public virtual Task PurgeDeviceGroupAsync(string deviceGroupName, CancellationToken cancellationToken)
+        {
+
+        }
+
+
 
         private Task RemoveConfigurationAsync(string configurationId, IETagHolder eTagHolder, CancellationToken cancellationToken)
         {

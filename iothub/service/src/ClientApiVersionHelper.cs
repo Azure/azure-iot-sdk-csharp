@@ -18,6 +18,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionDefault;
 
+        public const string MqttApiVersionQueryString = ApiVersionQueryPrefix + "2022-03-31-preview";
+
         // For DigitalTwinClient which has an autorest-generated protocol layer, the API version is specified at generation time.
         // To update that API version, follow the instructions at ./DigitalTwin/readme.md.
     }
