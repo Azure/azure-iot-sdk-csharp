@@ -584,6 +584,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             deviceGroup.ETag.Should().NotBeNull();
             deviceGroup.Properties.Query.Should().Be(deviceGroupQuery1);
 
+            var deviceGroups = await client.GetDeviceGroupsAsync();
+
             string deviceGroupQuery2 = "attributes.floor = 2";
             deviceGroup.Properties.Query = deviceGroupQuery2;
             deviceGroup = await client.UpdateDeviceGroupAsync(deviceGroup);
@@ -593,7 +595,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             await client.RemoveDeviceGroupAsync(deviceGroup);
             deviceGroup = await client.GetDeviceGroupAsync(deviceGroupName);
-            deviceGroup.Properties.Deleted.Should().BeTrue();
+            deviceGroup.Properties.IsDeleted.Should().BeTrue();
         }
     }
 }

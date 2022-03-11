@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    ///  The data structure represent the TopicSpaceCollection
+    ///  A collection of topic spaces.
     /// </summary>
     public class TopicSpaceCollection
     {
@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "value", NullValueHandling = NullValueHandling.Ignore)]
         public List<TopicSpace> Value { get; }
+
         /// <summary>
         /// A URI to retrieve the next page of results.
         /// </summary>

@@ -13,48 +13,33 @@ namespace Microsoft.Azure.Devices
     public class TopicSpaceProperties
     {
         /// <summary>
-        /// deletedTimeUtc
+        /// The time of deletion when isDeleted is true.
         /// </summary>
         [JsonProperty(PropertyName = "deletedTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime DeletedTimeUtc { get; }
+
         /// <summary>
-        /// deleted
+        /// The flag to mark deleted records.
         /// </summary>
         [JsonProperty(PropertyName = "deleted", NullValueHandling = NullValueHandling.Ignore)]
-        public bool Deleted { get; }
+        public bool IsDeleted { get; }
+
         /// <summary>
-        /// topicTemplates
+        /// The topic templates for the topic space.\r\nFor example, contoso/{principal.deviceid}/telemetry/#"
         /// </summary>
         [JsonProperty(PropertyName = "topicTemplates", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> TopicTemplates { get; set; }
+
         /// <summary>
-        /// purgeTimeUtc
+        /// The time the record will be automatically purged when isDeleted is true.
         /// </summary>
         [JsonProperty(PropertyName = "purgeTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime PurgeTimeUtc { get; }
+
         /// <summary>
-        /// topicSpaceType
+        /// The topic space type.\r\nSupported values are `LowFanout`, `HighFanout` and `PublishOnly`
         /// </summary>
         [JsonProperty(PropertyName = "topicSpaceType", NullValueHandling = NullValueHandling.Ignore)]
         public TopicSpaceTypeEnum TopicSpaceType { get; set; }
-
-        /// <summary>
-        /// The data structure represent the TopicSpaceTypeEnum
-        /// </summary>
-        public enum TopicSpaceTypeEnum
-        {
-            /// <summary>
-            /// LowFanout
-            /// </summary>
-            LowFanout = 1,
-            /// <summary>
-            /// HighFanout
-            /// </summary>
-            HighFanout = 2,
-            /// <summary>
-            /// PublishOnly
-            /// </summary>
-            PublishOnly = 3
-        }
     }
 }

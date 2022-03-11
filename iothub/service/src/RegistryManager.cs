@@ -2328,15 +2328,24 @@ namespace Microsoft.Azure.Devices
         /// Get DeviceGroups
         /// </summary>
         /// <param name="maxpagesize"> maxpagesize </param>
+        public virtual Task<DeviceGroupCollection> GetDeviceGroupsAsync(int maxpagesize)
+        {
+            return GetDeviceGroupsAsync(maxpagesize, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Get DeviceGroups
+        /// </summary>
+        /// <param name="maxpagesize"> maxpagesize </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns> IEnumberable od DeviceGroups</returns>
-        public virtual Task<IEnumerable<DeviceGroup>> GetDeviceGroupsAsync(int maxpagesize, CancellationToken cancellationToken)
+        /// <returns> DeviceGroupCollection</returns>
+        public virtual Task<DeviceGroupCollection> GetDeviceGroupsAsync(int maxpagesize, CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Getting DeviceGroups", nameof(GetDeviceGroupAsync));
             try
             {
                 Uri uri = GetDeviceGroupsUri();
-                return _httpClientHelper.GetAsync<IEnumerable<DeviceGroup>>(
+                return _httpClientHelper.GetAsync<DeviceGroupCollection>(
                     uri,
                     null,
                     null,

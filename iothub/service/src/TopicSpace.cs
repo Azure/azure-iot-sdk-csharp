@@ -16,11 +16,13 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
+
         /// <summary>
         /// properties
         /// </summary>
         [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
         public TopicSpaceProperties Properties { get; set; }
+
         /// <summary>
         /// name
         /// </summary>
