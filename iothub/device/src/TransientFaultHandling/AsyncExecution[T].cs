@@ -71,11 +71,16 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             _stopwatch = new Stopwatch();
         }
 
+        // This method exists to simply pass null to the first of two functional methods.
+        // It takes null and that parameter is ignored because it'll be the result of Task.Delay
+        // from the second method (ExecuteAsyncContinueWith).
         internal Task<TResult> ExecuteAsync()
         {
             return ExecuteAsyncImpl(null);
         }
 
+        // This first of two methods kicks off the task specified in _taskFunc and then
+        // uses Task.ContinueWith to evaluate the result in the second method.
         private Task<TResult> ExecuteAsyncImpl(Task ignore)
         {
             if (_cancellationToken.IsCancellationRequested)
@@ -144,6 +149,10 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 .Unwrap();
         }
 
+        // This second method evalutes the result of the task after completion
+        // and decides if it is done/cancelled/exhausted-retries, or if it should
+        // run again. If it should retry, it calls the first method after a possible
+        // delay.
         private Task<TResult> ExecuteAsyncContinueWith(Task<TResult> runningTask)
         {
             if (!runningTask.IsFaulted
