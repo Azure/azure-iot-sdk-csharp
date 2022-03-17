@@ -162,73 +162,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="initialInterval">The initial interval that will apply for the first retry.</param>
         /// <param name="increment">The incremental time value that will be used to calculate the progressive delay between retries.</param>
-        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount, TimeSpan initialInterval, TimeSpan increment) : this(errorDetectionStrategy, new Incremental(retryCount, initialInterval, increment))
+        public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, int retryCount, TimeSpan initialInterval, TimeSpan increment)
+            : this(errorDetectionStrategy, new Incremental(retryCount, initialInterval, increment))
         {
-        }
-
-        /// <summary>
-        /// Repetitively executes the specified action while it satisfies the current retry policy.
-        /// </summary>
-        /// <param name="action">A delegate that represents the executable action that doesn't return any results.</param>
-        public virtual void ExecuteAction(Action action)
-        {
-            Guard.ArgumentNotNull(action, "action");
-            ExecuteAction<object>(delegate
-            {
-                action();
-                return null;
-            });
-        }
-
-        /// <summary>
-        /// Repetitively executes the specified action while it satisfies the current retry policy.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result expected from the executable action.</typeparam>
-        /// <param name="func">A delegate that represents the executable action that returns the result of type <typeparamref name="TResult" />.</param>
-        /// <returns>The result from the action.</returns>
-        public virtual TResult ExecuteAction<TResult>(Func<TResult> func)
-        {
-            Guard.ArgumentNotNull(func, nameof(func));
-            int num = 0;
-            ShouldRetry shouldRetry = RetryStrategy.GetShouldRetry();
-            TResult result;
-            while (true)
-            {
-                Exception ex;
-                TimeSpan zero;
-                try
-                {
-                    result = func();
-                    break;
-                }
-                catch (RetryLimitExceededException ex2)
-                {
-                    if (ex2.InnerException != null)
-                    {
-                        throw ex2.InnerException;
-                    }
-                    result = default;
-                    break;
-                }
-                catch (Exception ex3)
-                {
-                    ex = ex3;
-                    if (!ErrorDetectionStrategy.IsTransient(ex) || !shouldRetry(num++, ex, out zero))
-                    {
-                        throw;
-                    }
-                }
-                if (zero.TotalMilliseconds < 0.0)
-                {
-                    zero = TimeSpan.Zero;
-                }
-                OnRetrying(num, ex, zero);
-                if (num > 1 || !RetryStrategy.FastFirstRetry)
-                {
-                    Task.Delay(zero).Wait();
-                }
-            }
-            return result;
         }
 
         /// <summary>
@@ -259,13 +195,13 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             return taskAction == null
                 ? throw new ArgumentNullException(nameof(taskAction))
-                : new AsyncExecution(
+                : new AsyncExecution<bool>(
                     taskAction,
                     RetryStrategy.GetShouldRetry(),
                     new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient),
                     new Action<int, Exception, TimeSpan>(OnRetrying),
                     RetryStrategy.FastFirstRetry,
-                    cancellationToken).ExecuteAsync();
+                    cancellationToken).RunAsync();
         }
 
         /// <summary>
@@ -294,15 +230,19 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </returns>
         public Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> taskFunc, CancellationToken cancellationToken)
         {
-            return taskFunc == null
-                ? throw new ArgumentNullException(nameof(taskFunc))
-                : new AsyncExecution<TResult>(
+            if (taskFunc == null)
+            {
+                throw new ArgumentNullException(nameof(taskFunc));
+            }
+
+            return new AsyncExecution<TResult>(
                     taskFunc,
                     RetryStrategy.GetShouldRetry(),
                     new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient),
                     new Action<int, Exception, TimeSpan>(OnRetrying),
                     RetryStrategy.FastFirstRetry,
-                    cancellationToken).ExecuteAsync();
+                    cancellationToken)
+                .RunAndReportAsync();
         }
 
         /// <summary>
