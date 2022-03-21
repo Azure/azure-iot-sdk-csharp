@@ -496,7 +496,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     OnTransportClosedGracefully();
 
-                    await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
+                    await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
                 }
                 else if (State == TransportState.Error)
                 {
@@ -706,7 +706,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new InvalidOperationException();
                 }
 
-                await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync).ConfigureAwait(true);
+                await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -1347,7 +1347,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync).ConfigureAwait(true);
+                await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {

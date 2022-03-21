@@ -3,6 +3,7 @@
 //of whom are at http://aka.ms/entlib-contributors
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -171,31 +172,17 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// Repetitively executes the specified asynchronous task while it satisfies the current retry policy.
         /// </summary>
         /// <param name="taskAction">A function that returns a started task (also known as "hot" task).</param>
-        /// <returns>
-        /// A task that will run to completion if the original task completes successfully (either the
-        /// first time or after retrying transient failures). If the task fails with a non-transient error or
-        /// the retry limit is reached, the returned task will transition to a faulted state and the exception must be observed.
-        /// </returns>
-        public Task ExecuteAsync(Func<Task> taskAction)
-        {
-            return ExecuteAsync(taskAction, default);
-        }
-
-        /// <summary>
-        /// Repetitively executes the specified asynchronous task while it satisfies the current retry policy.
-        /// </summary>
-        /// <param name="taskAction">A function that returns a started task (also known as "hot" task).</param>
         /// <param name="cancellationToken">The token used to cancel the retry operation. This token does not cancel the execution of the asynchronous task.</param>
         /// <returns>
         /// Returns a task that will run to completion if the original task completes successfully (either the
         /// first time or after retrying transient failures). If the task fails with a non-transient error or
         /// the retry limit is reached, the returned task will transition to a faulted state and the exception must be observed.
         /// </returns>
-        public Task ExecuteAsync(Func<Task> taskAction, CancellationToken cancellationToken)
+        public Task RunWithRetryAsync(Func<Task> taskAction, CancellationToken cancellationToken = default)
         {
             return taskAction == null
                 ? throw new ArgumentNullException(nameof(taskAction))
-                : AsyncExecution.RunAsync(
+                : RunWithRetryAsync(
                     taskAction,
                     RetryStrategy.GetShouldRetry(),
                     new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient),
@@ -213,9 +200,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// first time or after retrying transient failures). If the task fails with a non-transient error or
         /// the retry limit is reached, the returned task will transition to a faulted state and the exception must be observed.
         /// </returns>
-        public Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> taskFunc)
+        public Task<TResult> RunWithRetryAsync<TResult>(Func<Task<TResult>> taskFunc)
         {
-            return ExecuteAsync(taskFunc, default);
+            return RunWithRetryAsync(taskFunc, default);
         }
 
         /// <summary>
@@ -228,14 +215,14 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// first time or after retrying transient failures). If the task fails with a non-transient error or
         /// the retry limit is reached, the returned task will transition to a faulted state and the exception must be observed.
         /// </returns>
-        public Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> taskFunc, CancellationToken cancellationToken)
+        public Task<TResult> RunWithRetryAsync<TResult>(Func<Task<TResult>> taskFunc, CancellationToken cancellationToken)
         {
             if (taskFunc == null)
             {
                 throw new ArgumentNullException(nameof(taskFunc));
             }
 
-            return AsyncExecution.RunAsync(
+            return RunWithRetryAsync(
                 taskFunc,
                 RetryStrategy.GetShouldRetry(),
                 new Func<Exception, bool>(ErrorDetectionStrategy.IsTransient),
@@ -253,6 +240,98 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         protected virtual void OnRetrying(int retryCount, Exception lastError, TimeSpan delay)
         {
             Retrying?.Invoke(this, new RetryingEventArgs(retryCount, delay, lastError));
+        }
+
+        private static async Task RunWithRetryAsync(
+            Func<Task> taskFunc,
+            ShouldRetry shouldRetry,
+            Func<Exception, bool> isTransient,
+            Action<int, Exception, TimeSpan> onRetrying,
+            bool fastFirstRetry,
+            CancellationToken cancellationToken)
+        {
+            Func<Task<bool>> taskWrapper = async () =>
+            {
+                // There are two typews of tasks: return nothing and return a specific type.
+                // We use this to proxy to the generics implementation.
+                await taskFunc();
+                return true;
+            };
+
+            await RunWithRetryAsync(
+                    taskWrapper,
+                    shouldRetry,
+                    isTransient,
+                    onRetrying,
+                    fastFirstRetry,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        private static async Task<T> RunWithRetryAsync<T>(
+            Func<Task<T>> taskFunc,
+            ShouldRetry shouldRetry,
+            Func<Exception, bool> isTransient,
+            Action<int, Exception, TimeSpan> onRetrying,
+            bool fastFirstRetry,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            TimeSpan minimumTimeBetweenRetries = TimeSpan.FromSeconds(1);
+            var stopwatch = new Stopwatch();
+            int retryCount = 0;
+            Exception lastException;
+
+            do
+            {
+                TimeSpan retryDelay;
+                try
+                {
+                    // Measure how long it takes until the call fails, so we can determine how long until we retry again.
+                    stopwatch.Restart();
+                    return await taskFunc().ConfigureAwait(false);
+                }
+                catch (RetryLimitExceededException ex)
+                {
+                    if (ex.InnerException != null)
+                    {
+                        throw ex.InnerException;
+                    }
+
+                    throw new OperationCanceledException();
+                }
+                catch (Exception ex) when (isTransient(ex)
+                    && shouldRetry(retryCount++, ex, out retryDelay))
+                {
+                    lastException = ex;
+                    onRetrying(retryCount, ex, retryDelay);
+                }
+
+                stopwatch.Stop();
+
+                // If we expect to wait until retry, calculate the remaining wait time, considering how much time the operation already
+                // took, and the minimum delay.
+                if (retryDelay > TimeSpan.Zero
+                    && (retryCount > 1 || !fastFirstRetry))
+                {
+                    TimeSpan expectedDelay = retryDelay + stopwatch.Elapsed;
+
+                    if (expectedDelay < minimumTimeBetweenRetries)
+                    {
+                        retryDelay = minimumTimeBetweenRetries - stopwatch.Elapsed;
+                        Debug.WriteLine(
+                            $"{cancellationToken.GetHashCode()} Last execution time was {stopwatch.Elapsed}. Adjusting back-off time to {retryDelay} to avoid high CPU/Memory spikes.");
+                    }
+
+                    await Task.Delay(retryDelay, CancellationToken.None).ConfigureAwait(false);
+                }
+            } while (!cancellationToken.IsCancellationRequested);
+
+            // On cancellation, we'll rethrow the last exception we've seen if available.
+            return lastException == null
+                ? (T)default
+                : throw lastException;
         }
     }
 }
