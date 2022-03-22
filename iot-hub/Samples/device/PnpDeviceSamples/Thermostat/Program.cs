@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using CommandLine;
+using Microsoft.Azure.Devices.Logging;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
@@ -33,7 +34,19 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Environment.Exit(1);
                 });
 
-            s_logger = InitializeConsoleDebugLogger();
+            // Set up logging
+            ILoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddColorConsoleLogger(
+                new ColorConsoleLoggerConfiguration
+                {
+                    MinLogLevel = LogLevel.Debug,
+                });
+            s_logger = loggerFactory.CreateLogger<Program>();
+
+            const string SdkEventProviderPrefix = "Microsoft-Azure-";
+            // Instantiating this seems to do all we need for outputting SDK events to our console log
+            _ = new ConsoleEventListener(SdkEventProviderPrefix, s_logger);
+
             if (!parameters.Validate(s_logger))
             {
                 throw new ArgumentException("Required parameters are not set. Please recheck required variables by using \"--help\"");
@@ -133,10 +146,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
-            deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
-            {
-                s_logger.LogDebug($"Connection status change registered - status={status}, reason={reason}.");
-            });
 
             return deviceClient;
         }
@@ -151,10 +160,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             };
 
             DeviceClient deviceClient = DeviceClient.Create(hostname, authenticationMethod, TransportType.Mqtt, options);
-            deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
-            {
-                s_logger.LogDebug($"Connection status change registered - status={status}, reason={reason}.");
-            });
 
             return deviceClient;
         }

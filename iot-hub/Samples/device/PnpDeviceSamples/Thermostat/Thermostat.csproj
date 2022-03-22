@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..\..\..</RootDir>
     <RootNamespace>Microsoft.Azure.Devices.Client.Samples</RootNamespace>
@@ -18,4 +18,9 @@
     <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
     <PackageReference Include="DotNetty.Common" Version="0.7.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+  </ItemGroup>
+
 </Project>
