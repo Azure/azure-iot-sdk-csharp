@@ -36,6 +36,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly DeviceClient _deviceClient;
         private readonly ILogger _logger;
 
+        // A safe initial value for caching the writable properties version is 1, so the client
+        // will process all previous property change requests and initialize the device application
+        // after which this version will be updated to that, so we have a high water mark of which version number
+        // has been processed.
+        private static long s_localWritablePropertiesVersion = 1;
+
         public ThermostatSample(DeviceClient deviceClient, ILogger logger)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException($"{nameof(deviceClient)} cannot be null.");
@@ -45,10 +51,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public async Task PerformOperationsAsync(CancellationToken cancellationToken)
         {
             // This sample follows the following workflow:
+            // -> Set handler to receive and respond to connection status changes.
             // -> Set handler to receive "targetTemperature" updates, and send the received update over reported property.
             // -> Set handler to receive "getMaxMinReport" command, and send the generated report as command response.
             // -> Periodically send "temperature" over telemetry.
             // -> Send "maxTempSinceLastReboot" over property update, when a new max temperature is set.
+
+            _deviceClient.SetConnectionStatusChangesHandler(async (status, reason) =>
+            {
+                _logger.LogDebug($"Connection status change registered - status={status}, reason={reason}.");
+
+                // Call GetWritablePropertiesAndHandleChangesAsync() to get writable properties from the server once the connection status changes into Connected.
+                // This can get back "lost" property updates in a device reconnection from status Disconnected_Retrying or Disconnected.
+                if (status == ConnectionStatus.Connected)
+                {
+                    await GetWritablePropertiesAndHandleChangesAsync();
+                }
+            });
 
             _logger.LogDebug($"Set handler to receive \"targetTemperature\" updates.");
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(TargetTemperatureUpdateCallbackAsync, _deviceClient, cancellationToken);
@@ -71,6 +90,40 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
+        private async Task GetWritablePropertiesAndHandleChangesAsync()
+        {
+            Twin twin = await _deviceClient.GetTwinAsync();
+            _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.ToJson()}");
+
+            TwinCollection twinCollection = twin.Properties.Desired;
+            long serverWritablePropertiesVersion = twinCollection.Version;
+
+            // Check if the writable property version is outdated on the local side.
+            // For the purpose of this sample, we'll only check the writable property versions between local and server
+            // side without comparing the property values.
+            if (serverWritablePropertiesVersion > s_localWritablePropertiesVersion)
+            {
+                _logger.LogInformation($"The writable property version cached on local is changing " +
+                    $"from {s_localWritablePropertiesVersion} to {serverWritablePropertiesVersion}.");
+
+                foreach (KeyValuePair<string, object> propertyUpdate in twinCollection)
+                {
+                    string componentName = propertyUpdate.Key;
+                    if (componentName == "targetTemperature")
+                    {
+                        await TargetTemperatureUpdateCallbackAsync(twinCollection, componentName);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Property: Received an unrecognized property update from service:" +
+                            $"\n[ {propertyUpdate.Key}: {propertyUpdate.Value} ].");
+                    }
+                }
+
+                _logger.LogInformation($"The writable property version on local is currently {s_localWritablePropertiesVersion}.");
+            }
+        }
+
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and reported property update.
         private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
@@ -81,6 +134,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (targetTempUpdateReceived)
             {
                 _logger.LogDebug($"Property: Received - {{ \"{propertyName}\": {targetTemperature}°C }}.");
+
+                s_localWritablePropertiesVersion = desiredProperties.Version;
 
                 string jsonPropertyPending = $"{{ \"{propertyName}\": {{ \"value\": {_temperature}, \"ac\": {(int)StatusCode.InProgress}, " +
                     $"\"av\": {desiredProperties.Version} }} }}";

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..\..\..</RootDir>
   </PropertyGroup>
 
@@ -19,6 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PnpConvention\PnpHelpers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
   </ItemGroup>
 
 </Project>
