@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
-        private static string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
+        private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly X509Certificate2 s_individualEnrollmentCertificate = TestConfiguration.Provisioning.GetIndividualEnrollmentCertificate();
         private static readonly X509Certificate2 s_groupEnrollmentCertificate = TestConfiguration.Provisioning.GetGroupEnrollmentCertificate();
 
