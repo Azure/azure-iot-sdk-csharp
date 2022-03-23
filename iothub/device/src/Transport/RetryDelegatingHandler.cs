@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
+        public virtual void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             _internalRetryPolicy = new RetryPolicy(
                 new TransientErrorStrategy(),

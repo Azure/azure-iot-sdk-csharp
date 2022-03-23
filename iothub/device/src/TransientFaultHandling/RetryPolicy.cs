@@ -276,7 +276,12 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             bool fastFirstRetry,
             CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // We really should be calling cancellationToken.ThrowIfCancellationRequested()
+                // but to retain previous behavior, we'll throw this specific exception type.
+                throw new TaskCanceledException();
+            }
 
             TimeSpan minimumTimeBetweenRetries = TimeSpan.FromSeconds(1);
             var stopwatch = new Stopwatch();
