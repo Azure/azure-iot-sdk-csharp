@@ -201,6 +201,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
 
+        public virtual void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         protected void ThrowIfDisposed()
         {
             if (_disposed)
@@ -222,12 +228,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         ~DefaultDelegatingHandler()

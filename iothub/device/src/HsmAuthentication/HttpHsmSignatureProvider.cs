@@ -23,7 +23,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         private readonly string _apiVersion;
         private readonly Uri _providerUri;
 
-        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
+        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy =
+            new ErrorDetectionStrategy();
 
         private static readonly RetryStrategy s_transientRetryStrategy = new ExponentialBackoffRetryStrategy(
             retryCount: 3,
@@ -103,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         {
             var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
             SignResponse response = await transientRetryPolicy
-                .ExecuteAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest))
+                .RunWithRetryAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest))
                 .ConfigureAwait(false);
             return response;
         }

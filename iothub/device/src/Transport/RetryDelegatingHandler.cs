@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
+        public virtual void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             _internalRetryPolicy = new RetryPolicy(
                 new TransientErrorStrategy(),
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
 
                 return await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
                 return await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, timeoutHelper).ConfigureAwait(false);
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             // Ensure that the connection has been opened, before enabling the callback for receiving messages.
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             // Ensure that the connection has been opened before returning pending messages to the callback.
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             // Ensure that the connection has been opened, before disabling the callback for receiving messages.
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -408,7 +408,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -472,7 +472,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
 
                 return await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -526,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -548,7 +548,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -570,7 +570,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -592,7 +592,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
 
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
@@ -753,7 +753,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (withRetry)
             {
                 await _internalRetryPolicy
-                    .ExecuteAsync(
+                    .RunWithRetryAsync(
                         async () =>
                         {
                             try
@@ -805,7 +805,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (withRetry)
             {
                 await _internalRetryPolicy
-                .ExecuteAsync(
+                .RunWithRetryAsync(
                     async () =>
                     {
                         try
@@ -903,7 +903,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
                 // This will recover to the state before the disconnect.
-                await _internalRetryPolicy.ExecuteAsync(async () =>
+                await _internalRetryPolicy.RunWithRetryAsync(async () =>
                 {
                     Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
 
