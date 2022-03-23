@@ -276,6 +276,8 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             bool fastFirstRetry,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             TimeSpan minimumTimeBetweenRetries = TimeSpan.FromSeconds(1);
             var stopwatch = new Stopwatch();
             int retryCount = 0;
@@ -286,8 +288,6 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 TimeSpan retryDelay;
                 try
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
                     // Measure how long it takes until the call fails, so we can determine how long until we retry again.
                     stopwatch.Restart();
                     return await taskFunc().ConfigureAwait(false);
@@ -337,9 +337,12 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                             $"{cancellationToken.GetHashCode()} Last execution time was {stopwatch.Elapsed}. Adjusting back-off time to {retryDelay} to avoid high CPU/Memory spikes.");
                     }
 
-                    // Don't pass in the cancellation token, because we'll handle that
-                    // condition specially in the catch blocks above.
-                    await Task.Delay(retryDelay, CancellationToken.None).ConfigureAwait(false);
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        // Don't pass in the cancellation token, because we'll handle that
+                        // condition specially in the catch blocks above.
+                        await Task.Delay(retryDelay, CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
             } while (!cancellationToken.IsCancellationRequested);
 
