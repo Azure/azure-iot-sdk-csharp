@@ -452,8 +452,22 @@ namespace Microsoft.Azure.Devices
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> is null, empty string, or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
+        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(
+            string deviceId,
+            CloudToDeviceMethod cloudToDeviceMethod,
+            CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+            if (cloudToDeviceMethod == null)
+            {
+                throw new ArgumentNullException(nameof(cloudToDeviceMethod));
+            }
+
             return InvokeDeviceMethodAsync(GetDeviceMethodUri(deviceId), cloudToDeviceMethod, cancellationToken);
         }
 
@@ -465,7 +479,13 @@ namespace Microsoft.Azure.Devices
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the module.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> or <paramref name="moduleId"/> are null, empty string, or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
+        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(
+            string deviceId,
+            string moduleId,
+            CloudToDeviceMethod cloudToDeviceMethod,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -475,6 +495,10 @@ namespace Microsoft.Azure.Devices
             if (string.IsNullOrWhiteSpace(moduleId))
             {
                 throw new ArgumentNullException(nameof(moduleId));
+            }
+            if (cloudToDeviceMethod == null)
+            {
+                throw new ArgumentNullException(nameof(cloudToDeviceMethod));
             }
 
             return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
