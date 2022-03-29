@@ -968,11 +968,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        // The connectFailed flag differentiates between calling this method while still retrying
+        // The retryAttemptsExhausted flag differentiates between calling this method while still retrying
         // vs calling this when no more retry attempts are being made.
-        private void HandleConnectionStatusExceptions(Exception exception, bool connectFailed = false)
+        private void HandleConnectionStatusExceptions(Exception exception, bool retryAttemptsExhausted = false)
         {
-            Logging.Info(this, $"Received exception: {exception}, connectFailed={connectFailed}", nameof(HandleConnectionStatusExceptions));
+            Logging.Info(this, $"Received exception: {exception}, retryAttemptsExhausted={retryAttemptsExhausted}", nameof(HandleConnectionStatusExceptions));
 
             ConnectionStatusChangeReason reason = ConnectionStatusChangeReason.Communication_Error;
             ConnectionStatus status = ConnectionStatus.Disconnected;
@@ -981,13 +981,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (hubException.IsTransient)
                 {
-                    if (!connectFailed)
+                    if (retryAttemptsExhausted)
                     {
-                        status = ConnectionStatus.Disconnected_Retrying;
+                        reason = ConnectionStatusChangeReason.Retry_Expired;
                     }
                     else
                     {
-                        reason = ConnectionStatusChangeReason.Retry_Expired;
+                        status = ConnectionStatus.Disconnected_Retrying;
                     }
                 }
                 else if (hubException is UnauthorizedException)
