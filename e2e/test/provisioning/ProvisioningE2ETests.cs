@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -39,42 +41,66 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 
+        private static DirectoryInfo s_dpsClientCertificateFolder;
+
         public enum EnrollmentType
         {
             Individual,
             Group,
         }
 
+        [ClassInitialize]
+        public static void TestClassSetup(TestContext _)
+        {
+            // Create a folder to hold the DPS client certificates. If a folder by the same name already exists, it will be used.
+            s_dpsClientCertificateFolder = Directory.CreateDirectory("DpsClientCertificates");
+        }
+
         [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Http_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_X509_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DPS_Registration_Http_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -82,7 +108,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_HttpWithProxy_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -91,97 +122,150 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("LongRunning")]
         public async Task DPS_Registration_HttpWithNullProxy_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, true).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual,
+                true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task DPS_Registration_HttpWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task DPS_Registration_HttpWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Amqp_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_AmqpWs_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_X509_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWs_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task DPS_Registration_AmqpWsWithProxy_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task DPS_Registration_AmqpWsWithNullProxy_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -189,90 +273,143 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("LongRunning")]
         public async Task DPS_Registration_AmqpWsWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [TestCategory("Proxy")]
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWsWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_X509_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only, 
+                AttestationMechanismType.X509,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_X509_GroupEnrollment_RegisterOk_()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task DPS_Registration_MqttWsWithProxy_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         public async Task DPS_Registration_MqttWsWithNullProxy_X509_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                true).ConfigureAwait(false);
         }
 
         [TestCategory("Proxy")]
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWsWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [TestCategory("Proxy")]
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWsWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, true, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                true,
+                s_proxyServerAddress).ConfigureAwait(false);
         }
 
         #region DeviceCapabilities
@@ -280,25 +417,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_EdgeEnabled_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                capabilities: new DeviceCapabilities { IotEdge = true }).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_GroupEnrollment_EdgeEnabled_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                capabilities: new DeviceCapabilities { IotEdge = true }).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_EdgeDisabled_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false, new DeviceCapabilities() { IotEdge = false }).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                capabilities: new DeviceCapabilities { IotEdge = false }).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_GroupEnrollment_EdgeDisabled_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false, new DeviceCapabilities() { IotEdge = false }).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                capabilities: new DeviceCapabilities { IotEdge = false }).ConfigureAwait(false);
         }
 
         #endregion DeviceCapabilities
@@ -308,64 +461,94 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DPS_Registration_AmqpWs_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task DPS_Registration_MqttWs_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
+            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group).ConfigureAwait(false);
         }
 
         #endregion CustomAllocationDefinition tests
@@ -375,7 +558,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             try
             {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
+                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                    Client.TransportType.Mqtt_Tcp_Only,
+                    AttestationMechanismType.SymmetricKey,
+                    EnrollmentType.Individual,
+                    TimeSpan.Zero).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -390,7 +577,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             try
             {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
+                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                    Client.TransportType.Http1,
+                    AttestationMechanismType.SymmetricKey,
+                    EnrollmentType.Individual,
+                    TimeSpan.Zero).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -405,7 +596,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             try
             {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
+                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                    Client.TransportType.Amqp_Tcp_Only,
+                    AttestationMechanismType.SymmetricKey,
+                    EnrollmentType.Individual,
+                    TimeSpan.Zero).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -565,6 +760,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         #endregion InvalidGlobalAddress
 
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             Client.TransportType transportType,
             AttestationMechanismType attestationType,
@@ -572,27 +778,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             TimeSpan timeout)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, false, null, AllocationPolicy.Hashed, null, null, null, timeout, s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
+                    transportType,
+                    attestationType,
+                    enrollmentType,
+                    false,
+                    s_proxyServerAddress,
+                    null,
+                    AllocationPolicy.Hashed,
+                    null,
+                    null,
+                    null,
+                    false,
+                    timeout)
+                .ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             Client.TransportType transportType,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
-            bool setCustomProxy,
-            string proxyServerAddress = null)
-        {
-            //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, setCustomProxy, null, AllocationPolicy.Hashed, null, null, null, TimeSpan.MaxValue, proxyServerAddress).ConfigureAwait(false);
-        }
-
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            Client.TransportType transportType,
-            AttestationMechanismType attestationType,
-            EnrollmentType? enrollmentType,
-            bool setCustomProxy,
-            DeviceCapabilities capabilities,
-            string proxyServerAddress = null)
+            bool setCustomProxy = false,
+            string proxyServerAddress = null,
+            DeviceCapabilities capabilities = null,
+            bool connectToHubUsingOperationalCertificate = false)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
             var iothubs = new List<string>() { IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName };
@@ -601,13 +810,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestationType,
                     enrollmentType,
                     setCustomProxy,
+                    proxyServerAddress,
                     null,
                     AllocationPolicy.Hashed,
                     null,
                     iothubs,
                     capabilities,
-                    TimeSpan.MaxValue,
-                    proxyServerAddress)
+                    connectToHubUsingOperationalCertificate,
+                    TimeSpan.MaxValue)
                 .ConfigureAwait(false);
         }
 
@@ -616,16 +826,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
+            string proxyServerAddress,
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iothubs,
             DeviceCapabilities deviceCapabilities,
-            TimeSpan timeout,
-            string proxyServerAddress = null)
+            bool connectToHubUsingOperationalCertificate,
+            TimeSpan timeout)
         {
             string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
+            
+            // Create the enrollment in DPS and create the corresponding security provider for authenticating with DPS and IoT Hub.
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -634,7 +847,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     allocationPolicy,
                     customAllocationDefinition,
                     iothubs,
-                    deviceCapabilities)
+                    deviceCapabilities,
+                    connectToHubUsingOperationalCertificate)
                 .ConfigureAwait(false);
             _verboseLog.WriteLine("Creating device");
 
@@ -661,10 +875,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 try
                 {
-                    result = timeout != TimeSpan.MaxValue
-                        ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
-                        : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                    break;
+                    // If the device is expected to connect using CA issued operational certificate then send a certificate signing request with the registration request.
+                    // For the purpose of the E2E tests we will be using openssl to generate the certificate signing requests.
+                    if (connectToHubUsingOperationalCertificate)
+                    {
+                        string certificateRequest = GenerateClientCertKeyPairAndCsr(security.GetRegistrationID());
+
+                        result = timeout != TimeSpan.MaxValue
+                            ? await provClient.RegisterAsync(
+                                new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
+                                timeout).ConfigureAwait(false)
+                            : await provClient.RegisterAsync(
+                                new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
+                                cts.Token).ConfigureAwait(false);
+                        break;
+                    }
+                    else
+                    {
+                        result = timeout != TimeSpan.MaxValue
+                            ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
+                            : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                        break;
+                    }
                 }
                 // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
                 // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
@@ -677,10 +909,33 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             ValidateDeviceRegistrationResult(false, result);
 
+            X509Certificate2 operationalCertificate = null;
+            Client.IAuthenticationMethod auth;
+
+            if (connectToHubUsingOperationalCertificate)
+            {
+                if (result.IssuedClientCertificate != null)
+                {
+                    operationalCertificate = GenerateOperationalCertificateFromIssuedCertificate(result.DeviceId, result.IssuedClientCertificate);
+
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
-            Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
+                    // The authentication method is disposed at the end of the test method.
+                    auth = new DeviceAuthenticationWithX509Certificate(result.DeviceId, operationalCertificate);
 #pragma warning restore CA2000 // Dispose objects before losing scope
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected operational certificate was not issed by DPS.");
+                }
+
+            }
+            else
+            {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
+                auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            }
 
             await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
             await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
@@ -690,6 +945,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 using ProvisioningServiceClient dpsServiceClient = CreateProvisioningService(proxyServerAddress);
                 await DeleteCreatedEnrollmentAsync(enrollmentType, dpsServiceClient, security, groupId).ConfigureAwait(false);
             }
+
+            operationalCertificate?.Dispose();
 
             if (auth is IDisposable disposableAuth)
             {
@@ -707,7 +964,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Client.TransportType transportProtocol,
             AttestationMechanismType attestationType,
             EnrollmentType enrollmentType,
-            bool setCustomProxy,
+            bool setCustomProxy = false,
             string customServerProxy = null)
         {
             string closeHostName = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName;
@@ -729,16 +986,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 Assert.Fail("Configuration failure: far away hub hostname cannot be the same length as the close hub hostname");
             }
 
-            await ProvisioningDeviceClientProvisioningFlowCustomAllocationAllocateToHubWithLongestHostNameAsync(transportProtocol, attestationType, enrollmentType, setCustomProxy, iotHubsToProvisionTo, expectedDestinationHub, customServerProxy).ConfigureAwait(false);
+            await ProvisioningDeviceClientProvisioningFlowCustomAllocationAllocateToHubWithLongestHostNameAsync(
+                transportProtocol,
+                attestationType,
+                enrollmentType,
+                iotHubsToProvisionTo,
+                expectedDestinationHub,
+                setCustomProxy,
+                customServerProxy).ConfigureAwait(false);
         }
 
         private async Task ProvisioningDeviceClientProvisioningFlowCustomAllocationAllocateToHubWithLongestHostNameAsync(
             Client.TransportType transportProtocol,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
-            bool setCustomProxy,
             ICollection<string> iotHubsToProvisionTo,
             string expectedDestinationHub,
+            bool setCustomProxy = false,
             string proxyServerAddress = null)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
@@ -931,7 +1195,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        private async Task<SecurityProvider> CreateSecurityProviderFromNameAsync(AttestationMechanismType attestationType, EnrollmentType? enrollmentType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities = null)
+        private async Task<SecurityProvider> CreateSecurityProviderFromNameAsync(
+            AttestationMechanismType attestationType,
+            EnrollmentType? enrollmentType,
+            string groupId,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            ICollection<string> iothubs,
+            DeviceCapabilities capabilities = null,
+            bool connectToHubUsingOperationalCertificate = false)
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
@@ -940,18 +1213,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             switch (attestationType)
             {
                 case AttestationMechanismType.Tpm:
-                    string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
-                    var tpmSim = new SecurityProviderTpmSimulator(registrationId);
-                    string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
+                    IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
+                        provisioningServiceClient,
+                        AttestationMechanismType.Tpm,
+                        reprovisionPolicy,
+                        allocationPolicy,
+                        customAllocationDefinition,
+                        iothubs,
+                        capabilities,
+                        connectToHubUsingOperationalCertificate).ConfigureAwait(false);
 
-                    Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
-                    var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek)) { AllocationPolicy = allocationPolicy, ReprovisionPolicy = reprovisionPolicy, IotHubs = iothubs, CustomAllocationDefinition = customAllocationDefinition, Capabilities = capabilities };
-                    IndividualEnrollment enrollment = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
-                    var attestation = new TpmAttestation(base64Ek);
-                    enrollment.Attestation = attestation;
-                    Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                    await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
-                    return tpmSim;
+                    return new SecurityProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
                 case AttestationMechanismType.X509:
 
@@ -978,7 +1250,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Group:
-                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, AttestationMechanismType.SymmetricKey, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
+                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(
+                                provisioningServiceClient,
+                                AttestationMechanismType.SymmetricKey,
+                                groupId,
+                                reprovisionPolicy,
+                                allocationPolicy,
+                                customAllocationDefinition,
+                                iothubs,
+                                capabilities).ConfigureAwait(false);
+
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
                             string registrationIdSymmetricKey = _idPrefix + Guid.NewGuid();
@@ -991,7 +1272,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
 
                         case EnrollmentType.Individual:
-                            IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, AttestationMechanismType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
+                            IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
+                                provisioningServiceClient,
+                                AttestationMechanismType.SymmetricKey,
+                                reprovisionPolicy,
+                                allocationPolicy,
+                                customAllocationDefinition,
+                                iothubs,
+                                capabilities,
+                                connectToHubUsingOperationalCertificate).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
@@ -1120,11 +1409,58 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
         }
 
+        private string GenerateClientCertKeyPairAndCsr(string registrationId)
+        {
+            // Generate keypair
+            Logger.Trace($"Generating ECC P-256 {registrationId}.key file using ...\n");
+            string keygen = $"ecparam -genkey -name prime256v1 -out {s_dpsClientCertificateFolder}\\{registrationId}.key";
+            Logger.Trace($"openssl {keygen}\n");
+            using (var cmdProcess = Process.Start("openssl", keygen))
+            {
+                cmdProcess.WaitForExit();
+            }
+
+            // Generate csr
+            Logger.Trace($"Generating {registrationId}.csr file using ...\n");
+            string csrgen = $"req -new -key {s_dpsClientCertificateFolder}\\{registrationId}.key -out {s_dpsClientCertificateFolder}\\{registrationId}.csr -subj /CN={registrationId}";
+            Logger.Trace($"openssl {csrgen}\n");
+            using (var cmdProcess = Process.Start("openssl", csrgen))
+            {
+                cmdProcess.WaitForExit();
+            }
+            return File.ReadAllText($"{s_dpsClientCertificateFolder}\\{registrationId}.csr");
+        }
+
+        private X509Certificate2 GenerateOperationalCertificateFromIssuedCertificate(string registrationId, string issuedCertificate)
+        {
+            // Write the issued certificate to disk
+            File.WriteAllText($"{s_dpsClientCertificateFolder}\\{registrationId}.cer", issuedCertificate);
+
+            Logger.Trace($"Generating {registrationId}.pfx file using ...\n");
+            string pfxgen = $"pkcs12 -export -out {s_dpsClientCertificateFolder}\\{registrationId}.pfx -inkey {s_dpsClientCertificateFolder}\\{registrationId}.key -in {s_dpsClientCertificateFolder}\\{registrationId}.cer -passout pass:";
+            Logger.Trace($"openssl {pfxgen}\n");
+            using (var exeProcess = Process.Start("openssl", pfxgen))
+            {
+                exeProcess.WaitForExit();
+            }
+
+            return new X509Certificate2($"{s_dpsClientCertificateFolder}\\{registrationId}.pfx");
+        }
+
         [ClassCleanup]
         public static void CleanupCertificates()
         {
             s_individualEnrollmentCertificate?.Dispose();
             s_groupEnrollmentCertificate?.Dispose();
+            // Delete all the test client certificates created
+            try
+            {
+                s_dpsClientCertificateFolder.Delete(true);
+            }
+            catch (Exception)
+            {
+                // In case of an exception, silently exit. All systems images on Microsoft hosted agents will be cleaned up by the system.
+            }
         }
     }
 }

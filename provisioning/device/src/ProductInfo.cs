@@ -10,12 +10,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     // TODO: Unify ProductInfo with DeviceClient.
     internal class ProductInfo
     {
+        private const string Name = "Microsoft.Azure.Devices.Provisioning.Client";
+
         public string Extra { get; set; } = "";
 
         public override string ToString()
         {
-            const string Name = "Microsoft.Azure.Devices.Provisioning.Client";
-
             string version = typeof(ProvisioningDeviceClient).GetTypeInfo().Assembly.GetName().Version.ToString(3);
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
-            if (!String.IsNullOrWhiteSpace(this.Extra))
+            if (!string.IsNullOrWhiteSpace(Extra))
             {
-                userAgent += $" {this.Extra.Trim()}";
+                userAgent += $" {Extra.Trim()}";
             }
 
             return userAgent;

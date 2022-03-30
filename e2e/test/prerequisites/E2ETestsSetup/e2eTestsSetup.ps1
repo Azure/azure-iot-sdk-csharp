@@ -172,7 +172,7 @@ if (-not ($storageAccountName -match "^[a-z0-9][a-z0-9]{1,22}[a-z0-9]$"))
 
 $keyVaultName = "env-$ResourceGroup-kv";
 $keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
-if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
+if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,24}[a-zA-Z0-9]$"))
 {
     throw "Key vault name derrived from resource group has illegal characters: $keyVaultName";
 }

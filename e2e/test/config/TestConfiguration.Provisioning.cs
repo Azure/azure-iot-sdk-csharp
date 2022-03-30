@@ -38,6 +38,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string FarAwayIotHubHostName => GetValue("FAR_AWAY_IOTHUB_HOSTNAME");
 
             public static string CustomAllocationPolicyWebhook => GetValue("CUSTOM_ALLOCATION_POLICY_WEBHOOK");
+
+            public static string CAName => GetValue("CA_NAME");
         }
     }
 }

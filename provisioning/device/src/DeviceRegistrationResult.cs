@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -28,7 +24,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             DateTime? lastUpdatedDateTimeUtc,
             int errorCode,
             string errorMessage,
-            string etag) : this(registrationId, createdDateTimeUtc, assignedHub, deviceId, status, ProvisioningRegistrationSubstatusType.InitialAssignment, generationId, lastUpdatedDateTimeUtc, errorCode, errorMessage, etag)
+            string etag)
+            : this(
+                  registrationId,
+                  createdDateTimeUtc,
+                  assignedHub,
+                  deviceId,
+                  status,
+                  ProvisioningRegistrationSubstatusType.InitialAssignment,
+                  generationId,
+                  lastUpdatedDateTimeUtc,
+                  errorCode,
+                  errorMessage,
+                  etag)
         {
         }
 
@@ -37,47 +45,84 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
         /// </summary>
         public DeviceRegistrationResult(
-        string registrationId,
-        DateTime? createdDateTimeUtc,
-        string assignedHub,
-        string deviceId,
-        ProvisioningRegistrationStatusType status,
-        ProvisioningRegistrationSubstatusType substatus,
-        string generationId,
-        DateTime? lastUpdatedDateTimeUtc,
-        int errorCode,
-        string errorMessage,
-        string etag)
+            string registrationId,
+            DateTime? createdDateTimeUtc,
+            string assignedHub,
+            string deviceId,
+            ProvisioningRegistrationStatusType status,
+            ProvisioningRegistrationSubstatusType substatus,
+            string generationId,
+            DateTime? lastUpdatedDateTimeUtc,
+            int errorCode,
+            string errorMessage,
+            string etag)
+            : this(
+                  registrationId,
+                  createdDateTimeUtc,
+                  assignedHub,
+                  deviceId,
+                  status,
+                  substatus,
+                  generationId,
+                  lastUpdatedDateTimeUtc,
+                  errorCode,
+                  errorMessage,
+                  etag,
+                  null)
         {
-            RegistrationId = registrationId;
-            CreatedDateTimeUtc = createdDateTimeUtc;
-            AssignedHub = assignedHub;
-            DeviceId = deviceId;
-            Status = status;
-            Substatus = substatus;
-            GenerationId = generationId;
-            LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
-            ErrorCode = errorCode;
-            ErrorMessage = errorMessage;
-            Etag = etag;
         }
 
         /// <summary>
-        ///. Constructor to allow return data
+        /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
+        /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
         /// </summary>
         public DeviceRegistrationResult(
-        string registrationId,
-        DateTime? createdDateTimeUtc,
-        string assignedHub,
-        string deviceId,
-        ProvisioningRegistrationStatusType status,
-        ProvisioningRegistrationSubstatusType substatus,
-        string generationId,
-        DateTime? lastUpdatedDateTimeUtc,
-        int errorCode,
-        string errorMessage,
-        string etag,
-        string returnData)
+            string registrationId,
+            DateTime? createdDateTimeUtc,
+            string assignedHub,
+            string deviceId,
+            ProvisioningRegistrationStatusType status,
+            ProvisioningRegistrationSubstatusType substatus,
+            string generationId,
+            DateTime? lastUpdatedDateTimeUtc,
+            int errorCode,
+            string errorMessage,
+            string etag,
+            string returnData)
+            : this(
+                  registrationId,
+                  createdDateTimeUtc,
+                  assignedHub,
+                  deviceId,
+                  status,
+                  substatus,
+                  generationId,
+                  lastUpdatedDateTimeUtc,
+                  errorCode,
+                  errorMessage,
+                  etag,
+                  returnData,
+                  null)
+        {
+        }
+
+        /// <summary>
+        /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
+        /// </summary>
+        internal DeviceRegistrationResult(
+            string registrationId,
+            DateTime? createdDateTimeUtc,
+            string assignedHub,
+            string deviceId,
+            ProvisioningRegistrationStatusType status,
+            ProvisioningRegistrationSubstatusType substatus,
+            string generationId,
+            DateTime? lastUpdatedDateTimeUtc,
+            int errorCode,
+            string errorMessage,
+            string etag,
+            string returnData,
+            string issuedClientCertificate)
         {
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
@@ -91,6 +136,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ErrorMessage = errorMessage;
             Etag = etag;
             JsonPayload = returnData;
+            IssuedClientCertificate = issuedClientCertificate;
         }
 
         /// <summary>
@@ -152,5 +198,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The Custom data returned from the webhook to the device.
         /// </summary>
         public string JsonPayload { get; private set; }
+
+        /// <summary>
+        /// The PEM encoded operational client certificate that was returned by the certificate authority.
+        /// This operational certificate was used by the device provisioning service to register the enrollment with IoT Hub.
+        /// The IoT device can use this operational certificate to authenticate with IoT Hub.
+        /// </summary>
+        public string IssuedClientCertificate { get; set; }
     }
 }

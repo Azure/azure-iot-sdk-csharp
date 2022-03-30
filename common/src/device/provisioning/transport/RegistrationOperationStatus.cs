@@ -21,15 +21,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// Initializes a new instance of the RegistrationOperationStatus
         /// class.
         /// </summary>
-        public RegistrationOperationStatus()
-        {
-            CustomInit();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the RegistrationOperationStatus
-        /// class.
-        /// </summary>
         /// <param name="operationId">Operation Id.</param>
         /// <param name="status">Device enrollment status. Possible values
         /// include: 'unassigned', 'assigning', 'assigned', 'failed',
@@ -44,13 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             OperationId = operationId;
             Status = status;
             RegistrationState = registrationState;
-            CustomInit();
         }
-
-        /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
 
         /// <summary>
         /// Gets or sets operation Id.

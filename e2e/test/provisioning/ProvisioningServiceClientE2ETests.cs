@@ -20,6 +20,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"E2E_{nameof(ProvisioningServiceClientE2ETests)}_";
 
+        private static readonly string s_clientCertificatesCAName = TestConfiguration.Provisioning.CAName;
+
 #pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 #pragma warning restore CA1823
@@ -113,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
-            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, null, AllocationPolicy.Static, null, null, null);
+            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentAsync(provisioningServiceClient, attestationType, null, AllocationPolicy.Static, null, null, null);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
 
@@ -193,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
-                IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iotHubsToProvisionTo, null).ConfigureAwait(false);
+                IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentAsync(provisioningServiceClient, attestationType, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iotHubsToProvisionTo, null).ConfigureAwait(false);
                 IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
                 Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
 
@@ -255,9 +257,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationMechanismType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo, DeviceCapabilities capabilities)
+        public static async Task<IndividualEnrollment> CreateIndividualEnrollmentAsync(
+            ProvisioningServiceClient provisioningServiceClient,
+            AttestationMechanismType attestationType,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            ICollection<string> iotHubsToProvisionTo,
+            DeviceCapabilities capabilities,
+            bool connectToHubUsingOperationalCertificate = false)
         {
-            string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
+            string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
             switch (attestationType)
@@ -266,39 +276,41 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                        using var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
                         {
                             Capabilities = capabilities,
                             AllocationPolicy = allocationPolicy,
                             ReprovisionPolicy = reprovisionPolicy,
                             CustomAllocationDefinition = customAllocationDefinition,
-                            IotHubs = iotHubsToProvisionTo
+                            IotHubs = iotHubsToProvisionTo,
+                            ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
                         };
 
-                        IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                        IndividualEnrollment enrollment = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
                         attestation = new TpmAttestation(base64Ek);
                         enrollment.Attestation = attestation;
-                        return await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                        return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
                     }
                 case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
-                    break;
+
+                    individualEnrollment = new IndividualEnrollment(registrationId, attestation)
+                    {
+                        Capabilities = capabilities,
+                        AllocationPolicy = allocationPolicy,
+                        ReprovisionPolicy = reprovisionPolicy,
+                        CustomAllocationDefinition = customAllocationDefinition,
+                        IotHubs = iotHubsToProvisionTo,
+                        ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
+                    };
+                    return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
 
                 case AttestationMechanismType.X509:
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
-
-            individualEnrollment = new IndividualEnrollment(registrationId, attestation);
-            individualEnrollment.Capabilities = capabilities;
-            individualEnrollment.CustomAllocationDefinition = customAllocationDefinition;
-            individualEnrollment.ReprovisionPolicy = reprovisionPolicy;
-            individualEnrollment.IotHubs = iotHubsToProvisionTo;
-            individualEnrollment.AllocationPolicy = allocationPolicy;
-            return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
         }
 
         public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationMechanismType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities)
