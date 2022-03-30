@@ -4,9 +4,11 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
+    <RootNamespace>Microsoft.Azure.Devices.Provisioning.Service.Samples</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.5.0" />
   </ItemGroup>
 
