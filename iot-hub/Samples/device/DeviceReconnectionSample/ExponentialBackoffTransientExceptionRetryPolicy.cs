@@ -12,31 +12,31 @@ namespace Microsoft.Azure.Devices.Client.Samples
     /// </summary>
     internal class ExponentialBackoffTransientExceptionRetryPolicy : IRetryPolicy
     {
-        private static readonly Random s_random = new Random();
         private static readonly TimeSpan s_minBackoff = TimeSpan.FromMilliseconds(100);
         private static readonly TimeSpan s_maxBackoff = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_deltaBackoff = TimeSpan.FromMilliseconds(100);
 
-        private static int s_maxRetryCount;
-        private static IDictionary<Type, string> s_exceptionsToBeIgnored;
+        private readonly Random _random = new Random();
+        private readonly int _maxRetryCount;
+        private readonly IDictionary<Type, string> _exceptionsToBeIgnored;
 
         internal ExponentialBackoffTransientExceptionRetryPolicy(int maxRetryCount = default, IDictionary<Type, string> exceptionsToBeIgnored = default)
         {
-            s_maxRetryCount = maxRetryCount == 0 ? int.MaxValue : maxRetryCount;
-            s_exceptionsToBeIgnored = exceptionsToBeIgnored;
+            _maxRetryCount = maxRetryCount == 0 ? int.MaxValue : maxRetryCount;
+            _exceptionsToBeIgnored = exceptionsToBeIgnored;
         }
 
         public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
-            if (currentRetryCount < s_maxRetryCount)
+            if (currentRetryCount < _maxRetryCount)
             {
                 if ((lastException is IotHubException iotHubException && iotHubException.IsTransient)
                     || ExceptionHelper.IsNetworkExceptionChain(lastException)
-                    || (s_exceptionsToBeIgnored != null && s_exceptionsToBeIgnored.ContainsKey(lastException.GetType())))
+                    || (_exceptionsToBeIgnored != null && _exceptionsToBeIgnored.ContainsKey(lastException.GetType())))
                 {
                     double exponentialInterval =
                         (Math.Pow(2.0, currentRetryCount) - 1.0)
-                        * s_random.Next(
+                        * _random.Next(
                             (int)s_deltaBackoff.TotalMilliseconds * 8 / 10,
                             (int)s_deltaBackoff.TotalMilliseconds * 12 / 10)
                         + s_minBackoff.TotalMilliseconds;
