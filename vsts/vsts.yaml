@@ -491,9 +491,9 @@ jobs:
 
         condition: always()
 
-  ### WINDOWS Analyzers ###
-  - job: Analyzers
-    displayName: Analyzers
+  ### .Net SDL Analyzers ###
+  - job: .Net SDL Analyzers
+    displayName: .Net SDL Analyzers
     timeoutInMinutes: 60
 
     condition: succeeded()
