@@ -492,7 +492,7 @@ jobs:
         condition: always()
 
   ### .Net SDL Analyzers ###
-  - job: .Net SDL Analyzers
+  - job: DOTNet_SDL_Analyzers
     displayName: .Net SDL Analyzers
     timeoutInMinutes: 60
 
