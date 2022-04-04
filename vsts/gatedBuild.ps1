@@ -15,6 +15,9 @@ if (isWindows)
 Write-Host List active docker containers
 docker ps -a
 
+Write-Host List installed .NET SDK versions
+dotnet --list-sdks
+
 #Load functions used to check what, if any, e2e tests should be run
 . .\vsts\determine_tests_to_run.ps1
 

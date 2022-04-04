@@ -42,19 +42,27 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 switch (ex)
                 {
                     case SwaggerException<ErrorResponse> errorResponseException:
-                        throw new HttpHsmComunicationException($"Error calling GetTrustBundleWithRetry: {errorResponseException.Result?.Message ?? string.Empty}", errorResponseException.StatusCode);
+                        throw new HttpHsmComunicationException(
+                            $"Error calling GetTrustBundleWithRetry: {errorResponseException.Result?.Message ?? string.Empty}", errorResponseException.StatusCode);
+
                     case SwaggerException swaggerException:
-                        throw new HttpHsmComunicationException($"Error calling GetTrustBundleWithRetry: {swaggerException.Response ?? string.Empty}", swaggerException.StatusCode);
+                        throw new HttpHsmComunicationException(
+                            $"Error calling GetTrustBundleWithRetry: {swaggerException.Response ?? string.Empty}", swaggerException.StatusCode);
+
                     default:
                         throw;
                 }
             }
         }
 
-        private static async Task<TrustBundleResponse> GetTrustBundleWithRetryAsync(HttpHsmClient hsmHttpClient, string apiVersion)
+        private static async Task<TrustBundleResponse> GetTrustBundleWithRetryAsync(
+            HttpHsmClient hsmHttpClient,
+            string apiVersion)
         {
             var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
-            return await transientRetryPolicy.ExecuteAsync(() => hsmHttpClient.TrustBundleAsync(apiVersion)).ConfigureAwait(false);
+            return await transientRetryPolicy
+                .RunWithRetryAsync(() => hsmHttpClient.TrustBundleAsync(apiVersion))
+                .ConfigureAwait(false);
         }
 
         internal static IList<X509Certificate2> ParseCertificates(string pemCerts)
