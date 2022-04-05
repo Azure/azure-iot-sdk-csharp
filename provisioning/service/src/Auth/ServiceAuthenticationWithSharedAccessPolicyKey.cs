@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     /// </summary>
     internal sealed class ServiceAuthenticationWithSharedAccessPolicyKey : IAuthenticationMethod
     {
-        string policyName;
-        string key;
+        private string _policyName;
+        private string _key;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyKey"/> class.
@@ -26,14 +26,14 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string PolicyName
         {
-            get { return policyName; }
-            set { SetPolicyName(value);}
+            get => _policyName;
+            set => SetPolicyName(value);
         }
 
         public string Key
         {
-            get { return key; }
-            set { SetKey(value); }
+            get => _key;
+            set => SetKey(value);
         }
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(policyName));
             }
 
-            this.policyName = policyName;
+            _policyName = policyName;
         }
 
         private void SetKey(string key)
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentException("Key must be Base64 encoded");
             }
 
-            this.key = key;
+            _key = key;
         }
     }
 }
