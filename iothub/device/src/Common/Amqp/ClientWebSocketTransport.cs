@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Amqp.Transport
         private readonly ClientWebSocket _webSocket;
         private readonly EndPoint _localEndPoint;
         private readonly EndPoint _remoteEndPoint;
-        private volatile CancellationTokenSource _writeCancellationTokenSource;
+        private readonly CancellationTokenSource _writeCancellationTokenSource;
         private bool _isDisposed;
 
         public ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Reflection;
+
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.Reflection;
-
     internal static class Utils
     {
         public static bool IsValidBase64(string input, out int lengthInBytes)

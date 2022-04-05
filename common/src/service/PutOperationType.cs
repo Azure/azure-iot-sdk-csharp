@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices
 {
-    enum PutOperationType
+    internal enum PutOperationType
     {
         /// <summary>
         /// The PUT operation will create a new entity

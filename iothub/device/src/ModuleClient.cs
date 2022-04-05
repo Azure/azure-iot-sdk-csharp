@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
-        private bool _isAnEdgeModule;
+        private readonly bool _isAnEdgeModule;
         private readonly ICertificateValidator _certValidator;
 
         internal InternalClient InternalClient { get; private set; }

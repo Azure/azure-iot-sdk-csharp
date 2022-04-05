@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string GetPayloadAsJson()
         {
-            return (string)this.Payload;
+            return (string)Payload;
         }
 
         [JsonProperty("payload")]

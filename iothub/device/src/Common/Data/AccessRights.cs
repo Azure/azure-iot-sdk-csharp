@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Collections.Generic;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
     [Flags]
     [JsonConverter(typeof(StringEnumConverter))]
-    enum AccessRights
+    internal enum AccessRights
     {
         DeviceConnect = 8,
     }
 
-    static class AccessRightsHelper
+    internal static class AccessRightsHelper
     {
         public static string[] AccessRightsToStringArray(AccessRights accessRights)
         {

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Contains properties of an individual feedback record.
     /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT Hub.

@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    interface IPipelineContext
+    internal interface IPipelineContext
     {
         void Set<T>(T value);
 

@@ -21,25 +21,23 @@ namespace Microsoft.Azure.Devices.Client
         private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
-        private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-
-        private static bool breakOnExceptionTypesRetrieved;
-        private static Type[] breakOnExceptionTypesCache;
+        private static bool s_breakOnExceptionTypesRetrieved;
+        private static Type[] s_breakOnExceptionTypesCache;
 #endif
 
-        private static ExceptionTrace exceptionTrace;
+        private static ExceptionTrace s_exceptionTrace;
 
         public static ExceptionTrace Exception
         {
             get
             {
-                if (exceptionTrace == null)
+                if (s_exceptionTrace == null)
                 {
                     //need not be a true singleton. No locking needed here.
-                    exceptionTrace = new ExceptionTrace(DefaultEventSource);
+                    s_exceptionTrace = new ExceptionTrace(DefaultEventSource);
                 }
 
-                return exceptionTrace;
+                return s_exceptionTrace;
             }
         }
 
@@ -139,10 +137,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             get
             {
-                if (!Fx.breakOnExceptionTypesRetrieved)
+                if (!Fx.s_breakOnExceptionTypesRetrieved)
                 {
-                    object value;
-                    if (TryGetDebugSwitch(Fx.BreakOnExceptionTypesName, out value))
+                    if (TryGetDebugSwitch(out object value))
                     {
                         string[] typeNames = value as string[];
                         if (typeNames != null && typeNames.Length > 0)
@@ -154,18 +151,18 @@ namespace Microsoft.Azure.Devices.Client
                             }
                             if (types.Count != 0)
                             {
-                                Fx.breakOnExceptionTypesCache = types.ToArray();
+                                Fx.s_breakOnExceptionTypesCache = types.ToArray();
                             }
                         }
                     }
-                    Fx.breakOnExceptionTypesRetrieved = true;
+                    Fx.s_breakOnExceptionTypesRetrieved = true;
                 }
-                return Fx.breakOnExceptionTypesCache;
+                return Fx.s_breakOnExceptionTypesCache;
             }
         }
 
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the DEBUG compilation flag.")]
-        private static bool TryGetDebugSwitch(string name, out object value)
+        private static bool TryGetDebugSwitch(out object value)
         {
             // No registry access in UWP
             value = null;
@@ -173,22 +170,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #endif // DEBUG
-
-        [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
-            Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
-            Justification = "Don't want to hide the exception which is about to crash the process.")]
-        [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-        private static bool HandleAtThreadBase(Exception exception)
-        {
-            // This area is too sensitive to do anything but return.
-            if (exception == null)
-            {
-                Fx.Assert("Null exception in HandleAtThreadBase.");
-            }
-            return false;
-        }
-
         public static class Tag
         {
             public enum CacheAttrition

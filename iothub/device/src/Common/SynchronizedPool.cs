@@ -47,68 +47,62 @@ namespace Microsoft.Azure.Devices.Client
     [Fx.Tag.SynchronizationObject(Blocking = false)]
     internal class SynchronizedPool<T> where T : class
     {
-        private const int maxPendingEntries = 128;
-        private const int maxPromotionFailures = 64;
-        private const int maxReturnsBeforePromotion = 64;
-        private const int maxThreadItemsPerProcessor = 16;
-        private Entry[] entries;
-        private GlobalPool globalPool;
-        private int maxCount;
-        private PendingEntry[] pending;
-        private int promotionFailures;
+        private const int MaxPendingEntries = 128;
+        private const int MaxPromotionFailures = 64;
+        private const int MaxReturnsBeforePromotion = 64;
+        private const int MaxThreadItemsPerProcessor = 16;
+        private Entry[] _entries;
+        private readonly GlobalPool _globalPool;
+        private readonly int _maxCount;
+        private PendingEntry[] _pending;
+        private int _promotionFailures;
 
         public SynchronizedPool(int maxCount)
         {
             int threadCount = maxCount;
-            int maxThreadCount = maxThreadItemsPerProcessor + SynchronizedPoolHelper.ProcessorCount;
+            int maxThreadCount = MaxThreadItemsPerProcessor + SynchronizedPoolHelper.ProcessorCount;
             if (threadCount > maxThreadCount)
             {
                 threadCount = maxThreadCount;
             }
-            this.maxCount = maxCount;
-            this.entries = new Entry[threadCount];
-            this.pending = new PendingEntry[4];
-            this.globalPool = new GlobalPool(maxCount);
+            _maxCount = maxCount;
+            _entries = new Entry[threadCount];
+            _pending = new PendingEntry[4];
+            _globalPool = new GlobalPool(maxCount);
         }
 
-        private object ThisLock
-        {
-            get
-            {
-                return this;
-            }
-        }
+        private object ThisLock => this;
 
         public void Clear()
         {
-            Entry[] entriesReference = this.entries;
+            Entry[] entriesReference = _entries;
 
             for (int i = 0; i < entriesReference.Length; i++)
             {
-                entriesReference[i].value = null;
+                entriesReference[i]._value = null;
             }
 
-            globalPool.Clear();
+            _globalPool.Clear();
         }
 
         private void HandlePromotionFailure(int thisThreadID)
         {
-            int newPromotionFailures = this.promotionFailures + 1;
+            int newPromotionFailures = _promotionFailures + 1;
 
-            if (newPromotionFailures >= maxPromotionFailures)
+            if (newPromotionFailures >= MaxPromotionFailures)
             {
                 lock (ThisLock)
                 {
-                    this.entries = new Entry[this.entries.Length];
+                    _entries = new Entry[_entries.Length];
 
-                    globalPool.MaxCount = maxCount;
+                    _globalPool.MaxCount = _maxCount;
                 }
 
                 PromoteThread(thisThreadID);
             }
             else
             {
-                this.promotionFailures = newPromotionFailures;
+                _promotionFailures = newPromotionFailures;
             }
         }
 
@@ -116,9 +110,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             lock (ThisLock)
             {
-                for (int i = 0; i < this.entries.Length; i++)
+                for (int i = 0; i < _entries.Length; i++)
                 {
-                    int threadID = this.entries[i].threadID;
+                    int threadID = _entries[i]._threadId;
 
                     if (threadID == thisThreadID)
                     {
@@ -126,8 +120,8 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else if (threadID == 0)
                     {
-                        globalPool.DecrementMaxCount();
-                        this.entries[i].threadID = thisThreadID;
+                        _globalPool.DecrementMaxCount();
+                        _entries[i]._threadId = thisThreadID;
                         return true;
                     }
                 }
@@ -138,19 +132,19 @@ namespace Microsoft.Azure.Devices.Client
 
         private void RecordReturnToGlobalPool(int thisThreadID)
         {
-            PendingEntry[] localPending = this.pending;
+            PendingEntry[] localPending = _pending;
 
             for (int i = 0; i < localPending.Length; i++)
             {
-                int threadID = localPending[i].threadID;
+                int threadID = localPending[i]._threadId;
 
                 if (threadID == thisThreadID)
                 {
-                    int newReturnCount = localPending[i].returnCount + 1;
+                    int newReturnCount = localPending[i]._returnCount + 1;
 
-                    if (newReturnCount >= maxReturnsBeforePromotion)
+                    if (newReturnCount >= MaxReturnsBeforePromotion)
                     {
-                        localPending[i].returnCount = 0;
+                        localPending[i]._returnCount = 0;
 
                         if (!PromoteThread(thisThreadID))
                         {
@@ -159,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
-                        localPending[i].returnCount = newReturnCount;
+                        localPending[i]._returnCount = newReturnCount;
                     }
                     break;
                 }
@@ -172,11 +166,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private void RecordTakeFromGlobalPool(int thisThreadID)
         {
-            PendingEntry[] localPending = this.pending;
+            PendingEntry[] localPending = _pending;
 
             for (int i = 0; i < localPending.Length; i++)
             {
-                int threadID = localPending[i].threadID;
+                int threadID = localPending[i]._threadId;
 
                 if (threadID == thisThreadID)
                 {
@@ -186,30 +180,30 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     lock (localPending)
                     {
-                        if (localPending[i].threadID == 0)
+                        if (localPending[i]._threadId == 0)
                         {
-                            localPending[i].threadID = thisThreadID;
+                            localPending[i]._threadId = thisThreadID;
                             return;
                         }
                     }
                 }
             }
 
-            if (localPending.Length >= maxPendingEntries)
+            if (localPending.Length >= MaxPendingEntries)
             {
-                this.pending = new PendingEntry[localPending.Length];
+                _pending = new PendingEntry[localPending.Length];
             }
             else
             {
                 var newPending = new PendingEntry[localPending.Length * 2];
                 Array.Copy(localPending, newPending, localPending.Length);
-                this.pending = newPending;
+                _pending = newPending;
             }
         }
 
         public bool Return(T value)
         {
-            int thisThreadID = Thread.CurrentThread.ManagedThreadId;
+            int thisThreadID = Environment.CurrentManagedThreadId;
 
             if (thisThreadID == 0)
             {
@@ -226,17 +220,17 @@ namespace Microsoft.Azure.Devices.Client
 
         private bool ReturnToPerThreadPool(int thisThreadID, T value)
         {
-            Entry[] entriesReference = this.entries;
+            Entry[] entriesReference = _entries;
 
             for (int i = 0; i < entriesReference.Length; i++)
             {
-                int threadID = entriesReference[i].threadID;
+                int threadID = entriesReference[i]._threadId;
 
                 if (threadID == thisThreadID)
                 {
-                    if (entriesReference[i].value == null)
+                    if (entriesReference[i]._value == null)
                     {
-                        entriesReference[i].value = value;
+                        entriesReference[i]._value = value;
                         return true;
                     }
                     else
@@ -257,12 +251,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             RecordReturnToGlobalPool(thisThreadID);
 
-            return globalPool.Return(value);
+            return _globalPool.Return(value);
         }
 
         public T Take()
         {
-            int thisThreadID = Thread.CurrentThread.ManagedThreadId;
+            int thisThreadID = Environment.CurrentManagedThreadId;
 
             if (thisThreadID == 0)
             {
@@ -281,19 +275,19 @@ namespace Microsoft.Azure.Devices.Client
 
         private T TakeFromPerThreadPool(int thisThreadID)
         {
-            Entry[] entriesReference = this.entries;
+            Entry[] entriesReference = _entries;
 
             for (int i = 0; i < entriesReference.Length; i++)
             {
-                int threadID = entriesReference[i].threadID;
+                int threadID = entriesReference[i]._threadId;
 
                 if (threadID == thisThreadID)
                 {
-                    T value = entriesReference[i].value;
+                    T value = entriesReference[i]._value;
 
                     if (value != null)
                     {
-                        entriesReference[i].value = null;
+                        entriesReference[i]._value = null;
                         return value;
                     }
                     else
@@ -314,19 +308,19 @@ namespace Microsoft.Azure.Devices.Client
         {
             RecordTakeFromGlobalPool(thisThreadID);
 
-            return globalPool.Take();
+            return _globalPool.Take();
         }
 
         private struct Entry
         {
-            public int threadID;
-            public T value;
+            public int _threadId;
+            public T _value;
         }
 
         private struct PendingEntry
         {
-            public int returnCount;
-            public int threadID;
+            public int _returnCount;
+            public int _threadId;
         }
 
         private static class SynchronizedPoolHelper
@@ -343,64 +337,55 @@ namespace Microsoft.Azure.Devices.Client
         [Fx.Tag.SynchronizationObject(Blocking = false)]
         private class GlobalPool
         {
-            private Stack<T> items;
+            private readonly Stack<T> _items;
 
-            private int maxCount;
+            private int _maxCount;
 
             public GlobalPool(int maxCount)
             {
-                this.items = new Stack<T>();
-                this.maxCount = maxCount;
+                _items = new Stack<T>();
+                _maxCount = maxCount;
             }
 
             public int MaxCount
             {
-                get
-                {
-                    return maxCount;
-                }
+                get => _maxCount;
                 set
                 {
                     lock (ThisLock)
                     {
-                        while (items.Count > value)
+                        while (_items.Count > value)
                         {
-                            items.Pop();
+                            _items.Pop();
                         }
-                        maxCount = value;
+                        _maxCount = value;
                     }
                 }
             }
 
-            private object ThisLock
-            {
-                get
-                {
-                    return this;
-                }
-            }
+            private object ThisLock => this;
 
             public void DecrementMaxCount()
             {
                 lock (ThisLock)
                 {
-                    if (items.Count == maxCount)
+                    if (_items.Count == _maxCount)
                     {
-                        items.Pop();
+                        _items.Pop();
                     }
-                    maxCount--;
+                    _maxCount--;
                 }
             }
 
             public T Take()
             {
-                if (this.items.Count > 0)
+                if (_items.Count > 0)
                 {
                     lock (ThisLock)
                     {
-                        if (this.items.Count > 0)
+                        if (_items.Count > 0)
                         {
-                            return this.items.Pop();
+                            return _items.Pop();
                         }
                     }
                 }
@@ -409,13 +394,13 @@ namespace Microsoft.Azure.Devices.Client
 
             public bool Return(T value)
             {
-                if (this.items.Count < this.MaxCount)
+                if (_items.Count < MaxCount)
                 {
                     lock (ThisLock)
                     {
-                        if (this.items.Count < this.MaxCount)
+                        if (_items.Count < MaxCount)
                         {
-                            this.items.Push(value);
+                            _items.Push(value);
                             return true;
                         }
                     }
@@ -427,7 +412,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 lock (ThisLock)
                 {
-                    this.items.Clear();
+                    _items.Clear();
                 }
             }
         }

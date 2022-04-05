@@ -47,7 +47,6 @@
 
   <ItemGroup>
     <Compile Include="$(common)\service\CommonResources.cs" Link="Common\CommonResources.cs" />
-    <Compile Include="$(common)\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />
     <Compile Include="$(common)\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
     <Compile Include="$(common)\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
     <Compile Include="$(common)\service\Utils.cs" Link="Common\Utils.cs" />

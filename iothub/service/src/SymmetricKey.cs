@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Security;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Security;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// primary and secondary symmetric keys of a device.
     /// </summary>
     public sealed class SymmetricKey
     {
-        string primaryKey;
-        string secondaryKey;
+        private string _primaryKey;
+        private string _secondaryKey;
 
         /// <summary>
         /// Gets or sets the PrimaryKey
@@ -22,15 +22,12 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "primaryKey")]
         public string PrimaryKey
         {
-            get
-            {
-                return this.primaryKey;
-            }
+            get => _primaryKey;
 
             set
             {
                 ValidateDeviceAuthenticationKey(value, "PrimaryKey");
-                this.primaryKey = value;
+                _primaryKey = value;
             }
         }
 
@@ -40,15 +37,12 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "secondaryKey")]
         public string SecondaryKey
         {
-            get
-            {
-                return this.secondaryKey;
-            }
+            get => _secondaryKey;
 
             set
             {
                 ValidateDeviceAuthenticationKey(value, "SecondaryKey");
-                this.secondaryKey = value;
+                _secondaryKey = value;
             }
         }
 
@@ -56,14 +50,13 @@ namespace Microsoft.Azure.Devices
         /// Checks if the contents are valid
         /// </summary>
         /// <param name="throwArgumentException"></param>
-        /// <returns>bool</returns>
         public bool IsValid(bool throwArgumentException)
         {
-            if (!this.IsEmpty())
+            if (!IsEmpty())
             {
                 // either both keys should be specified or neither once should be specified (in which case we will create both the keys in the service)
                 // we do allow primary and secondary keys to be identical
-                if (string.IsNullOrWhiteSpace(this.PrimaryKey) || string.IsNullOrWhiteSpace(this.SecondaryKey))
+                if (string.IsNullOrWhiteSpace(PrimaryKey) || string.IsNullOrWhiteSpace(SecondaryKey))
                 {
                     if (throwArgumentException)
                     {
@@ -85,15 +78,14 @@ namespace Microsoft.Azure.Devices
         /// <returns>bool</returns>
         public bool IsEmpty()
         {
-            return string.IsNullOrWhiteSpace(this.PrimaryKey) && string.IsNullOrWhiteSpace(this.SecondaryKey);
+            return string.IsNullOrWhiteSpace(PrimaryKey) && string.IsNullOrWhiteSpace(SecondaryKey);
         }
 
-        static void ValidateDeviceAuthenticationKey(string key, string paramName)
+        private static void ValidateDeviceAuthenticationKey(string key, string paramName)
         {
             if (key != null)
             {
-                int keyLength;
-                if (!Utils.IsValidBase64(key, out keyLength))
+                if (!Utils.IsValidBase64(key, out int keyLength))
                 {
                     throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, key), paramName);
                 }

@@ -17,11 +17,6 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         public static void Fork(this Task thisTask)
         {
-            Fork(thisTask, "TaskExtensions.Fork");
-        }
-
-        public static void Fork(this Task thisTask, string tracingInfo)
-        {
             Fx.Assert(thisTask != null, "task is required!");
         }
 
@@ -58,10 +53,7 @@ namespace Microsoft.Azure.Devices.Common
                         tcs.TrySetResult(null);
                     }
 
-                    if (callback != null)
-                    {
-                        callback(tcs.Task);
-                    }
+                    callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
@@ -103,10 +95,7 @@ namespace Microsoft.Azure.Devices.Common
                         tcs.TrySetResult(task.Result);
                     }
 
-                    if (callback != null)
-                    {
-                        callback(tcs.Task);
-                    }
+                    callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,

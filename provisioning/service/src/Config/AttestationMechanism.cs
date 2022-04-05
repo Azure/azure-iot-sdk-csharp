@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 /* SRS_ATTESTATION_MECHANISM_21_003: [If the provided attestation is instance of TpmAttestation, the
                                                         constructor shall set the attestation type as TPM.] */
-                this.Type = AttestationMechanismType.Tpm;
+                Type = AttestationMechanismType.Tpm;
             }
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 /* SRS_ATTESTATION_MECHANISM_21_007: [If the provided attestation is instance of X509Attestation, the
                                                         constructor shall set the attestation type as X509.] */
-                this.Type = AttestationMechanismType.X509;
+                Type = AttestationMechanismType.X509;
             }
         }
 
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _x509 = null;
                 _tpm = null;
 
-                this.Type = AttestationMechanismType.SymmetricKey;
+                Type = AttestationMechanismType.SymmetricKey;
             }
         }
 

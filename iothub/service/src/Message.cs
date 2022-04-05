@@ -398,11 +398,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private void SetSizeInBytesCalled()
-        {
-            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
-        }
-
         private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
         {
             // This method should only be used in constructor because
@@ -447,12 +442,6 @@ namespace Microsoft.Azure.Devices
                 throw Fx.AssertAndThrow("Does not support cloning of Stream Type: " + originalStream.GetType());
             }
             return null;
-        }
-
-        private AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
-        {
-            MessageConverter.UpdateAmqpMessageHeadersAndProperties(message, this);
-            return message;
         }
 
         private T GetSystemProperty<T>(string key)

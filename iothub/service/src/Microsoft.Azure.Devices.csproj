@@ -74,16 +74,9 @@
     <Compile Include="$(Common)\service\CommonResources.cs">
       <Link>Common\CommonResources.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\EventTraceActivity.cs">
-      <Link>Common\Tracing\EventTraceActivity.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionDispatcher.cs">
-      <Link>Common\ExceptionDispatcher.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
       <Link>ExceptionHandlingHelper.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionTrace.cs">
+    </Compile>    <Compile Include="$(Common)\service\ExceptionTrace.cs">
       <Link>Common\ExceptionTrace.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\FatalException.cs">
@@ -157,8 +150,5 @@
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
     <PackageReference Include="Azure.Core" Version="1.22.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\Interop\" />
   </ItemGroup>
 </Project>

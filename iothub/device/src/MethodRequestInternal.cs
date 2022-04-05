@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client
         private bool _disposed;
         private bool _ownsBodyStream;
         private int _getBodyCalled;
-        private long _sizeInBytesCalled;
 
         /// <summary>
         /// Default constructor with no body data
@@ -131,11 +130,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private void SetSizeInBytesCalled()
-        {
-            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
-        }
-
         private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
@@ -146,11 +140,9 @@ namespace Microsoft.Azure.Devices.Client
 
         private static byte[] ReadFullStream(Stream inputStream)
         {
-            using (var ms = new MemoryStream())
-            {
-                inputStream.CopyTo(ms);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            inputStream.CopyTo(ms);
+            return ms.ToArray();
         }
 
         private void ThrowIfDisposed()

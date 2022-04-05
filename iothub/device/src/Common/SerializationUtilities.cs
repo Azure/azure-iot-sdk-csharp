@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
 
     internal static class SerializationUtilities
     {
-        private static readonly Dictionary<Type, PropertyValueType> TypeToIntMap = new Dictionary<Type, PropertyValueType>()
+        private static readonly Dictionary<Type, PropertyValueType> s_typeToIntMap = new Dictionary<Type, PropertyValueType>()
         {
             { typeof(byte), PropertyValueType.Byte },
             { typeof(sbyte), PropertyValueType.SByte },
@@ -53,8 +53,7 @@ namespace Microsoft.Azure.Devices.Client
                 return PropertyValueType.Null;
             }
 
-            PropertyValueType typeId;
-            if (TypeToIntMap.TryGetValue(value.GetType(), out typeId))
+            if (s_typeToIntMap.TryGetValue(value.GetType(), out PropertyValueType typeId))
             {
                 return typeId;
             }

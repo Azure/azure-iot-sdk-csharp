@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -17,8 +16,6 @@ namespace Microsoft.Azure.Devices.Common
         private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
-        private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-
         private static bool s_breakOnExceptionTypesRetrieved;
         private static Type[] s_breakOnExceptionTypesCache;
 #endif
@@ -141,7 +138,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 if (!s_breakOnExceptionTypesRetrieved)
                 {
-                    if (TryGetDebugSwitch(BreakOnExceptionTypesName, out object value))
+                    if (TryGetDebugSwitch(out object value))
                     {
                         if (value is string[] typeNames && typeNames.Length > 0)
                         {
@@ -163,7 +160,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        private static bool TryGetDebugSwitch(string name, out object value)
+        private static bool TryGetDebugSwitch(out object value)
         {
             value = null;
             return value != null;

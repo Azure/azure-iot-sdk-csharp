@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         private const string DiagnosticCreationTimeUtcKey = "creationtimeutc";
-        private static readonly DateTime Dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime s_dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         internal static bool AddDiagnosticInfoIfNecessary(Message message, int diagnosticSamplingPercentage, ref int currentMessageCount)
         {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static double CurrentUtcTimeToSecond()
         {
-            TimeSpan span = DateTime.UtcNow - Dt1970;
+            TimeSpan span = DateTime.UtcNow - s_dt1970;
             return span.TotalSeconds;
         }
     }

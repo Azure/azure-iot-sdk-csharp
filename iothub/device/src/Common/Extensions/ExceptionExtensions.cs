@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
     internal static class ExceptionExtensions
     {
         private const string ExceptionIdentifierName = "ExceptionId";
-        private static MethodInfo prepForRemotingMethodInfo;
+        private static MethodInfo s_prepForRemotingMethodInfo;
 
         public static bool IsFatal(this Exception exception)
         {
@@ -62,9 +62,9 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless
-                if (prepForRemotingMethodInfo == null)
+                if (s_prepForRemotingMethodInfo == null)
                 {
-                    prepForRemotingMethodInfo =
+                    s_prepForRemotingMethodInfo =
                         typeof(Exception).GetMethod(
                             "PrepForRemoting",
                             BindingFlags.Instance | BindingFlags.NonPublic,
@@ -73,12 +73,12 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                             Array.Empty<ParameterModifier>());
                 }
 
-                if (prepForRemotingMethodInfo != null)
+                if (s_prepForRemotingMethodInfo != null)
                 {
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
                     // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
-                    prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
+                    s_prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
                 }
             }
 

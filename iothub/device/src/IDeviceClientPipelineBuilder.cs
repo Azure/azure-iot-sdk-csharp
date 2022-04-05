@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    interface IDeviceClientPipelineBuilder
+    internal interface IDeviceClientPipelineBuilder
     {
         IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> delegatingHandlerCreator);
 

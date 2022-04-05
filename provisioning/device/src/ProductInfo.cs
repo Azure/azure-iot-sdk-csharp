@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
-            if (!String.IsNullOrWhiteSpace(this.Extra))
+            if (!String.IsNullOrWhiteSpace(Extra))
             {
-                userAgent += $" {this.Extra.Trim()}";
+                userAgent += $" {Extra.Trim()}";
             }
 
             return userAgent;

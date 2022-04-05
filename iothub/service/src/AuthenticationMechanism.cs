@@ -1,27 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using System.ComponentModel;
+
 namespace Microsoft.Azure.Devices
 {
-    using Newtonsoft.Json;
-    using System.ComponentModel;
-
     /// <summary>
     /// Used to specify the authentication mechanism used by a device.
     /// </summary>
     public sealed class AuthenticationMechanism
     {
-        private SymmetricKey symmetricKey;
-        private X509Thumbprint x509Thumbprint;
+        private SymmetricKey _symmetricKey;
+        private X509Thumbprint _x509Thumbprint;
 
         /// <summary>
-        /// default ctor
+        /// Default constructor
         /// </summary>
         public AuthenticationMechanism()
         {
-            this.SymmetricKey = new SymmetricKey();
-            this.X509Thumbprint = new X509Thumbprint();
-            this.Type = AuthenticationType.Sas;
+            SymmetricKey = new SymmetricKey();
+            X509Thumbprint = new X509Thumbprint();
+            Type = AuthenticationType.Sas;
         }
 
         /// <summary>
@@ -30,13 +30,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "symmetricKey")]
         public SymmetricKey SymmetricKey
         {
-            get { return this.symmetricKey; }
+            get => _symmetricKey;
             set
             {
-                this.symmetricKey = value;
+                _symmetricKey = value;
                 if (value != null)
                 {
-                    this.Type = AuthenticationType.Sas;
+                    Type = AuthenticationType.Sas;
                 }
             }
         }
@@ -47,13 +47,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "x509Thumbprint")]
         public X509Thumbprint X509Thumbprint
         {
-            get { return this.x509Thumbprint; }
+            get => _x509Thumbprint;
             set
             {
-                this.x509Thumbprint = value;
+                _x509Thumbprint = value;
                 if (value != null)
                 {
-                    this.Type = AuthenticationType.SelfSigned;
+                    Type = AuthenticationType.SelfSigned;
                 }
             }
         }

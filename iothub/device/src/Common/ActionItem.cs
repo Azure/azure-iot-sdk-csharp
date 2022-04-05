@@ -103,10 +103,10 @@ namespace Microsoft.Azure.Devices.Client
         private static class CallbackHelper
         {
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            private static Action<object> invokeWithoutContextCallback;
+            private static Action<object> s_invokeWithoutContextCallback;
 
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            private static ContextCallback onContextAppliedCallback;
+            private static ContextCallback s_onContextAppliedCallback;
 
             [Fx.Tag.SecurityNote(Critical = "Provides access to a critical field; Initialize it with " +
                 "a delegate to a critical method")]
@@ -114,11 +114,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 get
                 {
-                    if (invokeWithoutContextCallback == null)
+                    if (s_invokeWithoutContextCallback == null)
                     {
-                        invokeWithoutContextCallback = new Action<object>(InvokeWithoutContext);
+                        s_invokeWithoutContextCallback = new Action<object>(InvokeWithoutContext);
                     }
-                    return invokeWithoutContextCallback;
+                    return s_invokeWithoutContextCallback;
                 }
             }
 
@@ -128,11 +128,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 get
                 {
-                    if (onContextAppliedCallback == null)
+                    if (s_onContextAppliedCallback == null)
                     {
-                        onContextAppliedCallback = new ContextCallback(OnContextApplied);
+                        s_onContextAppliedCallback = new ContextCallback(OnContextApplied);
                     }
-                    return onContextAppliedCallback;
+                    return s_onContextAppliedCallback;
                 }
             }
 

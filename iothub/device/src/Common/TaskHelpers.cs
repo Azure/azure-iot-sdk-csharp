@@ -44,10 +44,7 @@ namespace Microsoft.Azure.Devices.Client
                         tcs.TrySetResult(null);
                     }
 
-                    if (callback != null)
-                    {
-                        callback(tcs.Task);
-                    }
+                    callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
@@ -89,10 +86,7 @@ namespace Microsoft.Azure.Devices.Client
                         tcs.TrySetResult(task.Result);
                     }
 
-                    if (callback != null)
-                    {
-                        callback(tcs.Task);
-                    }
+                    callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
@@ -120,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client
                 case TaskStatus.RanToCompletion:
                     var castedSource = source as Task<TResult>;
                     proxy.TrySetResult(
-                        castedSource == null ? default(TResult) : // source is a Task
+                        castedSource == null ? default : // source is a Task
                             castedSource.Result); // source is a Task<TResult>
                     break;
             }

@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Common
     public static class ExceptionExtensions
     {
         private const string ExceptionIdentifierName = "ExceptionId";
-        private static MethodInfo s_prepForRemotingMethodInfo;
 
         /// <summary>
         /// Indicates whether the exception is considered fatal.
@@ -66,58 +65,6 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// Prepares a given exception for re-throwing.
-        /// </summary>
-        /// <param name="exception">The exception to be re-thrown.</param>
-        /// <returns>The exception containing the stacktrace from where it was generated.</returns>
-        public static Exception PrepareForRethrow(this Exception exception)
-        {
-            Fx.Assert(exception != null, "The specified Exception is null.");
-
-            if (!ShouldPrepareForRethrow(exception))
-            {
-                return exception;
-            }
-
-            if (PartialTrustHelpers.UnsafeIsInFullTrust())
-            {
-                // Racing here is harmless
-
-                if (s_prepForRemotingMethodInfo == null)
-                {
-                    s_prepForRemotingMethodInfo =
-                        typeof(Exception).GetMethod(
-                            "PrepForRemoting",
-                            BindingFlags.Instance | BindingFlags.NonPublic,
-                            null,
-                            Array.Empty<Type>(),
-                            Array.Empty<ParameterModifier>());
-                }
-
-                if (s_prepForRemotingMethodInfo != null)
-                {
-                    // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
-                    // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
-                    // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
-                    s_prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
-                }
-            }
-
-            return exception;
-        }
-
-        /// <summary>
-        /// Mark the exception as ineligible for re-throwing.
-        /// </summary>
-        /// <param name="exception">The exception to be marked as ineligible for re-throwing.</param>
-        /// <returns>The exception which has been marked as ineligible for re-throwing.</returns>
-        public static Exception DisablePrepareForRethrow(this Exception exception)
-        {
-            exception.Data[AsyncResult.DisablePrepareForRethrow] = string.Empty;
-            return exception;
-        }
-
-        /// <summary>
         /// Stringify the exception, containing all relevant fields.
         /// </summary>
         /// <param name="exception">The exception to stringify.</param>
@@ -158,20 +105,6 @@ namespace Microsoft.Azure.Devices.Common
             return exception.Data != null && exception.Data.Contains(ExceptionIdentifierName)
                 ? (string)exception.Data[ExceptionIdentifierName]
                 : null;
-        }
-
-        private static bool ShouldPrepareForRethrow(Exception exception)
-        {
-            while (exception != null)
-            {
-                if (exception.Data != null && exception.Data.Contains(AsyncResult.DisablePrepareForRethrow))
-                {
-                    return false;
-                }
-                exception = exception.InnerException;
-            }
-
-            return true;
         }
 
         /// <summary>

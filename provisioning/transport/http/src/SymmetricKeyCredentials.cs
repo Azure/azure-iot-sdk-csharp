@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string audience = request.RequestUri.AbsolutePath.Trim('/');
             string[] segments = audience.Split('/');
 
-            _sasToken = ProvisioningSasBuilder.BuildSasSignature(Registration, this.SymmetricKey, string.Concat(segments[0], '/', segments[1], '/', segments[2]), TimeSpan.FromDays(1));
+            _sasToken = ProvisioningSasBuilder.BuildSasSignature(Registration, SymmetricKey, string.Concat(segments[0], '/', segments[1], '/', segments[2]), TimeSpan.FromDays(1));
             SetAuthorizationHeader(request, _sasToken);
 
             return base.ProcessHttpRequestAsync(request, cancellationToken);

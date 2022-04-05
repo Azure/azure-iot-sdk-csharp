@@ -67,8 +67,6 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "progress", NullValueHandling = NullValueHandling.Ignore)]
         public int Progress { get; set; }
 
-#pragma warning disable CA1056 // Uri properties should not be strings
-
         /// <summary>
         /// URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </summary>
@@ -83,8 +81,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "outputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
         public string OutputBlobContainerUri { get; set; }
-
-#pragma warning restore CA1056 // Uri properties should not be strings
 
         /// <summary>
         /// The blob name to be used when importing from the provided input blob container.
@@ -143,8 +139,6 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "configurationsBlobName", NullValueHandling = NullValueHandling.Ignore)]
         private string ConfigurationsBlobName { get; set; } // waiting for bug fix before publicizing
 
-#pragma warning disable CA1054 // Uri parameters should not be strings
-
         /// <summary>
         /// Creates an instance of JobProperties with parameters ready to start an import job.
         /// </summary>
@@ -198,7 +192,5 @@ namespace Microsoft.Azure.Devices
                 Identity = identity,
             };
         }
-
-#pragma warning restore CA1054 // Uri parameters should not be strings
     }
 }
