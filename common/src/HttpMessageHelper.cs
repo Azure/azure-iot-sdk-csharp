@@ -5,10 +5,6 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 
-#if NET451
-using System.Net.Http.Formatting;
-#endif
-
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
@@ -16,20 +12,13 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     internal static class HttpMessageHelper
     {
-#if NET451
-        private static readonly JsonMediaTypeFormatter s_jsonFormatter = new JsonMediaTypeFormatter();
-#else
+
         private const string ApplicationJson = "application/json";
-#endif
 
         internal static void SetHttpRequestMessageContent<T>(HttpRequestMessage requestMessage, T entity)
         {
-#if NET451
-            requestMessage.Content = new ObjectContent<T>(entity, s_jsonFormatter);
-#else
             string str = JsonConvert.SerializeObject(entity);
             requestMessage.Content = new StringContent(str, Encoding.UTF8, ApplicationJson);
-#endif
         }
     }
 }

@@ -123,9 +123,6 @@ namespace Microsoft.Azure.Devices
                 {
                     throw;
                 }
-
-                // ignore non-fatal errors encountered during abort
-                Fx.Exception.TraceHandled(e, "IotHubClientWebSocket.Abort");
             }
         }
 
@@ -396,7 +393,7 @@ namespace Microsoft.Azure.Devices
             try
             {
                 byte[] webSocketHeader = PrepareWebSocketHeader(size, webSocketMessageType);
-#if NET451 || NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0
                 await WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
                 MaskWebSocketData(buffer, offset, size);
                 await WebSocketStream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
@@ -440,9 +437,6 @@ namespace Microsoft.Azure.Devices
                 {
                     throw;
                 }
-
-                // ignore exceptions during close
-                Fx.Exception.TraceHandled(exception, "IotHubClientWebSocket.CloseAsync");
             }
             finally
             {
@@ -664,9 +658,7 @@ namespace Microsoft.Azure.Devices
             if (TcpClient != null)
             {
                 TcpClient.Close();
-#if !NET451 // compile error, otherwise
                 TcpClient.Dispose();
-#endif
                 TcpClient = null;
             }
         }
@@ -982,7 +974,7 @@ namespace Microsoft.Azure.Devices
 
         private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer, int offset, int size)
         {
-#if NET451 || NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0
             return await stream.ReadAsync(buffer, offset, size).ConfigureAwait(false);
 #else
             return await stream.ReadAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
@@ -996,7 +988,7 @@ namespace Microsoft.Azure.Devices
 
         private static async Task WriteToStreamAsync(Stream stream, byte[] buffer, int offset, int size)
         {
-#if NET451 || NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0
             await stream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
 #else
             await stream.WriteAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);

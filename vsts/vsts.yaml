@@ -263,8 +263,6 @@ jobs:
           FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: succeeded()
     pool:

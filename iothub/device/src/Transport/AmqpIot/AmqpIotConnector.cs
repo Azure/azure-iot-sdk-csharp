@@ -10,17 +10,10 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
 
-#if NET451
-using System.Configuration;
-#endif
-
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpIotConnector : IDisposable
     {
-#if NET451
-        private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
-#endif
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
@@ -81,12 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private static bool InitializeDisableServerCertificateValidation()
         {
-#if !NET451
             return AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out bool flag) && flag;
-#else
-            string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
-            return !string.IsNullOrEmpty(value) && bool.Parse(value);
-#endif
         }
 
         public void Dispose()

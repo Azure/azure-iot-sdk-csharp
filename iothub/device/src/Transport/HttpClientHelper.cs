@@ -14,25 +14,14 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-
-#if NET451
-using System.Net.Http.Formatting;
-#else
-
 using System.Text;
 using Newtonsoft.Json;
-
-#endif
-
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
-#if NET451
-        static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
-#endif
         private readonly Uri _baseAddress;
         private readonly IAuthorizationProvider _authenticationHeaderProvider;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
@@ -61,36 +50,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-#if NET451
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-            _httpClientHandler = httpClientHandler;
-
-            if (clientCert != null)
-            {
-                if (_httpClientHandler == null)
-                {
-                    _httpClientHandler = new WebRequestHandler();
-                }
-
-                (_httpClientHandler as WebRequestHandler).ClientCertificates.Add(clientCert);
-                _usingX509ClientCert = true;
-            }
-
-            if (proxy != DefaultWebProxySettings.Instance)
-            {
-                if (_httpClientHandler == null)
-                {
-                    _httpClientHandler = new WebRequestHandler();
-                }
-
-                _httpClientHandler.UseProxy = (proxy != null);
-                _httpClientHandler.Proxy = proxy;
-            }
-
-            _httpClientObj = _httpClientHandler != null ? new HttpClient(_httpClientHandler) : new HttpClient();
-#else
-
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
             _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
             _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
@@ -108,7 +67,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _httpClientObj = new HttpClient(_httpClientHandler);
-#endif
 
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = timeout;
@@ -559,18 +517,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if NET451
-        private static ObjectContent<T> CreateContent<T>(T entity)
-        {
-            return new ObjectContent<T>(entity, JsonFormatter);
-        }
-
-        private static Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
-        {
-            return content.ReadAsAsync<T>(token);
-        }
-#else
-
         private static StringContent CreateContent<T>(T entity)
         {
             return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
@@ -586,6 +532,5 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return new JsonSerializer().Deserialize<T>(jsonReader);
         }
 
-#endif
         }
 }

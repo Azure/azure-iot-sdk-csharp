@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Common.Data
 
             int hashKeyName, hashPrimaryKey, hashSecondaryKey, hashRights;
 
-#if NETSTANDARD2_0 || NET451 || NET472
+#if NETSTANDARD2_0 || NET472
             hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
 
             hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();

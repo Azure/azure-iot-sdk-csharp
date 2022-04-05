@@ -107,12 +107,6 @@ namespace Microsoft.Azure.Devices
                                     break;
                             }
                         }
-                        else
-                        {
-                            // TODO: RDBug 4093369 Handling of non-string property values in Amqp messages
-                            // Drop non-string properties and log an error
-                            Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
-                        }
                     }
                 }
             }

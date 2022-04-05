@@ -54,9 +54,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 finally
                 {
-#if !NET451
                     store?.Dispose();
-#endif
                 }
             }
         }

@@ -13,12 +13,6 @@ using System.Security;
 using System.Threading;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
-#if NET451
-using System.Runtime.ConstrainedExecution;
-using System.Transactions;
-using Microsoft.Win32;
-#endif
-
 namespace Microsoft.Azure.Devices.Client
 {
     internal static class Fx
@@ -27,9 +21,6 @@ namespace Microsoft.Azure.Devices.Client
         private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
-#if NET451
-        private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
-#endif
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
 
         private static bool breakOnExceptionTypesRetrieved;
@@ -99,13 +90,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // FYI, CallbackException is-a FatalException
                 if (exception is FatalException ||
-#if !NET451
                     exception is OutOfMemoryException ||
-#else
-                    (exception is OutOfMemoryException && !(exception is InsufficientMemoryException)) ||
-                    exception is ThreadAbortException ||
-                    exception is AccessViolationException ||
-#endif
                     exception is SEHException)
                 {
                     return true;
@@ -149,57 +134,7 @@ namespace Microsoft.Azure.Devices.Client
             return false;
         }
 
-#if NET451
-        // If the transaction has aborted then we switch over to a new transaction
-        // which we will immediately abort after setting Transaction.Current
-        public static TransactionScope CreateTransactionScope(Transaction transaction)
-        {
-            try
-            {
-                return transaction == null ? null : new TransactionScope(transaction);
-            }
-            catch (TransactionAbortedException)
-            {
-                using var tempTransaction = new CommittableTransaction();
-                try
-                {
-                    return new TransactionScope(tempTransaction.Clone());
-                }
-                finally
-                {
-                    tempTransaction.Rollback();
-                }
-            }
-        }
-
-        public static void CompleteTransactionScope(ref TransactionScope scope)
-        {
-            TransactionScope localScope = scope;
-            if (localScope != null)
-            {
-                scope = null;
-                try
-                {
-                    localScope.Complete();
-                }
-                finally
-                {
-                    localScope.Dispose();
-                }
-            }
-        }
-#endif
-
-#if NET451
-        [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
-        [SecurityCritical]
-        public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
-        {
-            return (new IOCompletionThunk(callback)).ThunkFrame;
-        }
-#endif
 #if DEBUG
-
         internal static Type[] BreakOnExceptionTypes
         {
             get
@@ -232,29 +167,9 @@ namespace Microsoft.Azure.Devices.Client
         [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the DEBUG compilation flag.")]
         private static bool TryGetDebugSwitch(string name, out object value)
         {
-#if !NET451
             // No registry access in UWP
             value = null;
             return false;
-#else
-            value = null;
-            try
-            {
-                RegistryKey key = Registry.LocalMachine.OpenSubKey(Fx.SBRegistryKey);
-                if (key != null)
-                {
-                    using (key)
-                    {
-                        value = key.GetValue(name);
-                    }
-                }
-            }
-            catch (SecurityException)
-            {
-                // This debug-only code shouldn't trace.
-            }
-            return value != null;
-#endif
         }
 
 #endif // DEBUG
@@ -264,9 +179,6 @@ namespace Microsoft.Azure.Devices.Client
         [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if NET451
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         private static bool HandleAtThreadBase(Exception exception)
         {
             // This area is too sensitive to do anything but return.
@@ -276,50 +188,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             return false;
         }
-
-#if NET451
-        // This can't derive from Thunk since T would be unsafe.
-        [Fx.Tag.SecurityNote(Critical = "unsafe object")]
-        [SecurityCritical]
-        unsafe sealed class IOCompletionThunk
-        {
-            [Fx.Tag.SecurityNote(Critical = "Make these safe to use in SecurityCritical contexts.")]
-            IOCompletionCallback callback;
-
-            [Fx.Tag.SecurityNote(Critical = "Accesses critical field.", Safe = "Data provided by caller.")]
-            public IOCompletionThunk(IOCompletionCallback callback)
-            {
-                this.callback = callback;
-            }
-
-            public IOCompletionCallback ThunkFrame
-            {
-                [Fx.Tag.SecurityNote(Safe = "returns a delegate around the safe method UnhandledExceptionFrame")]
-                get
-                {
-                    return new IOCompletionCallback(UnhandledExceptionFrame);
-                }
-            }
-
-            [Fx.Tag.SecurityNote(Critical = "Accesses critical field, calls PrepareConstrainedRegions which has a LinkDemand",
-                Safe = "Delegates can be invoked, guaranteed not to call into PT user code from the finally.")]
-            void UnhandledExceptionFrame(uint error, uint bytesRead, NativeOverlapped* nativeOverlapped)
-            {
-                RuntimeHelpers.PrepareConstrainedRegions();
-                try
-                {
-                    this.callback(error, bytesRead, nativeOverlapped);
-                }
-                catch (Exception exception)
-                {
-                    if (!Fx.HandleAtThreadBase(exception))
-                    {
-                        throw;
-                    }
-                }
-            }
-        }
-#endif
 
         public static class Tag
         {

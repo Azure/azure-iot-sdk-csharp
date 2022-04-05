@@ -9,11 +9,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal abstract class ActionItem
     {
-#if NET451
-        [Fx.Tag.SecurityNote(Critical = "Stores the security context, used later in binding back into")]
-        [SecurityCritical]
-        private SecurityContext _context;
-#endif
         private bool _isScheduled;
 
         protected ActionItem()
@@ -62,43 +57,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             _isScheduled = true;
-#if NET451
-            if (PartialTrustHelpers.ShouldFlowSecurityContext)
-            {
-                _context = PartialTrustHelpers.CaptureSecurityContextNoIdentityFlow();
-            }
-            if (_context != null)
-            {
-                ScheduleCallback(CallbackHelper.InvokeWithContextCallback);
-            }
-            else
-#endif
             {
                 ScheduleCallback(CallbackHelper.InvokeWithoutContextCallback);
             }
         }
-
-#if NET451
-        [Fx.Tag.SecurityNote(Critical = "Access critical field context and critical property " +
-            "CallbackHelper.InvokeWithContextCallback, calls into critical method ScheduleCallback; " +
-            "since nothing is known about the given context, can't be treated as safe")]
-        [SecurityCritical]
-        protected void ScheduleWithContext(SecurityContext contextToSchedule)
-        {
-            if (contextToSchedule == null)
-            {
-                throw Fx.Exception.ArgumentNull("context");
-            }
-            if (_isScheduled)
-            {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
-            }
-
-            _isScheduled = true;
-            _context = contextToSchedule.CreateCopy();
-            ScheduleCallback(CallbackHelper.InvokeWithContextCallback);
-        }
-#endif
 
         [Fx.Tag.SecurityNote(Critical = "Access critical property CallbackHelper.InvokeWithoutContextCallback, " +
             "Calls into critical method ScheduleCallback; not bound to a security context")]
@@ -130,19 +92,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if NET451
-        [Fx.Tag.SecurityNote(Critical = "Extract the security context stored and reset the critical field")]
-        [SecurityCritical]
-        private SecurityContext ExtractContext()
-        {
-            Fx.Assert(_context != null, "Cannot bind to a null context; context should have been set by now");
-            Fx.Assert(_isScheduled, "Context is extracted only while the object is scheduled");
-            SecurityContext result = _context;
-            _context = null;
-            return result;
-        }
-#endif
-
         [Fx.Tag.SecurityNote(Critical = "Calls into critical static method ScheduleCallback")]
         [SecurityCritical]
         private void ScheduleCallback(Action<object> callback)
@@ -158,24 +107,6 @@ namespace Microsoft.Azure.Devices.Client
 
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
             private static ContextCallback onContextAppliedCallback;
-
-#if NET451
-            [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            static Action<object> invokeWithContextCallback;
-            [Fx.Tag.SecurityNote(Critical = "Provides access to a critical field; Initialize it with " +
-                "a delegate to a critical method")]
-            public static Action<object> InvokeWithContextCallback
-            {
-                get
-                {
-                    if (invokeWithContextCallback == null)
-                    {
-                        invokeWithContextCallback = new Action<object>(InvokeWithContext);
-                    }
-                    return invokeWithContextCallback;
-                }
-            }
-#endif
 
             [Fx.Tag.SecurityNote(Critical = "Provides access to a critical field; Initialize it with " +
                 "a delegate to a critical method")]
@@ -204,15 +135,6 @@ namespace Microsoft.Azure.Devices.Client
                     return onContextAppliedCallback;
                 }
             }
-
-#if NET451
-            [Fx.Tag.SecurityNote(Critical = "Called by the scheduler without any user context on the stack")]
-            private static void InvokeWithContext(object state)
-            {
-                SecurityContext context = ((ActionItem)state).ExtractContext();
-                SecurityContext.Run(context, OnContextAppliedCallback, state);
-            }
-#endif
 
             [Fx.Tag.SecurityNote(Critical = "Called by the scheduler without any user context on the stack")]
             private static void InvokeWithoutContext(object state)

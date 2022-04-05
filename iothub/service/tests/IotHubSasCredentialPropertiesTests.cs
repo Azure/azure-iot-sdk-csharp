@@ -9,12 +9,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using FluentAssertions;
-
-#if !NET451
-
 using Azure;
-
-#endif
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -23,8 +18,6 @@ namespace Microsoft.Azure.Devices.Tests
     public class IotHubSasCredentialPropertiesTests
     {
         private const string _hostName = "myiothub.azure-devices.net";
-
-#if !NET451
 
         [TestMethod]
         public async Task TestCbsTokenGeneration_Succeeds()
@@ -123,7 +116,5 @@ namespace Microsoft.Azure.Devices.Tests
                 ex.Message.Should().Be($"There is no expiration time on {nameof(AzureSasCredential)} signature.");
             }
         }
-
-#endif
     }
 }

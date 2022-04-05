@@ -19,13 +19,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     [TestCategory("Unit")]
     public class MessageTests
     {
-        private byte[] _emptyByteArray =
-#if NET451
-            new byte[0];
-#else
-            Array.Empty<byte>();
-
-#endif
+        private byte[] _emptyByteArray = Array.Empty<byte>();
 
         [TestMethod]
         public void ConstructorTakingStreamTest()

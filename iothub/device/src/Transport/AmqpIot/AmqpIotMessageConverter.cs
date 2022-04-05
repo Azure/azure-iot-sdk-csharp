@@ -167,12 +167,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                                     break;
                             }
                         }
-                        else
-                        {
-                            // TODO: RDBug 4093369 Handling of non-string property values in AMQP messages
-                            // Drop non-string properties and log an error
-                            Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
-                        }
                     }
                 }
             }
@@ -305,11 +299,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
             }
 
-            if ((sections & SectionFlag.ApplicationProperties) != 0
-                && !(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName) ?? false))
-            {
-                Fx.Exception.TraceHandled(new InvalidDataException("Method name is missing"), "MethodConverter.ConstructMethodRequestFromAmqpMessage");
-            }
+            amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName);
 
             return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream, cancellationToken);
         }

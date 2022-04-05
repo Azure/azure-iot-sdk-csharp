@@ -44,15 +44,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             };
 
             SslProtocols protocols = TlsVersions.Instance.Preferred;
-#if NET451
-            // Requires hardcoding in NET451 otherwise yields error:
-            //    System.ArgumentException: The specified value is not valid in the 'SslProtocolType' enumeration.
-            if (amqpTransportSettings.GetTransportType() == TransportType.Amqp_Tcp_Only
-                && protocols == SslProtocols.None)
-            {
-                protocols = TlsVersions.Instance.MinimumTlsVersions;
-            }
-#endif
 
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
@@ -112,50 +103,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 string additionalQueryParams = "";
                 var websocketUri = new Uri($"{WebSocketConstants.Scheme}{_hostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
-#if NET451
-                if (Environment.OSVersion.Version.Major < 6
-                    || (Environment.OSVersion.Version.Major == 6
-                        && Environment.OSVersion.Version.Minor <= 1))
-                {
-                    IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
-                            websocketUri,
-                            this._amqpTransportSettings.ClientCertificate,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                    return new LegacyClientWebSocketTransport(
-                        websocket,
-                        this._amqpTransportSettings.OperationTimeout,
-                        null,
-                        null);
-                }
-                else
-                {
-#endif
                 ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
                 return new ClientWebSocketTransport(websocket, null, null);
-#if NET451
-                }
-#endif
             }
             finally
             {
                 Logging.Exit(this, $"{nameof(CreateClientWebSocketTransportAsync)}");
             }
         }
-
-#if NET451
-        private static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(
-            Uri webSocketUri,
-            X509Certificate2 clientCertificate,
-            CancellationToken cancellationToken)
-        {
-            var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket
-                .ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, cancellationToken)
-                .ConfigureAwait(false);
-            return websocket;
-        }
-#endif
 
         private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, CancellationToken cancellationToken)
         {

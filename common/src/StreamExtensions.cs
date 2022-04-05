@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Shared
     {
         internal static async Task WriteToStreamAsync(this Stream stream, byte[] requestBytes, CancellationToken cancellationToken)
         {
-#if NET451 || NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0
             await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);
 #else
             await stream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);

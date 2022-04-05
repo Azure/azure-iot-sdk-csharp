@@ -358,11 +358,7 @@ namespace Microsoft.Azure.Devices
             SetGetBodyCalled();
             if (_bodyStream == null)
             {
-#if NET451
-                return new byte[] { };
-#else
                 return Array.Empty<byte>();
-#endif
             }
 
             if (_bodyStream is BufferListStream listStream)

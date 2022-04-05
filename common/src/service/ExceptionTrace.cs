@@ -7,12 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Azure.Devices.Common.Tracing;
 
-#if NET451
-using System.Globalization;
-using System.Runtime.Versioning;
-using System.Threading;
-#endif
-
 namespace Microsoft.Azure.Devices.Common
 {
     internal class ExceptionTrace
@@ -85,26 +79,6 @@ namespace Microsoft.Azure.Devices.Common
             return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameter 'catchLocation' used in NET451; remove when no longer supported.")]
-        public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
-        {
-#if NET451 && DEBUG
-            Trace.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "IotHub/TraceHandled ThreadID=\"{0}\" catchLocation=\"{1}\" exceptionType=\"{2}\" exception=\"{3}\"",
-                Thread.CurrentThread.ManagedThreadId,
-                catchLocation,
-                exception.GetType(),
-                exception.ToStringSlim()));
-#endif
-
-            BreakOnException(exception);
-        }
-
-#if NET451
-        [ResourceConsumption(ResourceScope.Process)]
-#endif
-
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
             Safe = "Does not leak any resource, needed for debugging")]
         public TException TraceException<TException>(TException exception, TraceEventType level)
@@ -128,63 +102,16 @@ namespace Microsoft.Azure.Devices.Common
                 }
             }
 
-            BreakOnException(exception);
             return exception;
         }
 
         public static string GetDetailsForThrownException(Exception e)
         {
             var details = new StringBuilder(e.GetType().ToString());
-
-#if NET451
-            const int MaxStackFrames = 10;
-
-            // Include the current callstack (this ensures we see the Stack in case exception is not output when caught)
-            var stackTrace = new StackTrace();
-            string stackTraceString = stackTrace.ToString();
-            if (stackTrace.FrameCount > MaxStackFrames)
-            {
-                string[] frames = stackTraceString.Split(new[] { Environment.NewLine }, MaxStackFrames + 1, StringSplitOptions.RemoveEmptyEntries);
-                stackTraceString = string.Join(Environment.NewLine, frames, 0, MaxStackFrames) + "...";
-            }
-
-            details.Append(Environment.NewLine);
-            details.AppendLine(stackTraceString);
-#endif
             details.AppendLine("Exception ToString:");
             details.Append(e.ToStringSlim());
 
             return details.ToString();
-        }
-
-        [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
-        [Fx.Tag.SecurityNote(Critical = "Calls into critical method UnsafeNativeMethods.IsDebuggerPresent and UnsafeNativeMethods.DebugBreak",
-            Safe = "Safe because it's a no-op in retail builds.")]
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameter 'exception' used in NET451; remove when no longer supported.")]
-        internal void BreakOnException(Exception exception)
-        {
-#if DEBUG
-
-            if (Fx.BreakOnExceptionTypes != null)
-            {
-                foreach (Type breakType in Fx.BreakOnExceptionTypes)
-                {
-#if NET451
-                    if (breakType.IsAssignableFrom(exception.GetType()))
-                    {
-                        // This is intended to "crash" the process so that a debugger can be attached. If a managed
-                        // debugger is already attached, it will already be able to hook these exceptions. We don't want
-                        // to simulate an unmanaged crash (DebugBreak) in that case.
-                        if (!Debugger.IsAttached && !Interop.UnsafeNativeMethods.IsDebuggerPresent())
-                        {
-                            Debugger.Launch();
-                        }
-                    }
-#endif
-                }
-            }
-
-#endif
         }
     }
 }

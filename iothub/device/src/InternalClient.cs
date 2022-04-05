@@ -14,16 +14,6 @@ using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System.ComponentModel;
 
-#if NET451
-
-using System.Net;
-
-#else
-
-using System.Net.Http;
-
-#endif
-
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
@@ -156,8 +146,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
-
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             IotHubConnectionString = iotHubConnectionString;
             _clientOptions = options;
