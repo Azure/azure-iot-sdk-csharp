@@ -57,11 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
                     isTransient: false);
             }
-#if NET451
-            return TaskHelpers.CompletedTask;
-#else
             return Task.CompletedTask;
-#endif
         }
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)

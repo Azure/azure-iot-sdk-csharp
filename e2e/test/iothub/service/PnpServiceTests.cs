@@ -84,7 +84,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Cleanup
             await registryManager.RemoveDeviceAsync(testDevice.Id).ConfigureAwait(false);
 
-            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
             if (authCertificate is IDisposable disposableCert)
             {
                 disposableCert?.Dispose();

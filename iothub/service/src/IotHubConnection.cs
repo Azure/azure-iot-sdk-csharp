@@ -15,20 +15,12 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Client;
-using Microsoft.Azure.Devices.Common.Data;
 using Microsoft.Azure.Devices.Shared;
-
-#if NET451
-using System.Configuration;
-#endif
 
 namespace Microsoft.Azure.Devices
 {
     internal sealed class IotHubConnection : IDisposable
     {
-#if NET451
-        private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
-#endif
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
@@ -43,19 +35,11 @@ namespace Microsoft.Azure.Devices
         private FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
-#if !NET451
         private IOThreadTimerSlim _refreshTokenTimer;
-#else
-        private IOThreadTimer _refreshTokenTimer;
-#endif
 
         public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
-#if !NET451
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this);
-#else
-            _refreshTokenTimer = new IOThreadTimer(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this, false);
-#endif
 
             Credential = credential;
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(CreateSessionAsync, CloseConnection);
@@ -240,13 +224,6 @@ namespace Microsoft.Azure.Devices
 
         private static bool InitializeDisableServerCertificateValidation()
         {
-#if NET451
-            string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
-            if (!string.IsNullOrEmpty(value))
-            {
-                return bool.Parse(value);
-            }
-#endif
             return false;
         }
 
@@ -430,32 +407,8 @@ namespace Microsoft.Azure.Devices
                 var websocketUri = new Uri($"{ WebSocketConstants.Scheme }{ Credential.HostName}:{ WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
 
                 Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
-
-#if NET451
-                // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
-                if (Environment.OSVersion.Version.Major < 6
-                    || (Environment.OSVersion.Version.Major == 6
-                        && Environment.OSVersion.Version.Minor <= 1))
-                {
-                    IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
-                            websocketUri,
-                            timeoutHelper.RemainingTime())
-                        .ConfigureAwait(false);
-
-                    return new LegacyClientWebSocketTransport(
-                        websocket,
-                        DefaultOperationTimeout,
-                        null,
-                        null);
-                }
-                else
-                {
-#endif
                 ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 return new ClientWebSocketTransport(websocket, null, null);
-#if NET451
-                }
-#endif
             }
             finally
             {

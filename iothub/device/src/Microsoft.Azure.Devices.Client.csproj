@@ -107,4 +107,8 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Interop\" />
+  </ItemGroup>
 </Project>

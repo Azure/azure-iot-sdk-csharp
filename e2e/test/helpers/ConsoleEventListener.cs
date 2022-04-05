@@ -29,9 +29,7 @@ namespace System.Diagnostics.Tracing
                 EnableEvents(
                     eventSource,
                     EventLevel.LogAlways
-#if !NET451
                 , EventKeywords.All
-#endif
                 );
             }
         }
@@ -41,12 +39,8 @@ namespace System.Diagnostics.Tracing
             lock (_lock)
             {
                 string eventIdent;
-#if NET451
-                    // net451 doesn't have EventName, so we'll settle for EventId
-                    eventIdent = eventData.EventId.ToString(CultureInfo.InvariantCulture);
-#else
+
                 eventIdent = eventData.EventName;
-#endif
                 string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)} [{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
 
                 ConsoleColor origForeground = Console.ForegroundColor;

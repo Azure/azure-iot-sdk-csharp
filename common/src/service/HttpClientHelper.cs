@@ -60,8 +60,6 @@ namespace Microsoft.Azure.Devices
             _httpClientWithNoTimeout.Timeout = Timeout.InfiniteTimeSpan;
             _httpClientWithNoTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientWithNoTimeout.DefaultRequestHeaders.ExpectContinue = false;
-
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
         public Task<T> GetAsync<T>(
@@ -307,12 +305,8 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-#if NET451
-            T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
-#else
             string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
             T entity = JsonConvert.DeserializeObject<T>(str);
-#endif
 
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
@@ -879,19 +873,15 @@ namespace Microsoft.Azure.Devices
 
         internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope (object is returned by this method, so the caller is responsible for disposing it)
 #if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
             // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
             var httpMessageHandler = new SocketsHttpHandler();
             httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 #else
             var httpMessageHandler = new HttpClientHandler();
-#if !NET451
             httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 #endif
-#endif
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {

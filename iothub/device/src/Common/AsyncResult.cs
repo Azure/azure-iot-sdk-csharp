@@ -1,15 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Exceptions;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-
-#if NET451
-using System.Transactions;
-#endif
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -27,10 +22,6 @@ namespace Microsoft.Azure.Devices.Client
         private bool _endCalled;
         private Exception _exception;
         private AsyncCompletion _nextAsyncCompletion;
-#if NET451
-        IAsyncResult _deferredTransactionalResult;
-        TransactionSignalScope _transactionContext;
-#endif
 
         [Fx.Tag.SynchronizationObject]
         private ManualResetEvent _manualResetEvent;
@@ -93,11 +84,6 @@ namespace Microsoft.Azure.Devices.Client
 
         // Override this property to provide the ActivityId when completing with exception
         protected internal virtual EventTraceActivity Activity => null;
-
-#if NET451
-        // Override this property to change the trace level when completing with exception
-        protected virtual TraceEventType TraceEventType => TraceEventType.Verbose;
-#endif
 
         protected object ThisLock => _thisLock;
 
@@ -213,15 +199,6 @@ namespace Microsoft.Azure.Devices.Client
 
             var thisPtr = (AsyncResult)result.AsyncState;
 
-#if NET451
-            if (thisPtr._transactionContext != null && !thisPtr._transactionContext.Signal(result))
-            {
-                // The TransactionScope isn't cleaned up yet and can't be done on this thread.  Must defer
-                // the callback (which is likely to attempt to commit the transaction) until later.
-                return;
-            }
-#endif
-
             AsyncCompletion callback = thisPtr.GetNextCompletion();
             if (callback == null)
             {
@@ -248,20 +225,6 @@ namespace Microsoft.Azure.Devices.Client
 
         protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion callback)
         {
-#if NET451
-            if (_transactionContext != null)
-            {
-                // It might be an old, leftover one, if an exception was thrown within the last using (PrepareTransactionalCall()) block.
-                if (_transactionContext.IsPotentiallyAbandoned)
-                {
-                    _transactionContext = null;
-                }
-                else
-                {
-                    _transactionContext.Prepared();
-                }
-            }
-#endif
             _nextAsyncCompletion = callback;
             if (s_asyncCompletionWrapperCallback == null)
             {
@@ -269,17 +232,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             return s_asyncCompletionWrapperCallback;
         }
-
-#if NET451
-        protected IDisposable PrepareTransactionalCall(Transaction transaction)
-        {
-            if (_transactionContext != null && !_transactionContext.IsPotentiallyAbandoned)
-            {
-                ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called as the object of non-nested using statements. If the Begin succeeds, Check/SyncContinue must be called before another PrepareTransactionalCall.");
-            }
-            return _transactionContext = transaction == null ? null : new TransactionSignalScope(this, transaction);
-        }
-#endif
 
         protected bool CheckSyncContinue(IAsyncResult result)
         {
@@ -308,40 +260,7 @@ namespace Microsoft.Azure.Devices.Client
 
             callback = null;
 
-            if (result.CompletedSynchronously)
-            {
-#if NET451
-                // Once we pass the check, we know that we own forward progress, so transactionContext is correct. Verify its state.
-                if (_transactionContext != null)
-                {
-                    if (_transactionContext.State != TransactionSignalState.Completed)
-                    {
-                        ThrowInvalidAsyncResult("Check/SyncContinue cannot be called from within the PrepareTransactionalCall using block.");
-                    }
-                    else if (_transactionContext.IsSignalled)
-                    {
-                        // This is most likely to happen when result.CompletedSynchronously registers differently here and in the callback, which
-                        // is the fault of 'result'.
-                        ThrowInvalidAsyncResult(result);
-                    }
-                }
-#endif
-            }
-#if NET451
-            else if (object.ReferenceEquals(result, _deferredTransactionalResult))
-            {
-                // The transactionContext may not be current if forward progress has been made via the callback. Instead,
-                // use deferredTransactionalResult to see if we are supposed to execute a post-transaction callback.
-                //
-                // Once we pass the check, we know that we own forward progress, so transactionContext is correct. Verify its state.
-                if (_transactionContext == null || !_transactionContext.IsSignalled)
-                {
-                    ThrowInvalidAsyncResult(result);
-                }
-                _deferredTransactionalResult = null;
-            }
-#endif
-            else
+            if (!result.CompletedSynchronously)
             {
                 return false;
             }
@@ -357,9 +276,6 @@ namespace Microsoft.Azure.Devices.Client
         private AsyncCompletion GetNextCompletion()
         {
             AsyncCompletion result = _nextAsyncCompletion;
-#if NET451
-            _transactionContext = null;
-#endif
             _nextAsyncCompletion = null;
             return result;
         }
@@ -418,21 +334,13 @@ namespace Microsoft.Azure.Devices.Client
             if (asyncResult._manualResetEvent != null)
             {
                 asyncResult._manualResetEvent.WaitOne();
-#if NET451
-                asyncResult._manualResetEvent.Close();
-#else
                 asyncResult._manualResetEvent.Dispose();
-#endif
             }
 
             if (asyncResult._exception != null)
             {
                 // Trace before PrepareForRethrow to avoid weird callstack strings
-#if NET451
-                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType);
-#else
                 Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose);
-#endif
                 ExceptionDispatcher.Throw(asyncResult._exception);
             }
 
@@ -447,106 +355,8 @@ namespace Microsoft.Azure.Devices.Client
             Abandoned,
         }
 
-#if NET451
-        [Serializable]
-        class TransactionSignalScope : SignalGateT<IAsyncResult>, IDisposable
-        {
-            private bool _disposed;
-
-            [NonSerialized]
-            private TransactionScope _transactionScope;
-
-            [NonSerialized]
-            private readonly AsyncResult _parent;
-
-            public TransactionSignalScope(AsyncResult result, Transaction transaction)
-            {
-                Fx.Assert(transaction != null, "Null Transaction provided to AsyncResult.TransactionSignalScope.");
-                _parent = result;
-                _transactionScope = Fx.CreateTransactionScope(transaction);
-            }
-
-            public TransactionSignalState State { get; private set; }
-
-            public bool IsPotentiallyAbandoned
-            {
-                get
-                {
-                    return State == TransactionSignalState.Abandoned || (State == TransactionSignalState.Completed && !IsSignalled);
-                }
-            }
-
-            public void Prepared()
-            {
-                if (State != TransactionSignalState.Ready)
-                {
-                    AsyncResult.ThrowInvalidAsyncResult("PrepareAsyncCompletion should only be called once per PrepareTransactionalCall.");
-                }
-                State = TransactionSignalState.Prepared;
-            }
-
-            protected virtual void Dispose(bool disposing)
-            {
-                if (disposing && !_disposed)
-                {
-                    _disposed = true;
-
-                    if (State == TransactionSignalState.Ready)
-                    {
-                        State = TransactionSignalState.Abandoned;
-                    }
-                    else if (State == TransactionSignalState.Prepared)
-                    {
-                        State = TransactionSignalState.Completed;
-                    }
-                    else
-                    {
-                        AsyncResult.ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called in a using. Dispose called multiple times.");
-                    }
-
-                    try
-                    {
-                        Fx.CompleteTransactionScope(ref _transactionScope);
-                    }
-                    catch (Exception exception)
-                    {
-                        if (Fx.IsFatal(exception))
-                        {
-                            throw;
-                        }
-
-                        // Complete and Dispose are not expected to throw.  If they do it can mess up the AsyncResult state machine.
-                        throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.AsyncTransactionException));
-                    }
-
-                    // This will release the callback to run, or tell us that we need to defer the callback to Check/SyncContinue.
-                    //
-                    // It's possible to avoid this Interlocked when CompletedSynchronously is true, but we have no way of knowing that
-                    // from here, and adding a way would add complexity to the AsyncResult transactional calling pattern. This
-                    // unnecessary Interlocked only happens when: PrepareTransactionalCall is called with a non-null transaction,
-                    // PrepareAsyncCompletion is reached, and the operation completes synchronously or with an exception.
-                    IAsyncResult result;
-                    if (State == TransactionSignalState.Completed && Unlock(out result))
-                    {
-                        if (_parent._deferredTransactionalResult != null)
-                        {
-                            AsyncResult.ThrowInvalidAsyncResult(_parent._deferredTransactionalResult);
-                        }
-                        _parent._deferredTransactionalResult = result;
-                    }
-                }
-            }
-
-            void IDisposable.Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-        }
-#endif
-
         // can be utilized by subclasses to write core completion code for both the sync and async paths
-        // in one location, signalling chainable synchronous completion with the boolean result,
+        // in one location, signaling chainable synchronous completion with the boolean result,
         // and leveraging PrepareAsyncCompletion for conversion to an AsyncCallback.
         // NOTE: requires that "this" is passed in as the state object to the asynchronous sub-call being used with a completion routine.
         protected delegate bool AsyncCompletion(IAsyncResult result);

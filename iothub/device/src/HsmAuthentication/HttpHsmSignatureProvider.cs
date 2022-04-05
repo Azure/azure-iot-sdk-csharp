@@ -8,12 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
-#if !NET451
-
-using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
-
-#endif
-
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
     internal class HttpHsmSignatureProvider : ISignatureProvider

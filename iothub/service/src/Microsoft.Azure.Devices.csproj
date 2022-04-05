@@ -158,4 +158,7 @@
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
     <PackageReference Include="Azure.Core" Version="1.22.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\Interop\" />
+  </ItemGroup>
 </Project>

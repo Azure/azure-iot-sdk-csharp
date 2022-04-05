@@ -987,20 +987,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (IsProxyConfigured())
             {
                 // No need to do a DNS lookup since we have the proxy address already
-
-#if NET451
-                _serverAddresses = new IPAddress[0];
-#else
                 _serverAddresses = Array.Empty<IPAddress>();
-#endif
             }
             else
             {
-#if NET451
-                _serverAddresses = Dns.GetHostEntry(_hostName).AddressList;
-#else
                 _serverAddresses = await Dns.GetHostAddressesAsync(_hostName).ConfigureAwait(false);
-#endif
             }
 
             if (TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
@@ -1195,16 +1186,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     : new List<X509Certificate> { settings.ClientCertificate };
 
                 SslProtocols protocols = TlsVersions.Instance.Preferred;
-#if NET451
-                // Requires hardcoding in NET451 otherwise yields error:
-                //    Microsoft.Azure.Devices.Client.Exceptions.IotHubCommunicationException: Transient network error occurred, please retry.
-                //    DotNetty.Transport.Channels.ClosedChannelException: I/O error occurred.
-                if (settings.GetTransportType() == TransportType.Mqtt_Tcp_Only
-                    && protocols == SslProtocols.None)
-                {
-                    protocols = TlsVersions.Instance.MinimumTlsVersions;
-                }
-#endif
 
                 var clientTlsSettings = new ClientTlsSettings(
                      protocols,

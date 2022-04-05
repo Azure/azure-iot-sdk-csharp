@@ -3,12 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
-
-#if !NET451
-
 using System.Linq;
-
-#endif
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -17,11 +12,6 @@ namespace Microsoft.Azure.Devices.Tests
     /// </summary>
     internal static class CryptoKeyGenerator
     {
-#if NET451
-        private const int DefaultPasswordLength = 16;
-        private const int GuidLength = 16;
-#endif
-
         /// <summary>
         /// Size of the SHA 512 key.
         /// </summary>
@@ -34,18 +24,12 @@ namespace Microsoft.Azure.Devices.Tests
         /// <returns>Byte array representing the key.</returns>
         internal static byte[] GenerateKeyBytes(int keySize)
         {
-#if NET451
-            byte[] keyBytes = new byte[keySize];
-            using var cyptoProvider = new RNGCryptoServiceProvider();
-            cyptoProvider.GetNonZeroBytes(keyBytes);
-#else
             byte[] keyBytes = new byte[keySize];
             using var cyptoProvider = RandomNumberGenerator.Create();
             while (keyBytes.Contains(byte.MinValue))
             {
                 cyptoProvider.GetBytes(keyBytes);
             }
-#endif
             return keyBytes;
         }
 

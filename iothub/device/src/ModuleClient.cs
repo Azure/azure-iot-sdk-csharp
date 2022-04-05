@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
     public class ModuleClient : IDisposable
-#if !NET451 && !NET472 && !NETSTANDARD2_0
+#if !NET472 && !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
     {
@@ -497,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client
             GC.SuppressFinalize(this);
         }
 
-#if !NET451 && !NET472 && !NETSTANDARD2_0
+#if !NET472 && !NETSTANDARD2_0
         // IAsyncDisposable is available in .NET Standard 2.1 and above
 
         /// <summary>
@@ -795,21 +795,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (customCertificateValidation != null)
                 {
-                    TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-#if !NET451
                     httpClientHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
                         SslProtocols = TlsVersions.Instance.Preferred,
                     };
-#else
-                    httpClientHandler = new WebRequestHandler();
-                    ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                    {
-                        return customCertificateValidation(sender, certificate, chain, errors);
-                    };
-#endif
                 }
 
                 var context = new PipelineContext();

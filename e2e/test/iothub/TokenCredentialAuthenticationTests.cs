@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -10,14 +9,7 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-#if !NET451
-
 using Microsoft.Rest;
-using Azure.Core;
-using Azure.Identity;
-
-#endif
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
@@ -32,8 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     public class TokenCredentialAuthenticationTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(TokenCredentialAuthenticationTests)}_";
-
-#if !NET451
 
         [LoggedTestMethod]
         public async Task RegistryManager_Http_TokenCredentialAuth_Success()
@@ -138,7 +128,5 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // assert
             await act.Should().ThrowAsync<DeviceNotFoundException>();
         }
-
-#endif
     }
 }

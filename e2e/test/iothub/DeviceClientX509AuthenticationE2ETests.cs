@@ -216,9 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
-#if !NET451
             store?.Dispose();
-#endif
         }
 
         private async Task SendMessageTest(ITransportSettings transportSetting)
@@ -297,14 +295,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
             if (s_selfSignedCertificateWithPrivateKey is IDisposable disposableSelfSignedCertificate)
             {
                 disposableSelfSignedCertificate?.Dispose();
             }
             s_selfSignedCertificateWithPrivateKey = null;
 
-            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
             if (s_chainCertificateWithPrivateKey is IDisposable disposableChainedCertificate)
             {
                 disposableChainedCertificate?.Dispose();

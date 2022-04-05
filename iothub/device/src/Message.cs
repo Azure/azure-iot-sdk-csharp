@@ -306,16 +306,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
-            if (_bodyStream == null)
-            {
-#if NET451
-                return new byte[] { };
-#else
-                return Array.Empty<byte>();
-#endif
-            }
-
-            return ReadFullStream(_bodyStream);
+            return _bodyStream == null ? Array.Empty<byte>() : ReadFullStream(_bodyStream);
         }
 
         /// <summary>
