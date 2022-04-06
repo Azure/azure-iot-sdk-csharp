@@ -287,6 +287,10 @@ try
         Write-Host -ForegroundColor Cyan "PR validation tests"
         Write-Host
 
+        Write-Host -ForegroundColor Cyan "Running only unit tests and DPS E2E tests"
+        $testCategory = "(TestCategory=Unit | TestCategory=DPS)"
+
+        <#
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=Unit"
@@ -310,6 +314,7 @@ try
         {
             $testCategory += "&TestCategory!=DPS"
         }
+        #>
 
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
@@ -357,7 +362,13 @@ try
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
+        <#
         RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        #>
+
+        Write-Host -ForegroundColor Cyan "Running only DPS E2E tests"
+        $testCategory = "TestCategory=DPS"
+        RunTests "E2E tests" -framework $framework -filterTestCategory $testCategory
 
         $verbosity = $oldVerbosity
 
