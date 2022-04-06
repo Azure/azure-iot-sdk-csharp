@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
         /// </summary>
-        internal DeviceRegistrationResult(
+        public DeviceRegistrationResult(
             string registrationId,
             DateTime? createdDateTimeUtc,
             string assignedHub,
