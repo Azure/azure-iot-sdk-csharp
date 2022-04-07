@@ -762,10 +762,142 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
         [LoggedTestMethod]
+        public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
                 Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_MqttWs_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Amqp_Tpm_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_AmqpWs_Tpm_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Http_Tpm_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.Tpm,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Http_X509_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.X509,
+                EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
                 AttestationMechanismType.SymmetricKey,
                 EnrollmentType.Individual,
                 connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
@@ -1452,6 +1584,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             s_individualEnrollmentCertificate?.Dispose();
             s_groupEnrollmentCertificate?.Dispose();
+
             // Delete all the test client certificates created
             try
             {

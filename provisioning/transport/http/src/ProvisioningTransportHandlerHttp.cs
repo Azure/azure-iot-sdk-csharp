@@ -125,11 +125,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 
                 DeviceRegistration deviceRegistration = authStrategy.CreateDeviceRegistration();
-                if (message.Payload != null
-                    && message.Payload.Length > 0)
+                if (!string.IsNullOrWhiteSpace(message.Payload))
                 {
                     deviceRegistration.Payload = new JRaw(message.Payload);
                 }
+
+                if (!string.IsNullOrWhiteSpace(message.OperationalCertificateRequest))
+                {
+                    deviceRegistration.OperationalCertificateRequest = message.OperationalCertificateRequest;
+                }
+
                 string registrationId = message.Security.GetRegistrationID();
 
                 RegistrationOperationStatus operation = await client.RuntimeRegistration
@@ -281,22 +286,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
         {
-            Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
-            Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
+            Enum.TryParse(result?.Status, true, out ProvisioningRegistrationStatusType status);
+            Enum.TryParse(result?.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
 
             return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
+                result?.RegistrationId,
+                result?.CreatedDateTimeUtc,
+                result?.AssignedHub,
+                result?.DeviceId,
                 status,
                 substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
+                result?.GenerationId,
+                result?.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
-                result.ErrorMessage,
-                result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
+                result?.ErrorMessage,
+                result?.Etag,
+                result?.Payload?.ToString(CultureInfo.InvariantCulture),
+                result?.IssuedClientCertificate);
         }
     }
 }
