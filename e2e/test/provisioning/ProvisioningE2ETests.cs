@@ -784,6 +784,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
         [LoggedTestMethod]
+        public async Task DPS_Registration_Mqtt_X509_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_MqttWs_X509_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
@@ -801,6 +823,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 Client.TransportType.Mqtt_WebSocket_Only,
                 AttestationMechanismType.SymmetricKey,
                 EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Mqtt_SymmetricKey_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_MqttWs_SymmetricKey_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Mqtt_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
                 connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
         }
 
@@ -850,6 +894,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
         [LoggedTestMethod]
+        public async Task DPS_Registration_Amqp_X509_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
@@ -867,6 +933,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 Client.TransportType.Amqp_WebSocket_Only,
                 AttestationMechanismType.SymmetricKey,
                 EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Amqp_SymmetricKey_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_Tcp_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_AmqpWs_SymmetricKey_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Amqp_WebSocket_Only,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
                 connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
         }
 
@@ -894,12 +982,34 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
         [LoggedTestMethod]
+        public async Task DPS_Registration_Http_X509_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.X509,
+                EnrollmentType.Group,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
         public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
                 Client.TransportType.Http1,
                 AttestationMechanismType.SymmetricKey,
                 EnrollmentType.Individual,
+                connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
+        }
+
+        // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
+        [LoggedTestMethod]
+        public async Task DPS_Registration_Http_SymmetricKey_GroupEnrollment_ConnectToHubWithOperationalCertificate()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
+                Client.TransportType.Http1,
+                AttestationMechanismType.SymmetricKey,
+                EnrollmentType.Group,
                 connectToHubUsingOperationalCertificate: true).ConfigureAwait(false);
         }
 
@@ -1425,7 +1535,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 allocationPolicy,
                                 customAllocationDefinition,
                                 iothubs,
-                                capabilities).ConfigureAwait(false);
+                                capabilities,
+                                connectToHubUsingOperationalCertificate).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
