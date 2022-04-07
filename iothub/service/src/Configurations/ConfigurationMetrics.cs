@@ -19,14 +19,12 @@ namespace Microsoft.Azure.Devices
         /// Results of the metrics collection queries
         /// </summary>
         [JsonProperty("results")]
-        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
         public IDictionary<string, long> Results { get; set; } = new Dictionary<string, long>();
 
         /// <summary>
         /// Queries used for metrics collection
         /// </summary>
         [JsonProperty("queries")]
-        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Public facing property cannot be modified since it will be a breaking change.")]
         public IDictionary<string, string> Queries { get; set; } = new Dictionary<string, string>();
     }
 }

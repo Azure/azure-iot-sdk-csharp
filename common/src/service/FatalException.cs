@@ -8,7 +8,6 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common
 {
     [Serializable]
-    [SuppressMessage(FxCop.Category.Design, "CA1064:ExceptionsShouldBePublic", Justification = "CSDMain Bug 43142")]
     internal class FatalException : Exception
     {
         public FatalException()

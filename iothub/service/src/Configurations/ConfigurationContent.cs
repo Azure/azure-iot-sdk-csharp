@@ -19,27 +19,18 @@ namespace Microsoft.Azure.Devices
         /// and <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/> for more details.
         /// </remarks>
         [JsonProperty(PropertyName = "modulesContent")]
-#pragma warning disable CA2227 // Collection properties should be read only
         public IDictionary<string, IDictionary<string, object>> ModulesContent { get; set; } = new Dictionary<string, IDictionary<string, object>>();
-
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// The device module configuration content.
         /// </summary>
         [JsonProperty(PropertyName = "moduleContent")]
-#pragma warning disable CA2227 // Collection properties should be read only
         public IDictionary<string, object> ModuleContent { get; set; } = new Dictionary<string, object>();
-
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// The device configuration content.
         /// </summary>
         [JsonProperty(PropertyName = "deviceContent")]
-#pragma warning disable CA2227 // Collection properties should be read only
         public IDictionary<string, object> DeviceContent { get; set; } = new Dictionary<string, object>();
-
-#pragma warning restore CA2227 // Collection properties should be read only
     }
 }

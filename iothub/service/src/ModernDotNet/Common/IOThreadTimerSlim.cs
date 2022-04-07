@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
         private Timer _timer;
         private readonly Action<object> _callback;
         private readonly object _callbackState;
-        private SemaphoreSlim _timerSemaphore;
+        private readonly SemaphoreSlim _timerSemaphore;
 
         public IOThreadTimerSlim(Action<object> callback, object callbackState)
         {

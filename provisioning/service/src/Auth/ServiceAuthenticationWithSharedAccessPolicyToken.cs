@@ -20,20 +20,20 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         /// <param name="token">Token associated with the shared access policy.</param>
         public ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
         {
-            this.SetPolicyName(policyName);
-            this.SetToken(token);
+            SetPolicyName(policyName);
+            SetToken(token);
         }
 
         public string PolicyName
         {
-            get { return this.policyName; }
-            set { this.SetPolicyName(value); }
+            get { return policyName; }
+            set { SetPolicyName(value); }
         }
 
         public string Token
         {
-            get { return this.token; }
-            set { this.SetToken(value); }
+            get { return token; }
+            set { SetToken(value); }
         }
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
@@ -43,8 +43,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(provisioningConnectionStringBuilder));
             }
 
-            provisioningConnectionStringBuilder.SharedAccessKeyName = this.PolicyName;
-            provisioningConnectionStringBuilder.SharedAccessSignature = this.Token;
+            provisioningConnectionStringBuilder.SharedAccessKeyName = PolicyName;
+            provisioningConnectionStringBuilder.SharedAccessSignature = Token;
             provisioningConnectionStringBuilder.SharedAccessKey = null;
 
             return provisioningConnectionStringBuilder;

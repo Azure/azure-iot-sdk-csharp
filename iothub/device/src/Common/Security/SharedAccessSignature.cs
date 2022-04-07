@@ -119,10 +119,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal static string Sign(byte[] key, string value)
         {
-            using (var algorithm = new HMACSHA256(key))
-            {
-                return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(value)));
-            }
+            using var algorithm = new HMACSHA256(key);
+            return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(value)));
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)

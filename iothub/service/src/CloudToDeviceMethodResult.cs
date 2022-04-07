@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Microsoft.Azure.Devices
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     /// Represents the Device Method Invocation Results.
     /// </summary>
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string GetPayloadAsJson()
         {
-            return (string)this.Payload;
+            return (string)Payload;
         }
 
         [JsonProperty("payload")]

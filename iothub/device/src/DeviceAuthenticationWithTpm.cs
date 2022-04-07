@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithTpm : DeviceAuthenticationWithTokenRefresh
     {
-        private SecurityProviderTpm _securityProvider;
+        private readonly SecurityProviderTpm _securityProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class with default
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private class TpmSharedAccessSignatureBuilder : SharedAccessSignatureBuilder
         {
-            private SecurityProviderTpm _securityProvider;
+            private readonly SecurityProviderTpm _securityProvider;
 
             public TpmSharedAccessSignatureBuilder(SecurityProviderTpm securityProvider)
             {

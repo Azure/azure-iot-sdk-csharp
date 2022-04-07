@@ -20,8 +20,6 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Transport types supported by ServiceClient - Amqp and Amqp over WebSocket only
     /// </summary>
-#pragma warning disable CA1707 // Identifiers should not contain underscores
-
     public enum TransportType
     {
         /// <summary>
@@ -34,8 +32,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         Amqp_WebSocket_Only
     }
-
-#pragma warning restore CA1707 // Identifiers should not contain underscores
 
     /// <summary>
     /// Contains methods that services can use to send messages to devices

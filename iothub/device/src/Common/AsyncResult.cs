@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string DisablePrepareForRethrow = "DisablePrepareForRethrow";
 
         private static AsyncCallback s_asyncCompletionWrapperCallback;
-        private AsyncCallback _callback;
+        private readonly AsyncCallback _callback;
         private bool _endCalled;
         private Exception _exception;
         private AsyncCompletion _nextAsyncCompletion;
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         private ManualResetEvent _manualResetEvent;
 
         [Fx.Tag.SynchronizationObject(Blocking = false)]
-        private object _thisLock;
+        private readonly object _thisLock;
 
 #if DEBUG
         private UncompletedAsyncResultMarker _marker;
@@ -69,13 +69,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool CompletedSynchronously { get; private set; }
 
-        public bool HasCallback
-        {
-            get
-            {
-                return _callback != null;
-            }
-        }
+        public bool HasCallback => _callback != null;
 
         public bool IsCompleted { get; private set; }
 
@@ -240,8 +234,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected bool SyncContinue(IAsyncResult result)
         {
-            AsyncCompletion callback;
-            if (TryContinueHelper(result, out callback))
+            if (TryContinueHelper(result, out AsyncCompletion callback))
             {
                 return callback(result);
             }

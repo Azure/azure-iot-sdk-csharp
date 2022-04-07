@@ -12,9 +12,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         private DateTime _deadline;
         private bool _isDeadlineSet;
-        private TimeSpan _originalTimeout;
+        private readonly TimeSpan _originalTimeout;
 
-        public static readonly TimeSpan MaxWait = TimeSpan.FromMilliseconds(Int32.MaxValue);
+        public static readonly TimeSpan MaxWait = TimeSpan.FromMilliseconds(int.MaxValue);
 
         public TimeoutHelper(TimeSpan timeout) :
             this(timeout, false)
@@ -33,22 +33,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 SetDeadline();
             }
-        }
-
-        public static int ToMilliseconds(TimeSpan timeout)
-        {
-            if (timeout == TimeSpan.MaxValue)
-            {
-                return Timeout.Infinite;
-            }
-             
-            long ticks = Ticks.FromTimeSpan(timeout);
-            if (ticks / TimeSpan.TicksPerMillisecond > Int32.MaxValue)
-            {
-                return Int32.MaxValue;
-            }
-
-            return Ticks.ToMilliseconds(ticks);
         }
 
         public TimeSpan GetRemainingTime()

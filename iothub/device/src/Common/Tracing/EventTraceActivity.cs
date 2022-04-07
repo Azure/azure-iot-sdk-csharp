@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class EventTraceActivity
     {
-        private static EventTraceActivity empty;
+        private static EventTraceActivity s_empty;
 
         public EventTraceActivity()
             : this(Guid.NewGuid())
@@ -20,29 +20,26 @@ namespace Microsoft.Azure.Devices.Client
 
         public EventTraceActivity(Guid activityId)
         {
-            this.ActivityId = activityId;
+            _activityId = activityId;
         }
 
         public static EventTraceActivity Empty
         {
             get
             {
-                if (empty == null)
+                if (s_empty == null)
                 {
-                    empty = new EventTraceActivity(Guid.Empty);
+                    s_empty = new EventTraceActivity(Guid.Empty);
                 }
 
-                return empty;
+                return s_empty;
             }
         }
 
-        public static string Name
-        {
-            get { return "E2EActivity"; }
-        }
+        public static string Name => "E2EActivity";
 
         // this field is passed as reference to native code.
-        public Guid ActivityId;
+        public Guid _activityId;
 
         public static EventTraceActivity CreateFromThread()
         {

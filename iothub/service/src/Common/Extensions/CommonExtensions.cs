@@ -47,9 +47,7 @@ namespace Microsoft.Azure.Devices.Common
             int length = value.Length;
             if (length == 0)
             {
-#pragma warning disable CA1305 // Specify IFormatProvider
                 return suffix.ToString();
-#pragma warning restore CA1305 // Specify IFormatProvider
             }
 
             return value[length - 1] == suffix
@@ -72,9 +70,7 @@ namespace Microsoft.Azure.Devices.Common
 
             if (value.Length == 0)
             {
-#pragma warning disable CA1305 // Specify IFormatProvider
                 return prefix.ToString();
-#pragma warning restore CA1305 // Specify IFormatProvider
             }
             else
             {

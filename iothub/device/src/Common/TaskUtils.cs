@@ -12,23 +12,23 @@ namespace Microsoft.Azure.Devices.Client.Common
     /// </summary>
     internal static class TaskUtils
     {
-        private static readonly TaskFactory MyTaskFactory = new TaskFactory(CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskContinuationOptions.None, TaskScheduler.Default);
+        private static readonly TaskFactory s_myTaskFactory = new TaskFactory(CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskContinuationOptions.None, TaskScheduler.Default);
 
         internal static Task RunOnDefaultScheduler(this Func<Task> func)
         {
-            return MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
+            return s_myTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
         }
 
         internal static Task<T> RunOnDefaultScheduler<T>(this Func<Task<T>> func)
         {
-            return MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
+            return s_myTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
         }
 
         internal static Task RunOnDefaultScheduler(this Action func)
         {
-            return MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
+            return s_myTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
         }
 
-        internal static Task<T> RunOnDefaultScheduler<T>(Func<T> func) => MyTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
+        internal static Task<T> RunOnDefaultScheduler<T>(Func<T> func) => s_myTaskFactory.StartNew(func, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
     }
 }

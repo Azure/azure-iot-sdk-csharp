@@ -66,10 +66,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _httpClientHandler.Proxy = proxy;
             }
 
-            _httpClientObj = new HttpClient(_httpClientHandler);
+            _httpClientObj = new HttpClient(_httpClientHandler)
+            {
+                BaseAddress = _baseAddress,
+                Timeout = timeout
+            };
 
-            _httpClientObj.BaseAddress = _baseAddress;
-            _httpClientObj.Timeout = timeout;
             _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 

@@ -4,7 +4,7 @@
 using Microsoft.Azure.Devices.Client.Common.Api;
 namespace Microsoft.Azure.Devices.Client
 {
-    sealed class IotHubApiResources : ApiResources
+    internal sealed class IotHubApiResources : ApiResources
     {
         internal static string GetString(string value, params object[] args)
         {

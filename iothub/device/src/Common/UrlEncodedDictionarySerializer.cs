@@ -32,23 +32,23 @@ namespace Microsoft.Azure.Devices.Client.Common
         // We assume that in average 20% of strings are the encoded characters.
         private const float EncodedSymbolsFactor = 1.2f;
 
-        private readonly IDictionary<string, string> output;
-        private readonly Tokenizer tokenizer;
+        private readonly IDictionary<string, string> _output;
+        private readonly Tokenizer _tokenizer;
 
         private UrlEncodedDictionarySerializer(
             IDictionary<string, string> output,
             string value,
             int startIndex)
         {
-            this.output = output;
-            tokenizer = new Tokenizer(value, startIndex);
+            _output = output;
+            _tokenizer = new Tokenizer(value, startIndex);
         }
 
         private void Deserialize()
         {
             string key = null;
 
-            foreach (Token token in tokenizer.GetTokens())
+            foreach (Token token in _tokenizer.GetTokens())
             {
                 if (token.Type == TokenType.Key)
                 {
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                 }
                 if (token.Type == TokenType.Value)
                 {
-                    output[key] = token.Value;
+                    _output[key] = token.Value;
                 }
             }
         }
@@ -192,20 +192,20 @@ namespace Microsoft.Azure.Devices.Client.Common
                 Finish
             }
 
-            private readonly string value;
-            private int position;
+            private readonly string _value;
+            private int _position;
 
-            private TokenizerState currentState = TokenizerState.ReadyToReadKey;
+            private TokenizerState _currentState = TokenizerState.ReadyToReadKey;
 
             public Tokenizer(string value, int startIndex)
             {
-                this.value = value;
-                position = startIndex;
+                _value = value;
+                _position = startIndex;
             }
 
             public IEnumerable<Token> GetTokens()
             {
-                if (position >= value.Length)
+                if (_position >= _value.Length)
                 {
                     yield break;
                 }
@@ -214,67 +214,67 @@ namespace Microsoft.Azure.Devices.Client.Common
                 string errorMessage = null;
                 while (!readCompleted)
                 {
-                    switch (currentState)
+                    switch (_currentState)
                     {
                         case TokenizerState.ReadyToReadKey:
                             {
-                                if (position >= value.Length)
+                                if (_position >= _value.Length)
                                 {
-                                    errorMessage = "Unexpected string end in '{0}' state.".FormatInvariant(currentState);
-                                    currentState = TokenizerState.Error;
+                                    errorMessage = "Unexpected string end in '{0}' state.".FormatInvariant(_currentState);
+                                    _currentState = TokenizerState.Error;
                                     break;
                                 }
-                                char currentChar = value[position];
+                                char currentChar = _value[_position];
                                 switch (currentChar)
                                 {
                                     case '=':
                                     case '&':
-                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, currentState);
-                                        currentState = TokenizerState.Error;
+                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, _currentState);
+                                        _currentState = TokenizerState.Error;
                                         break;
 
                                     case '/':
-                                        currentState = TokenizerState.Finish;
+                                        _currentState = TokenizerState.Finish;
                                         break;
 
                                     default:
                                         readCount++;
-                                        currentState = TokenizerState.ReadKey;
+                                        _currentState = TokenizerState.ReadKey;
                                         break;
                                 }
                                 break;
                             }
                         case TokenizerState.ReadKey:
                             {
-                                if (position >= value.Length)
+                                if (_position >= _value.Length)
                                 {
                                     yield return CreateToken(TokenType.Key, readCount);
                                     yield return CreateToken(TokenType.Value, 0);
                                     readCount = 0;
-                                    currentState = TokenizerState.Finish;
+                                    _currentState = TokenizerState.Finish;
                                     break;
                                 }
-                                char currentChar = value[position];
+                                char currentChar = _value[_position];
                                 switch (currentChar)
                                 {
                                     case '=':
                                         yield return CreateToken(TokenType.Key, readCount);
                                         readCount = 0;
-                                        currentState = TokenizerState.ReadValue;
+                                        _currentState = TokenizerState.ReadValue;
                                         break;
 
                                     case '&':
                                         yield return CreateToken(TokenType.Key, readCount);
                                         yield return CreateToken(TokenType.Value, 0);
                                         readCount = 0;
-                                        currentState = TokenizerState.ReadyToReadKey;
+                                        _currentState = TokenizerState.ReadyToReadKey;
                                         break;
 
                                     case '/':
                                         yield return CreateToken(TokenType.Key, readCount);
                                         yield return CreateToken(TokenType.Value, 0);
                                         readCount = 0;
-                                        currentState = TokenizerState.Finish;
+                                        _currentState = TokenizerState.Finish;
                                         break;
 
                                     default:
@@ -285,31 +285,31 @@ namespace Microsoft.Azure.Devices.Client.Common
                             }
                         case TokenizerState.ReadValue:
                             {
-                                if (position >= value.Length)
+                                if (_position >= _value.Length)
                                 {
                                     yield return CreateToken(TokenType.Value, readCount);
                                     readCount = 0;
-                                    currentState = TokenizerState.Finish;
+                                    _currentState = TokenizerState.Finish;
                                     break;
                                 }
-                                char currentChar = value[position];
+                                char currentChar = _value[_position];
                                 switch (currentChar)
                                 {
                                     case '=':
-                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, currentState);
-                                        currentState = TokenizerState.Error;
+                                        errorMessage = "Unexpected character '{0}' in '{1}' state.".FormatInvariant(currentChar, _currentState);
+                                        _currentState = TokenizerState.Error;
                                         break;
 
                                     case '&':
                                         yield return CreateToken(TokenType.Value, readCount);
                                         readCount = 0;
-                                        currentState = TokenizerState.ReadyToReadKey;
+                                        _currentState = TokenizerState.ReadyToReadKey;
                                         break;
 
                                     case '/':
                                         yield return CreateToken(TokenType.Value, readCount);
                                         readCount = 0;
-                                        currentState = TokenizerState.Finish;
+                                        _currentState = TokenizerState.Finish;
                                         break;
 
                                     default:
@@ -326,10 +326,10 @@ namespace Microsoft.Azure.Devices.Client.Common
                         default:
                             throw new NotSupportedException();
                     }
-                    position++;
+                    _position++;
                 }
 
-                if (currentState == TokenizerState.Error)
+                if (_currentState == TokenizerState.Error)
                 {
                     throw new FormatException(errorMessage);
                 }
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.Client.Common
 
             private Token CreateToken(TokenType tokenType, int readCount)
             {
-                string tokenValue = readCount == 0 ? null : value.Substring(position - readCount, readCount);
+                string tokenValue = readCount == 0 ? null : _value.Substring(_position - readCount, readCount);
 
                 return new Token(tokenType, tokenValue);
             }

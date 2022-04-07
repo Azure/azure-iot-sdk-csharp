@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Security
     /// </summary>
     public sealed class SharedAccessSignatureBuilder
     {
-        string key;
+        private string _key;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
@@ -35,12 +35,12 @@ namespace Microsoft.Azure.Devices.Common.Security
         /// </summary>
         public string Key
         {
-            get => key;
+            get => _key;
 
             set
             {
                 StringValidationHelper.EnsureBase64String(value, "Key");
-                key = value;
+                _key = value;
             }
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Common.Security
             return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
-        static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        private static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Common.Security
             return buffer.ToString();
         }
 
-        static string BuildExpiresOn(TimeSpan timeToLive)
+        private static string BuildExpiresOn(TimeSpan timeToLive)
         {
             DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Common.Security
             return Convert.ToString(seconds, CultureInfo.InvariantCulture);
         }
 
-        static string Sign(string requestString, string key)
+        private static string Sign(string requestString, string key)
         {
             using var hmac = new HMACSHA256(Convert.FromBase64String(key));
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));

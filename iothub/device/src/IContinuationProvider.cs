@@ -3,9 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    delegate T ContinuationFactory<out T>(IPipelineContext context, IDelegatingHandler innerHandler);
+    internal delegate T ContinuationFactory<out T>(IPipelineContext context, IDelegatingHandler innerHandler);
 
-    interface IContinuationProvider<T> where T: IDelegatingHandler
+    internal interface IContinuationProvider<T> where T: IDelegatingHandler
     {
         ContinuationFactory<T> ContinuationFactory { get; set; }
     }

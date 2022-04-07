@@ -3,22 +3,22 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    static class FxTrace
+    internal static class FxTrace
     {
-        const string EventSourceName = "Microsoft.IotHub";
-        static ExceptionTrace exceptionTrace;
+        private const string EventSourceName = "Microsoft.IotHub";
+        private static ExceptionTrace s_exceptionTrace;
 
         public static ExceptionTrace Exception
         {
             get
             {
-                if (exceptionTrace == null)
+                if (s_exceptionTrace == null)
                 {
                     // don't need a lock here since a true singleton is not required
-                    exceptionTrace = new ExceptionTrace(EventSourceName);
+                    s_exceptionTrace = new ExceptionTrace(EventSourceName);
                 }
 
-                return exceptionTrace;
+                return s_exceptionTrace;
             }
         }
     }

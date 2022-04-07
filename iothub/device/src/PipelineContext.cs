@@ -8,11 +8,11 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class PipelineContext : IPipelineContext
     {
-        private readonly Dictionary<string, object> context = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _context = new Dictionary<string, object>();
 
         public void Set<T>(T value)
         {
-            this.Set(typeof(T).Name, value);
+            Set(typeof(T).Name, value);
         }
 
         public void Set<T>(string key, T value)
@@ -22,34 +22,32 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Info(this, $"{key} = {value}");
             }
 
-            this.context[key] = value;
+            _context[key] = value;
         }
 
         public T Get<T>() where T : class
         {
-            return this.Get<T>(typeof(T).Name);
+            return Get<T>(typeof(T).Name);
         }
 
         public T Get<T>(string key)
         {
-            object value;
-            if (this.context.TryGetValue(key, out value))
+            if (_context.TryGetValue(key, out object value))
             {
                 return (T)value;
             }
 
-            return default(T);
+            return default;
         }
 
         public bool TryGet<T>(string key, out T value)
         {
-            object data;
-            if (this.context.TryGetValue(key, out data))
+            if (_context.TryGetValue(key, out object data))
             {
                 value = (T)data;
                 return true;
             }
-            value = default(T);
+            value = default;
             return false;
         }
     }

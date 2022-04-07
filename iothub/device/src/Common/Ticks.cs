@@ -10,15 +10,12 @@ namespace Microsoft.Azure.Devices.Client
         public static long Now
         {
             [Fx.Tag.SecurityNote(Miscellaneous = "Why isn't the SuppressUnmanagedCodeSecurity attribute working in this case?")]
-            get
-            {
-                return DateTime.UtcNow.ToFileTimeUtc();
-            }
+            get => DateTime.UtcNow.ToFileTimeUtc();
         }
 
         public static long FromMilliseconds(int milliseconds)
         {
-            return checked((long)milliseconds * TimeSpan.TicksPerMillisecond);
+            return checked(milliseconds * TimeSpan.TicksPerMillisecond);
         }
 
         public static int ToMilliseconds(long ticks)
