@@ -26,7 +26,6 @@ if (IsPullRequestBuild)
 {
 	Write-Host "Pull request build detected, will run pr tests"
 	
-	<#
 	$runTestCmd += " -prtests"
 
 	if (ShouldSkipDPSTests) 
@@ -48,7 +47,6 @@ if (IsPullRequestBuild)
 	{
 		Write-Host "Will run Iot Hub tests"
 	}
-	#>
 }
 else 
 {
