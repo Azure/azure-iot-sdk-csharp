@@ -2,9 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -34,6 +31,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// The custom content.
         /// </summary>
         public string Payload { get; private set; }
+
+        /// <summary>
+        /// The PEM encoded operational client certificate request that the device provisioning service (DPS) will send to its linked certificate authority which will sign
+        /// and return an X509 device identity operational client certificate to the device.
+        /// DPS will register the device and operational client certificate thumbprint in IoT Hub and return the certificate to the IoT device.
+        /// The IoT device can then use the operational certificate to authenticate with IoT Hub.
+        /// </summary>
+        public string OperationalCertificateRequest { get; private set; }
 
         /// <summary>
         /// The Product Information sent to the Provisioning Service. The application can specify extra information.
@@ -76,9 +81,31 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
             Security = security;
-            if (!string.IsNullOrEmpty(payload))
+            if (!string.IsNullOrWhiteSpace(payload))
             {
                 Payload = payload;
+            }
+        }
+
+        internal ProvisioningTransportRegisterMessage(
+            string globalDeviceEndpoint,
+            string idScope,
+            SecurityProvider security,
+            string payload = null,
+            string operationalCertificateRequest = null)
+        {
+            GlobalDeviceEndpoint = globalDeviceEndpoint;
+            IdScope = idScope;
+            Security = security;
+
+            if (!string.IsNullOrWhiteSpace(payload))
+            {
+                Payload = payload;
+            }
+
+            if (!string.IsNullOrWhiteSpace(operationalCertificateRequest))
+            {
+                OperationalCertificateRequest = operationalCertificateRequest;
             }
         }
     }

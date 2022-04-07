@@ -25,6 +25,7 @@ $runTestCmd = ".\build.ps1 -clean -build -configuration DEBUG -framework $env:FR
 if (IsPullRequestBuild)
 {
 	Write-Host "Pull request build detected, will run pr tests"
+	
 	$runTestCmd += " -prtests"
 
 	if (ShouldSkipDPSTests) 
@@ -45,7 +46,7 @@ if (IsPullRequestBuild)
 	else 
 	{
 		Write-Host "Will run Iot Hub tests"
-	}	
+	}
 }
 else 
 {

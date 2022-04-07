@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private static readonly TimeSpan s_defaultOperationPoolingInterval = TimeSpan.FromSeconds(2);
 
         private const string Registration = "registration";
+        private const string EmptyJson = "{}";
 
         private readonly ProvisioningTransportRegisterMessage _message;
         private readonly TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
@@ -120,7 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        public async override void ChannelRead(IChannelHandlerContext context, object message)
+        public override async void ChannelRead(IChannelHandlerContext context, object message)
         {
             if (Logging.IsEnabled)
             {
@@ -139,7 +140,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        public async override void ChannelReadComplete(IChannelHandlerContext context)
+        public override async void ChannelReadComplete(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled)
             {
@@ -343,10 +344,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private async Task PublishRegisterAsync(IChannelHandlerContext context)
         {
             IByteBuffer packagePayload = Unpooled.Empty;
-            if (_message.Payload != null && _message.Payload.Length > 0)
+
+            var deviceRegistration = new DeviceRegistration();
+
+            if (!string.IsNullOrWhiteSpace(_message.Payload))
             {
-                var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
-                using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                deviceRegistration.Payload = new JRaw(_message.Payload);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_message.OperationalCertificateRequest))
+            {
+                deviceRegistration.OperationalCertificateRequest = _message.OperationalCertificateRequest;
+            }
+
+            string deviceRegistrationJsonString = JsonConvert.SerializeObject(deviceRegistration);
+
+            if (deviceRegistrationJsonString != EmptyJson)
+            {
+                using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(deviceRegistrationJsonString));
                 long streamLength = customContentStream.Length;
                 int length = (int)streamLength;
                 packagePayload = context.Channel.Allocator.Buffer(length, length);

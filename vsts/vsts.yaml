@@ -97,6 +97,7 @@ jobs:
           IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
           IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
           IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          CA_NAME: $(CA-NAME)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -225,6 +226,7 @@ jobs:
           IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
           IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
           IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          CA_NAME: $(CA-NAME)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -323,6 +325,7 @@ jobs:
           IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
           IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
           IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          CA_NAME: $(CA-NAME)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
@@ -454,6 +457,7 @@ jobs:
           IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
           IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
           IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          CA_NAME: $(CA-NAME)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
@@ -491,9 +495,9 @@ jobs:
 
         condition: always()
 
-  ### WINDOWS Analyzers ###
-  - job: Analyzers
-    displayName: Analyzers
+  ### .Net SDL Analyzers ###
+  - job: DOTNet_SDL_Analyzers
+    displayName: .Net SDL Analyzers
     timeoutInMinutes: 60
 
     condition: succeeded()

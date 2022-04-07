@@ -14,12 +14,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
-        public DeviceRegistration(string registrationId = default(string), TpmAttestation tpm = default(TpmAttestation), JRaw payload = default(JRaw))
-            : this(payload)
+        public DeviceRegistration(string registrationId = default(string), TpmAttestation tpm = default(TpmAttestation))
         {
             RegistrationId = registrationId;
             Tpm = tpm;
-            CustomInit();
         }
 
         /// <summary>

@@ -296,7 +296,7 @@ try
         $testCategory += "TestCategory=InvalidServiceCertificate"
         $testCategory += ")"
 
-        # test categories to exclude
+        # Test categories to exclude
         $testCategory += "&TestCategory!=LongRunning"
         $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"

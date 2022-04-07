@@ -311,5 +311,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public ICollection<string> IotHubs { get; set; }
 
 #pragma warning restore CA2227 // Collection properties should be read only
+
+        /// <summary>
+        /// The issuance policy for client certificates.
+        /// </summary>
+        [JsonProperty(PropertyName = "clientCertificateIssuancePolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ClientCertificateIssuancePolicy ClientCertificateIssuancePolicy { get; set; }
     }
 }
