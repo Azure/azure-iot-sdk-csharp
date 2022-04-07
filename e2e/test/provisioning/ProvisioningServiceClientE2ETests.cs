@@ -313,7 +313,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationMechanismType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities)
+        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(
+            ProvisioningServiceClient provisioningServiceClient,
+            AttestationMechanismType attestationType,
+            string groupId,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            ICollection<string> iothubs, DeviceCapabilities capabilities,
+            bool connectToHubUsingOperationalCertificate = false)
         {
             Attestation attestation;
             switch (attestationType)
@@ -338,6 +346,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 AllocationPolicy = allocationPolicy,
                 CustomAllocationDefinition = customAllocationDefinition,
                 IotHubs = iothubs,
+                ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
             };
 
             return await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup).ConfigureAwait(false);
