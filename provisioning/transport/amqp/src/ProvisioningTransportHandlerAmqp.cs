@@ -22,6 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
+        private const string EmptyJson = "{}";
+
         // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
@@ -149,7 +151,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 bundleCancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0) ? new DeviceRegistration { Payload = new JRaw(message.Payload) } : null;
+
+                var deviceRegistration = new DeviceRegistration();
+
+                if (!string.IsNullOrWhiteSpace(message.Payload))
+                {
+                    deviceRegistration.Payload = new JRaw(message.Payload);
+                }
+
+                if (!string.IsNullOrWhiteSpace(message.OperationalCertificateRequest))
+                {
+                    deviceRegistration.OperationalCertificateRequest = message.OperationalCertificateRequest;
+                }
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);
 
@@ -244,13 +257,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-                if (deviceRegistration == null)
+                string deviceRegistrationJsonString = JsonConvert.SerializeObject(deviceRegistration);
+
+                if (deviceRegistrationJsonString == EmptyJson)
                 {
                     amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
                 }
                 else
                 {
-                    var customContentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
                     amqpMessage = AmqpMessage.Create(customContentStream, true);
                 }
 
@@ -322,22 +337,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
             Models.DeviceRegistrationResult result)
         {
-            Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
-            Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
+            Enum.TryParse(result?.Status, true, out ProvisioningRegistrationStatusType status);
+            Enum.TryParse(result?.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
 
             return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
+                result?.RegistrationId,
+                result?.CreatedDateTimeUtc,
+                result?.AssignedHub,
+                result?.DeviceId,
                 status,
                 substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode ?? 0,
-                result.ErrorMessage,
-                result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
+                result?.GenerationId,
+                result?.LastUpdatedDateTimeUtc,
+                result.ErrorCode == null ? 0 : (int)result.ErrorCode,
+                result?.ErrorMessage,
+                result?.Etag,
+                result?.Payload?.ToString(CultureInfo.InvariantCulture),
+                result?.IssuedClientCertificate);
         }
 
         private void ValidateOutcome(Outcome outcome)
