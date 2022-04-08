@@ -967,9 +967,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool connectToHubUsingOperationalCertificate,
             TimeSpan timeout)
         {
+            
             string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
-            
+
             // Create the enrollment in DPS and create the corresponding security provider for authenticating with DPS and IoT Hub.
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
                     attestationType,
@@ -999,91 +1000,99 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             DeviceRegistrationResult result = null;
 
+            X509Certificate2 operationalCertificate = null;
+            Client.IAuthenticationMethod auth = null;
+
             Logger.Trace($"ProvisioningDeviceClient RegisterAsync for group {groupId} . . . ");
 
-            // Trying to register simultaneously can cause conflicts (409). Retry in those scenarios to succeed.
-            int tryCount = 0;
-            while (true)
+            try
             {
-                try
-                {
-                    // If the device is expected to connect using CA issued operational certificate then send a certificate signing request with the registration request.
-                    // For the purpose of the E2E tests we will be using openssl to generate the certificate signing requests.
-                    if (connectToHubUsingOperationalCertificate)
-                    {
-                        string certificateRequest = GenerateClientCertKeyPairAndCsr(security.GetRegistrationID());
 
-                        result = timeout != TimeSpan.MaxValue
-                            ? await provClient.RegisterAsync(
-                                new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
-                                timeout).ConfigureAwait(false)
-                            : await provClient.RegisterAsync(
-                                new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
-                                cts.Token).ConfigureAwait(false);
-                        break;
+                // Trying to register simultaneously can cause conflicts (409). Retry in those scenarios to succeed.
+                int tryCount = 0;
+                while (true)
+                {
+                    try
+                    {
+                        // If the device is expected to connect using CA issued operational certificate then send a certificate signing request with the registration request.
+                        // For the purpose of the E2E tests we will be using openssl to generate the certificate signing requests.
+                        if (connectToHubUsingOperationalCertificate)
+                        {
+                            string certificateRequest = GenerateClientCertKeyPairAndCsr(security.GetRegistrationID());
+
+                            result = timeout != TimeSpan.MaxValue
+                                ? await provClient.RegisterAsync(
+                                    new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
+                                    timeout).ConfigureAwait(false)
+                                : await provClient.RegisterAsync(
+                                    new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
+                                    cts.Token).ConfigureAwait(false);
+                            break;
+                        }
+                        else
+                        {
+                            result = timeout != TimeSpan.MaxValue
+                                ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
+                                : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                            break;
+                        }
+                    }
+                    // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
+                    // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
+                    catch (ProvisioningTransportException ex) when (++tryCount < MaxTryCount)
+                    {
+                        Logger.Trace($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
+                        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+                    }
+                }
+
+                ValidateDeviceRegistrationResult(false, result);
+
+                if (connectToHubUsingOperationalCertificate)
+                {
+                    if (result.IssuedClientCertificate != null)
+                    {
+                        operationalCertificate = GenerateOperationalCertificateFromIssuedCertificate(result.DeviceId, result.IssuedClientCertificate);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                        // The authentication method is disposed at the end of the test method.
+                        auth = new DeviceAuthenticationWithX509Certificate(result.DeviceId, operationalCertificate);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                     }
                     else
                     {
-                        result = timeout != TimeSpan.MaxValue
-                            ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
-                            : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                        break;
+                        throw new InvalidOperationException("Expected operational certificate was not issed by DPS.");
                     }
-                }
-                // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
-                // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
-                catch (ProvisioningTransportException ex) when (++tryCount < MaxTryCount)
-                {
-                    Logger.Trace($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
-                    await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
-                }
-            }
 
-            ValidateDeviceRegistrationResult(false, result);
-
-            X509Certificate2 operationalCertificate = null;
-            Client.IAuthenticationMethod auth;
-
-            if (connectToHubUsingOperationalCertificate)
-            {
-                if (result.IssuedClientCertificate != null)
-                {
-                    operationalCertificate = GenerateOperationalCertificateFromIssuedCertificate(result.DeviceId, result.IssuedClientCertificate);
-
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                    // The authentication method is disposed at the end of the test method.
-                    auth = new DeviceAuthenticationWithX509Certificate(result.DeviceId, operationalCertificate);
-#pragma warning restore CA2000 // Dispose objects before losing scope
                 }
                 else
                 {
-                    throw new InvalidOperationException("Expected operational certificate was not issed by DPS.");
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                    // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
+                    auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 }
 
+                await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
+                await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
             }
-            else
+            finally
             {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
-                auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
-#pragma warning restore CA2000 // Dispose objects before losing scope
+                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                {
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
+
+                operationalCertificate?.Dispose();
+
+                if (auth != null && auth is IDisposable disposableAuth)
+                {
+                    disposableAuth?.Dispose();
+                }
             }
+            
 
-            await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
-            await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
-
-            if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
-            {
-                using ProvisioningServiceClient dpsServiceClient = CreateProvisioningService(proxyServerAddress);
-                await DeleteCreatedEnrollmentAsync(enrollmentType, dpsServiceClient, security, groupId).ConfigureAwait(false);
-            }
-
-            operationalCertificate?.Dispose();
-
-            if (auth is IDisposable disposableAuth)
-            {
-                disposableAuth?.Dispose();
-            }
+            
         }
 
         /// <summary>
@@ -1163,33 +1172,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            try
+            {
+                var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 security,
                 transport);
-            using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
+                using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
-            // Test registering with valid additional data payload
-            DeviceRegistrationResult result = await provClient
-                .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
-                .ConfigureAwait(false);
-            ValidateDeviceRegistrationResult(true, result);
-            Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
+                // Test registering with valid additional data payload
+                DeviceRegistrationResult result = await provClient
+                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = PayloadJsonData }, cts.Token)
+                    .ConfigureAwait(false);
+                ValidateDeviceRegistrationResult(true, result);
+                Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
 
-            // Test registering without additional data
-            result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-            ValidateDeviceRegistrationResult(false, result);
-
-            if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                // Test registering without additional data
+                result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                ValidateDeviceRegistrationResult(false, result);
+            }
+            finally
             {
-                try
+                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
                 {
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
                 }
             }
         }
@@ -1207,15 +1214,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
             Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
-            DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+            try
+            {
+                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
-            Logger.Trace($"{result.Status}");
+                Logger.Trace($"{result.Status}");
 
-            Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
-            Assert.IsNull(result.AssignedHub);
-            Assert.IsNull(result.DeviceId);
-            // Exception message must contain the errorCode value as below
-            Assert.AreEqual(404201, result.ErrorCode);
+                Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
+                Assert.IsNull(result.AssignedHub);
+                Assert.IsNull(result.DeviceId);
+                // Exception message must contain the errorCode value as below
+                Assert.AreEqual(404201, result.ErrorCode);
+            }
+            finally
+            {
+                await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, security).ConfigureAwait(false);
+            }
         }
 
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
@@ -1234,10 +1248,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-            ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
+            try
+            {
+                ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
 
-            Logger.Trace($"Exception: {exception}");
+                Logger.Trace($"Exception: {exception}");
+            }
+            finally
+            {
+                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                {
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
+            }
         }
 
         private async Task ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(
@@ -1258,11 +1282,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
             Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
-            ProvisioningTransportException exception = await Assert.
+
+
+            try
+            {
+                ProvisioningTransportException exception = await Assert.
                 ThrowsExceptionAsync<ProvisioningTransportException>(() => provClient.RegisterAsync(cts.Token))
                 .ConfigureAwait(false);
 
-            Logger.Trace($"Exception: {exception}");
+                Logger.Trace($"Exception: {exception}");
+            }
+            finally
+            {
+                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                {
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
+            }
         }
 
         public static ProvisioningTransportHandler CreateTransportHandlerFromName(Client.TransportType transportType)
@@ -1495,18 +1531,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public static async Task DeleteCreatedEnrollmentAsync(
             EnrollmentType? enrollmentType,
-            ProvisioningServiceClient dpsClient,
             SecurityProvider security,
-            string groupId)
+            string groupId = "")
         {
-            if (enrollmentType == EnrollmentType.Individual)
+            using ProvisioningServiceClient dpsClient = CreateProvisioningService();
+
+            try
             {
-                await dpsClient.DeleteIndividualEnrollmentAsync(security.GetRegistrationID()).ConfigureAwait(false);
+                if (enrollmentType == EnrollmentType.Individual)
+                {
+                    await dpsClient.DeleteIndividualEnrollmentAsync(security.GetRegistrationID()).ConfigureAwait(false);
+                }
+                else
+                {
+                    await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
             }
+
         }
 
         /// <summary>
