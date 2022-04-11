@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         /// <param name="proxyServerAddress">The address of the proxy to be used, or null/empty if no proxy will be used</param>
         /// <returns>the provisioning service client instance</returns>
-        public static ProvisioningServiceClient CreateProvisioningService(string proxyServerAddress)
+        public static ProvisioningServiceClient CreateProvisioningService(string proxyServerAddress = null)
         {
             var transportSettings = new Devices.Provisioning.Service.HttpTransportSettings();
 

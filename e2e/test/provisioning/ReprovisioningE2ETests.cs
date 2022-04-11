@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
+                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
             }
 
             if (auth is IDisposable disposableAuth)
