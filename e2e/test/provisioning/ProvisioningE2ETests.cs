@@ -967,7 +967,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             bool connectToHubUsingOperationalCertificate,
             TimeSpan timeout)
         {
-            
             string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
 
