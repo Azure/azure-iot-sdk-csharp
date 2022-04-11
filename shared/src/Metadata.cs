@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
+using DateTimeT = System.DateTime;
+
 namespace Microsoft.Azure.Devices.Shared
 {
-    using System.Diagnostics.CodeAnalysis;
-    using DateTimeT = System.DateTime;
-
     /// <summary>
     /// <see cref="Metadata"/> for properties in <see cref="TwinCollection"/>
     /// </summary>

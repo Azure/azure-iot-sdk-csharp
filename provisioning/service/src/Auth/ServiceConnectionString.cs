@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     /// </remarks>
     internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
     {
-        private static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
+        private static readonly TimeSpan s_defaultTokenTimeToLive = TimeSpan.FromHours(1);
         private const char UserSeparator = '@';
 
         /// <summary>
@@ -62,10 +62,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             private set;
         }
 
-        public string Audience
-        {
-            get { return HostName; }
-        }
+        public string Audience => HostName;
 
         public string SharedAccessKeyName
         {
@@ -102,8 +99,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             string password;
             if (string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
-                TimeSpan timeToLive;
-                password = BuildToken(out timeToLive);
+                password = BuildToken(out _);
             }
             else
             {
@@ -130,7 +126,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
-                TimeToLive = DefaultTokenTimeToLive,
+                TimeToLive = s_defaultTokenTimeToLive,
                 Target = Audience
             };
 
