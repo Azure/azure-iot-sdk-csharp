@@ -27,6 +27,8 @@ jobs:
       matrix:
         .Net 5.0:
           FRAMEWORK: net5.0
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
 
@@ -162,6 +164,14 @@ jobs:
           version: 5.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
+        
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Docker@1
         displayName: "Start TPM Simulator"
@@ -261,6 +271,8 @@ jobs:
       matrix:
         .Net 5.0:
           FRAMEWORK: net5.0
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
 
@@ -397,6 +409,14 @@ jobs:
         inputs:
           packageType: sdk
           version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+      
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
