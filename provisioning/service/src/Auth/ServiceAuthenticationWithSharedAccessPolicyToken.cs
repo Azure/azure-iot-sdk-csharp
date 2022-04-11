@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {
-    using System;
-
     /// <summary>
     /// Authentication method that uses a shared access policy token. 
     /// </summary>
     internal sealed class ServiceAuthenticationWithSharedAccessPolicyToken : IAuthenticationMethod
     {
-        string policyName;
-        string token;
+        private string _policyName;
+        private string _token;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
@@ -26,14 +26,14 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string PolicyName
         {
-            get { return policyName; }
-            set { SetPolicyName(value); }
+            get => _policyName;
+            set => SetPolicyName(value);
         }
 
         public string Token
         {
-            get { return token; }
-            set { SetToken(value); }
+            get => _token;
+            set => SetToken(value);
         }
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(policyName));
             }
 
-            this.policyName = policyName;
+            _policyName = policyName;
         }
 
         private void SetToken(string token)
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentException("Token must be of type SharedAccessSignature");
             }
 
-            this.token = token;
+            _token = token;
         }
     }
 }

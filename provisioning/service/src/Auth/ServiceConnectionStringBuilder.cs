@@ -17,19 +17,18 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private const char ValuePairSeparator = '=';
         private const string HostNameSeparator = ".";
 
-        private static readonly string HostNamePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.HostName)).Body).Member.Name; // todo: replace with nameof()
-        private static readonly string SharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
-        private static readonly string SharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
-        private static readonly string SharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
+        private static readonly string s_hostNamePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.HostName)).Body).Member.Name; // todo: replace with nameof()
+        private static readonly string s_sharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
+        private static readonly string s_sharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
+        private static readonly string s_sharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
 
-        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex s_hostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
 
         private string _hostName;
-        private string _serviceName;
         private IAuthenticationMethod _authenticationMethod;
 
         private ServiceConnectionStringBuilder()
@@ -67,14 +66,14 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string HostName
         {
-            get { return _hostName; }
-            set { SetHostName(value); }
+            get => _hostName;
+            set => SetHostName(value);
         }
 
         public IAuthenticationMethod AuthenticationMethod
         {
-            get { return _authenticationMethod; }
-            set { SetAuthenticationMethod(value); }
+            get => _authenticationMethod;
+            set => SetAuthenticationMethod(value);
         }
 
         public string SharedAccessKeyName { get; internal set; }
@@ -83,10 +82,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string SharedAccessSignature { get; internal set; }
 
-        public string ServiceName
-        {
-            get { return _serviceName; }
-        }
+        public string ServiceName { get; private set; }
 
         internal ServiceConnectionString ToServiceConnectionString()
         {
@@ -99,10 +95,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             Validate();
 
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, HostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(s_hostNamePropertyName, HostName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(s_sharedAccessKeyNamePropertyName, SharedAccessKeyName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(s_sharedAccessKeyPropertyName, SharedAccessKey);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(s_sharedAccessSignaturePropertyName, SharedAccessSignature);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -115,10 +111,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             IDictionary<string, string> map = serviceConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
-            HostName = GetConnectionStringValue(map, HostNamePropertyName);
-            SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
-            SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
-            SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
+            HostName = GetConnectionStringValue(map, s_hostNamePropertyName);
+            SharedAccessKeyName = GetConnectionStringOptionalValue(map, s_sharedAccessKeyNamePropertyName);
+            SharedAccessKey = GetConnectionStringOptionalValue(map, s_sharedAccessKeyPropertyName);
+            SharedAccessSignature = GetConnectionStringOptionalValue(map, s_sharedAccessSignaturePropertyName);
 
             Validate();
         }
@@ -150,10 +146,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 SharedAccessSignatureParser.Parse(ServiceName, SharedAccessSignature);
             }
             
-            ValidateFormat(HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
-            ValidateFormatIfSpecified(SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
-            ValidateFormatIfSpecified(SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
+            ValidateFormat(HostName, s_hostNamePropertyName, s_hostNameRegex);
+            ValidateFormatIfSpecified(SharedAccessKeyName, s_sharedAccessKeyNamePropertyName, s_sharedAccessKeyNameRegex);
+            ValidateFormatIfSpecified(SharedAccessKey, s_sharedAccessKeyPropertyName, s_sharedAccessKeyRegex);
+            ValidateFormatIfSpecified(SharedAccessSignature, s_sharedAccessSignaturePropertyName, s_sharedAccessSignatureRegex);
         }
 
         private void SetHostName(string hostname)
@@ -163,14 +159,14 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(hostname));
             }
 
-            ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
+            ValidateFormat(hostname, s_hostNamePropertyName, s_hostNameRegex);
             _hostName = hostname;
             SetServiceName();
         }
 
         private void SetServiceName()
         {
-            _serviceName = GetServiceName(HostName);
+            ServiceName = GetServiceName(HostName);
 
             if (string.IsNullOrWhiteSpace(ServiceName))
             {
@@ -209,11 +205,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
-            string value;
-            if (!map.TryGetValue(propertyName, out value))
+            if (!map.TryGetValue(propertyName, out string value))
             {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), 
+                    string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName),
                     nameof(map));
             }
 
@@ -222,8 +217,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         private static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
         {
-            string value;
-            map.TryGetValue(propertyName, out value);
+            map.TryGetValue(propertyName, out string value);
             return value;
         }
 
