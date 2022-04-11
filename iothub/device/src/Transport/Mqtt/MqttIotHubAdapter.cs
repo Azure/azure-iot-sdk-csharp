@@ -22,7 +22,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
 using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;

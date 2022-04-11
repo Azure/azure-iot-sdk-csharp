@@ -45,6 +45,7 @@ jobs:
           version: 5.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: DownloadBuildArtifacts@0
         inputs:
           buildType: 'specific'
