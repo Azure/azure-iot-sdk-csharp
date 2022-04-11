@@ -279,7 +279,7 @@ jobs:
     condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
           call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
@@ -386,7 +386,7 @@ jobs:
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 2.1'
@@ -516,7 +516,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
           rem Run dotnet first experience.
