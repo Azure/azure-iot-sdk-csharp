@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await OpenAsync(cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await CloseAsync(cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -418,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await CompleteAsync(lockToken, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -501,7 +501,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await AbandonAsync(lockToken, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -577,7 +577,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await RejectAsync(lockToken, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -651,7 +651,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SendEventAsync(message, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -699,7 +699,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SendEventBatchAsync(messages, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -756,7 +756,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SetMethodHandlerAsync(methodName, methodHandler, userContext, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -825,7 +825,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SetMethodDefaultHandlerAsync(methodHandler, userContext, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1065,7 +1065,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1155,7 +1155,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 return await GetTwinAsync(cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1193,7 +1193,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1255,7 +1255,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 return await ReceiveAsync(cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 return null;
@@ -1272,7 +1272,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return await InnerHandler.ReceiveAsync(new TimeoutHelper(timeout)).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 return null;
             }
@@ -1524,7 +1524,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SendEventAsync(outputName, message, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1590,7 +1590,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SendEventBatchAsync(outputName, messages, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1661,7 +1661,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, isAnEdgeModule, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1750,7 +1750,7 @@ namespace Microsoft.Azure.Devices.Client
                 using CancellationTokenSource cts = CancellationTokenSourceFactory();
                 await SetMessageHandlerAsync(messageHandler, userContext, isAnEdgeModule, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            catch (Exception ex) when (IsCausedByTimeoutOrCancellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1923,7 +1923,7 @@ namespace Microsoft.Azure.Devices.Client
             return true;
         }
 
-        private static bool IsCausedByTimeoutOrCanncellation(Exception ex)
+        private static bool IsCausedByTimeoutOrCancellation(Exception ex)
         {
             return ex is OperationCanceledException
                 || ex is IotHubCommunicationException
