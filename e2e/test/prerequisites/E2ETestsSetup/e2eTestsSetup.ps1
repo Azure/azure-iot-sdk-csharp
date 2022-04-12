@@ -718,6 +718,7 @@ $keyvaultKvps = @{
     "IOTHUB-X509-CHAIN-DEVICE-NAME" = $iotHubCertChainDeviceCommonName;
     "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" = $msiResourceId;
     "E2E-IKEY" = $instrumentationKey;
+    "CA-NAME" = "dps_test_ca";
 
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "IOTHUB-DEVICE-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=";
