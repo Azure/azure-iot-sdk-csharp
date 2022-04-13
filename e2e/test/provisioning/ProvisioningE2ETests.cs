@@ -1707,6 +1707,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 cmdProcess.WaitForExit();
             }
 
+            Logger.Trace("Certificates generated:");
+            ListAllFiles(s_dpsClientCertificateFolder.FullName, Logger);
+
             // Generate csr
             Logger.Trace($"Generating {registrationId}.csr file using ...\n");
             string csrgen = $"req -new -key {s_dpsClientCertificateFolder}\\{registrationId}.key -out {s_dpsClientCertificateFolder}\\{registrationId}.csr -subj /CN={registrationId}";
@@ -1715,6 +1718,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 cmdProcess.WaitForExit();
             }
+
+            Logger.Trace("Certificates generated:");
+            ListAllFiles(s_dpsClientCertificateFolder.FullName, Logger);
+
             return File.ReadAllText($"{s_dpsClientCertificateFolder}\\{registrationId}.csr");
         }
 
@@ -1731,7 +1738,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 exeProcess.WaitForExit();
             }
 
+            Logger.Trace("Certificates generated:");
+            ListAllFiles(s_dpsClientCertificateFolder.FullName, Logger);
+
             return new X509Certificate2($"{s_dpsClientCertificateFolder}\\{registrationId}.pfx");
+        }
+
+        private static void ListAllFiles(string path, MsTestLogger logger)
+        {
+            logger.Trace($"Listing files in: {path}");
+            foreach (string fileName in Directory.GetFiles(path))
+            {
+                logger.Trace(fileName);
+            }
         }
 
         [ClassCleanup]
