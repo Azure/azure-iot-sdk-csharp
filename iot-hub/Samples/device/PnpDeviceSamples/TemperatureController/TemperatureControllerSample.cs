@@ -19,12 +19,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         Completed = 200,
         InProgress = 202,
-        NotFound = 404,
-        BadRequest = 400
+        ReportDeviceInitialProperty = 203,
+        BadRequest = 400,
+        NotFound = 404
     }
 
     public class TemperatureControllerSample
     {
+        // The default reported "value" and "av" for each "Thermostat" component on the client initial startup.
+        // See https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties for more details in acknowledgment responses.
+        private const double DefaultPropertyValue = 0d;
+        private const long DefaultAckVersion = 0L;
+
+        private const string TargetTemperatureProperty = "targetTemperature";
+
         private const string Thermostat1 = "thermostat1";
         private const string Thermostat2 = "thermostat2";
         private const string SerialNumber = "SR-123456";
@@ -71,6 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // -> Set handler to receive "reboot" command - root interface.
             // -> Set handler to receive "getMaxMinReport" command - on "Thermostat" components.
             // -> Set handler to receive "targetTemperature" property updates from service - on "Thermostat" components.
+            // -> Check if the properties are empty on the initial startup - for each "Thermostat" component. If so, report the default values with ACK to the hub.
             // -> Update device information on "deviceInformation" component.
             // -> Send initial device info - "workingSet" over telemetry, "serialNumber" over reported property update - root interface.
             // -> Periodically send "temperature" over telemetry - on "Thermostat" components.
@@ -100,6 +109,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(SetDesiredPropertyUpdateCallback, null, cancellationToken);
             _desiredPropertyUpdateCallbacks.Add(Thermostat1, TargetTemperatureUpdateCallbackAsync);
             _desiredPropertyUpdateCallbacks.Add(Thermostat2, TargetTemperatureUpdateCallbackAsync);
+
+            _logger.LogDebug("For each component, check if the device properties are empty on the initial startup.");
+            await CheckEmptyPropertiesAsync(Thermostat1, cancellationToken);
+            await CheckEmptyPropertiesAsync(Thermostat2, cancellationToken);
 
             await UpdateDeviceInformationAsync(cancellationToken);
             await SendDeviceSerialNumberAsync(cancellationToken);
@@ -275,12 +288,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // and updates the current temperature value over telemetry and property update.
         private async Task TargetTemperatureUpdateCallbackAsync(TwinCollection desiredProperties, object userContext)
         {
-            const string propertyName = "targetTemperature";
             string componentName = (string)userContext;
 
             bool targetTempUpdateReceived = PnpConvention.TryGetPropertyFromTwin(
                 desiredProperties,
-                propertyName,
+                TargetTemperatureProperty,
                 out double targetTemperature,
                 componentName);
             if (!targetTempUpdateReceived)
@@ -289,19 +301,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 return;
             }
 
-            _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{propertyName}\": {targetTemperature}°C }}.");
+            _logger.LogDebug($"Property: Received - component=\"{componentName}\", {{ \"{TargetTemperatureProperty}\": {targetTemperature}°C }}.");
 
             s_localWritablePropertiesVersion = desiredProperties.Version;
 
             TwinCollection pendingReportedProperty = PnpConvention.CreateComponentWritablePropertyResponse(
                 componentName,
-                propertyName,
+                TargetTemperatureProperty,
                 targetTemperature,
                 (int)StatusCode.InProgress,
-                desiredProperties.Version);
+                desiredProperties.Version,
+                "In progress - reporting current temperature");
 
             await _deviceClient.UpdateReportedPropertiesAsync(pendingReportedProperty);
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{TargetTemperatureProperty}\": {targetTemperature} }} in °C is {StatusCode.InProgress}.");
 
             // Update Temperature in 2 steps
             double step = (targetTemperature - _temperature[componentName]) / 2d;
@@ -313,14 +326,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             TwinCollection completedReportedProperty = PnpConvention.CreateComponentWritablePropertyResponse(
                 componentName,
-                propertyName,
+                TargetTemperatureProperty,
                 _temperature[componentName],
                 (int)StatusCode.Completed,
                 desiredProperties.Version,
                 "Successfully updated target temperature");
 
             await _deviceClient.UpdateReportedPropertiesAsync(completedReportedProperty);
-            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{propertyName}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");
+            _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{\"{TargetTemperatureProperty}\": {_temperature[componentName]} }} in °C is {StatusCode.Completed}");
         }
 
         // Report the property updates on "deviceInformation" component.
@@ -418,6 +431,36 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
             _logger.LogDebug($"Property: Update - component=\"{componentName}\", {{ \"{propertyName}\": {maxTemp} }} in °C is complete.");
+        }
+
+        private async Task CheckEmptyPropertiesAsync(string componentName, CancellationToken cancellationToken)
+        {
+            Twin twin = await _deviceClient.GetTwinAsync();
+            TwinCollection writableProperty = twin.Properties.Desired;
+            TwinCollection reportedProperty = twin.Properties.Reported;
+
+            // Check if the device properties (both writable and reported) for the current component are empty.
+            if (!writableProperty.Contains(componentName) && !reportedProperty.Contains(componentName))
+            {
+                await ReportInitialPropertyAsync(componentName, TargetTemperatureProperty, cancellationToken);
+            }
+        }
+
+        private async Task ReportInitialPropertyAsync(string componentName, string propertyName, CancellationToken cancellationToken)
+        {
+            // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
+            // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
+            TwinCollection reportedProperties = PnpConvention.CreateComponentWritablePropertyResponse(
+                componentName, 
+                propertyName, 
+                DefaultPropertyValue, 
+                (int)StatusCode.ReportDeviceInitialProperty, 
+                DefaultAckVersion,
+                "Initialized with default value");
+
+            await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+
+            _logger.LogDebug($"Report the default values for \"{componentName}\".\nProperty: Update - {reportedProperties.ToJson()} is complete.");
         }
     }
 }
