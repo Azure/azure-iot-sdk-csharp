@@ -138,8 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // Initialize the device client instance using connection string based authentication, over Mqtt protocol (TCP, with fallback over Websocket) and
-        // setting the ModelId into ClientOptions.This method also sets a connection status change callback, that will get triggered any time the device's
-        // connection status changes.
+        // setting the ModelId into ClientOptions.
         private static DeviceClient InitializeDeviceClient(string deviceConnectionString)
         {
             var options = new ClientOptions
@@ -153,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
 
         // Initialize the device client instance using symmetric key based authentication, over Mqtt protocol (TCP, with fallback over Websocket)
-        // and setting the ModelId into ClientOptions. This method also sets a connection status change callback, that will get triggered any time the device's connection status changes.
+        // and setting the ModelId into ClientOptions.
         private static DeviceClient InitializeDeviceClient(string hostname, IAuthenticationMethod authenticationMethod)
         {
             var options = new ClientOptions
