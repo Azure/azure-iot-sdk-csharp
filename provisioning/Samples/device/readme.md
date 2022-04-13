@@ -30,28 +30,30 @@ When Group Enrollment is used, both the _RegistrationID_ as well as the _DeviceI
 X.509 attestation comes in two flavors:
 
 1. Group Enrollment
-In this case, a single (Intermediate) Certificate Authority certificate is uploaded to the Provisioning Service. Devices have access to certificates issued by this CA. All devices will be using the same policies during IoT Hub provisioning.
 
-The service requires proof of possession of the uploaded CA certificate private key. This can be achieved using the [Proof of possession for X.509 Group Enrollment](../../service/samples/GroupCertificateVerificationSample) tool.
+   In this case, a single (Intermediate) Certificate Authority certificate is uploaded to the Provisioning Service. Devices have access to certificates issued by this CA. All devices will be using the same policies during IoT Hub provisioning.
 
-Because Intermediate Authorities may have been issued by the uploaded CA, the application must present the full chain of certificates from the one used during authentication to the one uploaded to the service. E.g.: If `My CA Certificate` was uploaded to the service and `MyDevice1` is the device certificate, the entire chain must be available on the device: 
-`<"My CA Certificate", "My Intermediate 1", ..., "My Intermediate N", "MyDevice1>`.
+   The service requires proof of possession of the uploaded CA certificate private key. This can be achieved using the [Proof of possession for X.509 Group Enrollment](../../Samples/service/GroupCertificateVerificationSample) tool.
+
+   Because Intermediate Authorities may have been issued by the uploaded CA, the application must present the full chain of certificates from the one used during authentication to the one uploaded to the service. E.g.: If `My CA Certificate` was uploaded to the service and `MyDevice1` is the device certificate, the entire chain must be available on the device: 
+`<"My CA Certificate", "My Intermediate 1", ..., "My Intermediate N", "MyDevice1">`.
 
 2. Individual Enrollment
-In this case, each device certificate gets its own certificate uploaded to the service.
-_Note:_ the device certificate can also be a signing certificate of the actual certificate used to authenticate with the service during provisioning.
 
-An example of specifying the authentication X509Certificate using a PKCS12 PFX password-protected file:
+   In this case, each device certificate gets its own certificate uploaded to the service.
+   _Note:_ the device certificate can also be a signing certificate of the actual certificate used to authenticate with the service during provisioning.
 
-```C#
-using var certificate = new X509Certificate2(s_certificateFileName, certificatePassword);
-using var security = new SecurityProviderX509Certificate(certificate);
-// ... (see sample for details)
-```
+   An example of specifying the authentication X509Certificate using a PKCS12 PFX password-protected file:
 
-The SDK provides an extension model [SecurityProviderX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderX509.cs) that allows hardware vendors to implement custom Hardware Security Modules that store the device certificates. On Windows, PKCS11 HSM devices are supported through the [Certificate Store](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
+    ```C#
+    using var certificate = new X509Certificate2(s_certificateFileName, certificatePassword);
+    using var security = new SecurityProviderX509Certificate(certificate);
+    // ... (see sample for details)
+    ```
 
-An example of implementation for this extension module is the [SecurityProviderX509Certificate](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderX509Certificate.cs) class.
+    The SDK provides an extension model [SecurityProviderX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderX509.cs) that allows hardware vendors to implement custom Hardware Security Modules that store the device certificates. On Windows, PKCS11 HSM devices are supported through the [Certificate Store](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
+
+    An example of implementation for this extension module is the [SecurityProviderX509Certificate](https://github.com/Azure/azure-iot-sdk-csharp/blob/main/shared/src/SecurityProviderX509Certificate.cs) class.
 
 ### Provisioning devices using TPM-based attestation
 
