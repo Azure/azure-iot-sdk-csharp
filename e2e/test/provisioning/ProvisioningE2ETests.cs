@@ -1163,7 +1163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     if (result.IssuedClientCertificate != null)
                     {
-                        operationalCertificate = GenerateOperationalCertificateFromIssuedCertificate(result.DeviceId, result.IssuedClientCertificate);
+                        operationalCertificate = GenerateOperationalCertificateFromIssuedCertificate(result.RegistrationId, result.IssuedClientCertificate);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                         // The authentication method is disposed at the end of the test method.
