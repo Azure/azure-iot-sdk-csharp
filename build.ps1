@@ -357,7 +357,8 @@ try
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        # RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        RunTests "E2E tests" -framework $framework "TestCategory=RunThisTest"
 
         $verbosity = $oldVerbosity
 
