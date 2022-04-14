@@ -928,6 +928,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         // For the purpose of this E2E test the DPS instance has already been linked to the CA: https://github.com/Azure/CertsForIoT-B#getting-started
         [LoggedTestMethod]
+        [TestCategory("RunThisTest")]
         public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_ConnectToHubWithOperationalCertificate()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
