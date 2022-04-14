@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -113,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
             // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
+            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, null, ref options);
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
@@ -201,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
             // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
+            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, transportSettings.FirstOrDefault()?.Proxy, ref options);
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
@@ -478,7 +479,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(builder.Certificate, ref options);
+            EnsureOptionsIsSetup(builder.Certificate, transportSettings.FirstOrDefault()?.Proxy, ref options);
 
             pipelineBuilder ??= BuildPipeline();
 
@@ -499,19 +500,22 @@ namespace Microsoft.Azure.Devices.Client
         /// Ensures that the ClientOptions is configured and initialized.
         /// If a certificate is provided, the fileUploadTransportSettings will use it during initialization.
         /// </summary>
-        private static void EnsureOptionsIsSetup(X509Certificate2 cert, ref ClientOptions options)
+        private static void EnsureOptionsIsSetup(X509Certificate2 cert, IWebProxy proxy, ref ClientOptions options)
         {
-            if (options?.FileUploadTransportSettings == null)
+            if (options == null)
             {
-                var fileUploadTransportSettings = new Http1TransportSettings { ClientCertificate = cert };
-                if (options == null)
-                {
-                    options = new ClientOptions { FileUploadTransportSettings = fileUploadTransportSettings };
-                }
-                else
-                {
-                    options.FileUploadTransportSettings = fileUploadTransportSettings;
-                }
+                options = new ClientOptions();
+            }
+
+            if (options.FileUploadTransportSettings == null)
+            {
+                options.FileUploadTransportSettings = new Http1TransportSettings();
+            }
+
+            if (cert != null
+                && options.FileUploadTransportSettings.ClientCertificate == null)
+            {
+                options.FileUploadTransportSettings.ClientCertificate = cert;
             }
         }
 

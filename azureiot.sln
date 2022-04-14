@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iothub", "iothub", "{537FA828-124D-4C70-9FC1-89301D9E776D}"
 EndProject
@@ -82,6 +82,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Issue2323", "Issue2323\Issue2323.csproj", "{EE09AE53-A909-4141-9B4D-01FED4BEAF79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,10 @@ Global
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE09AE53-A909-4141-9B4D-01FED4BEAF79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE09AE53-A909-4141-9B4D-01FED4BEAF79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE09AE53-A909-4141-9B4D-01FED4BEAF79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE09AE53-A909-4141-9B4D-01FED4BEAF79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,6 +195,7 @@ Global
 		{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
 		{CEEE435F-32FC-4DE5-8735-90F6AC950A01} = {3AA089A9-A035-439E-BAF6-C3975A334379}
+		{EE09AE53-A909-4141-9B4D-01FED4BEAF79} = {662CE01D-7A7F-48D8-80CE-5DC9C60677E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
