@@ -116,8 +116,8 @@ namespace Microsoft.Azure.Devices.Client
             if (authenticationMethod == null)
             {
                 iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
-                iotHubConnectionStringBuilder.AuthenticationMethod =
-                    AuthenticationMethodFactory.GetAuthenticationMethod(iotHubConnectionStringBuilder);
+                iotHubConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(
+                    iotHubConnectionStringBuilder);
             }
             else
             {
