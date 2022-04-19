@@ -1286,7 +1286,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         // Configure proxy server
                         websocket.Options.Proxy = _webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting ClientWebSocket.Options.Proxy");
+                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set ClientWebSocket.Options.Proxy to {_webProxy}");
                     }
                 }
                 catch (PlatformNotSupportedException)
@@ -1299,6 +1299,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (settings.WebSocketKeepAlive.HasValue)
                 {
                     websocket.Options.KeepAliveInterval = settings.WebSocketKeepAlive.Value;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set websocket keep-alive to {settings.WebSocketKeepAlive}");
                 }
 
                 if (settings.ClientCertificate != null)

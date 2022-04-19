@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set ClientWebSocket.Options.Proxy to {webProxy}");
                     }
                 }
                 catch (PlatformNotSupportedException)
@@ -196,6 +196,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (_amqpTransportSettings.WebSocketKeepAlive.HasValue)
                 {
                     websocket.Options.KeepAliveInterval = _amqpTransportSettings.WebSocketKeepAlive.Value;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
                 }
 
                 if (_amqpTransportSettings.ClientCertificate != null)
