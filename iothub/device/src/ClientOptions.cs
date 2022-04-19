@@ -59,6 +59,6 @@ namespace Microsoft.Azure.Devices.Client
         /// A keep-alive for when using web sockets.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan WebSocketKeepAlive { get; set; }
+        public TimeSpan? WebSocketKeepAlive { get; set; }
     }
 }
