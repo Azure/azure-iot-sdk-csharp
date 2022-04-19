@@ -1265,13 +1265,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, ClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
+            IotHubConnectionString iotHubConnectionString,
+            MqttTransportSettings settings,
+
+            ProductInfo productInfo, ClientOptions options)
         {
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{iotHubConnectionString.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
@@ -1292,13 +1296,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Error(this, $"{nameof(CreateWebSocketChannelFactory)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
+                if (options?.WebSocketKeepAlive != null)
+                {
+                    websocket.Options.KeepAliveInterval = options.WebSocketKeepAlive;
+                }
+
                 if (settings.ClientCertificate != null)
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
 
                 // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
                 if (settings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;

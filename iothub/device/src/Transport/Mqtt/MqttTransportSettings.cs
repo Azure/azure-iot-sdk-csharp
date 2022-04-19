@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public bool CleanSession { get; set; }
 
         /// <summary>
-        /// The interval, in seconds, that the client establishes with the service, for sending keep-alive pings.
+        /// The interval, in seconds, that the client establishes with the service, for sending keep-alive pings over TCP.
         /// The default is 300 seconds.
         /// </summary>
         /// <remarks>

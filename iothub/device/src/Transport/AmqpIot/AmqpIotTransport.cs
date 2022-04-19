@@ -23,17 +23,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly AmqpSettings _amqpSettings;
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
+        private readonly ClientOptions _clientOptions;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIotTransport(
             AmqpSettings amqpSettings,
             AmqpTransportSettings amqpTransportSettings,
+            ClientOptions clientOptions,
             string hostName,
             bool disableServerCertificateValidation)
         {
             _amqpSettings = amqpSettings;
             _amqpTransportSettings = amqpTransportSettings;
+            _clientOptions = clientOptions;
             _hostName = hostName;
             _disableServerCertificateValidation = disableServerCertificateValidation;
 
@@ -77,7 +80,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal async Task<TransportBase> InitializeAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, nameof(InitializeAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(InitializeAsync));
 
             TransportBase transport;
 
@@ -96,7 +100,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
-            Logging.Exit(this, nameof(InitializeAsync));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(InitializeAsync));
 
             return transport;
         }
@@ -107,7 +112,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Logging.Enter(this, nameof(CreateClientWebSocketTransportAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(CreateClientWebSocketTransportAsync));
 
                 string additionalQueryParams = "";
                 var websocketUri = new Uri($"{WebSocketConstants.Scheme}{_hostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
@@ -139,7 +145,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             finally
             {
-                Logging.Exit(this, $"{nameof(CreateClientWebSocketTransportAsync)}");
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(CreateClientWebSocketTransportAsync)}");
             }
         }
 
@@ -161,7 +168,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             try
             {
-                Logging.Enter(this, nameof(CreateClientWebSocketAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, nameof(CreateClientWebSocketAsync));
 
                 var websocket = new ClientWebSocket();
 
@@ -177,13 +185,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
                     }
                 }
                 catch (PlatformNotSupportedException)
                 {
                     // .NET Core 2.0 doesn't support proxy. Ignore this setting.
-                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                }
+
+                if (_clientOptions?.WebSocketKeepAlive != null)
+                {
+                    websocket.Options.KeepAliveInterval = _clientOptions.WebSocketKeepAlive;
                 }
 
                 if (_amqpTransportSettings.ClientCertificate != null)
@@ -196,7 +211,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback;
-                    Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
                 }
 #endif
                 await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
@@ -205,7 +221,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             finally
             {
-                Logging.Exit(this, nameof(CreateClientWebSocketAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(CreateClientWebSocketAsync));
             }
         }
 

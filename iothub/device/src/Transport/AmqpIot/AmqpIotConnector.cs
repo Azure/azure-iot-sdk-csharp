@@ -24,20 +24,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
+        private readonly ClientOptions _clientOptions;
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
 
         private AmqpIotTransport _amqpIotTransport;
 
-        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
+        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, ClientOptions clientOptions, string hostName)
         {
             _amqpTransportSettings = amqpTransportSettings;
+            _clientOptions = clientOptions;
             _hostName = hostName;
         }
 
         public async Task<AmqpIotConnection> OpenConnectionAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, nameof(OpenConnectionAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(OpenConnectionAsync));
 
             var amqpTransportProvider = new AmqpTransportProvider();
             amqpTransportProvider.Versions.Add(s_amqpVersion_1_0_0);
@@ -53,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
 
-            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
+            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _clientOptions, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -63,7 +66,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpConnection.Closed += amqpIotConnection.AmqpConnectionClosed;
                 await amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
 
                 return amqpIotConnection;
             }
@@ -75,7 +79,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, nameof(OpenConnectionAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(OpenConnectionAsync));
             }
         }
 

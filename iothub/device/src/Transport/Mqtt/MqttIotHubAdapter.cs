@@ -429,7 +429,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                await context.Channel.EventLoop.ScheduleAsync(s_checkConnAckTimeoutCallback, context, _mqttTransportSettings.ConnectArrivalTimeout).ConfigureAwait(true);
+                await context.Channel.EventLoop
+                    .ScheduleAsync(s_checkConnAckTimeoutCallback, context, _mqttTransportSettings.ConnectArrivalTimeout)
+                    .ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
