@@ -24,16 +24,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
-        private readonly ClientOptions _clientOptions;
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
 
         private AmqpIotTransport _amqpIotTransport;
 
-        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, ClientOptions clientOptions, string hostName)
+        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
             _amqpTransportSettings = amqpTransportSettings;
-            _clientOptions = clientOptions;
             _hostName = hostName;
         }
 
@@ -56,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
 
-            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _clientOptions, _hostName, s_disableServerCertificateValidation);
+            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try

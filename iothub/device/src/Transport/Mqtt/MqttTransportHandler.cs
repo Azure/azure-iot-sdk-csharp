@@ -1268,8 +1268,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
-
-            ProductInfo productInfo, ClientOptions options)
+            ProductInfo productInfo,
+            ClientOptions options)
         {
             return async (address, port) =>
             {
@@ -1296,9 +1296,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Error(this, $"{nameof(CreateWebSocketChannelFactory)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
-                if (options?.WebSocketKeepAlive != null)
+                if (settings.WebSocketKeepAlive.HasValue)
                 {
-                    websocket.Options.KeepAliveInterval = options.WebSocketKeepAlive;
+                    websocket.Options.KeepAliveInterval = settings.WebSocketKeepAlive.Value;
                 }
 
                 if (settings.ClientCertificate != null)

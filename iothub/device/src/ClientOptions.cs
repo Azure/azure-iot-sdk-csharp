@@ -54,11 +54,5 @@ namespace Microsoft.Azure.Devices.Client
         /// or the <see cref="ModuleClient.CreateFromEnvironmentAsync(ClientOptions)"/> flow.
         /// </remarks>
         public int SasTokenRenewalBuffer { get; set; }
-
-        /// <summary>
-        /// A keep-alive for when using web sockets.
-        /// </summary>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? WebSocketKeepAlive { get; set; }
     }
 }

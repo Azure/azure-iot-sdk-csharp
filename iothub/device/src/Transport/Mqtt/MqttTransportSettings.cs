@@ -194,6 +194,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public int KeepAliveInSeconds { get; set; }
 
         /// <summary>
+        /// A keep-alive for when using web sockets.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
+        public TimeSpan? WebSocketKeepAlive { get; set; }
+
+        /// <summary>
         /// Indicates whether the transport has a will message.
         /// </summary>
         /// <remarks>

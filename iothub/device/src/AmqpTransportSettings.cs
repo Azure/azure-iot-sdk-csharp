@@ -147,6 +147,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// A keep-alive for when using web sockets.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
+        public TimeSpan? WebSocketKeepAlive { get; set; }
+
+        /// <summary>
         /// The pre-fetch count
         /// </summary>
         public uint PrefetchCount { get; set; }

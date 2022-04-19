@@ -23,20 +23,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly AmqpSettings _amqpSettings;
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
-        private readonly ClientOptions _clientOptions;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIotTransport(
             AmqpSettings amqpSettings,
             AmqpTransportSettings amqpTransportSettings,
-            ClientOptions clientOptions,
             string hostName,
             bool disableServerCertificateValidation)
         {
             _amqpSettings = amqpSettings;
             _amqpTransportSettings = amqpTransportSettings;
-            _clientOptions = clientOptions;
             _hostName = hostName;
             _disableServerCertificateValidation = disableServerCertificateValidation;
 
@@ -196,9 +193,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
-                if (_clientOptions?.WebSocketKeepAlive != null)
+                if (_amqpTransportSettings.WebSocketKeepAlive.HasValue)
                 {
-                    websocket.Options.KeepAliveInterval = _clientOptions.WebSocketKeepAlive;
+                    websocket.Options.KeepAliveInterval = _amqpTransportSettings.WebSocketKeepAlive.Value;
                 }
 
                 if (_amqpTransportSettings.ClientCertificate != null)
