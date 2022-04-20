@@ -68,9 +68,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         public JRaw Payload { get; set; }
 
         /// <summary>
-        /// The PEM encoded operational client certificate that was returned by the certificate authority.
+        /// The PEM encoded operational client certificate that was signed by the certificate authority.
         /// This operational certificate was used by the device provisioning service to register the enrollment with IoT Hub.
-        /// The IoT device can use this operational certificate to authenticate with IoT Hub.
+        /// The IoT device can then use this returned operational certificate along with the private key information to authenticate with IoT Hub.
         /// </summary>
         [JsonProperty(PropertyName = "issuedClientCertificate")]
         public string IssuedClientCertificate { get; set; }

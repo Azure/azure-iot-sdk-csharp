@@ -15,11 +15,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string JsonData { get; set; }
 
         /// <summary>
-        /// The PEM encoded operational client certificate request that the device provisioning service (DPS) will send to its linked certificate authority which will sign
+        /// The PEM encoded operational client certificate signing request that the device provisioning service (DPS) will send to its linked certificate authority which will sign
         /// and return an X509 device identity operational client certificate to the device.
-        /// DPS will register the device and operational client certificate thumbprint in IoT Hub and return the certificate to the IoT device.
-        /// The IoT device can then use the operational certificate to authenticate with IoT Hub.
+        /// DPS will register the device and operational client certificate thumbprint in IoT Hub and return the certificate with the public key to the IoT device.
+        /// The IoT device can then use the returned operational certificate along with the private key information to authenticate with IoT Hub.
         /// </summary>
-        public string OperationalCertificateRequest { get; set; }
+        public string ClientCertificateSigningRequest { get; set; }
     }
 }

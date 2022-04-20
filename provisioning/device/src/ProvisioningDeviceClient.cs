@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData, data?.OperationalCertificateRequest)
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData, data?.ClientCertificateSigningRequest)
             {
                 ProductInfo = ProductInfo,
             };
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData, data?.OperationalCertificateRequest)
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData, data?.ClientCertificateSigningRequest)
             {
                 ProductInfo = ProductInfo,
             };

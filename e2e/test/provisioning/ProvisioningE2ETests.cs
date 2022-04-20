@@ -1131,10 +1131,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                             result = timeout != TimeSpan.MaxValue
                                 ? await provClient.RegisterAsync(
-                                    new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
+                                    new ProvisioningRegistrationAdditionalData { ClientCertificateSigningRequest = certificateRequest },
                                     timeout).ConfigureAwait(false)
                                 : await provClient.RegisterAsync(
-                                    new ProvisioningRegistrationAdditionalData { OperationalCertificateRequest = certificateRequest },
+                                    new ProvisioningRegistrationAdditionalData { ClientCertificateSigningRequest = certificateRequest },
                                     cts.Token).ConfigureAwait(false);
                             break;
                         }
