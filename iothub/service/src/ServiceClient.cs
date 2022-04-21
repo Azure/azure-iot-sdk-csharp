@@ -636,7 +636,7 @@ namespace Microsoft.Azure.Devices
             var timeout = TimeSpan.FromSeconds(15); // For wire time
             timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
             timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
-            return timeout < TimeSpan.FromSeconds(5) ? s_defaultOperationTimeout : timeout;
+            return timeout < TimeSpan.FromSeconds(5) || timeout > TimeSpan.FromSeconds(300) ? s_defaultOperationTimeout : timeout;
         }
 
         private static Uri GetStatisticsUri()
