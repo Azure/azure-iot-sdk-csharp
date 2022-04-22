@@ -352,9 +352,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 deviceRegistration.Payload = new JRaw(_message.Payload);
             }
 
-            if (!string.IsNullOrWhiteSpace(_message.OperationalCertificateRequest))
+            if (!string.IsNullOrWhiteSpace(_message.ClientCertificateSigningRequest))
             {
-                deviceRegistration.OperationalCertificateRequest = _message.OperationalCertificateRequest;
+                deviceRegistration.ClientCertificateSigningRequest = _message.ClientCertificateSigningRequest;
             }
 
             string deviceRegistrationJsonString = JsonConvert.SerializeObject(deviceRegistration);

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ClientCertificateIssuancePolicy
     {
         /// <summary>
-        /// The CA name that can receice certificate signing requests from DPS on behalf of a device and issue it with an operational certificate.
+        /// The CA name that can receice certificate signing requests from DPS on behalf of a device and issue it with a client certificate.
         /// </summary>
         [JsonProperty(PropertyName = "certificateAuthorityName", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string CertificateAuthorityName { get; set; }

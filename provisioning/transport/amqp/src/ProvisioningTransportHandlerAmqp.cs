@@ -159,9 +159,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     deviceRegistration.Payload = new JRaw(message.Payload);
                 }
 
-                if (!string.IsNullOrWhiteSpace(message.OperationalCertificateRequest))
+                if (!string.IsNullOrWhiteSpace(message.ClientCertificateSigningRequest))
                 {
-                    deviceRegistration.OperationalCertificateRequest = message.OperationalCertificateRequest;
+                    deviceRegistration.ClientCertificateSigningRequest = message.ClientCertificateSigningRequest;
                 }
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);

@@ -33,12 +33,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public string Payload { get; private set; }
 
         /// <summary>
-        /// The PEM encoded operational client certificate request that the device provisioning service (DPS) will send to its linked certificate authority which will sign
-        /// and return an X509 device identity operational client certificate to the device.
-        /// DPS will register the device and operational client certificate thumbprint in IoT Hub and return the certificate to the IoT device.
-        /// The IoT device can then use the operational certificate to authenticate with IoT Hub.
+        /// The certificate signing request for device client certificate in PKCS 10 format that the device provisioning service (DPS) will send to its linked certificate authority which will sign
+        /// and return an X509 device identity client certificate to the device.
+        /// DPS will register the device and client certificate thumbprint in IoT hub and return the certificate with the public key to the IoT device.
+        /// The IoT device can then use the returned client certificate along with the private key information to authenticate with IoT hub.
         /// </summary>
-        public string OperationalCertificateRequest { get; private set; }
+        public string ClientCertificateSigningRequest { get; private set; }
 
         /// <summary>
         /// The Product Information sent to the Provisioning Service. The application can specify extra information.
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string idScope,
             SecurityProvider security,
             string payload = null,
-            string operationalCertificateRequest = null)
+            string clientCertificateSigningRequest = null)
         {
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
@@ -103,9 +103,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Payload = payload;
             }
 
-            if (!string.IsNullOrWhiteSpace(operationalCertificateRequest))
+            if (!string.IsNullOrWhiteSpace(clientCertificateSigningRequest))
             {
-                OperationalCertificateRequest = operationalCertificateRequest;
+                ClientCertificateSigningRequest = clientCertificateSigningRequest;
             }
         }
     }
