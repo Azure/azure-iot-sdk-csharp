@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 
         /// <summary>
         /// The certificate signing request for device client certificate in PKCS 10 format that the device provisioning service (DPS) will send to its linked certificate authority which will sign
-        /// and return an X509 device identity operational client certificate to the device.
+        /// and return an X509 device identity client certificate to the device.
         /// DPS will register the device and client certificate thumbprint in IoT Hub and return the certificate with the public key to the IoT device.
         /// The IoT device can then use the returned client certificate along with the private key information to authenticate with IoT Hub.
         /// </summary>
