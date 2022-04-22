@@ -69,8 +69,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 
         /// <summary>
         /// The client certificate that was signed by the certificate authority.
-        /// This client certificate was used by the device provisioning service to register the enrollment with IoT Hub.
-        /// The IoT device can then use this returned client certificate along with the private key information to authenticate with IoT Hub.
+        /// This client certificate was used by the device provisioning service to register the enrollment with IoT hub.
+        /// The IoT device can then use this returned client certificate along with the private key information to authenticate with IoT hub.
         /// </summary>
         [JsonProperty(PropertyName = "issuedClientCertificate")]
         public string IssuedClientCertificate { get; set; }
