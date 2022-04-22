@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// The PEM encoded operational client certificate signing request that the device provisioning service (DPS) will send to its linked certificate authority which will sign
         /// and return an X509 device identity client certificate to the device.
-        /// DPS will register the device and operational client certificate thumbprint in IoT Hub and return the certificate with the public key to the IoT device.
+        /// DPS will register the device and client certificate thumbprint in IoT Hub and return the certificate with the public key to the IoT device.
         /// The IoT device can then use the returned operational certificate along with the private key information to authenticate with IoT Hub.
         /// </summary>
         public string ClientCertificateSigningRequest { get; set; }
