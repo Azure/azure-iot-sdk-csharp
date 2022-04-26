@@ -123,6 +123,14 @@ jobs:
           testResultsFiles: "**/*.trx"
 
         condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
   ### Linux build 2 ###
   - job: LINUX2
@@ -252,6 +260,14 @@ jobs:
           testResultsFiles: "**/*.trx"
 
         condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
   ### Windows build 1 ###
   - job: WINDOWS1
@@ -361,6 +377,14 @@ jobs:
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
 
+        condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
   ### Windows build 2 ###
@@ -495,6 +519,14 @@ jobs:
 
         condition: always()
 
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
+
   ### .Net SDL Analyzers ###
   - job: DOTNet_SDL_Analyzers
     displayName: .Net SDL Analyzers
@@ -577,6 +609,14 @@ jobs:
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
+          
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
         displayName: "TSA upload"

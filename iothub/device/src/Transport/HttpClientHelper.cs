@@ -53,13 +53,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             HttpClientHandler httpClientHandler,
             ProductInfo productInfo,
             IWebProxy proxy,
-            bool isClientPrimaryTransportHandler = false
-            )
+            bool isClientPrimaryTransportHandler = false)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
-            _defaultErrorMapping =
-                new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
 #if NET451
             TlsVersions.Instance.SetLegacyAcceptableVersions();
@@ -385,17 +383,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             CancellationToken cancellationToken) where T : IETagHolder
         {
             return ExecuteAsync(
-                    HttpMethod.Delete,
-                    new Uri(_baseAddress, requestUri),
-                    (requestMsg, token) =>
-                    {
-                        InsertEtag(requestMsg, entity);
-                        AddCustomHeaders(requestMsg, customHeaders);
-                        return TaskHelpers.CompletedTask;
-                    },
-                    null,
-                    errorMappingOverrides,
-                    cancellationToken);
+                HttpMethod.Delete,
+                new Uri(_baseAddress, requestUri),
+                (requestMsg, token) =>
+                {
+                    InsertEtag(requestMsg, entity);
+                    AddCustomHeaders(requestMsg, customHeaders);
+                    return TaskHelpers.CompletedTask;
+                },
+                null,
+                errorMappingOverrides,
+                cancellationToken);
         }
 
         private Task ExecuteAsync(
@@ -434,7 +432,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (!_usingX509ClientCert)
             {
                 string authHeader = await _authenticationHeaderProvider.GetPasswordAsync().ConfigureAwait(false);
-                msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
+                if (!string.IsNullOrWhiteSpace(authHeader))
+                {
+                    msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
+                }
             }
 
             msg.Headers.UserAgent.ParseAdd(_productInfo.ToString(UserAgentFormats.Http));
