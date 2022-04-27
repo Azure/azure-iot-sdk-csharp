@@ -39,15 +39,40 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
         /// <summary>
-        /// Sets the listener for command invocation requests.
+        /// Sets the listener for command calls from the service.
         /// </summary>
         /// <param name="callback">The callback to handle all incoming commands for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <example>
+        /// Inline:
+        /// <code language="csharp">
+        /// await client.SubscribeToCommandsAsync(
+        ///     (commandRequest) =>
+        ///     {
+        ///         switch (commandRequest.CommandName)
+        ///         {
+        ///             // Identify and process supported commands
+        ///         }
+        ///
+        ///         return Task.FromResult(new CommandRequest(CommonClientResponseCodes.BadRequest));
+        ///     },
+        ///     cancellationToken);
+        /// </code>
+        /// 
+        /// Or as a separate method:
+        /// <code language="csharp">
+        /// Task&lt;CommandResponse&gt; OnCommandReceived(CommandRequest commandRequest)
+        /// {
+        ///     // Identify and process supported commands
+        /// }
+        /// await client.SubscribeToCommandsAsync(OnCommandReceived);
+        /// </code>
+        /// </example>
         public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToCommandsAsync(callback, cancellationToken);
 
         /// <summary>
-        /// Retrieve the client properties.
+        /// Get the client properties, as known by the service.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The client properties.</returns>
@@ -55,12 +80,14 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.GetClientTwinPropertiesAsync(cancellationToken);
 
         /// <summary>
-        /// Update the client properties.
+        /// Update client properties.
+        /// <remarks>
         /// This operation enables the partial update of the properties of the connected client.
+        /// </remarks>
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The response of the update operation.</returns>
+        /// <returns>The response of the update operation, where you'll find the updates version of the properties.</returns>
         public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(
             ClientPropertyCollection propertyCollection,
             CancellationToken cancellationToken = default)
