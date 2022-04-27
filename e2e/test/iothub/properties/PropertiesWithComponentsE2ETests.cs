@@ -472,7 +472,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // For the property patch sent here will result in the component being removed.
             var propertyPatch4 = new ClientPropertyCollection();
-            propertyPatch4.AddComponentProperties(ComponentName, null);
+            propertyPatch4.AddRootProperty(ComponentName, null);
             await deviceClient.UpdateClientPropertiesAsync(propertyPatch4).ConfigureAwait(false);
 
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);

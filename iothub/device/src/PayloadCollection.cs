@@ -35,8 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         /// It is recommended to use <see cref="TryGetValue"/> to deserialize to a complex type.
         /// <para>
         /// For setting component-level property values see <see cref="ClientPropertyCollection.AddComponentProperty(string, string, object)"/>
-        /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/> instead
-        /// as these convenience methods ensure that component-level properties include the component identifier markers: { "__t": "c" }.
+        /// instead as these convenience methods ensure that component-level properties include the component identifier markers: { "__t": "c" }.
         /// For more information see <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#sample-multiple-components-read-only-property"/>.
         /// </para>
         /// </remarks>
@@ -45,36 +44,26 @@ namespace Microsoft.Azure.Devices.Client
         public virtual object this[string key]
         {
             get => Collection[key];
-            set => AddOrUpdate(key, value);
-        }
-
-        /// <summary>
-        /// Adds the key-value pair to the collection.
-        /// </summary>
-        /// <remarks>
-        /// For property operations see <see cref="ClientPropertyCollection.AddRootProperty(string, object)"/>
-        /// and <see cref="ClientPropertyCollection.AddComponentProperties(string, IDictionary{string, object})"/> instead.
-        /// </remarks>
-        /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['key']"/>
-        /// <inheritdoc cref="AddOrUpdate(string, object)" path="/param['value']"/>
-        /// <inheritdoc cref="AddOrUpdate(string, object)" path="/exception"/>
-        /// <exception cref="ArgumentException">An element with the same key already exists in the collection.</exception>
-        public virtual void Add(string key, object value)
-        {
-            Collection.Add(key, value);
+            set => Add(key, value);
         }
 
         /// <summary>
         /// Adds or updates the key-value pair to the collection.
         /// </summary>
         /// <remarks>
-        /// For property operations see <see cref="ClientPropertyCollection.AddOrUpdateRootProperty(string, object)"/>
-        /// and <see cref="ClientPropertyCollection.AddOrUpdateComponentProperties(string, IDictionary{string, object})"/> instead.
+        /// When using this as part of the writable property flow to respond to a writable property update, pass in
+        /// <paramref name="value"/> as an instance of
+        /// <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
+        /// to ensure the correct formatting is applied when the object is serialized.
+        /// <para>
+        /// For property operations see <see cref="ClientPropertyCollection.AddRootProperty(string, object)"/> instead.
+        /// </para>
         /// </remarks>
         /// <param name="key">The name of the key to be added to the collection.</param>
         /// <param name="value">The value to be added to the collection.</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
-        public virtual void AddOrUpdate(string key, object value)
+        public virtual void Add(string key, object value)
         {
             Collection[key] = value;
         }
@@ -105,6 +94,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the value of the object from the collection.
         /// </summary>
+        /// <remarks>
+        /// If this instance is in an update request for a writable property, <paramref name="value"/> should be of type
+        /// <see cref="WritableClientProperty"/>.
+        /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="key">The key of the property to get.</param>
         /// <param name="value">When this method returns true, this contains the value of the object from the collection.

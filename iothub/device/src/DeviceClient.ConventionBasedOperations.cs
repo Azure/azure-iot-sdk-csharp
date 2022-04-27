@@ -21,6 +21,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The payload convention implementation that the client uses for convention-based operations.
         /// </summary>
+        /// <remarks>
+        /// You can override the default value in <see cref="ClientOptions.PayloadConvention"/>.
+        /// </remarks>
         public PayloadConvention PayloadConvention => InternalClient.PayloadConvention;
 
         /// <summary>

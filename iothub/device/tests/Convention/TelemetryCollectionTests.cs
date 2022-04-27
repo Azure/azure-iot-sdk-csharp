@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var testTelemetryCollection = new TelemetryCollection();
 
             // act
-            Action testAction = () => testTelemetryCollection.AddOrUpdate(null, 123);
+            Action testAction = () => testTelemetryCollection.Add(null, 123);
 
             // assert
             testAction.Should().Throw<ArgumentNullException>();
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var testTelemetryCollection = new TelemetryCollection();
 
             // act
-            testTelemetryCollection.AddOrUpdate("abc", null);
+            testTelemetryCollection.Add("abc", null);
 
             // assert
             testTelemetryCollection["abc"].Should().BeNull();
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             testTelemetryCollection.Add("abc", 123);
 
             // act
-            testTelemetryCollection.AddOrUpdate("abc", 1);
+            testTelemetryCollection.Add("abc", 1);
 
             // assert
             testTelemetryCollection["abc"].Should().Be(1);
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var testTelemetryCollection = new TelemetryCollection();
 
             // act
-            Action testAction = () => testTelemetryCollection.AddOrUpdate(null);
+            Action testAction = () => testTelemetryCollection.Add(null);
 
             // assert
             testAction.Should().Throw<ArgumentNullException>();
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
-            testTelemetryCollection.AddOrUpdate("abc", 123);
+            testTelemetryCollection.Add("abc", 123);
             var telemetryValues = new Dictionary<string, object>
             {
                 { "qwe", 98 },
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var testTelemetryCollection = new TelemetryCollection();
-            testTelemetryCollection.AddOrUpdate("abc", 123);
+            testTelemetryCollection.Add("abc", 123);
             var telemetryValues = new Dictionary<string, object>
             {
                 { "qwe", 98 },
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             // act
-            testTelemetryCollection.AddOrUpdate(telemetryValues);
+            testTelemetryCollection.Add(telemetryValues);
 
             // assert
             testTelemetryCollection["qwe"].Should().Be(98);

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,33 +16,26 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string VersionName = "$version";
 
-        /// <summary>
-        /// Adds the value to the collection.
-        /// </summary>
+        /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string)" />
         /// <remarks>
-        /// If the collection already has a key matching a property name supplied this method will throw an <see cref="ArgumentException"/>.
-        /// <para>
-        /// When using this as part of the writable property flow to respond to a writable property update you should pass in the value
-        /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// When using this as part of the writable property flow to respond to a writable property update, pass in
+        /// <paramref name="propertyValue"/> as an instance of
+        /// <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
         /// to ensure the correct formatting is applied when the object is serialized.
-        /// </para>
         /// </remarks>
-        /// <param name="propertyName">The name of the property to add.</param>
-        /// <param name="propertyValue">The value of the property to add.</param>
+        /// <param name="propertyName">The name of the property to add or update.</param>
+        /// <param name="propertyValue">The value of the property to add or update.</param>
+        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string)" />
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException"><paramref name="propertyName"/> already exists in the collection.</exception>
         public void AddRootProperty(string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null, false);
+            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null);
 
-        /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
-        /// <summary>
-        /// Adds the value to the collection.
-        /// </summary>
-        /// <param name="componentName">The component with the property to add.</param>
-        /// <param name="propertyName">The name of the property to add.</param>
-        /// <param name="propertyValue">The value of the property to add.</param>
+        /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string)" />
+        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string)" />
+        /// <param name="componentName">The component with the property to add or update.</param>
+        /// <param name="propertyName">The name of the property to add or update.</param>
+        /// <param name="propertyValue">The value of the property to add or update.</param>
         /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddComponentProperty(string componentName, string propertyName, object propertyValue)
         {
@@ -52,127 +44,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(componentName));
             }
 
-            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, false);
-        }
-
-        /// <inheritdoc path="/remarks" cref="AddRootProperty(string, object)" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <summary>
-        /// Adds the value to the collection.
-        /// </summary>
-        /// <param name="componentName">The component with the properties to add.</param>
-        /// <param name="properties">A collection of properties to add.</param>
-        /// <exception cref="ArgumentException">A property name in <paramref name="properties"/> already exists in the collection.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or a property name in <paramref name="properties"/> is <c>null</c>.</exception>
-        public void AddComponentProperties(string componentName, IDictionary<string, object> properties)
-        {
-            if (componentName == null)
-            {
-                throw new ArgumentNullException(nameof(componentName));
-            }
-
-            AddInternal(properties, componentName, false);
-        }
-
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception" cref="AddRootProperty(string, object)" />
-        /// <summary>
-        /// Adds the collection of root-level property values to the collection.
-        /// </summary>
-        /// <remarks>
-        /// If the collection already has a key matching a property name supplied this method will throw an <see cref="ArgumentException"/>.
-        /// <para>
-        /// When using this as part of the writable property flow to respond to a writable property update you should pass in the value
-        /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
-        /// to ensure the correct formatting is applied when the object is serialized.
-        /// </para>
-        /// </remarks>
-        /// <param name="properties">A collection of properties to add.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
-        public void AddRootProperties(IDictionary<string, object> properties)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            properties
-                .ToList()
-                .ForEach(entry => Collection.Add(entry.Key, entry.Value));
-        }
-
-        /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/remarks" cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <param name="propertyName">The name of the property to add or update.</param>
-        /// <param name="propertyValue">The value of the property to add or update.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
-        public void AddOrUpdateRootProperty(string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null, true);
-
-        /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/remarks" cref="AddOrUpdateComponentProperties(string, IDictionary{string, object})" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <param name="componentName">The component with the property to add or update.</param>
-        /// <param name="propertyName">The name of the property to add or update.</param>
-        /// <param name="propertyValue">The value of the property to add or update.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
-        public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue)
-        {
-            if (componentName == null)
-            {
-                throw new ArgumentNullException(nameof(componentName));
-            }
-
-            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName, true);
-        }
-
-        /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <remarks>
-        /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
-        /// <para>
-        /// When using this as part of the writable property flow to respond to a writable property update
-        /// you should pass in the value as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
-        /// to ensure the correct formatting is applied when the object is serialized.
-        /// </para>
-        /// </remarks>
-        /// <param name="componentName">The component with the properties to add or update.</param>
-        /// <param name="properties">A collection of properties to add or update.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or a property name in <paramref name="properties"/> is <c>null</c>.</exception>
-        public void AddOrUpdateComponentProperties(string componentName, IDictionary<string, object> properties)
-        {
-            if (componentName == null)
-            {
-                throw new ArgumentNullException(nameof(componentName));
-            }
-
-            AddInternal(properties, componentName, true);
-        }
-
-        /// <inheritdoc path="/summary" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <inheritdoc path="/exception" cref="AddInternal(IDictionary{string, object}, string, bool)" />
-        /// <remarks>
-        /// If the collection has a key that matches this will overwrite the current value. Otherwise it will attempt to add this to the collection.
-        /// <para>
-        /// When using this as part of the writable property flow to respond to a writable property update you should pass in the value
-        /// as an instance of <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
-        /// to ensure the correct formatting is applied when the object is serialized.
-        /// </para>
-        /// </remarks>
-        /// <param name="properties">A collection of properties to add or update.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
-        public void AddOrUpdateRootProperties(IDictionary<string, object> properties)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            properties
-                .ToList()
-                .ForEach(entry => Collection[entry.Key] = entry.Value);
+            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName);
         }
 
         /// <summary>
@@ -204,7 +76,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a component-level property.
         /// </summary>
         /// <remarks>
+        /// If this instance is in an update request for a writable property, <paramref name="propertyValue"/> should be of type
+        /// <see cref="WritableClientProperty"/>.
+        /// <para>
         /// To get the value of a top-level property use <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>.
+        /// </para>
         /// </remarks>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
@@ -462,10 +338,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <seealso cref="PayloadEncoder"/>
         /// <param name="properties">A collection of properties to add or update.</param>
         /// <param name="componentName">The component with the properties to add or update.</param>
-        /// <param name="forceUpdate">Forces the collection to use the Add or Update behavior.
-        /// Setting to true will simply overwrite the value. Setting to false will use <see cref="IDictionary{TKey, TValue}.Add(TKey, TValue)"/></param>
+        /// 
         /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
-        private void AddInternal(IDictionary<string, object> properties, string componentName = default, bool forceUpdate = false)
+        private void AddInternal(IDictionary<string, object> properties, string componentName = default)
         {
             // If the componentName is null then simply add the key-value pair to Collection dictionary.
             // This will either insert a property or overwrite it if it already exists.
@@ -486,14 +361,7 @@ namespace Microsoft.Azure.Devices.Client
                         throw new ArgumentNullException(nameof(entry.Key));
                     }
 
-                    if (forceUpdate)
-                    {
-                        Collection[entry.Key] = entry.Value;
-                    }
-                    else
-                    {
-                        Collection.Add(entry.Key, entry.Value);
-                    }
+                    Collection[entry.Key] = entry.Value;
                 }
             }
             else
@@ -521,14 +389,7 @@ namespace Microsoft.Azure.Devices.Client
                             throw new ArgumentNullException(nameof(entry.Key));
                         }
 
-                        if (forceUpdate)
-                        {
-                            componentProperties[entry.Key] = entry.Value;
-                        }
-                        else
-                        {
-                            componentProperties.Add(entry.Key, entry.Value);
-                        }
+                        componentProperties[entry.Key] = entry.Value;
                     }
 
                     // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
