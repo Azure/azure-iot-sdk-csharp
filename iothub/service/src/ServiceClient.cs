@@ -447,6 +447,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Interactively invokes a method on a device.
+        /// Additional 15s is added to the timeout in cloudToDeviceMethod to account for time taken to wire a request
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
@@ -634,9 +635,24 @@ namespace Microsoft.Azure.Devices
             // for the Device to connect and send a response. We also need to take into account
             // the transmission time for the request send/receive
             var timeout = TimeSpan.FromSeconds(15); // For wire time
-            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
-            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
-            return timeout < TimeSpan.FromSeconds(5) || timeout > TimeSpan.FromSeconds(300) ? s_defaultOperationTimeout : timeout;
+            var connectionTimeOut = TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
+            var responseTimeOut = TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
+
+            ValidateTimeOut(connectionTimeOut);
+            ValidateTimeOut(responseTimeOut);
+
+            timeout += connectionTimeOut;
+            timeout += responseTimeOut;
+
+            return timeout;
+        }
+
+        private static void ValidateTimeOut(TimeSpan connectionTimeOut)
+        {
+            if (connectionTimeOut.Seconds < 0)
+            {
+                throw new ArgumentException("Negative timeout");
+            }
         }
 
         private static Uri GetStatisticsUri()
