@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public bool CleanSession { get; set; }
 
         /// <summary>
-        /// The interval, in seconds, that the client establishes with the service, for sending keep-alive pings.
+        /// The interval, in seconds, that the client establishes with the service, for sending protocol-level keep-alive pings.
         /// The default is 300 seconds.
         /// </summary>
         /// <remarks>
@@ -192,6 +192,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
         public int KeepAliveInSeconds { get; set; }
+
+        /// <summary>
+        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
+        /// </summary>
+        /// <remarks>
+        /// This value is different from the protocol-level keep-alive packets that are sent over the overlaying MQTT transport protocol.
+        /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
+        public TimeSpan? WebSocketKeepAlive { get; set; }
 
         /// <summary>
         /// Indicates whether the transport has a will message.
