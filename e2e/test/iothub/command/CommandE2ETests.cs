@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
                             commandCallReceived.SetException(ex);
                         }
 
-                        return Task.FromResult(new CommandResponse(new DeviceCommandResponse(), 200));
+                        return Task.FromResult(new CommandResponse(200, new DeviceCommandResponse()));
                     })
                 .ConfigureAwait(false);
 

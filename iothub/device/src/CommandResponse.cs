@@ -10,8 +10,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class CommandResponse
     {
-        private readonly object _payload;
-
         internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
@@ -24,12 +22,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a new instance of the class with the associated command response data and a status code.
         /// </summary>
-        /// <param name="payload">The command response payload.</param>
         /// <param name="status">A status code indicating success or failure.</param>
-        public CommandResponse(object payload, int status)
+        /// <param name="payload">The command response payload that will be serialized using <see cref="DeviceClient.PayloadConvention"/>.</param>
+        public CommandResponse(int status, object payload)
         {
-            _payload = payload;
             Status = status;
+            Payload = payload;
         }
 
         /// <summary>
@@ -44,26 +42,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The command response status code indicating success or failure.
         /// </summary>
-        public int Status { get; }
+        public int Status { get; set; }
 
         /// <summary>
-        /// The command response payload.
+        /// The command response payload that will be serialized using <see cref="ClientOptions.PayloadConvention"/>.
         /// </summary>
-        public object Payload { get; }
+        public object Payload { get; set; }
 
         /// <summary>
         /// The serialized command response data.
         /// </summary>
         internal string GetPayloadAsString()
         {
-            return _payload == null
+            return Payload == null
                 ? null
-                : PayloadConvention.PayloadSerializer.SerializeToString(_payload);
+                : PayloadConvention.PayloadSerializer.SerializeToString(Payload);
         }
 
         internal byte[] GetPayloadAsBytes()
         {
-            return _payload == null
+            return Payload == null
                 ? null
                 : PayloadConvention.PayloadEncoder.ContentEncoding.GetBytes(GetPayloadAsString());
         }

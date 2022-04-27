@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddSimpleObjectAgainThrowsException()
+        public void ClientPropertyCollection_AddSimpleObjectAgainSuccess()
         {
             // arrange
             var clientProperties = new ClientPropertyCollection
@@ -118,10 +118,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             // act
-            Action act = () => clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+            clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
 
             // assert
-            act.Should().Throw<ArgumentException>("\"Add\" method does not support adding a key that already exists in the collection.");
+            clientProperties[StringPropertyName].Should().Be(StringPropertyValue);
         }
 
         [TestMethod]
@@ -138,10 +138,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             clientProperties.TryGetValue(StringPropertyName, out string outValue);
             outValue.Should().Be(StringPropertyValue);
 
-            clientProperties.AddOrUpdateRootProperty(StringPropertyName, UpdatedPropertyValue);
+            clientProperties.AddRootProperty(StringPropertyName, UpdatedPropertyValue);
 
             clientProperties.TryGetValue(StringPropertyName, out string outValueChanged);
-            outValueChanged.Should().Be(UpdatedPropertyValue, "\"AddOrUpdate\" should overwrite the value if the key already exists in the collection.");
+            outValueChanged.Should().Be(UpdatedPropertyValue, "\"Add\" should overwrite the value if the key already exists in the collection.");
         }
 
         [TestMethod]
@@ -226,7 +226,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 { DateTimePropertyName, s_dateTimePropertyValue }
             };
             var clientProperties = new ClientPropertyCollection();
-            clientProperties.AddComponentProperties(ComponentName, componentLevelProperties);
+            foreach (var propKvp in componentLevelProperties)
+            {
+                clientProperties.AddComponentProperty(ComponentName, propKvp.Key, propKvp.Value);
+            }
 
             // act, assert
 
@@ -265,17 +268,18 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddSimpleObjectWithComponentAgainThrowsException()
+        public void ClientPropertyCollection_AddSimpleObjectWithComponentAgainSuccess()
         {
             // arrange
             var clientProperties = new ClientPropertyCollection();
             clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
 
             // act
-            Action act = () => clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
+            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
 
             // assert
-            act.Should().Throw<ArgumentException>("\"Add\" method does not support adding a key that already exists in the collection.");
+            clientProperties.TryGetValue<string>(ComponentName, StringPropertyName, out string stringPropertyValue);
+            stringPropertyValue.Should().Be(StringPropertyValue);
         }
 
         [TestMethod]
@@ -290,9 +294,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
             outValue.Should().Be(StringPropertyValue);
 
-            clientProperties.AddOrUpdateComponentProperty(ComponentName, StringPropertyName, UpdatedPropertyValue);
+            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, UpdatedPropertyValue);
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValueChanged);
-            outValueChanged.Should().Be(UpdatedPropertyValue, "\"AddOrUpdate\" should overwrite the value if the key already exists in the collection.");
+            outValueChanged.Should().Be(UpdatedPropertyValue, "\"Add\" should overwrite the value if the key already exists in the collection.");
         }
 
         [TestMethod]
@@ -443,19 +447,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullPropertyNameThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-
-            // act
-            Action testAction = () => testPropertyCollection.AddOrUpdateRootProperty(null, 123);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_AddNullPropertyValueSuccess()
         {
             // arrange
@@ -473,45 +464,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullPropertyValueSuccess()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-
-            // act
-            // This should add an entry in the dictionary with a null value.
-            // This patch would be interpreted by the service as the client wanting to remove property "abc" from its properties.
-            testPropertyCollection.AddOrUpdateRootProperty("abc", null);
-
-            // assert
-            bool isValueRetrieved = testPropertyCollection.TryGetValue<object>("abc", out object propertyValue);
-            isValueRetrieved.Should().BeTrue();
-            propertyValue.Should().BeNull();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddPropertyValueAlreadyExistsThrows()
+        public void ClientPropertyCollection_AddPropertyValueAlreadyExistsSuccess()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
             testPropertyCollection.AddRootProperty("abc", 123);
 
             // act
-            Action testAction = () => testPropertyCollection.AddRootProperty("abc", 1);
-
-            // assert
-            testAction.Should().Throw<ArgumentException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdatePropertyValueAlreadyExistsSuccess()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddRootProperty("abc", 123);
-
-            // act
-            testPropertyCollection.AddOrUpdateRootProperty("abc", 1);
+            testPropertyCollection.AddRootProperty("abc", 1);
 
             // assert
             bool isValueRetrieved = testPropertyCollection.TryGetValue<int>("abc", out int propertyValue);
@@ -520,33 +480,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddNullClientPropertyCollectionThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-
-            // act
-            Action testAction = () => testPropertyCollection.AddRootProperties(null);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullClientPropertyCollectionThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-
-            // act
-            Action testAction = () => testPropertyCollection.AddOrUpdateRootProperties(null);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddClientPropertyCollectionAlreadyExistsThrows()
+        public void ClientPropertyCollection_AddClientPropertyCollectionAlreadyExistsSuccess()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
@@ -558,26 +492,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             // act
-            Action testAction = () => testPropertyCollection.AddRootProperties(propertyValues);
-
-            // assert
-            testAction.Should().Throw<ArgumentException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateClientPropertyCollectionAlreadyExistsSuccess()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddRootProperty("abc", 123);
-            var propertyValues = new Dictionary<string, object>
+            foreach (var propKvp in propertyValues)
             {
-                { "qwe", 98 },
-                { "abc", 2 },
-            };
-
-            // act
-            testPropertyCollection.AddOrUpdateRootProperties(propertyValues);
+                testPropertyCollection.AddRootProperty(propKvp.Key, propKvp.Value);
+            }
 
             // assert
             bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("qwe", out int value1Retrieved);
@@ -603,19 +521,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullPropertyNameWithComponentThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-
-            // act
-            Action testAction = () => testPropertyCollection.AddOrUpdateComponentProperty("testComponent", null, 123);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_AddNullComponentNameThrows()
         {
             // arrange
@@ -623,19 +528,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // act
             Action testAction = () => testPropertyCollection.AddComponentProperty(null, "abc", 123);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullComponentNameThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-
-            // act
-            Action testAction = () => testPropertyCollection.AddOrUpdateComponentProperty(null, "abc", 123);
 
             // assert
             testAction.Should().Throw<ArgumentNullException>();
@@ -664,28 +556,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullPropertyValueWithComponentSuccess()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddComponentProperty("testComponent", "qwe", 123);
-
-            // act
-            // This should add an entry in the dictionary with a null value.
-            // This patch would be interpreted by the service as the client wanting to remove property "abc" from its properties.
-            testPropertyCollection.AddOrUpdateComponentProperty("testComponent", "abc", null);
-
-            // assert
-            bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property1Value);
-            isValue1Retrieved.Should().BeTrue();
-            property1Value.Should().Be(123);
-
-            bool isValue2Retrieved = testPropertyCollection.TryGetValue<object>("testComponent", "abc", out object property2Value);
-            isValue2Retrieved.Should().BeTrue();
-            property2Value.Should().BeNull();
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_AddNullClientPropertyCollectionWithComponentSuccess()
         {
             // arrange
@@ -696,7 +566,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // act
             // This should add an entry in the dictionary with a null value.
             // This patch would be interpreted by the service as the client wanting to remove component "testComponent" from its properties.
-            testPropertyCollection.AddComponentProperties("testComponent", null);
+            testPropertyCollection.AddRootProperty("testComponent", null);
 
             // assert
             bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int _);
@@ -708,7 +578,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateNullClientPropertyCollectionWithComponentThrows()
+        public void ClientPropertyCollection_AddNullClientPropertyCollectionWithComponentThrows()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
@@ -718,7 +588,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // act
             // This should add an entry in the dictionary with a null value.
             // This patch would be interpreted by the service as the client wanting to remove component "testComponent" from its properties.
-            testPropertyCollection.AddOrUpdateComponentProperties("testComponent", null);
+            testPropertyCollection.AddRootProperty("testComponent", null);
 
             // assert
             bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property2Value);
@@ -730,28 +600,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddPropertyValueAlreadyExistsWithComponentThrows()
+        public void ClientPropertyCollection_AddPropertyValueAlreadyExistsWithComponentSuccess()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
             testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
 
             // act
-            Action testAction = () => testPropertyCollection.AddComponentProperty("testComponent", "abc", 1);
-
-            // assert
-            testAction.Should().Throw<ArgumentException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdatePropertyValueAlreadyExistsWithComponentSuccess()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
-
-            // act
-            testPropertyCollection.AddOrUpdateComponentProperty("testComponent", "abc", 1);
+            testPropertyCollection.AddComponentProperty("testComponent", "abc", 1);
 
             // assert
             bool isValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "abc", out int propertyValue);
@@ -760,7 +616,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddClientPropertyCollectionAlreadyExistsWithComponentThrows()
+        public void ClientPropertyCollection_AddClientPropertyCollectionAlreadyExistsWithComponentSuccess()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
@@ -772,26 +628,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             // act
-            Action testAction = () => testPropertyCollection.AddComponentProperties("testComponent", propertyValues);
-
-            // assert
-            testAction.Should().Throw<ArgumentException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddOrUpdateClientPropertyCollectionAlreadyExistsWithComponentSuccess()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddComponentProperty("testComponent", "abc", 123);
-            var propertyValues = new Dictionary<string, object>
+            foreach (var propKvp in propertyValues)
             {
-                { "qwe", 98 },
-                { "abc", 2 },
-            };
-
-            // act
-            testPropertyCollection.AddOrUpdateComponentProperties("testComponent", propertyValues);
+                testPropertyCollection.AddComponentProperty("testComponent", propKvp.Key, propKvp.Value);
+            }
 
             // assert
             bool isValue1Retrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int value1Retrieved);
@@ -816,7 +656,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var propertyValuesAsDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(propertyValues));
 
             // act
-            testPropertyCollection.AddRootProperties(propertyValuesAsDictionary);
+            foreach (var propKvp in propertyValuesAsDictionary)
+            {
+                testPropertyCollection.AddRootProperty(propKvp.Key, propKvp.Value);
+            }
 
             // assert
             bool isIdPresent = testPropertyCollection.TryGetValue<int>("Id", out int id);

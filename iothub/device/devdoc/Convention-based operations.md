@@ -1,6 +1,6 @@
-## Plug and Play convention compatible APIs
+# Plug and Play convention compatible APIs
 
-#### Common
+## Common
 
 ```diff
 public class ClientOptions {
@@ -18,7 +18,6 @@ public class ModuleClient : IDisposable {
 ```
 
 ```csharp
-
 public abstract class PayloadConvention {
     protected PayloadConvention();
     public abstract PayloadEncoder PayloadEncoder { get; }
@@ -72,7 +71,6 @@ public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<
     public PayloadConvention Convention { get; internal set; }
     public virtual object this[string key] { get; set; }
     public virtual void Add(string key, object value);
-    public virtual void AddOrUpdate(string key, object value);
     public void ClearCollection();
     public bool Contains(string key);
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
@@ -101,7 +99,7 @@ public class CommonClientResponseCodes {
 }
 ```
 
-### Properties
+## Properties
 
 ```csharp
 /// <summary>
@@ -127,7 +125,7 @@ public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPr
 public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default);
 ```
 
-#### All related types
+### All related types
 
 ```csharp
 public class ClientProperties {
@@ -139,14 +137,8 @@ public class ClientProperties {
 public class ClientPropertyCollection : PayloadCollection {
     public ClientPropertyCollection();
     public long Version { get; protected set; }
-    public void AddComponentProperties(string componentName, IDictionary<string, object> properties);
-    public void AddComponentProperty(string componentName, string propertyName, object propertyValue);
-    public void AddOrUpdateComponentProperties(string componentName, IDictionary<string, object> properties);
-    public void AddOrUpdateComponentProperty(string componentName, string propertyName, object propertyValue);
-    public void AddOrUpdateRootProperties(IDictionary<string, object> properties);
-    public void AddOrUpdateRootProperty(string propertyName, object propertyValue);
-    public void AddRootProperties(IDictionary<string, object> properties);
     public void AddRootProperty(string propertyName, object propertyValue);
+    public void AddComponentProperty(string componentName, string propertyName, object propertyValue);
     public bool Contains(string componentName, string propertyName);
     public virtual bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
 }
@@ -178,7 +170,7 @@ public class ClientPropertiesUpdateResponse {
 }
 ```
 
-### Telemetry
+## Telemetry
 
 ```csharp
 /// <summary>
@@ -192,15 +184,14 @@ public class ClientPropertiesUpdateResponse {
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 public Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken = default);
 ```
-#### All related types
+
+### All related types
 
 ```csharp
 public class TelemetryCollection : PayloadCollection {
     public TelemetryCollection();
     public void Add(IDictionary<string, object> telemetryValues);
     public override void Add(string telemetryName, object telemetryValue);
-    public void AddOrUpdate(IDictionary<string, object> telemetryValues);
-    public override void AddOrUpdate(string telemetryName, object telemetryValue);
 }
 
 public sealed class TelemetryMessage : MessageBase {
@@ -210,7 +201,7 @@ public sealed class TelemetryMessage : MessageBase {
 }
 ```
 
-### Commands
+## Commands
 
 ```csharp
 /// <summary>
@@ -220,7 +211,8 @@ public sealed class TelemetryMessage : MessageBase {
 /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
 public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken = default);
 ```
-#### All related types
+
+### All related types
 
 ```csharp
 public sealed class CommandRequest {
@@ -235,8 +227,8 @@ public sealed class CommandRequest {
 public sealed class CommandResponse {
     public CommandResponse();
     public CommandResponse(int status);
-    public CommandResponse(object payload, int status);
-    public object Payload { get; }
-    public int Status { get; }
+    public CommandResponse(int status, object payload);
+    public object Payload { get; set; }
+    public int Status { get; set; }
 }
 ```
