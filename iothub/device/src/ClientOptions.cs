@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The payload convention to be used to serialize and encode the messages for convention based methods.
         /// </summary>
         /// <remarks>
-        /// The <see cref="Shared.PayloadConvention"/> defines both the serializer and encoding to be used for convention based messages.
+        /// The <see cref="PayloadConvention"/> defines both the serializer and encoding to be used for convention based messages.
         /// You will only need to set this if you have objects that have special serialization rules or require a specific byte encoding.
         /// <para>
         /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses the <see cref="NewtonsoftJsonPayloadSerializer"/> serializer

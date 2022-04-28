@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// An optional, helper class for constructing a writable property response.

@@ -228,14 +228,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Converts a <see cref="TwinCollection"/> collection to a properties collection.
+        /// Converts a <see cref="Shared.TwinCollection"/> collection to a properties collection.
         /// </summary>
         /// <remarks>This method is used to translate the twin desired properties into writable property update requests.
         /// This internal class is aware of the implementation of the TwinCollection.</remarks>
         /// <param name="twinCollection">The TwinCollection object to convert.</param>
         /// <param name="payloadConvention">A convention handler that defines the content encoding and serializer to use for the payload.</param>
-        /// <returns>A new instance of the class from an existing <see cref="TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
-        internal static ClientPropertyCollection WritablePropertyUpdateRequestsFromTwinCollection(TwinCollection twinCollection, PayloadConvention payloadConvention)
+        /// <returns>A new instance of the class from an existing <see cref="Shared.TwinProperties"/> using an optional <see cref="PayloadConvention"/>.</returns>
+        internal static ClientPropertyCollection WritablePropertyUpdateRequestsFromTwinCollection(Shared.TwinCollection twinCollection, PayloadConvention payloadConvention)
         {
             if (twinCollection == null)
             {
