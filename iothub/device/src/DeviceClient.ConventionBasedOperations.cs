@@ -51,7 +51,10 @@ namespace Microsoft.Azure.Devices.Client
         ///     {
         ///         switch (commandRequest.CommandName)
         ///         {
-        ///             // Identify and process supported commands
+        ///             case "sampleCommandName":
+        ///                 int samplePayload = commandRequest.GetPayload&lt;int&gt;();
+        ///                 // process command
+        ///                 return Task.FromResult(new CommandRequest(200, relevantPayload));
         ///         }
         ///
         ///         return Task.FromResult(new CommandRequest(CommonClientResponseCodes.BadRequest));
@@ -87,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyCollection">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The response of the update operation, where you'll find the updates version of the properties.</returns>
+        /// <returns>The response of the update operation, where you'll find the updated version of the properties.</returns>
         public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(
             ClientPropertyCollection propertyCollection,
             CancellationToken cancellationToken = default)
