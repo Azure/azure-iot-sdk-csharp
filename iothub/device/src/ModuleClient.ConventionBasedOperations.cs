@@ -101,11 +101,11 @@ namespace Microsoft.Azure.Devices.Client
         /// 	async (writableProperties) =>
         /// 	{
         /// 	    var propertiesToBeUpdated = new ClientPropertyCollection();
-        /// 		if (writableProperties.TryGetValue("targetTemperature", out WritableClientProperty targetTemperatureRequested))
+        /// 		if (writableProperties.TryGetValue("samplePropertyName", out WritableClientProperty propertyUpdateRequested))
         /// 		{
         /// 			propertiesToBeUpdated.AddRootProperty(
-        /// 				"targetTemperature",
-        /// 				targetTemperatureRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        /// 				"samplePropertyName",
+        /// 				propertyUpdateRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
         /// 		}
         /// 		ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         /// 	},
