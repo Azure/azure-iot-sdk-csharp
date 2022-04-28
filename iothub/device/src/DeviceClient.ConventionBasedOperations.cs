@@ -101,6 +101,34 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <example>
+        /// Inline:
+        /// <code language="csharp">
+        /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(
+        /// 	async (writableProperties) =>
+        /// 	{
+        /// 		if (writableProperties.TryGetValue("targetTemperature", out WritableClientProperty targetTemperatureRequested))
+        /// 		{
+        /// 			var propertiesToBeUpdated = new ClientPropertyCollection();
+        /// 			propertiesToBeUpdated.AddRootProperty(
+        /// 				"targetTemperature",
+        /// 				targetTemperatureRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        /// 
+        /// 			ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        /// 		}
+        /// 	},
+        /// 	cancellationToken);
+        /// </code>
+        /// 
+        /// Or as a separate method:
+        /// <code language="csharp">
+        /// Task OnPropertyUpdateRequestReceived(ClientPropertyCollection writableProperties)
+        /// {
+        ///     // Identify and process supported writable property update requests
+        /// }
+        /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(OnPropertyUpdateRequestReceived, cancellationToken);
+        /// </code>
+        /// </example>
         public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, cancellationToken);
     }

@@ -11,13 +11,6 @@ namespace Microsoft.Azure.Devices.Client
         internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
-        /// Public constructor provided only for mocking purposes.
-        /// </summary>
-        public CommandResponse()
-        {
-        }
-
-        /// <summary>
         /// Creates a new instance of the class with the associated command response data and a status code.
         /// </summary>
         /// <param name="status">A status code indicating success or failure.</param>
@@ -38,8 +31,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command response status code indicating success or failure.
+        /// The command response status code indicating success or failure. This is usually an HTTP Status Code e.g. 200, 400.
         /// </summary>
+        /// <remarks>
+        /// Some commonly used codes are defined in <see cref="CommonClientResponseCodes" />.
+        /// </remarks>
         public int Status { get; set; }
 
         /// <summary>

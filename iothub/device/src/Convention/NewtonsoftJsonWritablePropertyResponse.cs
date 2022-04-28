@@ -38,6 +38,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The acknowledgment code, usually an HTTP Status Code e.g. 200, 400.
         /// </summary>
+        /// <remarks>
+        /// Some commonly used codes are defined in <see cref="CommonClientResponseCodes" />.
+        /// </remarks>
         [JsonProperty(ConventionBasedConstants.AckCodePropertyName)]
         public int AckCode { get; set; }
 
