@@ -36,10 +36,38 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
         /// <summary>
-        /// Sets the listener for command invocation requests.
+        /// Sets the listener for command calls from the service.
         /// </summary>
         /// <param name="callback">The callback to handle all incoming commands for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <example>
+        /// Inline:
+        /// <code language="csharp">
+        /// await client.SubscribeToCommandsAsync(
+        ///     (commandRequest) =>
+        ///     {
+        ///         switch (commandRequest.CommandName)
+        ///         {
+        ///             case "sampleCommandName":
+        ///                 int samplePayload = commandRequest.GetPayload&lt;int&gt;();
+        ///                 // process command
+        ///                 return Task.FromResult(new CommandRequest(200, relevantPayload));
+        ///         }
+        ///
+        ///         return Task.FromResult(new CommandRequest(CommonClientResponseCodes.BadRequest));
+        ///     },
+        ///     cancellationToken);
+        /// </code>
+        /// 
+        /// Or as a separate method:
+        /// <code language="csharp">
+        /// Task&lt;CommandResponse&gt; OnCommandReceived(CommandRequest commandRequest)
+        /// {
+        ///     // Identify and process supported commands
+        /// }
+        /// await client.SubscribeToCommandsAsync(OnCommandReceived);
+        /// </code>
+        /// </example>
         public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToCommandsAsync(callback, cancellationToken);
 
