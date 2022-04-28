@@ -31,9 +31,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command response status code indicating success or failure. This is usually an HTTP Status Code e.g. 200, 400.
+        /// The command response status code indicating success or failure.
         /// </summary>
         /// <remarks>
+        /// This is usually an HTTP Status Code e.g. 200, 400.
         /// Some commonly used codes are defined in <see cref="CommonClientResponseCodes" />.
         /// </remarks>
         public int Status { get; set; }

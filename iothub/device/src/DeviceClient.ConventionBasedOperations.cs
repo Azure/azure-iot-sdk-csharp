@@ -107,26 +107,25 @@ namespace Microsoft.Azure.Devices.Client
         /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(
         /// 	async (writableProperties) =>
         /// 	{
+        /// 	    var propertiesToBeUpdated = new ClientPropertyCollection();
         /// 		if (writableProperties.TryGetValue("targetTemperature", out WritableClientProperty targetTemperatureRequested))
         /// 		{
-        /// 			var propertiesToBeUpdated = new ClientPropertyCollection();
         /// 			propertiesToBeUpdated.AddRootProperty(
         /// 				"targetTemperature",
         /// 				targetTemperatureRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
-        /// 
-        /// 			ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         /// 		}
+        /// 		ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         /// 	},
         /// 	cancellationToken);
         /// </code>
         /// 
         /// Or as a separate method:
         /// <code language="csharp">
-        /// Task OnPropertyUpdateRequestReceived(ClientPropertyCollection writableProperties)
+        /// async Task OnPropertyUpdateRequestReceivedAsync(ClientPropertyCollection writableProperties)
         /// {
         ///     // Identify and process supported writable property update requests
         /// }
-        /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(OnPropertyUpdateRequestReceived, cancellationToken);
+        /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(OnPropertyUpdateRequestReceivedAsync, cancellationToken);
         /// </code>
         /// </example>
         public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default)
