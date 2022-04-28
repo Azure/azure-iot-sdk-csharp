@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {

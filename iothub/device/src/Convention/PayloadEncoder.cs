@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Specifies the byte encoding for the payload.
