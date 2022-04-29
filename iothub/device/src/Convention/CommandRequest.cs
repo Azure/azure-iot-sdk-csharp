@@ -7,25 +7,25 @@ using System.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure that represents a convention based command request.
+    /// The data structure that represents a convention-based command request.
     /// </summary>
-    public sealed class CommandRequest
+    public class CommandRequest
     {
         private readonly ReadOnlyCollection<byte> _payload;
         private readonly PayloadConvention _payloadConvention;
 
         /// <summary>
-        /// Public constructor provided only for mocking purposes.
+        /// For internal use only, unless used in mocking for testing.
         /// </summary>
-        public CommandRequest()
-        {
-        }
-
-        internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] data = default)
+        /// <param name="payloadConvention">The instance of the payload convention to use.</param>
+        /// <param name="commandName">The name of the command.</param>
+        /// <param name="componentName">The name of the component that is command is invoked on.</param>
+        /// <param name="payload">The command payload.</param>
+        protected internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] payload = default)
         {
             CommandName = commandName;
             ComponentName = componentName;
-            _payload = new ReadOnlyCollection<byte>(data);
+            _payload = new ReadOnlyCollection<byte>(payload);
             _payloadConvention = payloadConvention;
         }
 
@@ -35,15 +35,15 @@ namespace Microsoft.Azure.Devices.Client
         public string ComponentName { get; }
 
         /// <summary>
-        /// The command name.
+        /// The name of the command.
         /// </summary>
         public string CommandName { get; }
 
         /// <summary>
-        /// The command request data.
+        /// The command request payload.
         /// </summary>
-        /// <typeparam name="T">The type to cast the command request data to.</typeparam>
-        /// <returns>The command request data.</returns>
+        /// <typeparam name="T">The type to deserialize the command request payload to.</typeparam>
+        /// <returns>The command request payload.</returns>
         public T GetPayload<T>()
         {
             string dataAsJson = GetPayloadAsString();
@@ -54,10 +54,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command request data bytes.
+        /// The command request payload bytes.
         /// </summary>
         /// <returns>
-        /// The command request data bytes.
+        /// The command request data payload.
         /// </returns>
         public ReadOnlyCollection<byte> GetPayloadAsBytes()
         {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command data as a string.
+        /// The command payload as a string.
         /// </summary>
         public string GetPayloadAsString()
         {

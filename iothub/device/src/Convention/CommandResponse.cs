@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices.Client
         internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
-        /// Creates a new instance of the class with the associated command response data and a status code.
+        /// Creates a new instance of the class with the associated status code and response payload.
         /// </summary>
-        /// <param name="status">A status code indicating success or failure.</param>
+        /// <param name="status">A status code indicating success or failure (e.g., 200, 400); see <see cref="CommonClientResponseCodes"/>.</param>
         /// <param name="payload">The command response payload that will be serialized using <see cref="DeviceClient.PayloadConvention"/>.</param>
         public CommandResponse(int status, object payload)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         public object Payload { get; set; }
 
         /// <summary>
-        /// The serialized command response data.
+        /// The serialized command response payload.
         /// </summary>
         internal string GetPayloadAsString()
         {
