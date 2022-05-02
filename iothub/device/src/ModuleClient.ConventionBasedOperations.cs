@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -36,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SendTelemetryAsync(telemetryMessage, cancellationToken);
 
         /// <summary>
-        /// Sets the listener for command calls from the service.
+        /// Sets the listener for all command calls from the service.
         /// </summary>
         /// <param name="callback">The callback to handle all incoming commands for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -75,15 +74,17 @@ namespace Microsoft.Azure.Devices.Client
         /// Retrieve the client properties.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The device properties.</returns>
+        /// <returns>The module properties.</returns>
         public Task<ClientProperties> GetClientPropertiesAsync(CancellationToken cancellationToken = default)
             => InternalClient.GetClientTwinPropertiesAsync(cancellationToken);
 
         /// <summary>
-        /// Update the client properties.
-        /// This operation enables the partial update of the properties of the connected client.
+        /// Update the service with the specified client properties.
         /// </summary>
-        /// <param name="propertyCollection">Reported properties to push.</param>
+        /// <remarks>
+        /// This operation enables the partial update of the properties of the connected client.
+        /// </remarks>
+        /// <param name="propertyCollection">The properties to update at the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The response of the update operation.</returns>
         public Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPropertyCollection propertyCollection, CancellationToken cancellationToken = default)
@@ -94,22 +95,31 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <remarks>
+        /// The callback should either enumerate the requested changes and match that against the module's supported
+        /// writable properties, or explicitly check for the module's supported writable properties using
+        /// <see cref="PayloadCollection.Contains(string)"/> or <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>
+        /// (or using the component-level overloads on <see cref="ClientPropertyCollection"/>).
+        /// <para>
+        /// To update client properties, call <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// </para>
+        /// </remarks>
         /// <example>
         /// Inline:
         /// <code language="csharp">
         /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(
-        /// 	async (writableProperties) =>
-        /// 	{
-        /// 	    var propertiesToBeUpdated = new ClientPropertyCollection();
-        /// 		if (writableProperties.TryGetValue("samplePropertyName", out WritableClientProperty propertyUpdateRequested))
-        /// 		{
-        /// 			propertiesToBeUpdated.AddRootProperty(
-        /// 				"samplePropertyName",
-        /// 				propertyUpdateRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
-        /// 		}
-        /// 		ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
-        /// 	},
-        /// 	cancellationToken);
+        ///     async (writableProperties) =>
+        ///     {
+        ///         var propertiesToBeUpdated = new ClientPropertyCollection();
+        ///         if (writableProperties.TryGetValue("samplePropertyName", out WritableClientProperty propertyUpdateRequested))
+        ///         {
+        ///             propertiesToBeUpdated.AddRootProperty(
+        ///                 "samplePropertyName",
+        ///                 propertyUpdateRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///         }
+        ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        ///     },
+        ///     cancellationToken);
         /// </code>
         /// 
         /// Or as a separate method:

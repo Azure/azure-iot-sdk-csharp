@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    commandRequest = new CommandRequest(payloadConvention: PayloadConvention, commandName: methodRequest.Name, data: methodRequest.Data);
+                    commandRequest = new CommandRequest(payloadConvention: PayloadConvention, commandName: methodRequest.Name, payload: methodRequest.Data);
                 }
 
                 CommandResponse commandResponse = await callback.Invoke(commandRequest).ConfigureAwait(false);

@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
         /// </summary>
         public string ProductInfo
         {
@@ -379,12 +379,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
         /// Please note that the list of exceptions is not exhaustive.
+        /// <para>
+        /// To get better support for serialization, encoding and convention-based modules, see the new version of this method
+        /// <see cref="SendTelemetryAsync(TelemetryMessage, CancellationToken)"/>.
+        /// </para>
         /// </remarks>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
@@ -403,12 +407,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
         /// Please note that the list of exceptions is not exhaustive.
+        /// <para>
+        /// To get better support for serialization, encoding and convention-based modules, see the new version of this method
+        /// <see cref="SendTelemetryAsync(TelemetryMessage, CancellationToken)"/>.
+        /// </para>
         /// </remarks>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => InternalClient.SendEventAsync(message, cancellationToken);
@@ -439,6 +447,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="SubscribeToCommandsAsync(Func{CommandRequest, Task{CommandResponse}}, CancellationToken)"/>.
+        /// </remarks>
         public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext) =>
             InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
@@ -452,6 +464,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="SubscribeToCommandsAsync(Func{CommandRequest, Task{CommandResponse}}, CancellationToken)"/>.
+        /// </remarks>
         public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
             InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
 
@@ -462,6 +478,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="SubscribeToCommandsAsync(Func{CommandRequest, Task{CommandResponse}}, CancellationToken)"/>.
+        /// </remarks>
         public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext) =>
             InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
 
@@ -474,6 +494,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="SubscribeToCommandsAsync(Func{CommandRequest, Task{CommandResponse}}, CancellationToken)"/>.
+        /// </remarks>
         public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
             InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
@@ -557,6 +581,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{ClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// </remarks>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
             InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
 
@@ -572,6 +600,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{ClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// </remarks>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken) =>
             InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
 
@@ -593,6 +625,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Push reported property changes up to the service.
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/> in conjunction with
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{ClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// </remarks>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -602,6 +639,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <remarks>
+        /// To get better support for serialization and convention-based modules, see the new version of this method
+        /// <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/> in conjunction with
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{ClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// </remarks>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 
@@ -623,7 +665,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
@@ -649,7 +691,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
