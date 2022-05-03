@@ -500,6 +500,9 @@ az role assignment create --role $dpsContributorId --assignee $iotHubAadTestAppI
 # Link your DPS instance to your certificate authority which can accept client certificate signing requests and issue certificates.
 #################################################################################################################################################
 
+# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
+# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
+
 # Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
 # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
