@@ -512,6 +512,13 @@ $serviceApiSasToken = Calculate-Sas-Key $dpsKeyName $dpsPrimaryKey $dpsEndpoint 
 
 Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
 
+$uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
+
+$uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+$uriQueryCollection.Add("api-version", "2021-11-01-preview")
+
+$uriRequest.Query = $uriQueryCollection.ToString()
+
 $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
 $headers.Add("Authorization", $serviceApiSasToken)
 $headers.Add("Content-Type", "application/json")
@@ -522,12 +529,6 @@ $body = @{
     apiKey = $CertificateAuthorityApiKey
 }
 $jsonBody = $body | ConvertTo-Json
-
-$uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-$uriQueryCollection.Add("api-version", "2021-11-01-preview")
-
-$uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
-$uriRequest.Query = $uriQueryCollection.ToString()
 
 Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
 
