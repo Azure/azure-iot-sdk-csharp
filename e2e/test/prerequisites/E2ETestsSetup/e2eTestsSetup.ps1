@@ -523,7 +523,13 @@ $body = @{
 }
 $jsonBody = $body | ConvertTo-Json
 
-Invoke-RestMethod "https://$dpsEndpoint/certificateAuthorities/$dpsCaName?api-version=2021-11-01-preview" -Method "PUT" -Headers $headers -Body $jsonBody
+$uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+$uriQueryCollection.Add("api-version", "2021-11-01-preview")
+
+$uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
+$uriRequest.Query = $uriQueryCollection.ToString()
+
+Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
 
 #################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
