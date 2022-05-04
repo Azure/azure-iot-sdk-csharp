@@ -12,6 +12,14 @@ param(
 
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
+    
+    # This needs to be updated to [Mandatory] once the DPS client certificate issuance feature is publicly available.
+    [Parameter()]
+    [string] $CertificateAuthorityApiKey,
+
+    # This needs to be updated to [Mandatory] once the DPS client certificate issuance feature is publicly available.
+    [Parameter()]
+    [string] $CertificateAuthorityProfileId,
 
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
@@ -117,6 +125,28 @@ Function CleanUp-Certs()
     Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".p7b") } | Remove-Item
 }
 
+Function Calculate-SasKey([string]$keyName, [string]$key, [string]$target, [int]$sasTokenValiditySeconds)
+{
+    # Add the assembly required to Url Encode data
+    Add-Type -AssemblyName System.Web
+
+    $expirationTime = [DateTimeOffset]::Now.AddSeconds($sasTokenValiditySeconds).ToUnixTimeSeconds()
+    $audience = [System.Web.HttpUtility]::UrlEncode($target)
+    $requestString = $audience + "`n" + $expirationTime
+
+    $hmacsha256 = New-Object System.Security.Cryptography.HMACSHA256
+    $hmacsha256.key = [Convert]::FromBase64String($key)
+
+    $signature = $hmacsha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($requestString))
+    $signatureBase64 = [Convert]::ToBase64String($signature)
+
+    $signatureBase64Encoded = [System.Web.HttpUtility]::UrlEncode($signatureBase64)
+    $expirationTimeEncoded = [System.Web.HttpUtility]::UrlEncode($expirationTime)
+    $keyNameEncoded = [System.Web.HttpUtility]::UrlEncode($keyName)
+
+    return "SharedAccessSignature sr=$audience&sig=$signatureBase64Encoded&se=$expirationTimeEncoded&skn=$keyNameEncoded"
+}
+
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (-not $isAdmin)
 {
@@ -134,6 +164,7 @@ $uploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
 $managedIdentityName = "$ResourceGroup-user-msi"
+$dpsCaName = "$ResourceGroup-CaName"
 
 # OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
@@ -468,6 +499,52 @@ $dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/provid
 az role assignment create --role $dpsContributorId --assignee $iotHubAadTestAppId --scope $dpsScope
 
 #################################################################################################################################################
+# Link your DPS instance to your certificate authority which can accept client certificate signing requests and issue certificates.
+#################################################################################################################################################
+
+# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
+# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
+
+# Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
+# The powershell command below will need to be replaced by Azure CLI once the support is available.
+
+if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+{
+    Write-Host "`nCertificate Authority details not provided for DPS client certificate issuance. Skipping this step."
+}
+else
+{
+    $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
+    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
+
+    $dpsKeyName = "provisioningserviceowner"
+
+    $serviceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
+
+    Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
+
+    $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
+
+    $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+    $uriQueryCollection.Add("api-version", "2021-11-01-preview")
+
+    $uriRequest.Query = $uriQueryCollection.ToString()
+
+    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+    $headers.Add("Authorization", $serviceApiSasToken)
+    $headers.Add("Content-Type", "application/json")
+
+    $body = @{
+        certificateAuthorityType = 'DigiCertCertificateAuthority'
+        profileName = $CertificateAuthorityProfileId
+        apiKey = $CertificateAuthorityApiKey
+    }
+    $jsonBody = $body | ConvertTo-Json
+
+    Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+}
+
+#################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
 #################################################################################################################################################
 
@@ -718,7 +795,7 @@ $keyvaultKvps = @{
     "IOTHUB-X509-CHAIN-DEVICE-NAME" = $iotHubCertChainDeviceCommonName;
     "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" = $msiResourceId;
     "E2E-IKEY" = $instrumentationKey;
-    "CA-NAME" = "dps_test_ca";
+    "CA-NAME" = $dpsCaName;
 
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "IOTHUB-DEVICE-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=";
