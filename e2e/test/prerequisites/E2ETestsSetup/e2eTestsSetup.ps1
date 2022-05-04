@@ -12,11 +12,13 @@ param(
 
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
-
-    [Parameter(Mandatory)]
+    
+    # This needs to be updated to [Mandatory] once the DPS client certificate issuance feature is publicly available.
+    [Parameter()]
     [string] $CertificateAuthorityApiKey,
 
-    [Parameter(Mandatory)]
+    # This needs to be updated to [Mandatory] once the DPS client certificate issuance feature is publicly available.
+    [Parameter()]
     [string] $CertificateAuthorityProfileId,
 
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
@@ -123,7 +125,7 @@ Function CleanUp-Certs()
     Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".p7b") } | Remove-Item
 }
 
-Function Calculate-Sas-Key([string]$keyName, [string]$key, [string]$target, [int]$sasTokenValiditySeconds)
+Function Calculate-SasKey([string]$keyName, [string]$key, [string]$target, [int]$sasTokenValiditySeconds)
 {
     # Add the assembly required to Url Encode data
     Add-Type -AssemblyName System.Web
@@ -506,34 +508,37 @@ az role assignment create --role $dpsContributorId --assignee $iotHubAadTestAppI
 # Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
 # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
-$dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
-$dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
+if (![string]::IsNullOrEmpty($CertificateAuthorityProfileId) -and ![string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+{
+    $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
+    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
 
-$dpsKeyName = "provisioningserviceowner"
+    $dpsKeyName = "provisioningserviceowner"
 
-$serviceApiSasToken = Calculate-Sas-Key $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
+    $serviceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
 
-Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
+    Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
 
-$uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
+    $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
 
-$uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-$uriQueryCollection.Add("api-version", "2021-11-01-preview")
+    $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+    $uriQueryCollection.Add("api-version", "2021-11-01-preview")
 
-$uriRequest.Query = $uriQueryCollection.ToString()
+    $uriRequest.Query = $uriQueryCollection.ToString()
 
-$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("Authorization", $serviceApiSasToken)
-$headers.Add("Content-Type", "application/json")
+    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+    $headers.Add("Authorization", $serviceApiSasToken)
+    $headers.Add("Content-Type", "application/json")
 
-$body = @{
-    certificateAuthorityType = 'DigiCertCertificateAuthority'
-    profileName = $CertificateAuthorityProfileId
-    apiKey = $CertificateAuthorityApiKey
+    $body = @{
+        certificateAuthorityType = 'DigiCertCertificateAuthority'
+        profileName = $CertificateAuthorityProfileId
+        apiKey = $CertificateAuthorityApiKey
+    }
+    $jsonBody = $body | ConvertTo-Json
+
+    Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
 }
-$jsonBody = $body | ConvertTo-Json
-
-Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
 
 #################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
