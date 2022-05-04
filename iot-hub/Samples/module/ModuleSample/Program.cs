@@ -12,6 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class Program
     {
+        private const string SdkEventProviderPrefix = "Microsoft-Azure-";
+        
         /// <summary>
         /// A sample for illustrating how a module client handles its connection status updates,
         /// while sending telemetry to IoT Hub, and sending and receiving twin property updates.
@@ -38,12 +40,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             loggerFactory.AddColorConsoleLogger(
                 new ColorConsoleLoggerConfiguration
                 {
+                    // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
                     MinLogLevel = LogLevel.Debug,
                 });
             var logger = loggerFactory.CreateLogger<Program>();
 
-            const string SdkEventProviderPrefix = "Microsoft-Azure-";
-            // Instantiating this seems to do all we need for outputting SDK events to our console log
+            // Instantiating this seems to do all we need for outputting SDK events to our console log.
             _ = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             // Run the sample
