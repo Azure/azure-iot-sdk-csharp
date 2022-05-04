@@ -30,7 +30,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted Ubuntu 1604
+      vmImage: ubuntu-20.04
     steps:
       - task: Docker@1
         displayName: "Start TPM Simulator"
@@ -239,10 +239,10 @@ jobs:
 
     condition: succeeded()
     pool:
-      name: Hosted VS2017
+      vmImage: windows-2019
     steps:
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
 
         displayName: "Disable strong name validation"
@@ -445,7 +445,7 @@ jobs:
     condition: succeeded()
     pool:
       name: Azure Pipelines
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       - script: |
           rem Run dotnet first experience.
@@ -533,7 +533,7 @@ jobs:
           instanceUrlForTsaV2: 'MSAZURE'
           projectNameMSAZURE: 'One'
           areaPath: 'One\IoT\Platform and Devices\IoT Devices\SDKs\Managed'
-          iterationPath: 'One\IoT\Backlog'
+          iterationPath: 'One\Custom\IoT\Backlog'
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
         displayName: "Post Analysis"
