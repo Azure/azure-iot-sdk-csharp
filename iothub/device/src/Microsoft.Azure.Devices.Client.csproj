@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.36.4</Version>
+    <Version>1.36.5</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -36,7 +36,7 @@
     <Description>Device SDK for Azure IoT Hub</Description>
     <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>IoT Microsoft Azure IoTHub Device Client .NET AMQP MQTT HTTP</PackageTags>
   </PropertyGroup>
 
