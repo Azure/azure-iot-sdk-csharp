@@ -1,10 +1,11 @@
 # Microsoft Azure IoT SDKs for .NET
 
-This SDK is tested nightly on a mix of .NET implementations on both Windows 10 and on Ubuntu 20.04. For additional details for each tested platform, see the respective sections below. 
+This SDK is tested nightly on a mix of .NET implementations on both Windows 10 and on Ubuntu 20.04. For additional details for each tested platform, see the respective sections below.
 
 ## Supported .NET versions
 
-The NuGet packages provide support for the following .NET versions:
+The NuGet packages provide .NET targets for the following .NET versions:
+
 - .NET 5.0
 - .NET Standard 2.1
 - .NET Standard 2.0
@@ -22,12 +23,13 @@ Note that, while we only directly test on Windows 10, we do support other Window
 Nightly test platform details:
 
 .NET versions tested on
+
+- .NEt 6.0
 - .NET 5.0
 - .NET Core 3.1
 - .NET Core 2.1.18
 - .NET Framework 4.7.2 (only IoT Hub SDKs tested)
 - .NET Framework 4.5.1 (only IoT Hub SDKs tested)
-
 
 Default locale: en_US, platform encoding: Cp1252
 
@@ -40,6 +42,8 @@ Note that, while we only directly test on Ubuntu 20.04, we do generally support 
 Nightly test platform details:
 
 .NET versions tested on:
+
+- .NET 6.0
 - .NET 5.0
 - .NET Core 3.1
 - .NET Core 2.1.18

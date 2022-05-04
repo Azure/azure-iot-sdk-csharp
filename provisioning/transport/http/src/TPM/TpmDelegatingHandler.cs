@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if(response.StatusCode == HttpStatusCode.Unauthorized)
             {
-#if NET5_0
+#if NET5_0_OR_GREATER
                 if (request.Options.TryGetValue(new HttpRequestOptionsKey<object>(ProvisioningHeaderName), out object result))
 #else
                 if (request.Properties.TryGetValue(ProvisioningHeaderName, out object result))
