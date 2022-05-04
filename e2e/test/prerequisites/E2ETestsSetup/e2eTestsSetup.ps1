@@ -508,7 +508,11 @@ az role assignment create --role $dpsContributorId --assignee $iotHubAadTestAppI
 # Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
 # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
-if (![string]::IsNullOrEmpty($CertificateAuthorityProfileId) -and ![string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+{
+    Write-Host "`nCertificate Authority details not provided for DPS client certificate issuance. Skipping this step."
+}
+else
 {
     $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
     $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
