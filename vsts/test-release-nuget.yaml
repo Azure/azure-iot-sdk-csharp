@@ -59,6 +59,14 @@ jobs:
           ports: '127.0.0.1:8888:8888'
           restartPolicy: unlessStopped
 
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - powershell: ./vsts/releaseTest.ps1
         displayName: Test release nugets
         env:
