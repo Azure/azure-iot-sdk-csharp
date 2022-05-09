@@ -31,7 +31,7 @@ Nightly test platform details:
 
 Default locale: en_US, platform encoding: Cp1252
 
-OS name: "windows server 2019", version: "10.0", arch: "amd64", family: "windows"
+OS name: "windows server 2022", version: "10.0", arch: "amd64", family: "windows"
 
 ## Ubuntu 20.04
 
