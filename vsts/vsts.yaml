@@ -25,16 +25,49 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net 5.0:
           FRAMEWORK: net5.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
 
     condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
+      # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: Docker@1
         displayName: "Start TPM Simulator"
         inputs:
@@ -139,6 +172,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
           FRAMEWORK: netcoreapp2.1.18
 
@@ -147,11 +182,20 @@ jobs:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
+    
       - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
+        displayName: 'Use .NET SDK 6.0'
         inputs:
           packageType: sdk
-          version: 2.1.x
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -164,10 +208,10 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
+        displayName: 'Use .NET Core SDK 2.1'
         inputs:
           packageType: sdk
-          version: 5.x
+          version: 2.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -275,21 +319,36 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net 5.0:
           FRAMEWORK: net5.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-          sn -Vr *,31bf3856ad364e35
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+          sn.exe -Vr *,31bf3856ad364e35
 
         displayName: "Disable strong name validation"
 
@@ -392,23 +451,35 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
           FRAMEWORK: netcoreapp2.1.18
         .Net Framework 4.7.2:
           FRAMEWORK: net472
+        .Net Framework 4.5.1:
+          FRAMEWORK: net451
 
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.1'
+
+      - task: CmdLine@2
+        displayName: 'Install .NET Core 2.1'
         inputs:
-          packageType: sdk
-          version: 2.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
+          script: 'choco install dotnetcore-2.1-sdk'
+
+      - task: CmdLine@2
+        displayName: 'Install .NET 4.7.2'
+        inputs:
+          script: 'choco install netfx-4.7.2-devpack'
+
+      - task: CmdLine@2
+        displayName: 'Install .NET 4.5.1'
+        inputs:
+          script: 'choco install dotnet4.5.1'
 
       - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
@@ -418,17 +489,9 @@ jobs:
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.0'
-        inputs:
-          packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
-
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-          sn -Vr *,31bf3856ad364e35
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+          sn.exe -Vr *,31bf3856ad364e35
 
         displayName: "Disable strong name validation"
 
@@ -530,7 +593,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
           rem Run dotnet first experience.
@@ -570,7 +633,7 @@ jobs:
           UsesHSM: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
-        displayName: "Run BinSkim "
+        displayName: "Run BinSkim"
         inputs:
           arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll --recurse --verbose'
 
@@ -578,7 +641,7 @@ jobs:
         enabled: false
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
-        displayName: "Run CodeMetrics "
+        displayName: "Run CodeMetrics"
         inputs:
           Files: '$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
 
