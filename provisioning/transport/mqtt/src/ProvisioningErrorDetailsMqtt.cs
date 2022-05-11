@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -29,19 +27,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     string[] queryKeyAndValue = queryPairs[queryPairIndex].Split('=');
                     if (queryKeyAndValue.Length == 2 && queryKeyAndValue[0].Equals(RetryAfterHeader, StringComparison.OrdinalIgnoreCase))
                     {
-                        int secondsToWait;
-                        if (int.TryParse(queryKeyAndValue[1], out secondsToWait))
+                        if (int.TryParse(queryKeyAndValue[1], out int secondsToWait))
                         {
                             var serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
 
-                            if (serviceRecommendedDelay.TotalSeconds < defaultPoolingInterval.TotalSeconds)
-                            {
-                                return defaultPoolingInterval;
-                            }
-                            else
-                            {
-                                return serviceRecommendedDelay;
-                            }
+                            return serviceRecommendedDelay.TotalSeconds < defaultPoolingInterval.TotalSeconds
+                                ? defaultPoolingInterval
+                                : serviceRecommendedDelay;
                         }
                     }
                 }

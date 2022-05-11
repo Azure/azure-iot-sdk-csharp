@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Amqp.Sasl;
-using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Net;
 using System.Net.Security;
@@ -13,6 +8,11 @@ using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Sasl;
+using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {

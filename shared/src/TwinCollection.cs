@@ -86,12 +86,9 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                if (!JObject.TryGetValue(VersionName, out JToken versionToken))
-                {
-                    return default(long);
-                }
-
-                return (long)versionToken;
+                return !JObject.TryGetValue(VersionName, out JToken versionToken)
+                    ? default(long)
+                    : (long)versionToken;
             }
         }
 
@@ -232,11 +229,18 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="propertyName">The name of the property to get.</param>
         /// <param name="result">The value to return from the property collection.</param>
-        /// <returns>A <see cref="JToken"/> as an <see cref="object"/> if the metadata is not present; otherwise it will return a <see cref="TwinCollection"/>, a <see cref="TwinCollectionArray"/> or a <see cref="TwinCollectionValue"/>.</returns>
+        /// <returns>
+        /// A <see cref="JToken"/> as an <see cref="object"/> if the metadata is not present; otherwise it will return a
+        /// <see cref="TwinCollection"/>, a <see cref="TwinCollectionArray"/> or a <see cref="TwinCollectionValue"/>.
+        /// </returns>
         /// <remarks>
-        /// If this method is used with a <see cref="TwinCollection"/> returned from a <c>DeviceClient</c> it will always return a <see cref="JToken"/>. However, if you are using this method with a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client, it will return the corresponding type depending on what is stored in the properties collection.
+        /// If this method is used with a <see cref="TwinCollection"/> returned from a <c>DeviceClient</c> it will always return a
+        /// <see cref="JToken"/>. However, if you are using this method with a <see cref="TwinCollection"/> returned from a
+        /// <c>RegistryManager</c> client, it will return the corresponding type depending on what is stored in the properties collection.
         /// 
-        /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
+        /// For example a <see cref="List{T}"/> would return a <see cref="TwinCollectionArray"/>, with the metadata intact, when used with
+        /// a <see cref="TwinCollection"/> returned from a <c>RegistryManager</c> client. If you need this method to always return a
+        /// <see cref="JToken"/> please see the <see cref="ClearAllMetadata"/> method for more information.
         /// </remarks>
         private bool TryGetMemberInternal(string propertyName, out object result)
         {
@@ -299,7 +303,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// Clears metadata out of the twin collection.
         /// </summary>
         /// <remarks>
-        /// This will only clear the metadata from the twin collection but will not change the base metadata object. This allows you to still use methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
+        /// This will only clear the metadata from the twin collection but will not change the base metadata object. This allows you to still use
+        /// methods such as <see cref="GetMetadata"/>. If you need to remove all metadata, please use <see cref="ClearAllMetadata"/>.
         /// </remarks>
         public void ClearMetadata()
         {
@@ -313,8 +318,11 @@ namespace Microsoft.Azure.Devices.Shared
         /// Clears all metadata out of the twin collection as well as the base metadata object.
         /// </summary>
         /// <remarks>
-        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. The difference from the <see cref="ClearMetadata"/> method is this will also clear the underlying metadata object which will affect methods such as <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
-        /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/> to return a <see cref="JToken"/> regardless of the client you are using.
+        /// This will remove all metadata from the base metadata object as well as the metadata for the twin collection. The difference from the
+        /// <see cref="ClearMetadata"/> method is this will also clear the underlying metadata object which will affect methods such as
+        /// <see cref="GetMetadata"/> and <see cref="GetLastUpdatedVersion"/>.
+        /// This method would be useful if you are performing any operations that require <see cref="TryGetMemberInternal(string, out object)"/>
+        /// to return a <see cref="JToken"/> regardless of the client you are using.
         /// </remarks>
         public void ClearAllMetadata()
         {

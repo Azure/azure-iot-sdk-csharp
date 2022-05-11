@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -204,12 +204,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if ((challengeBytes[0] & SaslControlByteMask.InterimSegment) != 0x0)
             {
-                if ((challengeBytes[0] & SaslControlByteMask.FinalSegment) != 0x0)
-                {
-                    return SaslChallengeAction.Final;
-                }
-
-                return SaslChallengeAction.Interim;
+                return (challengeBytes[0] & SaslControlByteMask.FinalSegment) != 0x0
+                    ? SaslChallengeAction.Final
+                    : SaslChallengeAction.Interim;
             }
 
             throw new AmqpException(AmqpErrorCode.InvalidField,
@@ -267,7 +264,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             First,
             Interim,
-            Final
+            Final,
         }
     }
 }

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// Represents <see cref="Twin"/> properties
+    /// Represents <see cref="Twin"/> properties.
     /// </summary>
     public class TwinProperties
     {

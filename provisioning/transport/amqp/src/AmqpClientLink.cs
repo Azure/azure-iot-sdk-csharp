@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Encoding;
-using Microsoft.Azure.Amqp.Framing;
 using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             CancellationToken cancellationToken)
         {
             var sendLink = AmqpLink as SendingAmqpLink;
-            
+
             if (sendLink == null)
             {
                 throw new InvalidOperationException("Link does not support sending.");

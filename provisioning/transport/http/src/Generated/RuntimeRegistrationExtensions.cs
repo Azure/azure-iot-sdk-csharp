@@ -12,8 +12,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     internal static partial class RuntimeRegistrationExtensions
     {
-
-
         /// <summary>
         /// Gets the registration operation status.
         /// </summary>
@@ -29,9 +27,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name='idScope'>
         /// </param>
         public static RegistrationOperationStatus OperationStatusLookup(
-            this IRuntimeRegistration operations, 
-            string registrationId, 
-            string operationId, 
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string operationId,
             string idScope)
         {
             return operations.OperationStatusLookupAsync(registrationId, operationId, idScope).GetAwaiter().GetResult();
@@ -55,17 +53,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// The cancellation token.
         /// </param>
         public static async Task<RegistrationOperationStatus> OperationStatusLookupAsync(
-            this IRuntimeRegistration operations, 
-            string registrationId, 
-            string operationId, 
-            string idScope, 
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string operationId,
+            string idScope,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             using (Rest.HttpOperationResponse<RegistrationOperationStatus> _result = await operations.OperationStatusLookupWithHttpMessagesAsync(
-                                                        registrationId, 
-                                                        operationId, 
-                                                        idScope, 
-                                                        null, 
+                                                        registrationId,
+                                                        operationId,
+                                                        idScope,
+                                                        null,
                                                         cancellationToken).ConfigureAwait(false))
             {
                 return _result.Body;
@@ -87,9 +85,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Device registration
         /// </param>
         public static Models.DeviceRegistrationResult DeviceRegistrationStatusLookup(
-            this IRuntimeRegistration operations, 
-            string registrationId, 
-            string idScope, 
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string idScope,
             DeviceRegistration deviceRegistration = default(DeviceRegistration))
         {
             return operations.DeviceRegistrationStatusLookupAsync(registrationId, idScope, deviceRegistration).GetAwaiter().GetResult();
@@ -113,17 +111,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// The cancellation token.
         /// </param>
         public static async Task<Models.DeviceRegistrationResult> DeviceRegistrationStatusLookupAsync(
-            this IRuntimeRegistration operations, 
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
             CancellationToken cancellationToken = default(CancellationToken))
         {
             using (Rest.HttpOperationResponse<Models.DeviceRegistrationResult> _result = await operations.DeviceRegistrationStatusLookupWithHttpMessagesAsync(
-                                                    registrationId, 
-                                                    idScope, 
-                                                    deviceRegistration, 
-                                                    null, 
+                                                    registrationId,
+                                                    idScope,
+                                                    deviceRegistration,
+                                                    null,
                                                     cancellationToken).ConfigureAwait(false))
             {
                 return _result.Body;
@@ -149,10 +147,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// to a different IotHub.
         /// </param>
         public static RegistrationOperationStatus RegisterDevice(
-            this IRuntimeRegistration operations, 
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
             bool? forceRegistration = default(bool?))
         {
             return operations.RegisterDeviceAsync(registrationId, idScope, deviceRegistration, forceRegistration).GetAwaiter().GetResult();
@@ -180,11 +178,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// The cancellation token.
         /// </param>
         public static async Task<RegistrationOperationStatus> RegisterDeviceAsync(
-            this IRuntimeRegistration operations, 
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
-            bool? forceRegistration = default(bool?), 
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
+            bool? forceRegistration = default(bool?),
             CancellationToken cancellationToken = default(CancellationToken))
         {
             using (Rest.HttpOperationResponse<RegistrationOperationStatus> _result = await operations.RegisterDeviceWithHttpMessagesAsync(registrationId, idScope, deviceRegistration, forceRegistration, null, cancellationToken).ConfigureAwait(false))
