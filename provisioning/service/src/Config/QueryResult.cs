@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///
     /// And the body is a JSON list of the specific <b>type</b>. For instance, if the system
     ///     property type is IndividualEnrollment, the body will look like:
-    /// <code>
+    /// <c>
     /// [
     ///     {
     ///         "registrationId":"validRegistrationId-1",
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         "provisioningStatus":"enabled"
     ///     }
     /// ]
-    /// </code>
+    /// </c>
     /// </remarks>
     public class QueryResult
     {
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter for the list of query result Items.
         /// </summary>
-        public IEnumerable<Object> Items { get; private set; }
+        public IEnumerable<object> Items { get; private set; }
 
         /// <summary>
         /// Getter for the query result continuationToken.
@@ -87,28 +87,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
-        /// <param name="typeString">the <code>string</code> with type of the content in the body. It cannot be <code>null</code>.</param>
-        /// <param name="bodyString">the <code>string</code> with the body in a JSON list format. It cannot be <code>null</code>, or empty, if the type is different than `unknown`.</param>
-        /// <param name="continuationToken">the <code>string</code> with the continuation token. It can be <code>null</code>.</param>
-        /// <exception cref="ArgumentException">if one of the provided parameters is invalid.</exception>
+        /// <param name="typeString">The <c>string</c> with type of the content in the body.
+        /// It cannot be <c>null</c>.</param>
+        /// <param name="bodyString">The <c>string</c> with the body in a JSON list format.
+        /// It cannot be <c>null</c>, or empty, if the type is different than `unknown`.</param>
+        /// <param name="continuationToken">The <c>string</c> with the continuation token.
+        /// It can be <c>null</c>.</param>
+        /// <exception cref="ArgumentException">If one of the provided parameters is invalid.</exception>
         internal QueryResult(string typeString, string bodyString, string continuationToken)
         {
-            /* SRS_QUERY_RESULT_21_001: [The constructor shall throw ArgumentException if the provided type is null, empty, or not parsed to QueryResultType.] */
-            /* SRS_QUERY_RESULT_21_010: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
             Type = (QueryResultType)Enum.Parse(typeof(QueryResultType), typeString, true);
-            if (string.IsNullOrWhiteSpace(continuationToken))
-            {
-                ContinuationToken = null;
-            }
-            else
-            {
-                ContinuationToken = continuationToken;
-            }
+            ContinuationToken = string.IsNullOrWhiteSpace(continuationToken)
+                ? null
+                : continuationToken;
 
-            /* SRS_QUERY_RESULT_21_002: [The constructor shall throw ArgumentException if the provided body is null or empty and the type is not `unknown`.] */
-            if ((Type != QueryResultType.Unknown) && string.IsNullOrWhiteSpace(bodyString))
+            if (Type != QueryResultType.Unknown && string.IsNullOrWhiteSpace(bodyString))
             {
-                if(bodyString == null)
+                if (bodyString == null)
                 {
                     throw new ArgumentNullException(nameof(bodyString));
                 }
@@ -116,50 +111,44 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException("Invalid query body.", nameof(bodyString));
             }
 
-            /* SRS_QUERY_RESULT_21_003: [The constructor shall throw JsonSerializationException if the JSON is invalid.] */
             switch (Type)
             {
                 case QueryResultType.Enrollment:
-                    /* SRS_QUERY_RESULT_21_004: [If the type is `enrollment`, the constructor shall parse the body as IndividualEnrollment[].] */
                     Items = JsonConvert.DeserializeObject<IEnumerable<IndividualEnrollment>>(bodyString);
                     break;
+
                 case QueryResultType.EnrollmentGroup:
-                    /* SRS_QUERY_RESULT_21_005: [If the type is `enrollmentGroup`, the constructor shall parse the body as EnrollmentGroup[].] */
                     Items = JsonConvert.DeserializeObject<IEnumerable<EnrollmentGroup>>(bodyString);
                     break;
+
                 case QueryResultType.DeviceRegistration:
-                    /* SRS_QUERY_RESULT_21_006: [If the type is `deviceRegistration`, the constructor shall parse the body as DeviceRegistrationState[].] */
                     Items = JsonConvert.DeserializeObject<IEnumerable<DeviceRegistrationState>>(bodyString);
                     break;
+
                 default:
-                    if(bodyString == null)
+                    if (bodyString == null)
                     {
-                        /* SRS_QUERY_RESULT_21_007: [If the type is `unknown`, and the body is null, the constructor shall set `items` as null.] */
                         Items = null;
                     }
                     else
                     {
                         try
                         {
-                            /* SRS_QUERY_RESULT_21_008: [If the type is `unknown`, the constructor shall try to parse the body as JObject[].] */
                             Items = JsonConvert.DeserializeObject<IEnumerable<JObject>>(bodyString);
                         }
                         catch (ArgumentException)
                         {
                             try
                             {
-                                /* SRS_QUERY_RESULT_21_009: [If the type is `unknown`, the constructor shall try to parse the body as Object[].] */
-                                Items = JsonConvert.DeserializeObject<IEnumerable<Object>>(bodyString);
+                                Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
                             }
                             catch (ArgumentException)
                             {
-                                /* SRS_QUERY_RESULT_21_010: [If the type is `unknown`, and the constructor failed to parse the body as JObject[] and Object[], it shall return the body as a single string in the items.] */
                                 Items = new string[] { bodyString };
                             }
                         }
-                        catch(JsonReaderException)
+                        catch (JsonReaderException)
                         {
-                            /* SRS_QUERY_RESULT_21_010: [If the type is `unknown`, and the constructor failed to parse the body as JObject[] and Object[], it shall return the body as a single string in the items.] */
                             Items = new string[] { bodyString };
                         }
                     }
@@ -170,7 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <code>string</code> with the content of this class in a pretty print format.</returns>
+        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);

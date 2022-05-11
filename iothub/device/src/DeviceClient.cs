@@ -655,11 +655,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Includes a call to <see cref="CloseAsync()"/>.
         /// </remarks>
         /// <example>
-        /// <code>
+        /// <c>
         /// await using var client = DeviceClient.CreateFromConnectionString(...);
-        /// </code>
+        /// </c>
         /// or
-        /// <code>
+        /// <c>
         /// var client = DeviceClient.CreateFromConnectionString(...);
         /// try
         /// {
@@ -669,7 +669,7 @@ namespace Microsoft.Azure.Devices.Client
         /// {
         ///     await client.DisposeAsync();
         /// }
-        /// </code>
+        /// </c>
         /// </example>
         [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
         public async ValueTask DisposeAsync()

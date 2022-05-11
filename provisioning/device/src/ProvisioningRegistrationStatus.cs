@@ -9,28 +9,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public enum ProvisioningRegistrationStatusType
     {
         /// <summary>
-        /// Device has not yet come on-line
+        /// Device has not yet come online.
         /// </summary>
         Unassigned = 1,
 
         /// <summary>
-        /// Device has connected to the DRS but IoT Hub Id has not yet been returned to the device
+        /// Device has connected to the DRS but IoT Hub Id has not yet been returned to the device.
         /// </summary>
         Assigning = 2,
 
         /// <summary>
-        /// DRS successfully returned a device Id and connection string to the device
+        /// DRS successfully returned a device Id and connection string to the device.
         /// </summary>
         Assigned = 3,
 
         /// <summary>
-        /// Device enrollment failed
+        /// Device enrollment failed.
         /// </summary>
         Failed = 4,
 
         /// <summary>
-        /// Device is disabled
+        /// Device is disabled.
         /// </summary>
-        Disabled = 5
+        Disabled = 5,
     }
 }
