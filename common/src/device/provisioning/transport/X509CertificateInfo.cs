@@ -69,13 +69,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         public string Sha256Thumbprint { get; set; }
 
         /// <summary>
-        /// The certfificate issuer name.
+        /// The certificate issuer name.
         /// </summary>
         [JsonProperty(PropertyName = "issuerName")]
         public string IssuerName { get; set; }
 
         /// <summary>
-        /// The certfificate invalidity before date in UTC.
+        /// The certificate invalidity before date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notBeforeUtc")]
         public DateTime? NotBeforeUtc { get; set; }
