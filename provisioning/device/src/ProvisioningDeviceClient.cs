@@ -57,12 +57,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Stores product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// Stores product information that will be appended to the user agent string that is sent to IoT hub.
         /// </summary>
         public string ProductInfo { get; set; }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <remarks>
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
         /// The optional additional data that is passed through to the custom allocation policy webhook if 
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <remarks>
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
         /// The optional additional data that is passed through to the custom allocation policy webhook if 

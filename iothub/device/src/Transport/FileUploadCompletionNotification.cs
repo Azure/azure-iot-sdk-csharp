@@ -6,13 +6,13 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     /// <summary>
-    /// The request payload to send to IoT Hub to notify it when a file upload is completed, whether successful or not.
+    /// The request payload to send to IoT hub to notify it when a file upload is completed, whether successful or not.
     /// </summary>
     public class FileUploadCompletionNotification
     {
         /// <summary>
         /// The correlation id that maps this completion notification to the file upload. The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId">correlation id </see>
-        /// returned from IoT Hub when first getting the SAS Uri for this file upload .
+        /// returned from IoT hub when first getting the SAS Uri for this file upload .
         /// </summary>
         [JsonProperty(PropertyName = "correlationId")]
         public string CorrelationId { get; set; }

@@ -988,7 +988,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets usage statistics for the IoT Hub.
+        /// Gets usage statistics for the IoT hub.
         /// </summary>
         public virtual Task<RegistryStatistics> GetRegistryStatisticsAsync()
         {
@@ -996,7 +996,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets usage statistics for the IoT Hub.
+        /// Gets usage statistics for the IoT hub.
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken)
@@ -1167,7 +1167,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves specified number of devices from every IoT Hub partition.
+        /// Retrieves specified number of devices from every IoT hub partition.
         /// This is an approximation and not a definitive list. Results are not ordered.
         /// </summary>
         /// <returns>The list of devices.</returns>
@@ -1449,7 +1449,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT Hub.
+        /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
         /// <param name="importBlobContainerUri">Source blob container URI.</param>
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
@@ -1463,7 +1463,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT Hub.
+        /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
         /// <param name="importBlobContainerUri">Source blob container URI.</param>
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
@@ -1479,7 +1479,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT Hub.
+        /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
         /// <param name="importBlobContainerUri">Source blob container URI.</param>
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
@@ -1495,7 +1495,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT Hub.
+        /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
         /// <param name="importBlobContainerUri">Source blob container URI.</param>
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
@@ -1515,7 +1515,7 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1054 // Uri parameters should not be strings
 
         /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT Hub.
+        /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
@@ -1591,19 +1591,19 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// List all jobs for the IoT Hub.
+        /// List all jobs for the IoT hub.
         /// </summary>
-        /// <returns>IEnumerable of JobProperties of all jobs for this IoT Hub.</returns>
+        /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
         public virtual Task<IEnumerable<JobProperties>> GetJobsAsync()
         {
             return GetJobsAsync(CancellationToken.None);
         }
 
         /// <summary>
-        /// List all jobs for the IoT Hub.
+        /// List all jobs for the IoT hub.
         /// </summary>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>IEnumerable of JobProperties of all jobs for this IoT Hub.</returns>
+        /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
         public virtual Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Getting job", nameof(GetJobsAsync));
@@ -2196,7 +2196,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves specified number of configurations from every IoT Hub partition.
+        /// Retrieves specified number of configurations from every IoT hub partition.
         /// Results are not ordered.
         /// </summary>
         /// <returns>The list of configurations.</returns>

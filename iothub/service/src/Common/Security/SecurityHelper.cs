@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.Common.Security
     public static class SecurityHelper
     {
         /// <summary>
-        /// Validate the given IoT Hub host name and IoT Hub name.
+        /// Validate the given IoT hub host name and IoT hub name.
         /// </summary>
-        /// <param name="iotHubHostName">The IoT Hub host name to validate.</param>
-        /// <param name="iotHubName">The IoT Hub name to validate.</param>
+        /// <param name="iotHubHostName">The IoT hub host name to validate.</param>
+        /// <param name="iotHubName">The IoT hub name to validate.</param>
         public static void ValidateIotHubHostName(string iotHubHostName, string iotHubName)
         {
             if (string.IsNullOrWhiteSpace(iotHubHostName))

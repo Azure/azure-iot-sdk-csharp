@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Authentication
         /// <summary>
         /// Initializes a new instance of <see cref="DigitalTwinConnectionStringCredential"/> class.
         /// </summary>
-        /// <param name="connectionString">The IoT Hub connection string properties.</param>
+        /// <param name="connectionString">The IoT hub connection string properties.</param>
         internal DigitalTwinConnectionStringCredential(IotHubConnectionString connectionString)
         {
             _sharedAccessKey = connectionString.SharedAccessKey;

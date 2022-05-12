@@ -7,13 +7,13 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when IoT Hub receives an invalid serialization request.
+    /// The exception that is thrown when IoT hub receives an invalid serialization request.
     /// </summary>
     [Serializable]
     public class IotHubSerializationException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="IotHubSerializationException"/> with a specified error message and marks it as non-transient.
+        /// Creates an instance of this class with a specified error message and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public IotHubSerializationException(string message)

@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// The different configurations available for setting a value of MessageId on an IoT Hub Message.
+    /// The different configurations available for setting a value of MessageId on an IoT hub message.
     /// </summary>
     public enum SdkAssignsMessageId
     {

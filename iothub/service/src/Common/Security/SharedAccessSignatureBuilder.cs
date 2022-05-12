@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Security
     /// </summary>
     public sealed class SharedAccessSignatureBuilder
     {
-        string key;
+        private string _key;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
@@ -35,12 +35,12 @@ namespace Microsoft.Azure.Devices.Common.Security
         /// </summary>
         public string Key
         {
-            get => key;
+            get => _key;
 
             set
             {
                 StringValidationHelper.EnsureBase64String(value, "Key");
-                key = value;
+                _key = value;
             }
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Common.Security
             return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
-        static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        private static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -83,22 +83,30 @@ namespace Microsoft.Azure.Devices.Common.Security
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
 
             var buffer = new StringBuilder();
-            buffer.AppendFormat(CultureInfo.InvariantCulture, "{0} {1}={2}&{3}={4}&{5}={6}",
+            buffer.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "{0} {1}={2}&{3}={4}&{5}={6}",
                 SharedAccessSignatureConstants.SharedAccessSignature,
-                SharedAccessSignatureConstants.AudienceFieldName, audience,
-                SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
-                SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiresOn));
+                SharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiresOn));
 
             if (!string.IsNullOrEmpty(keyName))
             {
-                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
-                    SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));
+                buffer.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "&{0}={1}",
+                    SharedAccessSignatureConstants.KeyNameFieldName,
+                    WebUtility.UrlEncode(keyName));
             }
 
             return buffer.ToString();
         }
 
-        static string BuildExpiresOn(TimeSpan timeToLive)
+        private static string BuildExpiresOn(TimeSpan timeToLive)
         {
             DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
@@ -106,7 +114,7 @@ namespace Microsoft.Azure.Devices.Common.Security
             return Convert.ToString(seconds, CultureInfo.InvariantCulture);
         }
 
-        static string Sign(string requestString, string key)
+        private static string Sign(string requestString, string key)
         {
             using var hmac = new HMACSHA256(Convert.FromBase64String(key));
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));

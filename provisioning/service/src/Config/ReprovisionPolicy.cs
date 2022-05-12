@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ReprovisionPolicy
     {
         /// <summary>
-        /// When set to true (default), the Device Provisioning Service will evaluate the device's IoT Hub assignment
+        /// When set to true (default), the Device Provisioning Service will evaluate the device's IoT hub assignment
         /// and update it if necessary for any provisioning requests beyond the first from a given device.
         /// If set to false, the device will stay assigned to its current IoT hub.
         /// </summary>

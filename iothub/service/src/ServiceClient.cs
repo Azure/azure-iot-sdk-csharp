@@ -239,9 +239,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type.
+        /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
+        /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
         /// <returns>An instance of ServiceClient.</returns>
@@ -251,9 +251,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type and transport settings.
+        /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type and transport settings.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
+        /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
         /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client.</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT Hub.
+        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT hub.
         /// This call is made over AMQP.
         /// For more information see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
         /// </summary>
@@ -417,10 +417,10 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets service statistics for the IoT Hub. This call is made over HTTP.
+        /// Gets service statistics for the IoT hub. This call is made over HTTP.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The service statistics that can be retrieved from IoT Hub, eg. the number of devices connected to the hub.</returns>
+        /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
         public virtual Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));

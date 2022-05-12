@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// The exception that is thrown when there is an authorization error.
     /// </summary>
     /// <remarks>
-    ///  This exception means the client is not authorized to use the specified IoT Hub. Please review the <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see> guide for more information. 
+    ///  This exception means the client is not authorized to use the specified IoT hub. Please review the <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see> guide for more information. 
     /// </remarks>
     [Serializable]
     public sealed class UnauthorizedException : IotHubException

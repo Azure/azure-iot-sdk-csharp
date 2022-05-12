@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Client
         public uint OperationTimeoutInMilliseconds { get; set; } = DeviceClient.DefaultOperationTimeoutInMilliseconds;
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
         /// </summary>
         public string ProductInfo
         {

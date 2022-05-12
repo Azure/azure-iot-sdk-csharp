@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// The name of the blob that will be created in the provided output blob container. This blob will contain
-        /// the exported device registry information for the IoT Hub.
+        /// the exported device registry information for the IoT hub.
         /// </summary>
         /// <remarks>
         /// If not specified, defaults to "devices.txt"

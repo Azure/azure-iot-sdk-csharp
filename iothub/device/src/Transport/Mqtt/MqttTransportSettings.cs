@@ -163,10 +163,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// The default is 60 seconds.
         /// </summary>
         /// <remarks>
-        /// In the event that IoT Hub receives burst traffic, it will implement traffic shaping in order to process the incoming requests.
-        /// In such cases, during client connection the CONNECT requests can have a delay in being acknowledged and processed by IoT Hub.
+        /// In the event that IoT hub receives burst traffic, it will implement traffic shaping in order to process the incoming requests.
+        /// In such cases, during client connection the CONNECT requests can have a delay in being acknowledged and processed by IoT hub.
         /// The <c>ConnectArrivalTimeout</c> governs the duration the client will wait for a CONNACK packet before disconnecting and reopening the connection.
-        /// To know more about IoT Hub's throttling limits and traffic shaping feature, see
+        /// To know more about IoT hub's throttling limits and traffic shaping feature, see
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles"/>.
         /// </remarks>
         public TimeSpan ConnectArrivalTimeout { get; set; }
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <remarks>
         /// Setting a will message is a way for clients to notify other subscribed clients about ungraceful disconnects in an appropriate way.
         /// In response to the ungraceful disconnect, the service will send the last-will message to the configured telemetry channel.
-        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
+        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT hub routing.
         /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
         public bool HasWill { get; set; }
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// The configured will message that is sent to the telemetry channel on an ungraceful disconnect.
         /// </summary>
         /// <remarks>
-        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT Hub routing.
+        /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT hub routing.
         /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
         /// </remarks>
         public IWillMessage WillMessage { get; set; }
