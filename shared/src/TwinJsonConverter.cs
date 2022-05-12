@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// Converts <see cref="Twin"/> to Json
+    /// Converts a <see cref="Twin"/> to Json.
     /// </summary>
     public sealed class TwinJsonConverter : JsonConverter
     {
@@ -380,27 +380,24 @@ namespace Microsoft.Azure.Devices.Shared
 
         private static DateTime? ConvertToDateTime(object obj)
         {
-            if (obj is DateTime)
+            if (obj is DateTime time)
             {
-                return ((DateTime)obj).ToUniversalTime();
+                return time.ToUniversalTime();
             }
-            else if (obj is DateTimeOffset)
+
+            if (obj is DateTimeOffset offset)
             {
-                return ((DateTimeOffset)obj).UtcDateTime;
+                return offset.UtcDateTime;
             }
-            else
-            {
-                return ParseToDateTime(obj as string);
-            }
+
+            return ParseToDateTime(obj as string);
         }
 
         private static DateTime? ParseToDateTime(string value)
         {
-            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime))
-            {
-                return dateTime.ToUniversalTime();
-            }
-            return null;
+            return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime)
+                ? dateTime.ToUniversalTime()
+                : (DateTime?)null;
         }
 
         private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader)

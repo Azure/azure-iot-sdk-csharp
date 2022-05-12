@@ -47,11 +47,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private ClientWebSocketChannel _webSocketChannel;
 
         /// <summary>
-        /// The fallback type. This allows direct or WebSocket connections.
-        /// </summary>
-        public TransportFallbackType FallbackType { get; private set; }
-
-        /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
         /// </summary>
         /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
@@ -62,6 +57,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             Port = FallbackType == TransportFallbackType.WebSocketOnly ? WsPort : MqttTcpPort;
             Proxy = DefaultWebProxySettings.Instance;
         }
+
+        /// <summary>
+        /// The fallback type. This allows direct or WebSocket connections.
+        /// </summary>
+        public TransportFallbackType FallbackType { get; private set; }
 
         /// <summary>
         /// Registers a device described by the message.
@@ -259,6 +259,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Associate(bootstrap, this);
 
             IPAddress[] addresses = await Dns.GetHostAddressesAsync(message.GlobalDeviceEndpoint).ConfigureAwait(false);
+
             if (Logging.IsEnabled)
                 Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
 
@@ -283,12 +284,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         if (ex is ConnectException) // We will handle DotNetty.Transport.Channels.ConnectException
                         {
                             lastException = ex;
+
                             if (Logging.IsEnabled)
-                            {
-                                Logging.Info(
-                                this,
-                                $"ConnectException trying to connect to {address}: {ex}");
-                            }
+                                Logging.Info(this, $"ConnectException trying to connect to {address}: {ex}");
 
                             return true;
                         }
@@ -301,6 +299,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (channel == null)
             {
                 string errorMessage = "Cannot connect to Provisioning Service.";
+
                 if (Logging.IsEnabled)
                     Logging.Error(this, errorMessage);
 

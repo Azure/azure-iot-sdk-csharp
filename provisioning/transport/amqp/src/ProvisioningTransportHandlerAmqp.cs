@@ -28,11 +28,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// The fallback type. This allows direct or WebSocket connections.
-        /// </summary>
-        public TransportFallbackType FallbackType { get; private set; }
-
-        /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
         /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
@@ -44,6 +39,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             Port = useWebSocket ? WebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
             Proxy = DefaultWebProxySettings.Instance;
         }
+
+        /// <summary>
+        /// The fallback type. This allows direct or WebSocket connections.
+        /// </summary>
+        public TransportFallbackType FallbackType { get; private set; }
 
         /// <summary>
         /// Registers a device described by the message.
@@ -76,9 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
-            }
 
             if (message == null)
             {
@@ -99,17 +97,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 AmqpAuthStrategy authStrategy;
 
-                if (message.Security is SecurityProviderTpm)
+                if (message.Security is SecurityProviderTpm tpm)
                 {
-                    authStrategy = new AmqpAuthStrategyTpm((SecurityProviderTpm)message.Security);
+                    authStrategy = new AmqpAuthStrategyTpm(tpm);
                 }
-                else if (message.Security is SecurityProviderX509)
+                else if (message.Security is SecurityProviderX509 x509)
                 {
-                    authStrategy = new AmqpAuthStrategyX509((SecurityProviderX509)message.Security);
+                    authStrategy = new AmqpAuthStrategyX509(x509);
                 }
-                else if (message.Security is SecurityProviderSymmetricKey)
+                else if (message.Security is SecurityProviderSymmetricKey key)
                 {
-                    authStrategy = new AmqpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
+                    authStrategy = new AmqpAuthStrategySymmetricKey(key);
                 }
                 else
                 {
@@ -119,13 +117,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
 
                 if (Logging.IsEnabled)
-                {
                     Logging.Associate(authStrategy, this);
-                }
 
                 bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
 
-                var builder = new UriBuilder()
+                var builder = new UriBuilder
                 {
                     Scheme = useWebSocket ? WebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
                     Host = message.GlobalDeviceEndpoint,
@@ -141,15 +137,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 bundleCancellationToken.ThrowIfCancellationRequested();
 
                 await CreateLinksAsync(
-                    connection,
-                    linkEndpoint,
-                    message.ProductInfo,
-                    bundleCancellationToken).ConfigureAwait(false);
+                        connection,
+                        linkEndpoint,
+                        message.ProductInfo,
+                        bundleCancellationToken)
+                    .ConfigureAwait(false);
 
                 bundleCancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0) ? new DeviceRegistration { Payload = new JRaw(message.Payload) } : null;
+                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
+                    ? new DeviceRegistration { Payload = new JRaw(message.Payload) }
+                    : null;
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);
 
@@ -158,8 +157,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string operationId = operation.OperationId;
 
                 // Poll with operationId until registration complete.
-                while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
-                       string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
+                while (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0
+                    || string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
                     bundleCancellationToken.ThrowIfCancellationRequested();
 
@@ -196,21 +195,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
                 if (Logging.IsEnabled)
-                {
-                    Logging.Error(
-                    this,
-                    $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}",
-                    nameof(RegisterAsync));
-                }
+                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}", nameof(RegisterAsync));
 
                 throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
-                }
             }
         }
 
@@ -250,7 +242,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 else
                 {
-                    var customContentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
                     amqpMessage = AmqpMessage.Create(customContentStream, true);
                 }
 
@@ -305,7 +297,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             ValidateOutcome(outcome);
 
-            AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(cancellationToken)
+            AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink
+                .ReceiveMessageAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
@@ -363,13 +356,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 catch (JsonException ex)
                 {
                     if (Logging.IsEnabled)
-                    {
                         Logging.Error(
-                        this,
-                        $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
-                        $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
-                        nameof(RegisterAsync));
-                    }
+                            this,
+                            $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
+                            $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
+                            nameof(RegisterAsync));
 
                     throw new ProvisioningTransportException(
                         $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",

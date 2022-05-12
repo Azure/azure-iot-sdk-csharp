@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     SetAuthorizationHeader(request, _sasToken);
                 };
 
-#if NET5_0
+#if NET5_0_OR_GREATER
                 HttpRequestOptions requestOptions = request.Options;
                 var requestOptionsKey = new HttpRequestOptionsKey<Action<string>>(TpmDelegatingHandler.ProvisioningHeaderName);
                 requestOptions.Set(requestOptionsKey, action);

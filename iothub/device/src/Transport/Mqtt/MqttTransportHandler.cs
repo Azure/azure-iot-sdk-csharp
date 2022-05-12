@@ -32,7 +32,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 

@@ -14,12 +14,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     internal static class ProvisioningSasBuilder
     {
         private const string KeyName = "registration";
-        private static readonly TimeSpan TimeToLive = TimeSpan.FromDays(1);
+        private static readonly TimeSpan s_timeToLive = TimeSpan.FromDays(1);
 
         internal static string ExtractServiceAuthKey(SecurityProviderTpm securityProvider, string hostName, byte[] activation)
         {
             securityProvider.ActivateIdentityKey(activation);
-            return BuildSasSignature(securityProvider, KeyName, hostName, TimeToLive);
+            return BuildSasSignature(securityProvider, KeyName, hostName, s_timeToLive);
         }
 
         private static string BuildSasSignature(SecurityProviderTpm securityProvider, string keyName, string target, TimeSpan timeToLive)
@@ -43,16 +43,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
 
             var buffer = new StringBuilder();
-            buffer.AppendFormat(CultureInfo.InvariantCulture, "{0} {1}={2}&{3}={4}&{5}={6}",
+            buffer.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "{0} {1}={2}&{3}={4}&{5}={6}",
                 "SharedAccessSignature",
-                "sr", audience,
-                "sig", WebUtility.UrlEncode(signature),
-                "se", WebUtility.UrlEncode(expiresOn));
+                "sr",
+                audience,
+                "sig",
+                WebUtility.UrlEncode(signature),
+                "se",
+                WebUtility.UrlEncode(expiresOn));
 
             if (!string.IsNullOrEmpty(keyName))
             {
-                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
-                    "skn", WebUtility.UrlEncode(keyName));
+                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}", "skn", WebUtility.UrlEncode(keyName));
             }
 
             return buffer.ToString();
@@ -112,10 +116,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static string HMACSign(string requestString, string key)
         {
-            using (var hmac = new HMACSHA256(Convert.FromBase64String(key)))
-            {
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
-            }
+            using var hmac = new HMACSHA256(Convert.FromBase64String(key));
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
         }
     }
 }

@@ -16,6 +16,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// If MessageId is not set by the user, the client library will set it to a random GUID before sending the message.
         /// </summary>
-        WhenUnset
+        WhenUnset,
     }
 }

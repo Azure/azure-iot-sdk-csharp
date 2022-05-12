@@ -17,16 +17,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         public X509RegistrationResult()
         {
-          CustomInit();
+            CustomInit();
         }
 
         /// <summary>
         /// Initializes a new instance of the X509RegistrationResult class.
         /// </summary>
         public X509RegistrationResult(
-            X509CertificateInfo certificateInfo = default(X509CertificateInfo), 
-            string enrollmentGroupId = default(string), 
-            X509CertificateInfo signingCertificateInfo = default(X509CertificateInfo))
+            X509CertificateInfo certificateInfo = default,
+            string enrollmentGroupId = default,
+            X509CertificateInfo signingCertificateInfo = default)
         {
             CertificateInfo = certificateInfo;
             EnrollmentGroupId = enrollmentGroupId;
@@ -40,16 +40,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
+        /// Information about the X509 certificate.
         /// </summary>
         [JsonProperty(PropertyName = "certificateInfo")]
         public X509CertificateInfo CertificateInfo { get; set; }
 
         /// <summary>
+        /// The device provisioning service enrollment group Id.
         /// </summary>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
         public string EnrollmentGroupId { get; set; }
 
         /// <summary>
+        /// Signing information about the certificate.
         /// </summary>
         [JsonProperty(PropertyName = "signingCertificateInfo")]
         public X509CertificateInfo SigningCertificateInfo { get; set; }
