@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Amqp.Transport
 
         public override void SetMonitor(ITransportMonitor usageMeter)
         {
-            // Do Nothing
+            // Do nothing
         }
 
         public override bool WriteAsync(TransportAsyncCallbackArgs args)
@@ -223,12 +223,8 @@ namespace Microsoft.Azure.Amqp.Transport
                 using var cancellationTokenSource = new CancellationTokenSource(timeout);
                 await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
             }
-            catch (Exception e)
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                if (Fx.IsFatal(e))
-                {
-                    throw;
-                }
             }
 
             // Call Abort anyway to ensure that all WebSocket Resources are released
