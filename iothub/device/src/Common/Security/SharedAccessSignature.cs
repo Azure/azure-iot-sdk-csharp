@@ -22,13 +22,13 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(iotHubName));
             }
 
+            ExpiresOn = expiresOn;
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException($"The specified SAS token is already expired, on {expiresOn}.");
+                throw new UnauthorizedAccessException($"The specified SAS token has already expired - on {expiresOn}.");
             }
 
             IotHubName = iotHubName;
-            ExpiresOn = expiresOn;
             _expiry = expiry;
             KeyName = keyName ?? string.Empty;
             Signature = signature;
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (!string.IsNullOrEmpty(field))
                 {
                     string[] fieldParts = field.Split(SharedAccessSignatureConstants.KeyValueSeparator);
-                    if (fieldParts.Length != 2)
+                    if (fieldParts.Length < 2)
                     {
                         throw new FormatException("Malformed signature");
                     }
