@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyX509 : AmqpAuthStrategy
     {
-        private SecurityProviderX509 _security;
+        private readonly SecurityProviderX509 _security;
 
         public AmqpAuthStrategyX509(SecurityProviderX509 security)
         {

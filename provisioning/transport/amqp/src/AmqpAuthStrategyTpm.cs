@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyTpm : AmqpAuthStrategy
     {
-        private SecurityProviderTpm _security;
+        private readonly SecurityProviderTpm _security;
 
         public AmqpAuthStrategyTpm(SecurityProviderTpm security)
         {
@@ -53,23 +53,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)
             {
                 if (Logging.IsEnabled)
-                {
-                    Logging.Error(
-                    this,
-                    $"Authentication key not found. OperationId=${operation?.OperationId}");
-                }
+                    Logging.Error(this,$"Authentication key not found. OperationId=${operation?.OperationId}");
 
-                throw new ProvisioningTransportException(
-                    "Authentication key not found.",
-                    null,
-                    false);
+                throw new ProvisioningTransportException("Authentication key not found.", null, false);
             }
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
             if (Logging.IsEnabled)
-            {
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
-            }
 
             _security.ActivateIdentityKey(key);
         }

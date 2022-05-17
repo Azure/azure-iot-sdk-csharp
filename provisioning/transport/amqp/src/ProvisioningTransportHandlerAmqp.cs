@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Associate(authStrategy, this);
 
-                bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
+                bool useWebSocket = FallbackType == TransportFallbackType.WebSocketOnly;
 
                 var builder = new UriBuilder
                 {

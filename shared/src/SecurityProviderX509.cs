@@ -6,14 +6,14 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// The Device Security Provider interface for X.509-based Hardware Security Modules.
+    /// The device security provider interface for X.509-based hardware security modules.
     /// </summary>
     public abstract class SecurityProviderX509 : SecurityProvider
     {
         /// <summary>
-        /// Returns the RegistrationID.
+        /// Returns the registration Id.
         /// </summary>
-        /// <returns>The RegistrationID.</returns>
+        /// <returns>The registration Id.</returns>
         public override string GetRegistrationID()
         {
             X509Certificate2 cert = GetAuthenticationCertificate();

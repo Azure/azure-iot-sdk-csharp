@@ -26,7 +26,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (certificates == null
                 || certificates.Count == 0)
             {
-                if (Logging.IsEnabled) Logging.Info(null, $"{nameof(CertificateInstaller)} parameter 'certificates' was null or empty.");
+                if (Logging.IsEnabled)
+                    Logging.Info(null, $"{nameof(CertificateInstaller)} parameter 'certificates' was null or empty.");
 
                 return;
             }
@@ -48,7 +49,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                             false);
                         if (results.Count == 0)
                         {
-                            if (Logging.IsEnabled) Logging.Info(null, $"{nameof(CertificateInstaller)} adding cert with thumbprint {certificate.Thumbprint} to X509 store.");
+                            if (Logging.IsEnabled)
+                                Logging.Info(null, $"{nameof(CertificateInstaller)} adding cert with thumbprint {certificate.Thumbprint} to X509 store.");
 
                             store.Add(certificate);
                         }
@@ -56,7 +58,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
                 catch (Exception ex)
                 {
-                    if (Logging.IsEnabled) Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+                    if (Logging.IsEnabled)
+                        Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
                 }
             }
         }

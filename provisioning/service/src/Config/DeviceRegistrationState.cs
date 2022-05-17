@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="registrationId">Registration Id</param>
         public DeviceRegistrationState(string registrationId)
         {
-            this.RegistrationId = registrationId;
+            RegistrationId = registrationId;
         }
 
         /// <summary>

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -18,11 +18,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly string _idScope;
         private readonly ProvisioningTransportHandler _transport;
         private readonly SecurityProvider _security;
-
-        /// <summary>
-        /// Stores product information that will be appended to the user agent string that is sent to IoT Hub.
-        /// </summary>
-        public string ProductInfo { get; set; }
 
         /// <summary>
         /// Creates an instance of the Device Provisioning Client.
@@ -60,6 +55,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Logging.Associate(this, _security);
             Logging.Associate(this, _transport);
         }
+
+        /// <summary>
+        /// Stores product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// </summary>
+        public string ProductInfo { get; set; }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
