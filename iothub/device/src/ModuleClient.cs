@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a ModuleClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
         /// </summary>
         public string ProductInfo
         {
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
@@ -403,7 +403,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
@@ -623,7 +623,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
@@ -649,7 +649,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>

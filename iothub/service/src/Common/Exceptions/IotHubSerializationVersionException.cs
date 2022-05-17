@@ -7,14 +7,14 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when IoT Hub receives an invalid serialization version number.
+    /// The exception that is thrown when IoT hub receives an invalid serialization version number.
     /// Note: This exception is currently not thrown by the client library.
     /// </summary>
     [Serializable]
     public class IotHubSerializationVersionException : IotHubSerializationException
     {
         /// <summary>
-        /// Creates an instance of <see cref="IotHubSerializationException"/> with the specified serialization version number
+        /// Creates an instance of this class with the specified serialization version number
         /// and marks it as non-transient.
         /// </summary>
         /// <param name="receivedVersion">The serialization version number.</param>

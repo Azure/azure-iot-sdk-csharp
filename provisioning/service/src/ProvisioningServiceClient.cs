@@ -13,11 +13,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Device Provisioning Service Client.
     /// </summary>
     /// <remarks>
-    /// The IoT Hub Device Provisioning Service is a helper service for IoT Hub that enables automatic device
+    /// The IoT hub Device Provisioning Service is a helper service for IoT hub that enables automatic device
     /// provisioning to a specified IoT hub without requiring human intervention. You can use the Device Provisioning
     /// Service to provision millions of devices in a secure and scalable manner.
     ///
-    /// This C# SDK provides an API to help developers to create and maintain Enrollments on the IoT Hub Device
+    /// This C# SDK provides an API to help developers to create and maintain Enrollments on the IoT hub Device
     /// Provisioning Service, it translate the rest API in C# Objects and Methods.
     ///
     /// To use the this SDK, you must include the follow package on your application.
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// shall create the object <see cref="IndividualEnrollment"/> with the appropriate enrollment configurations, and call the
     /// <see cref="CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment)"/>.
     ///
-    /// The IoT Hub Device Provisioning Service supports SQL queries too. The application can create a new query using
+    /// The IoT hub Device Provisioning Service supports SQL queries too. The application can create a new query using
     /// one of the queries factories, for instance <see cref="CreateIndividualEnrollmentQuery(QuerySpecification)"/>, passing
     /// the <see cref="QuerySpecification"/>, with the SQL query. This factory returns a <see cref="Query"/> object, which is an
     /// active iterator.

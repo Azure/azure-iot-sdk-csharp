@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         Unassigned = 1,
 
         /// <summary>
-        /// Device has connected to the DRS but IoT Hub Id has not yet been returned to the device.
+        /// Device has connected to the DRS but IoT hub Id has not yet been returned to the device.
         /// </summary>
         Assigning = 2,
 

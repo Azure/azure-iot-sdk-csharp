@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Shared
 {
-    // Enum that indicates if the Stream used to initialize an IoT Hub message
+    // Enum that indicates if the Stream used to initialize an IoT hub message
     // should be disposed by the application or by the SDK.
     internal enum StreamDisposalResponsibility
     {

@@ -1046,7 +1046,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (IsInState(StateFlags.NotConnected) || IsInState(StateFlags.Connecting))
                 {
-                    // closure has happened before IoT Hub connection was established or it was initiated due to disconnect
+                    // closure has happened before IoT hub connection was established or it was initiated due to disconnect
                     return;
                 }
 

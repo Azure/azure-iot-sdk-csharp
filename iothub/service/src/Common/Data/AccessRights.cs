@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -43,6 +42,6 @@ namespace Microsoft.Azure.Devices.Common.Data
         /// It grants permission to send device-to-cloud messages, receive cloud-to-device messages, perform file upload from a device, receive device twin
         /// desired property notifications and update device twin reported properties.
         /// </summary>
-        DeviceConnect = 8
+        DeviceConnect = 8,
     }
 }
