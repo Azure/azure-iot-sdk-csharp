@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     {
         private static readonly MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
 
-        // TODO: Unify these constants with IoT Hub Device client.
+        // TODO: Unify these constants with IoT hub Device client.
         private const int MaxMessageSize = 256 * 1024;
 
         private const int MqttTcpPort = 8883;

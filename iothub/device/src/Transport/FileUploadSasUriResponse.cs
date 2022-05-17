@@ -8,12 +8,12 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     /// <summary>
-    /// The information provided from IoT Hub that can be used with the Azure Storage SDK to upload a file from your device.
+    /// The information provided from IoT hub that can be used with the Azure Storage SDK to upload a file from your device.
     /// </summary>
     public class FileUploadSasUriResponse
     {
         /// <summary>
-        /// The correlation id to use when notifying IoT Hub later once this file upload has completed.
+        /// The correlation id to use when notifying IoT hub later once this file upload has completed.
         /// </summary>
         [JsonProperty(PropertyName = "correlationId")]
         public string CorrelationId { get; set; }

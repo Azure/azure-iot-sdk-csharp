@@ -15,35 +15,35 @@ namespace Microsoft.Azure.Devices.Common.WebApi
     public class ResourceRequest
     {
         /// <summary>
-        /// The name
+        /// The name.
         /// </summary>
         [DataMember]
         [JsonProperty("name")]
         public string Name { get; set; }
 
         /// <summary>
-        /// The type
+        /// The type.
         /// </summary>
         [DataMember]
         [JsonProperty("type")]
         public string Type { get; set; }
 
         /// <summary>
-        /// TODO: hard code locations in enum
+        /// TODO: hard code locations in enum.
         /// </summary>
         [DataMember]
         [JsonProperty("location")]
         public string Location { get; set; }
 
         /// <summary>
-        /// TODO: No more than 15 tags, max length per key is 512 chars
+        /// TODO: No more than 15 tags, max length per key is 512 chars.
         /// </summary>
         [DataMember]
         [JsonProperty("tags")]
         public IDictionary<string, string> Tags { get; set; }
 
         /// <summary>
-        /// Additional properties
+        /// Additional properties.
         /// </summary>
         [DataMember]
         [JsonProperty("properties")]

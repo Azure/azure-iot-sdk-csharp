@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a new token with a suggested TTL. This method is thread-safe.
         /// </summary>
-        /// <param name="iotHub">The IoT Hub domain name.</param>
+        /// <param name="iotHub">The IoT hub domain name.</param>
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
         /// <remarks>This is an asynchronous method and should be awaited.</remarks>

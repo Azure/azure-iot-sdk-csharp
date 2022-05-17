@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public DateTime? CreatedDateTimeUtc { get; protected set; }
 
         /// <summary>
-        /// The assigned Azure IoT Hub.
+        /// The assigned Azure IoT hub.
         /// </summary>
         public string AssignedHub { get; protected set; }
 

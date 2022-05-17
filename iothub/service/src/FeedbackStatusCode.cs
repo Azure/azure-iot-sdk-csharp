@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         Rejected = 3,
 
         /// <summary>
-        /// Indicates that the cloud-to-device message was purged from IoT Hub.
+        /// Indicates that the cloud-to-device message was purged from IoT hub.
         /// For information on cloud-to-device message life cycle, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
         /// </summary>
         Purged = 4
