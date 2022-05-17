@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Common.Security
 
             if (!iotHubHostName.StartsWith(string.Format(CultureInfo.InvariantCulture, "{0}.", iotHubName), StringComparison.OrdinalIgnoreCase))
             {
-                throw new UnauthorizedAccessException("IOT hub does not correspond to host name");
+                throw new UnauthorizedAccessException("IoT hub does not correspond to host name");
             }
         }
     }

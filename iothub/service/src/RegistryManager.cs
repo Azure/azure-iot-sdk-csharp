@@ -2099,7 +2099,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Register a new Configuration for Azure IOT Edge in IotHub
+        /// Register a new Configuration for Azure IoT Edge in IoT hub
         /// </summary>
         /// <param name="configuration">The Configuration object being registered.</param>
         /// <returns>The Configuration object.</returns>
@@ -2109,7 +2109,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Register a new Configuration for Azure IOT Edge in IotHub
+        /// Register a new Configuration for Azure IoT Edge in IoT hub
         /// </summary>
         /// <param name="configuration">The Configuration object being registered.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>

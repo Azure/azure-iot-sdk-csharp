@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public sealed class ServerBusyException : IotHubException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerBusyException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         public ServerBusyException() : base(isTransient: true)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerBusyException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="message">The error message.</param>
         public ServerBusyException(string message)

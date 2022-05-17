@@ -122,11 +122,11 @@ namespace Microsoft.Azure.Devices.Client
             Fx.Assert(callback != null, "Cannot schedule a null callback");
             if (lowPriority)
             {
-                IOThreadScheduler.ScheduleCallbackLowPriNoFlow(callback, state);
+                IoThreadScheduler.ScheduleCallbackLowPriNoFlow(callback, state);
             }
             else
             {
-                IOThreadScheduler.ScheduleCallbackNoFlow(callback, state);
+                IoThreadScheduler.ScheduleCallbackNoFlow(callback, state);
             }
         }
 
@@ -154,25 +154,25 @@ namespace Microsoft.Azure.Devices.Client
         private static class CallbackHelper
         {
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            private static Action<object> invokeWithoutContextCallback;
+            private static Action<object> s_invokeWithoutContextCallback;
 
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            private static ContextCallback onContextAppliedCallback;
+            private static ContextCallback s_onContextAppliedCallback;
 
 #if NET451
             [Fx.Tag.SecurityNote(Critical = "Stores a delegate to a critical method")]
-            static Action<object> invokeWithContextCallback;
+            private static Action<object> s_invokeWithContextCallback;
             [Fx.Tag.SecurityNote(Critical = "Provides access to a critical field; Initialize it with " +
                 "a delegate to a critical method")]
             public static Action<object> InvokeWithContextCallback
             {
                 get
                 {
-                    if (invokeWithContextCallback == null)
+                    if (s_invokeWithContextCallback == null)
                     {
-                        invokeWithContextCallback = new Action<object>(InvokeWithContext);
+                        s_invokeWithContextCallback = new Action<object>(InvokeWithContext);
                     }
-                    return invokeWithContextCallback;
+                    return s_invokeWithContextCallback;
                 }
             }
 #endif
@@ -183,11 +183,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 get
                 {
-                    if (invokeWithoutContextCallback == null)
+                    if (s_invokeWithoutContextCallback == null)
                     {
-                        invokeWithoutContextCallback = new Action<object>(InvokeWithoutContext);
+                        s_invokeWithoutContextCallback = new Action<object>(InvokeWithoutContext);
                     }
-                    return invokeWithoutContextCallback;
+                    return s_invokeWithoutContextCallback;
                 }
             }
 
@@ -197,11 +197,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 get
                 {
-                    if (onContextAppliedCallback == null)
+                    if (s_onContextAppliedCallback == null)
                     {
-                        onContextAppliedCallback = new ContextCallback(OnContextApplied);
+                        s_onContextAppliedCallback = new ContextCallback(OnContextApplied);
                     }
-                    return onContextAppliedCallback;
+                    return s_onContextAppliedCallback;
                 }
             }
 
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client
             public DefaultActionItem(Action<object> callback, object state, bool isLowPriority)
             {
                 Fx.Assert(callback != null, "Shouldn't instantiate an object to wrap a null callback");
-                base.LowPriority = isLowPriority;
+                LowPriority = isLowPriority;
                 _callback = callback;
                 _state = state;
             }

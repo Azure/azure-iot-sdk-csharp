@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices
 
             if (string.IsNullOrWhiteSpace(IotHubName))
             {
-                throw new FormatException("Missing IOT hub name");
+                throw new FormatException("Missing IoT hub name");
             }
 
             if (!SharedAccessKey.IsNullOrWhiteSpace())
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices
 
             if (string.IsNullOrWhiteSpace(IotHubName))
             {
-                throw new FormatException("Missing IOT hub name");
+                throw new FormatException("Missing IoT hub name");
             }
         }
 
