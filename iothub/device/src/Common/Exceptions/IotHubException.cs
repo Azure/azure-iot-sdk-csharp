@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         private const string TrackingIdValueSerializationStoreName = "IotHubException-TrackingId";
 
         /// <summary>
-        /// Creates an instance of this class an empty error message.
+        /// Creates an instance of this class with an empty error message.
         /// </summary>
         public IotHubException() : base()
         {
