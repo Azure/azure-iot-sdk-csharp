@@ -32,23 +32,23 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
 
-        private static bool breakOnExceptionTypesRetrieved;
-        private static Type[] breakOnExceptionTypesCache;
+        private static bool s_breakOnExceptionTypesRetrieved;
+        private static Type[] s_breakOnExceptionTypesCache;
 #endif
 
-        private static ExceptionTrace exceptionTrace;
+        private static ExceptionTrace s_exceptionTrace;
 
         public static ExceptionTrace Exception
         {
             get
             {
-                if (exceptionTrace == null)
+                if (s_exceptionTrace == null)
                 {
                     //need not be a true singleton. No locking needed here.
-                    exceptionTrace = new ExceptionTrace(DefaultEventSource);
+                    s_exceptionTrace = new ExceptionTrace(DefaultEventSource);
                 }
 
-                return exceptionTrace;
+                return s_exceptionTrace;
             }
         }
 
@@ -89,24 +89,25 @@ namespace Microsoft.Azure.Devices.Client
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception AssertAndThrowFatal(string description)
         {
-            Fx.Assert(description);
-            throw Fx.Exception.AsError(new FatalException(description));
+            Assert(description);
+            throw Exception.AsError(new FatalException(description));
         }
 
-        public static bool IsFatal(Exception exception)
+        public static bool IsFatal(Exception ex)
         {
-            while (exception != null)
+            while (ex != null)
             {
                 // FYI, CallbackException is-a FatalException
-                if (exception is FatalException ||
+                if (ex is FatalException
 #if !NET451
-                    exception is OutOfMemoryException ||
+                    || ex is OutOfMemoryException
 #else
-                    (exception is OutOfMemoryException && !(exception is InsufficientMemoryException)) ||
-                    exception is ThreadAbortException ||
-                    exception is AccessViolationException ||
+                    || (ex is OutOfMemoryException
+                        && !(ex is InsufficientMemoryException))
+                    || ex is ThreadAbortException
+                    || ex is AccessViolationException
 #endif
-                    exception is SEHException)
+                    || ex is SEHException)
                 {
                     return true;
                 }
@@ -114,17 +115,17 @@ namespace Microsoft.Azure.Devices.Client
                 // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
                 // we want to check to see whether they've been used to wrap a fatal exception.  If so, then they
                 // count as fatal.
-                if (exception is TypeInitializationException ||
-                    exception is TargetInvocationException)
+                if (ex is TypeInitializationException
+                    || ex is TargetInvocationException)
                 {
-                    exception = exception.InnerException;
+                    ex = ex.InnerException;
                 }
-                else if (exception is AggregateException)
+                else if (ex is AggregateException aggEx)
                 {
                     // AggregateExceptions have a collection of inner exceptions, which may themselves be other
                     // wrapping exceptions (including nested AggregateExceptions).  Recursively walk this
                     // hierarchy.  The (singular) InnerException is included in the collection.
-                    ReadOnlyCollection<Exception> innerExceptions = ((AggregateException)exception).InnerExceptions;
+                    ReadOnlyCollection<Exception> innerExceptions = aggEx.InnerExceptions;
                     foreach (Exception innerException in innerExceptions)
                     {
                         if (IsFatal(innerException))
@@ -133,11 +134,6 @@ namespace Microsoft.Azure.Devices.Client
                         }
                     }
 
-                    break;
-                }
-                else if (exception is NullReferenceException)
-                {
-                    ////MessagingClientEtwProvider.Provider.EventWriteNullReferenceErrorOccurred(exception.ToString());
                     break;
                 }
                 else
@@ -191,11 +187,11 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
 #if NET451
-        [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
+        [Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
         {
-            return (new IOCompletionThunk(callback)).ThunkFrame;
+            return new IOCompletionThunk(callback).ThunkFrame;
         }
 #endif
 #if DEBUG
@@ -204,13 +200,13 @@ namespace Microsoft.Azure.Devices.Client
         {
             get
             {
-                if (!Fx.breakOnExceptionTypesRetrieved)
+                if (!s_breakOnExceptionTypesRetrieved)
                 {
-                    object value;
-                    if (TryGetDebugSwitch(Fx.BreakOnExceptionTypesName, out value))
+                    if (TryGetDebugSwitch(Fx.BreakOnExceptionTypesName, out object value))
                     {
                         string[] typeNames = value as string[];
-                        if (typeNames != null && typeNames.Length > 0)
+                        if (typeNames != null
+                            && typeNames.Length > 0)
                         {
                             var types = new List<Type>(typeNames.Length);
                             for (int i = 0; i < typeNames.Length; i++)
@@ -219,13 +215,13 @@ namespace Microsoft.Azure.Devices.Client
                             }
                             if (types.Count != 0)
                             {
-                                Fx.breakOnExceptionTypesCache = types.ToArray();
+                                s_breakOnExceptionTypesCache = types.ToArray();
                             }
                         }
                     }
-                    Fx.breakOnExceptionTypesRetrieved = true;
+                    s_breakOnExceptionTypesRetrieved = true;
                 }
-                return Fx.breakOnExceptionTypesCache;
+                return s_breakOnExceptionTypesCache;
             }
         }
 
@@ -240,13 +236,10 @@ namespace Microsoft.Azure.Devices.Client
             value = null;
             try
             {
-                RegistryKey key = Registry.LocalMachine.OpenSubKey(Fx.SBRegistryKey);
+                using RegistryKey key = Registry.LocalMachine.OpenSubKey(SBRegistryKey);
                 if (key != null)
                 {
-                    using (key)
-                    {
-                        value = key.GetValue(name);
-                    }
+                    value = key.GetValue(name);
                 }
             }
             catch (SecurityException)
@@ -272,47 +265,44 @@ namespace Microsoft.Azure.Devices.Client
             // This area is too sensitive to do anything but return.
             if (exception == null)
             {
-                Fx.Assert("Null exception in HandleAtThreadBase.");
+                Assert("Null exception in HandleAtThreadBase.");
             }
             return false;
         }
 
 #if NET451
         // This can't derive from Thunk since T would be unsafe.
-        [Fx.Tag.SecurityNote(Critical = "unsafe object")]
+        [Tag.SecurityNote(Critical = "unsafe object")]
         [SecurityCritical]
-        unsafe sealed class IOCompletionThunk
+        private sealed unsafe class IOCompletionThunk
         {
-            [Fx.Tag.SecurityNote(Critical = "Make these safe to use in SecurityCritical contexts.")]
-            IOCompletionCallback callback;
+            [Tag.SecurityNote(Critical = "Make these safe to use in SecurityCritical contexts.")]
+            private readonly IOCompletionCallback _callback;
 
-            [Fx.Tag.SecurityNote(Critical = "Accesses critical field.", Safe = "Data provided by caller.")]
+            [Tag.SecurityNote(Critical = "Accesses critical field.", Safe = "Data provided by caller.")]
             public IOCompletionThunk(IOCompletionCallback callback)
             {
-                this.callback = callback;
+                _callback = callback;
             }
 
             public IOCompletionCallback ThunkFrame
             {
-                [Fx.Tag.SecurityNote(Safe = "returns a delegate around the safe method UnhandledExceptionFrame")]
-                get
-                {
-                    return new IOCompletionCallback(UnhandledExceptionFrame);
-                }
+                [Tag.SecurityNote(Safe = "returns a delegate around the safe method UnhandledExceptionFrame")]
+                get => new IOCompletionCallback(UnhandledExceptionFrame);
             }
 
-            [Fx.Tag.SecurityNote(Critical = "Accesses critical field, calls PrepareConstrainedRegions which has a LinkDemand",
+            [Tag.SecurityNote(Critical = "Accesses critical field, calls PrepareConstrainedRegions which has a LinkDemand",
                 Safe = "Delegates can be invoked, guaranteed not to call into PT user code from the finally.")]
-            void UnhandledExceptionFrame(uint error, uint bytesRead, NativeOverlapped* nativeOverlapped)
+            private void UnhandledExceptionFrame(uint error, uint bytesRead, NativeOverlapped* nativeOverlapped)
             {
                 RuntimeHelpers.PrepareConstrainedRegions();
                 try
                 {
-                    this.callback(error, bytesRead, nativeOverlapped);
+                    _callback(error, bytesRead, nativeOverlapped);
                 }
                 catch (Exception exception)
                 {
-                    if (!Fx.HandleAtThreadBase(exception))
+                    if (!HandleAtThreadBase(exception))
                     {
                         throw;
                     }
@@ -394,50 +384,6 @@ namespace Microsoft.Azure.Devices.Client
                 internal const string Infinite = "infinite";
             }
 
-            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Constructor,
-                AllowMultiple = true, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class ExternalResourceAttribute : Attribute
-            {
-                public ExternalResourceAttribute(Location location, string description)
-                {
-                    Location = location;
-                    Description = description;
-                }
-
-                public Location Location { get; private set; }
-
-                public string Description { get; private set; }
-            }
-
-            [AttributeUsage(AttributeTargets.Field)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class CacheAttribute : Attribute
-            {
-                public CacheAttribute(Type elementType, CacheAttrition cacheAttrition)
-                {
-                    Scope = Strings.DeclaringInstance;
-                    SizeLimit = Strings.Unbounded;
-                    Timeout = Strings.Infinite;
-
-                    if (elementType == null)
-                    {
-                        throw Fx.Exception.ArgumentNull(nameof(elementType));
-                    }
-
-                    ElementType = elementType;
-                    CacheAttrition = cacheAttrition;
-                }
-
-                public Type ElementType { get; private set; }
-
-                public CacheAttrition CacheAttrition { get; private set; }
-
-                public string Scope { get; set; }
-                public string SizeLimit { get; set; }
-                public string Timeout { get; set; }
-            }
-
             [AttributeUsage(AttributeTargets.Field)]
             [Conditional("CODE_ANALYSIS")]
             public sealed class QueueAttribute : Attribute
@@ -446,11 +392,10 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Scope = Strings.DeclaringInstance;
                     SizeLimit = Strings.Unbounded;
-                    ElementType = elementType ?? throw Fx.Exception.ArgumentNull(nameof(elementType));
+                    ElementType = elementType ?? throw Exception.ArgumentNull(nameof(elementType));
                 }
 
                 public Type ElementType { get; private set; }
-
                 public string Scope { get; set; }
                 public string SizeLimit { get; set; }
                 public bool StaleElementsRemovedImmediately { get; set; }
@@ -458,7 +403,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Set on a class when that class uses lock (this) - acts as though it were on a field
-            //     private object this;
+            // private object this;
             [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = false)]
             [Conditional("CODE_ANALYSIS")]
             public sealed class SynchronizationObjectAttribute : Attribute
@@ -471,9 +416,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public bool Blocking { get; set; }
-
                 public string Scope { get; set; }
-
                 public SynchronizationKind Kind { get; set; }
             }
 
@@ -487,11 +430,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public BlocksUsing BlocksUsing { get; private set; }
-
                 public bool SupportsAsync { get; set; }
-
                 public bool Spins { get; set; }
-
                 public string ReleaseMethod { get; set; }
             }
 
@@ -499,14 +439,8 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class BlockingAttribute : Attribute
             {
-                public BlockingAttribute()
-                {
-                }
-
                 public string CancelMethod { get; set; }
-
                 public Type CancelDeclaringType { get; set; }
-
                 public string Conditional { get; set; }
             }
 
@@ -520,31 +454,6 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class GuaranteeNonBlockingAttribute : Attribute
             {
-                public GuaranteeNonBlockingAttribute()
-                {
-                }
-            }
-
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class NonThrowingAttribute : Attribute
-            {
-                public NonThrowingAttribute()
-                {
-                }
-            }
-
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class InheritThrowsAttribute : Attribute
-            {
-                public InheritThrowsAttribute()
-                {
-                }
-
-                public Type FromDeclaringType { get; set; }
-
-                public string From { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class |
@@ -554,14 +463,8 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class SecurityNoteAttribute : Attribute
             {
-                public SecurityNoteAttribute()
-                {
-                }
-
                 public string Critical { get; set; }
-
                 public string Safe { get; set; }
-
                 public string Miscellaneous { get; set; }
             }
         }

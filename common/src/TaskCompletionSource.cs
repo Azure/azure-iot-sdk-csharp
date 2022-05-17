@@ -6,18 +6,14 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// A <see cref="TaskCompletionSource{boolean}"/> implementation that returns a <see cref="Task"/> when completed.
+    /// An implementation of <c>TaskCompletionSource&lt;bool&gt;</c> that returns a <c>Task</c> when completed.
     /// </summary>
     /// <remarks>
-    /// Represents the producer side of a <see cref="Task"/> unbound to a delegate, providing access to the consumer side through the <see cref="Task"/> property.
+    /// Represents the producer side of a <c>Task</c> to a delegate, providing access to the consumer side through the <c>Task</c> property.
     /// This is used for .NET implementations lower than .NET 5.0, which lack a native implementation of the non-generic TaskCompletionSource.
     /// </remarks>
     internal sealed class TaskCompletionSource : TaskCompletionSource<bool>
     {
-        public TaskCompletionSource()
-        {
-        }
-
         public bool TrySetResult() => TrySetResult(true);
 
         public void SetResult() => SetResult(true);

@@ -9,7 +9,6 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -96,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client
             Open,
             Closed,
             Aborted,
-            Faulted
+            Faulted,
         }
 
         public EndPoint LocalEndpoint => _tcpClient?.Client?.LocalEndPoint;
@@ -121,13 +120,8 @@ namespace Microsoft.Azure.Devices.Client
                 _tcpClient?.Close();
                 _tcpClient = null;
             }
-            catch (Exception e)
+            catch (Exception e) when (!Fx.IsFatal(e))
             {
-                if (Fx.IsFatal(e))
-                {
-                    throw;
-                }
-
                 // ignore non-fatal errors encountered during abort
                 Fx.Exception.TraceHandled(e, "IotHubClientWebSocket.Abort");
             }
@@ -136,9 +130,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task ConnectAsync(string host, int port, string scheme, X509Certificate2 clientCertificate, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, scheme, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
-            }
 
             _host = host;
             bool succeeded = false;
@@ -219,19 +211,16 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Abort();
                 }
+
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, scheme, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
-                }
             }
         }
 
         public async Task<int> ReceiveAsync(byte[] buffer, int offset, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ReceiveAsync)}");
-            }
 
             byte[] header = new byte[2];
 
@@ -291,8 +280,7 @@ namespace Microsoft.Azure.Devices.Client
                             totalBytesRead += bytesRead;
                         }
                     }
-                }
-                while (pongFrame);
+                } while (pongFrame);
 
                 totalBytesRead = 0;
 
@@ -413,19 +401,16 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Fault();
                 }
+
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ReceiveAsync)}");
-                }
             }
         }
 
         public async Task SendAsync(byte[] buffer, int offset, int size, WebSocketMessageType webSocketMessageType, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, webSocketMessageType, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(SendAsync)}");
-            }
 
             Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringSend);
             _tcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
@@ -444,19 +429,16 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Fault();
                 }
+
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, webSocketMessageType, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(SendAsync)}");
-                }
             }
         }
 
         public async Task CloseAsync()
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, $"{nameof(IotHubClientWebSocket)}.{nameof(CloseAsync)}");
-            }
 
             State = WebSocketState.Closed;
             bool succeeded = false;
@@ -473,13 +455,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 succeeded = true;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (!Fx.IsFatal(exception))
             {
-                if (Fx.IsFatal(exception))
-                {
-                    throw;
-                }
-
                 // ignore exceptions during close
                 Fx.Exception.TraceHandled(exception, "IotHubClientWebSocket.CloseAsync");
             }
@@ -489,10 +466,9 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Fault();
                 }
+
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(IotHubClientWebSocket)}.{nameof(CloseAsync)}");
-                }
             }
         }
 
@@ -500,29 +476,6 @@ namespace Microsoft.Azure.Devices.Client
         private static SHA1 InitCryptoServiceProvider()
         {
             return SHA1.Create();
-        }
-
-        // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
-        // if the remaining time reaches TimeSpan.Zero we don't want to turn off timeouts on the socket, instead
-        // we want to use a very small timeout.
-        private static int GetSocketTimeoutInMilliSeconds(TimeSpan timeout)
-        {
-            if (timeout == TimeSpan.MaxValue)
-            {
-                return Timeout.Infinite;
-            }
-
-            if (timeout == TimeSpan.Zero)
-            {
-                // Socket.ReceiveTimeout/SendTimeout 0 means no timeout which is not what we want.
-                // Use a small number instead
-                return 1;
-            }
-
-            long ticks = Ticks.FromTimeSpan(timeout);
-            return ticks / TimeSpan.TicksPerMillisecond > int.MaxValue
-                ? int.MaxValue
-                : Ticks.ToMilliseconds(ticks);
         }
 
         private static byte[] PrepareWebSocketHeader(int bufferLength, WebSocketMessageType webSocketMessageType)
@@ -654,7 +607,6 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         return false; // This is a protocol violation. A final frame cannot also be a continuation frame
                     }
-
                     break;
 
                 case Text:
@@ -663,7 +615,7 @@ namespace Microsoft.Azure.Devices.Client
                     break;
 
                 case Close:
-                    return false;   // Close frame received - We can close the connection
+                    return false; // Close frame received - we can close the connection
 
                 case Ping:
                     throw Fx.Exception.AsError(new NotImplementedException("Client Websocket implementation lacks ping message support"));
@@ -702,42 +654,42 @@ namespace Microsoft.Azure.Devices.Client
         private bool VerifyWebSocketUpgradeResponse(NameValueCollection webSocketHeaders)
         {
             // verify that Upgrade header is present with a value of websocket
-            string upgradeHeaderValue;
-            if (null == (upgradeHeaderValue = webSocketHeaders.Get(Upgrade)))
+            string upgradeHeaderValue = webSocketHeaders.Get(Upgrade);
+            if (upgradeHeaderValue == null)
             {
                 // Server did not respond with an upgrade header
                 return false;
             }
 
-            if (!string.Equals(upgradeHeaderValue, Websocket, StringComparison.OrdinalIgnoreCase))
+            if (!StringComparer.OrdinalIgnoreCase.Equals(upgradeHeaderValue, Websocket))
             {
                 // Server did not include the string websocket in the upgrade header
                 return false;
             }
 
             // verify connection header is present with a value of Upgrade
-            string connectionHeaderValue;
-            if (null == (connectionHeaderValue = webSocketHeaders.Get(ConnectionHeaderName)))
+            string connectionHeaderValue = webSocketHeaders.Get(ConnectionHeaderName);
+            if (connectionHeaderValue == null)
             {
                 // Server did not respond with an connection header
                 return false;
             }
 
-            if (!string.Equals(connectionHeaderValue, Upgrade, StringComparison.OrdinalIgnoreCase))
+            if (!StringComparer.OrdinalIgnoreCase.Equals(connectionHeaderValue, Upgrade))
             {
                 // Server did not include the string upgrade in the connection header
                 return false;
             }
 
             // verify that a SecWebSocketAccept header is present with appropriate hash value string
-            string secWebSocketAcceptHeaderValue;
-            if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders[Headers.SecWebSocketAccept]))
+            string secWebSocketAcceptHeaderValue = webSocketHeaders[Headers.SecWebSocketAccept];
+            if (secWebSocketAcceptHeaderValue == null)
             {
                 // Server did not include the SecWebSocketAcceptHeader in the response
                 return false;
             }
 
-            if (!ComputeHash(_webSocketKey).Equals(secWebSocketAcceptHeaderValue, StringComparison.Ordinal))
+            if (!StringComparer.Ordinal.Equals(ComputeHash(_webSocketKey), secWebSocketAcceptHeaderValue))
             {
                 // Server Hash Value of Client's Nonce was invalid
                 return false;
@@ -746,8 +698,8 @@ namespace Microsoft.Azure.Devices.Client
             if (!string.IsNullOrEmpty(_webSocketRole))
             {
                 // verify SecWebSocketProtocol contents
-                string secWebSocketProtocolHeaderValue;
-                if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol)))
+                string secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol);
+                if (secWebSocketProtocolHeaderValue != null)
                 {
                     // Check SecWebSocketProtocolHeader with requested protocol
                     if (!StringComparer.Ordinal.Equals(_webSocketRole, secWebSocketProtocolHeaderValue))
@@ -852,7 +804,9 @@ namespace Microsoft.Azure.Devices.Client
 
                     _bytesRead = 0;
 
-                    _bytesRead = await _stream.ReadAsync(_buffer, _totalBytesRead, _buffer.Length - _totalBytesRead, cancellationToken).ConfigureAwait(false);
+                    _bytesRead = await _stream
+                        .ReadAsync(_buffer, _totalBytesRead, _buffer.Length - _totalBytesRead, cancellationToken)
+                        .ConfigureAwait(false);
 
                     _totalBytesRead += _bytesRead;
                     if (_bytesRead == 0 || TryParseBuffer())
@@ -860,8 +814,7 @@ namespace Microsoft.Azure.Devices.Client
                         // exit the do/while loop
                         break;
                     }
-                }
-                while (true);
+                } while (true);
 
                 if (_totalBytesRead == 0)
                 {
@@ -873,7 +826,7 @@ namespace Microsoft.Azure.Devices.Client
             public override string ToString()
             {
                 // return a string like "407 Proxy Auth Required"
-                return (int)StatusCode + " " + StatusDescription;
+                return $"{(int)StatusCode} {StatusDescription}";
             }
 
             /// <summary>
@@ -947,7 +900,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 // check to see if all the body bytes have been received.
                 string contentLengthValue = Headers[HttpResponseHeader.ContentLength];
-                if (!string.IsNullOrEmpty(contentLengthValue) && contentLengthValue != "0")
+                if (!string.IsNullOrEmpty(contentLengthValue)
+                    && contentLengthValue != "0")
                 {
                     int contentLength = int.Parse(contentLengthValue, CultureInfo.InvariantCulture);
                     if (contentLength > _totalBytesRead - _bodyStartIndex)

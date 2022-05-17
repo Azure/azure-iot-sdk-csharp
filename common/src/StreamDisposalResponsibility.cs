@@ -8,6 +8,6 @@ namespace Microsoft.Azure.Devices.Shared
     internal enum StreamDisposalResponsibility
     {
         App,
-        Sdk
+        Sdk,
     }
 }
