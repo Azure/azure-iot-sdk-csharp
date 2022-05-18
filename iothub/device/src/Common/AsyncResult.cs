@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Exceptions;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -28,15 +27,15 @@ namespace Microsoft.Azure.Devices.Client
         private Exception _exception;
         private AsyncCompletion _nextAsyncCompletion;
 #if NET451
-        IAsyncResult _deferredTransactionalResult;
-        TransactionSignalScope _transactionContext;
+        private IAsyncResult _deferredTransactionalResult;
+        private TransactionSignalScope _transactionContext;
 #endif
 
         [Fx.Tag.SynchronizationObject]
         private ManualResetEvent _manualResetEvent;
 
         [Fx.Tag.SynchronizationObject(Blocking = false)]
-        private object _thisLock;
+        private readonly object _thisLock = new object();
 
 #if DEBUG
         private UncompletedAsyncResultMarker _marker;
@@ -46,7 +45,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             _callback = callback;
             AsyncState = state;
-            _thisLock = new object();
 
 #if DEBUG
             _marker = new UncompletedAsyncResultMarker(this);
@@ -78,13 +76,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool CompletedSynchronously { get; private set; }
 
-        public bool HasCallback
-        {
-            get
-            {
-                return _callback != null;
-            }
-        }
+        public bool HasCallback => _callback != null;
 
         public bool IsCompleted { get; private set; }
 
@@ -130,12 +122,8 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     OnCompleting(this, _exception);
                 }
-                catch (Exception e)
+                catch (Exception e) when (!Fx.IsFatal(e))
                 {
-                    if (Fx.IsFatal(e))
-                    {
-                        throw;
-                    }
                     _exception = e;
                 }
             }
@@ -288,15 +276,9 @@ namespace Microsoft.Azure.Devices.Client
 
         protected bool SyncContinue(IAsyncResult result)
         {
-            AsyncCompletion callback;
-            if (TryContinueHelper(result, out callback))
-            {
-                return callback(result);
-            }
-            else
-            {
-                return false;
-            }
+            return TryContinueHelper(result, out AsyncCompletion callback)
+                ? callback(result)
+                : false;
         }
 
         private bool TryContinueHelper(IAsyncResult result, out AsyncCompletion callback)
@@ -390,9 +372,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.ArgumentNull(nameof(result));
             }
 
-            var asyncResult = result as TAsyncResult;
-
-            if (asyncResult == null)
+            if (!(result is TAsyncResult asyncResult))
             {
                 throw Fx.Exception.Argument(nameof(result), CommonResources.InvalidAsyncResult);
             }
@@ -468,20 +448,17 @@ namespace Microsoft.Azure.Devices.Client
 
             public TransactionSignalState State { get; private set; }
 
-            public bool IsPotentiallyAbandoned
-            {
-                get
-                {
-                    return State == TransactionSignalState.Abandoned || (State == TransactionSignalState.Completed && !IsSignalled);
-                }
-            }
+            public bool IsPotentiallyAbandoned => State == TransactionSignalState.Abandoned
+                || State == TransactionSignalState.Completed
+                && !IsSignalled;
 
             public void Prepared()
             {
                 if (State != TransactionSignalState.Ready)
                 {
-                    AsyncResult.ThrowInvalidAsyncResult("PrepareAsyncCompletion should only be called once per PrepareTransactionalCall.");
+                    ThrowInvalidAsyncResult("PrepareAsyncCompletion should only be called once per PrepareTransactionalCall.");
                 }
+
                 State = TransactionSignalState.Prepared;
             }
 
@@ -501,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
-                        AsyncResult.ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called in a using. Dispose called multiple times.");
+                        ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called in a using. Dispose called multiple times.");
                     }
 
                     try
@@ -525,12 +502,12 @@ namespace Microsoft.Azure.Devices.Client
                     // from here, and adding a way would add complexity to the AsyncResult transactional calling pattern. This
                     // unnecessary Interlocked only happens when: PrepareTransactionalCall is called with a non-null transaction,
                     // PrepareAsyncCompletion is reached, and the operation completes synchronously or with an exception.
-                    IAsyncResult result;
-                    if (State == TransactionSignalState.Completed && Unlock(out result))
+                    if (State == TransactionSignalState.Completed
+                        && Unlock(out IAsyncResult result))
                     {
                         if (_parent._deferredTransactionalResult != null)
                         {
-                            AsyncResult.ThrowInvalidAsyncResult(_parent._deferredTransactionalResult);
+                            ThrowInvalidAsyncResult(_parent._deferredTransactionalResult);
                         }
                         _parent._deferredTransactionalResult = result;
                     }

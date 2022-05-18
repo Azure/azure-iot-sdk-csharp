@@ -22,14 +22,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public class DeviceMessageLockLostException : IotHubException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         public DeviceMessageLockLostException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the message string containing the device identifier that could not be found.
+        /// Initializes a new instance of the class with the message string containing the device identifier that could not be found.
         /// </summary>
         /// <param name="message">A description of the error. The content of message is intended to be understood by humans.</param>
         public DeviceMessageLockLostException(string message)
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the message string containing the device identifier that could not be found.
+        /// Initializes a new instance of the class with the message string containing the device identifier that could not be found.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="messageId">Message identifier.</param>
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the message string containing the device identifier that could not be found.
+        /// Initializes a new instance of the class with the message string containing the device identifier that could not be found.
         /// </summary>
         /// <param name="message">A description of the error. The content of message is intended to be understood by humans.</param>
         /// <param name="innerException">The exception that is the cause of the current exception</param>
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the specified serialization and context information.
+        /// Initializes a new instance of the class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>

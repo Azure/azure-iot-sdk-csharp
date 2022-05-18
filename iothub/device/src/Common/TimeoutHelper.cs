@@ -42,10 +42,10 @@ namespace Microsoft.Azure.Devices.Client
                 return Timeout.Infinite;
             }
              
-            long ticks = Ticks.FromTimeSpan(timeout);
-            if (ticks / TimeSpan.TicksPerMillisecond > Int32.MaxValue)
+            long ticks = timeout.Ticks;
+            if (ticks / TimeSpan.TicksPerMillisecond > int.MaxValue)
             {
-                return Int32.MaxValue;
+                return int.MaxValue;
             }
 
             return Ticks.ToMilliseconds(ticks);

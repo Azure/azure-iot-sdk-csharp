@@ -108,9 +108,11 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         public static string ToStringSlim(this Exception exception)
         {
             // exception.Data is empty collection by default.
-            if (exception.Data != null && exception.Data.Contains(ExceptionIdentifierName))
+            if (exception.Data != null
+                && exception.Data.Contains(ExceptionIdentifierName))
             {
-                return string.Format(CultureInfo.InvariantCulture,
+                return string.Format(
+                    CultureInfo.InvariantCulture,
                     "ExceptionId: {0}-{1}: {2}",
                     exception.Data[ExceptionIdentifierName],
                     exception.GetType(),
@@ -121,7 +123,8 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 string exceptionIdentifier = Guid.NewGuid().ToString();
                 exception.Data[ExceptionIdentifierName] = exceptionIdentifier;
 
-                return string.Format(CultureInfo.InvariantCulture,
+                return string.Format(
+                    CultureInfo.InvariantCulture,
                     "ExceptionId: {0}-{1}",
                     exceptionIdentifier,
                     exception.ToString());
@@ -133,16 +136,18 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
         public static string GetReferenceCode(this Exception exception)
         {
-            return exception.Data != null && exception.Data.Contains(ExceptionIdentifierName)
-                ? (string)exception.Data[ExceptionIdentifierName]
-                : null;
+            return exception.Data != null
+                && exception.Data.Contains(ExceptionIdentifierName)
+                    ? (string)exception.Data[ExceptionIdentifierName]
+                    : null;
         }
 
         private static bool ShouldPrepareForRethrow(Exception exception)
         {
             while (exception != null)
             {
-                if (exception.Data != null && exception.Data.Contains(AsyncResult.DisablePrepareForRethrow))
+                if (exception.Data != null
+                    && exception.Data.Contains(AsyncResult.DisablePrepareForRethrow))
                 {
                     return false;
                 }
@@ -168,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         }
 
         /// <summary>
-        /// Throw ArgumentNullException if the value is null reference, empty or white space.
+        /// Throw ArgumentNullException if the value is null reference, empty, or white space.
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>
@@ -176,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         {
             if (string.IsNullOrWhiteSpace(argumentValue))
             {
-                string errorMessage = $"The parameter named {argumentName} can't be null, empty or white space.";
+                string errorMessage = $"The parameter named {argumentName} can't be null, empty, or white space.";
                 throw new ArgumentNullException(argumentName, errorMessage);
             }
         }
