@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         private readonly TimeSpan _deltaBackoff;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoffRetryStrategy" /> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         public ExponentialBackoffRetryStrategy()
             : this(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff)
@@ -45,19 +45,19 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoffRetryStrategy" /> class with the specified retry settings.
+        /// Initializes a new instance of this class with the specified retry settings.
         /// </summary>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
         /// <param name="minBackoff">The minimum back-off time</param>
         /// <param name="maxBackoff">The maximum back-off time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
         public ExponentialBackoffRetryStrategy(int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
-            : this(null, retryCount, minBackoff, maxBackoff, deltaBackoff, RetryStrategy.DefaultFirstFastRetry)
+            : this(null, retryCount, minBackoff, maxBackoff, deltaBackoff, DefaultFirstFastRetry)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoffRetryStrategy" /> class with the specified name and retry settings.
+        /// Initializes a new instance of this class with the specified name and retry settings.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
@@ -65,12 +65,12 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// <param name="maxBackoff">The maximum back-off time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
         public ExponentialBackoffRetryStrategy(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
-            : this(name, retryCount, minBackoff, maxBackoff, deltaBackoff, RetryStrategy.DefaultFirstFastRetry)
+            : this(name, retryCount, minBackoff, maxBackoff, deltaBackoff, DefaultFirstFastRetry)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoffRetryStrategy" /> class with the specified name, retry settings, and fast retry option.
+        /// Initializes a new instance of this class with the specified name, retry settings, and fast retry option.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>

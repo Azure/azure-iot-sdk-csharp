@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         }
 
         /// <summary>
-        /// Initializes a new instance of the this class class with the specified serialization and context information.
+        /// Initializes a new instance of this class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>

@@ -97,6 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
+
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(InitializeAsync));
 
@@ -232,12 +233,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 return true;
             }
 
-            if (_disableServerCertificateValidation && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            if (_disableServerCertificateValidation
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
             {
                 return true;
             }
 
-            if (!_amqpTransportSettings.CertificateRevocationCheck && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors && CausedByRevocationCheckError(chain))
+            if (!_amqpTransportSettings.CertificateRevocationCheck
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors
+                && CausedByRevocationCheckError(chain))
             {
                 return true;
             }

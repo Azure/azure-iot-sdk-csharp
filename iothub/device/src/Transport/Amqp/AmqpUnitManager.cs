@@ -64,9 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
 
                 if (Logging.IsEnabled)
-                {
                     Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
-                }
 
                 return amqpConnectionPool;
             }
