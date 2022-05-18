@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     public class HttpHsmComunicationException : Exception
     {
         /// <summary>
-        /// Creates an instance of <see cref="HttpHsmComunicationException"/> with the supplied error message and status code.
+        /// Creates an instance of this class with the supplied error message and status code.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">Status code of the communication failure.</param>
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpHsmComunicationException"/> class with the specified serialization and context information.
+        /// Initializes a new instance of the this class class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
