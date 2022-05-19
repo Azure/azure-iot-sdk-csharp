@@ -84,8 +84,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ServiceName { get; private set; }
 
-        public static Regex SharedAccessSignatureRegex1 => s_sharedAccessSignatureRegex;
-
         internal ServiceConnectionString ToServiceConnectionString()
         {
             Validate();
@@ -151,7 +149,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             ValidateFormat(HostName, s_hostNamePropertyName, s_hostNameRegex);
             ValidateFormatIfSpecified(SharedAccessKeyName, s_sharedAccessKeyNamePropertyName, s_sharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(SharedAccessKey, s_sharedAccessKeyPropertyName, s_sharedAccessKeyRegex);
-            ValidateFormatIfSpecified(SharedAccessSignature, s_sharedAccessSignaturePropertyName, SharedAccessSignatureRegex1);
+            ValidateFormatIfSpecified(SharedAccessSignature, s_sharedAccessSignaturePropertyName, s_sharedAccessSignatureRegex);
         }
 
         private void SetHostName(string hostname)
