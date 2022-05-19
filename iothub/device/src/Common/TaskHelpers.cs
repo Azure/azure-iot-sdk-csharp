@@ -94,30 +94,5 @@ namespace Microsoft.Azure.Devices.Client
 
             return tcs.Task;
         }
-
-        internal static void MarshalTaskResults<TResult>(Task source, TaskCompletionSource<TResult> proxy)
-        {
-            Fx.Assert(source != null, "source Task is required!");
-            Fx.Assert(proxy != null, "proxy TaskCompletionSource is required!");
-
-            switch (source.Status)
-            {
-                case TaskStatus.Faulted:
-                    Exception exception = source.Exception.GetBaseException();
-                    proxy.TrySetException(exception);
-                    break;
-
-                case TaskStatus.Canceled:
-                    proxy.TrySetCanceled();
-                    break;
-
-                case TaskStatus.RanToCompletion:
-                    var castedSource = source as Task<TResult>;
-                    proxy.TrySetResult(
-                        castedSource == null ? default : // source is a Task
-                            castedSource.Result); // source is a Task<TResult>
-                    break;
-            }
-        }
     }
 }

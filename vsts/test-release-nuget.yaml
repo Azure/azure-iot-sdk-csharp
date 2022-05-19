@@ -11,6 +11,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net 5.0:
           FRAMEWORK: net5.0
         .Net Core 3.1:
@@ -43,6 +45,14 @@ jobs:
         inputs:
           packageType: sdk
           version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -165,7 +175,7 @@ jobs:
 
     condition: succeeded()
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 2.1'
@@ -208,13 +218,13 @@ jobs:
           TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
           OverWrite: true
 
-      - script: |  
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+      - script: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
           sn -Vr *,31bf3856ad364e35
             
         displayName: 'Disable strong name validation'
 
-      - script: |  
+      - script: |
           choco install -y squid
             
         displayName: 'Install Squid'

@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string PageSizeHeaderKey = "x-ms-max-item-count";
         private const string QueryUriFormat = "{0}/query?{1}";
 
-
         private readonly string _querySpecificationJson;
         private IContractApiHttp _contractApiHttp;
         private readonly Uri _queryPath;
@@ -73,104 +72,91 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private bool _hasNext;
 
         internal Query(
-            ServiceConnectionString serviceConnectionString, 
+            ServiceConnectionString serviceConnectionString,
             string serviceName,
             QuerySpecification querySpecification,
             HttpTransportSettings httpTransportSettings,
             int pageSize,
             CancellationToken cancellationToken)
         {
-            /* SRS_QUERY_21_001: [The constructor shall throw ArgumentNullException if the provided serviceConnectionString is null.] */
             if (serviceConnectionString == null)
             {
                 throw new ArgumentNullException(nameof(serviceConnectionString));
             }
 
-            /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided serviceName is null or empty.] */
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
                 throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
             }
 
-            /* SRS_QUERY_21_003: [The constructor shall throw ArgumentException if the provided querySpecification is null.] */
             if (querySpecification == null)
             {
                 throw new ArgumentNullException(nameof(querySpecification));
             }
 
-            /* SRS_QUERY_21_004: [The constructor shall throw ArgumentException if the provided pageSize is negative.] */
             if (pageSize < 0)
             {
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
             // TODO: Refactor ContractApiHttp being created again
-            /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided Service Connection String.] */
             _contractApiHttp = new ContractApiHttp(
                 serviceConnectionString.HttpsEndpoint,
                 serviceConnectionString, httpTransportSettings);
 
-            /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
 
-            /* SRS_QUERY_21_007: [The constructor shall create and store a JSON from the provided querySpecification.] */
             _querySpecificationJson = JsonConvert.SerializeObject(querySpecification);
 
-            /* SRS_QUERY_21_008: [The constructor shall create and store a queryPath adding `/query` to the provided `targetPath`.] */
             _queryPath = GetQueryUri(serviceName);
 
-            /* SRS_QUERY_21_009: [The constructor shall set continuationToken and current as null.] */
             ContinuationToken = null;
 
-            /* SRS_QUERY_21_010: [The constructor shall set hasNext as true.] */
             _hasNext = true;
         }
 
         /// <summary>
-        /// Getter for has next
+        /// Getter for has next.
         /// </summary>
         /// <remarks>
         /// Contains <c>true</c> if the query is not finished in the Device Provisioning Service, and another
-        ///     iteration with <see cref="NextAsync()"/> may return more items. Call <see cref="NextAsync()"/> after 
-        ///     a <c>true</c> <c>HasNext</c> will result in a <see cref="QueryResult"/> that can or 
-        ///     cannot contains elements. But call <see cref="NextAsync()"/> after a <c>false</c> <c>HasNext</c> 
-        ///     will result in a exception.
+        /// iteration with <see cref="NextAsync()"/> may return more items. Call <see cref="NextAsync()"/> after
+        /// a <c>true</c> <c>HasNext</c> will result in a <see cref="QueryResult"/> that can or
+        /// cannot contains elements. But call <see cref="NextAsync()"/> after a <c>false</c> <c>HasNext</c>
+        /// will result in a exception.
         /// </remarks>
         public bool HasNext()
-        { 
+        {
             return _hasNext;
         }
 
         /// <summary>
-        /// Getter and setter for PageSize.
+        /// The number of items in the current page.
         /// </summary>
         public int PageSize { get; set; }
 
         /// <summary>
-        /// Getter and setter for the ContinuationToken.
+        /// The token to retrieve the next page.
         /// </summary>
         public string ContinuationToken { get; set; }
 
         /// <summary>
         /// Return the next page of result for the query using a new continuationToken.
         /// </summary>
-        /// <param name="continuationToken">the <c>String</c> with the previous continuationToken. It cannot be <c>null</c> or empty.</param>
+        /// <param name="continuationToken">the <c>string</c> with the previous continuationToken. It cannot be <c>null</c> or empty.</param>
         /// <returns>The <see cref="QueryResult"/> with the next page of items for the query.</returns>
         /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync(string continuationToken)
         {
-            /* SRS_QUERY_21_011: [The next shall throw IndexOutOfRangeException if the provided continuationToken is null or empty.] */
             if (string.IsNullOrWhiteSpace(continuationToken))
             {
                 throw new IndexOutOfRangeException($"There is no {nameof(continuationToken)} to get pending elements.");
             }
 
-            /* SRS_QUERY_21_012: [The next shall store the provided continuationToken.] */
             ContinuationToken = continuationToken;
             _hasNext = true;
 
-            /* SRS_QUERY_21_013: [The next shall return the next page of results by calling the next().] */
             return await NextAsync().ConfigureAwait(false);
         }
 
@@ -181,40 +167,37 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync()
         {
-            /* SRS_QUERY_21_014: [The next shall throw IndexOutOfRangeException if the hasNext is false.] */
             if (!_hasNext)
             {
                 throw new IndexOutOfRangeException("There are no more pending elements");
             }
 
-            /* SRS_QUERY_21_015: [If the pageSize is not 0, the next shall send the HTTP request with `x-ms-max-item-count=[pageSize]` in the header.] */
             IDictionary<string, string> headerParameters = new Dictionary<string, string>();
             if (PageSize != 0)
             {
                 headerParameters.Add(PageSizeHeaderKey, PageSize.ToString(CultureInfo.InvariantCulture));
             }
-            /* SRS_QUERY_21_016: [If the continuationToken is not null or empty, the next shall send the HTTP request with `x-ms-continuation=[continuationToken]` in the header.] */
+
             if (!string.IsNullOrWhiteSpace(ContinuationToken))
             {
                 headerParameters.Add(ContinuationTokenHeaderKey, ContinuationToken);
             }
 
-            /* SRS_QUERY_21_017: [The next shall send a HTTP request with a HTTP verb `POST`.] */
-            ContractApiResponse httpResponse = await _contractApiHttp.RequestAsync(
-                HttpMethod.Post,
-                _queryPath,
-                headerParameters,
-                _querySpecificationJson,
-                null,
-                _cancellationToken).ConfigureAwait(false);
+            ContractApiResponse httpResponse = await _contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Post,
+                    _queryPath,
+                    headerParameters,
+                    _querySpecificationJson,
+                    null,
+                    _cancellationToken)
+                .ConfigureAwait(false);
 
-            /* SRS_QUERY_21_018: [The next shall create and return a new instance of the QueryResult using the `x-ms-item-type` as type, `x-ms-continuation` as the next continuationToken, and the message body.] */
             httpResponse.Fields.TryGetValue(ItemTypeHeaderKey, out string type);
             httpResponse.Fields.TryGetValue(ContinuationTokenHeaderKey, out string continuationToken);
             ContinuationToken = continuationToken;
 
-            /* SRS_QUERY_21_017: [The next shall set hasNext as true if the continuationToken is not null, or false if it is null.] */
-            _hasNext = (ContinuationToken != null);
+            _hasNext = ContinuationToken != null;
 
             var result = new QueryResult(type, httpResponse.Body, ContinuationToken);
 
@@ -239,7 +222,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if (disposing)
             {
                 if (_contractApiHttp != null)
-                { 
+                {
                     _contractApiHttp.Dispose();
                     _contractApiHttp = null;
                 }
@@ -248,7 +231,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static Uri GetQueryUri(string path)
         {
-            return new Uri(QueryUriFormat.FormatInvariant(path, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(QueryUriFormat.FormatInvariant(path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }

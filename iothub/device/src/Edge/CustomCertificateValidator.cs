@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,8 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             _transportSettings = transportSettings;
         }
 
-        public static CustomCertificateValidator Create(IList<X509Certificate2> certs,
-            ITransportSettings[] transportSettings)
+        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, ITransportSettings[] transportSettings)
         {
             var instance = new CustomCertificateValidator(certs, transportSettings);
             instance.SetupCertificateValidation();
@@ -108,6 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 Debug.WriteLine("The certificate chain was not signed by the trusted root certificate.");
                 return false;
             }
+
             return true;
         }
     }

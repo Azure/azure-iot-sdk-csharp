@@ -10,14 +10,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     internal class RetryJitter
     {
-        private const int JitterMax = 5;
-        private const int JitterMin = 0;
-
         public static TimeSpan GenerateDelayWithJitterForRetry(TimeSpan defaultDelay)
         {
+            const int jitterMax = 5;
+            const int jitterMin = 0;
+
             var random = new Random();
-            double jitterSeconds = random.NextDouble() * JitterMax + JitterMin;
+            double jitterSeconds = random.NextDouble() * jitterMax + jitterMin;
             TimeSpan defaultDelayWithJitter = defaultDelay.Add(TimeSpan.FromSeconds(jitterSeconds));
+
             return defaultDelayWithJitter;
         }
     }

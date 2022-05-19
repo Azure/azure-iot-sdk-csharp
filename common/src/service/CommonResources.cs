@@ -11,8 +11,9 @@ namespace Microsoft.Azure.Devices.Common
             {
                 for (int i = 0; i < args.Length; i++)
                 {
-                    string text = args[i] as string;
-                    if (text != null && text.Length > 1024)
+                    if (args[i] is string text
+                        && text != null
+                        && text.Length > 1024)
                     {
                         args[i] = text.Substring(0, 1021) + "...";
                     }

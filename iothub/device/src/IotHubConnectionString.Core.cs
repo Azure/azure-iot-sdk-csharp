@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         public AuthenticationWithTokenRefresh TokenRefresher { get; private set; }
 
-        Task<string> IAuthorizationProvider.GetPasswordAsync()
+        async Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
             try
             {
@@ -24,9 +24,17 @@ namespace Microsoft.Azure.Devices.Client
                         || TokenRefresher != null,
                     "The token refresher and the shared access signature can't both be null");
 
-                return !string.IsNullOrWhiteSpace(SharedAccessSignature)
-                    ? Task.FromResult(SharedAccessSignature)
-                    : TokenRefresher?.GetTokenAsync(Audience);
+                if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
+                {
+                    return SharedAccessSignature;
+                }
+
+                if (TokenRefresher != null)
+                {
+                    return await TokenRefresher.GetTokenAsync(Audience);
+                }
+
+                return null;
             }
             finally
             {

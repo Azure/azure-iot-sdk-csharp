@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when an attempt is made to access a device instance that is not registered on the IoT Hub.
+    /// The exception that is thrown when an attempt is made to access a device instance that is not registered on the IoT hub.
     /// </summary>
     [Serializable]
     public sealed class DeviceNotFoundException : IotHubException
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Creates an instance of <see cref="DeviceNotFoundException"/> with the specified device Id and marks it as non-transient.
         /// </summary>
-        /// <param name="deviceId">The Id of the device that is not registered on the IoT Hub.</param>
+        /// <param name="deviceId">The Id of the device that is not registered on the IoT hub.</param>
         public DeviceNotFoundException(string deviceId)
             : this(deviceId, null, null)
         {
@@ -23,10 +23,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// Creates an instance of <see cref="DeviceNotFoundException"/> with the specified device Id
-        /// and the name of the IoT Hub, and marks it as non-transient.
+        /// and the name of the IoT hub, and marks it as non-transient.
         /// </summary>
-        /// <param name="deviceId">The Id of the device that is not registered on the IoT Hub.</param>
-        /// <param name="iotHubName">The name of the IoT Hub to which the device should have been registered.</param>
+        /// <param name="deviceId">The Id of the device that is not registered on the IoT hub.</param>
+        /// <param name="iotHubName">The name of the IoT hub to which the device should have been registered.</param>
         public DeviceNotFoundException(string deviceId, string iotHubName)
             : this(deviceId, iotHubName, null)
         {
@@ -34,10 +34,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// Creates an instance of <see cref="DeviceNotFoundException"/> with the specified device Id,
-        /// the name of the IoT Hub and the tracking Id, and marks it as non-transient.
+        /// the name of the IoT hub and the tracking Id, and marks it as non-transient.
         /// </summary>
-        /// <param name="deviceId">The Id of the device that is not registered on the IoT Hub.</param>
-        /// <param name="iotHubName">The name of the IoT Hub to which the device should have been registered.</param>
+        /// <param name="deviceId">The Id of the device that is not registered on the IoT hub.</param>
+        /// <param name="iotHubName">The name of the IoT hub to which the device should have been registered.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public DeviceNotFoundException(string deviceId, string iotHubName, string trackingId)
             : base(!string.IsNullOrEmpty(iotHubName)

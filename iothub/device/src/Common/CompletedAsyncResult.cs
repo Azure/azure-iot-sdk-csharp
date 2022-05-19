@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         public static T End(IAsyncResult result)
         {
             Fx.AssertAndThrowFatal(result.IsCompleted, "CompletedAsyncResult<T> was not completed!");
-            CompletedAsyncResultT<T> completedResult = AsyncResult.End<CompletedAsyncResultT<T>>(result);
+            CompletedAsyncResultT<T> completedResult = End<CompletedAsyncResultT<T>>(result);
             return completedResult._data;
         }
     }
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
         public static TResult End(IAsyncResult result, out TParameter parameter)
         {
             Fx.AssertAndThrowFatal(result.IsCompleted, "CompletedAsyncResult<T> was not completed!");
-            CompletedAsyncResultT2<TResult, TParameter> completedResult = AsyncResult.End<CompletedAsyncResultT2<TResult, TParameter>>(result);
+            CompletedAsyncResultT2<TResult, TParameter> completedResult = End<CompletedAsyncResultT2<TResult, TParameter>>(result);
             parameter = completedResult._parameter;
             return completedResult._resultData;
         }

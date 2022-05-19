@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices
             string responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             // There are two things to consider when surfacing service errors to the user, the 6-digit error code and the code description. Ideally, when a backend service
-            // returns an error, both of these fields are set in the same place. However, IoT Hub is returning the 6-digit code in the response content, while
+            // returns an error, both of these fields are set in the same place. However, IoT hub is returning the 6-digit code in the response content, while
             // the error description in the response header. Therefore, there is a chance that the 6-digit error code does not match the error description. For that reason,
             // the SDK will do its best to decide what to surface to the user.
             // The SDK will attempt to retrieve the integer error code from the response content and the error description from the response header. Through a 'description'

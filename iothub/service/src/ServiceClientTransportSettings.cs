@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
-        /// <code>
+        /// <c>
         /// static ServiceClient GetServiceClient()
         /// {
         ///     try
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         ///         throw;
         ///     }
         /// }
-        /// </code>
+        /// </c>
         /// </example>
         public IWebProxy AmqpProxy { get; set; }
 
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
-        /// <code>
+        /// <c>
         /// static ServiceClient GetServiceClient()
         /// {
         ///     try
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
         ///         throw;
         ///     }
         /// }
-        /// </code>
+        /// </c>
         /// </example>
         public IWebProxy HttpProxy { get; set; }
 
@@ -102,10 +102,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>
         /// By closing cached TCP connections and opening a new one upon the next request, the underlying HTTP client has a chance to do a DNS lookup 
-        /// to validate that it will send the requests to the correct IP address. While it is atypical for a given IoT Hub to change its IP address, it does
-        /// happen when a given IoT Hub fails over into a different region. Because of that, users who expect to failover their IoT Hub at any point
+        /// to validate that it will send the requests to the correct IP address. While it is atypical for a given IoT hub to change its IP address, it does
+        /// happen when a given IoT hub fails over into a different region. Because of that, users who expect to failover their IoT hub at any point
         /// are advised to set this value to a value of 0 or greater. Larger values will make better use of caching to save network resources over time,
-        /// but smaller values will make the client respond more quickly to failed over IoT Hubs.
+        /// but smaller values will make the client respond more quickly to failed over IoT hubs.
         /// </remarks>
         public int ConnectionLeaseTimeoutMilliseconds { get; set; } = ServicePointHelpers.DefaultConnectionLeaseTimeout;
     }

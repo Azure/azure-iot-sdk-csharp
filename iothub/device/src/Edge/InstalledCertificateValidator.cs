@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,10 +34,18 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-            foreach (X509Certificate2 cert in _certs)
+
+            try
             {
-                store.Open(OpenFlags.ReadWrite);
-                store.Add(cert);
+                foreach (X509Certificate2 cert in _certs)
+                {
+                    store.Open(OpenFlags.ReadWrite);
+                    store.Add(cert);
+                }
+            }
+            finally
+            {
+                store.Close();
             }
         }
     }

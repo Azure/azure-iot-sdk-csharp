@@ -19,19 +19,15 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             Justification = "The caller of this method is in charge of disposing the HTTP client that is returned.")]
         public static HttpClient GetHttpClient(Uri providerUri)
         {
-            HttpClient client;
-
             if (providerUri.Scheme.Equals(HttpScheme, StringComparison.OrdinalIgnoreCase)
-                | providerUri.Scheme.Equals(HttpsScheme, StringComparison.OrdinalIgnoreCase))
+                || providerUri.Scheme.Equals(HttpsScheme, StringComparison.OrdinalIgnoreCase))
             {
-                client = new HttpClient();
-                return client;
+                return new HttpClient();
             }
 
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
-                client = new HttpClient(new HttpUdsMessageHandler(providerUri));
-                return client;
+                return new HttpClient(new HttpUdsMessageHandler(providerUri));
             }
 
             throw new InvalidOperationException("ProviderUri scheme is not supported");

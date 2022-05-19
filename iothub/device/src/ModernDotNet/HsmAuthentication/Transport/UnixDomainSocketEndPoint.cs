@@ -31,7 +31,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             _path = path ?? throw new ArgumentNullException(nameof(path));
             _encodedPath = s_pathEncoding.GetBytes(_path);
 
-            if (path.Length == 0 || _encodedPath.Length > NativePathLength)
+            if (path.Length == 0
+                || _encodedPath.Length > NativePathLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(path), path);
             }
@@ -44,8 +45,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                 throw new ArgumentNullException(nameof(socketAddress));
             }
 
-            if (socketAddress.Family != EndPointAddressFamily ||
-                socketAddress.Size > NativeAddressSize)
+            if (socketAddress.Family != EndPointAddressFamily
+                || socketAddress.Size > NativeAddressSize)
             {
                 throw new ArgumentOutOfRangeException(nameof(socketAddress));
             }

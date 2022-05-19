@@ -120,17 +120,17 @@ namespace Microsoft.Azure.Devices.Client.Common
                     firstProperty = property;
                 }
 
-                //In case of value, '=' and ',' take up length, otherwise just ','
+                // In case of value, '=' and ',' take up length, otherwise just ','
                 estimatedLength += property.Key.Length + (property.Value?.Length + 2 ?? 1);
                 propertiesCount++;
             }
 
-            //Optimization for most common case: only correlation Id is present
+            // Optimization for most common case: only correlation Id is present
             if (propertiesCount == 1 && firstProperty.HasValue)
             {
-                return firstProperty.Value.Value == null ?
-                    Uri.EscapeDataString(firstProperty.Value.Key) :
-                    Uri.EscapeDataString(firstProperty.Value.Key) + KeyValueSeparator + Uri.EscapeDataString(firstProperty.Value.Value);
+                return firstProperty.Value.Value == null
+                    ? Uri.EscapeDataString(firstProperty.Value.Key)
+                    : Uri.EscapeDataString(firstProperty.Value.Key) + KeyValueSeparator + Uri.EscapeDataString(firstProperty.Value.Value);
             }
 
             var propertiesBuilder = new StringBuilder((int)(estimatedLength * EncodedSymbolsFactor));
@@ -146,7 +146,9 @@ namespace Microsoft.Azure.Devices.Client.Common
                 }
                 propertiesBuilder.Append(PropertySeparator);
             }
-            return propertiesBuilder.Length == 0 ? string.Empty : propertiesBuilder.ToString(0, propertiesBuilder.Length - PropertySeparatorLength);
+            return propertiesBuilder.Length == 0
+                ? string.Empty
+                : propertiesBuilder.ToString(0, propertiesBuilder.Length - PropertySeparatorLength);
         }
 
         /// <summary>
@@ -162,13 +164,12 @@ namespace Microsoft.Azure.Devices.Client.Common
             /// <summary>
             /// Property value token.
             /// </summary>
-            Value
+            Value,
         }
 
         private struct Token
         {
             public TokenType Type { get; }
-
             public string Value { get; }
 
             public Token(TokenType tokenType, string value)
@@ -244,6 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                                 }
                                 break;
                             }
+
                         case TokenizerState.ReadKey:
                             {
                                 if (_position >= _value.Length)
@@ -283,6 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                                 }
                                 break;
                             }
+
                         case TokenizerState.ReadValue:
                             {
                                 if (_position >= _value.Length)
@@ -318,6 +321,7 @@ namespace Microsoft.Azure.Devices.Client.Common
                                 }
                                 break;
                             }
+
                         case TokenizerState.Finish:
                         case TokenizerState.Error:
                             readCompleted = true;
@@ -337,7 +341,9 @@ namespace Microsoft.Azure.Devices.Client.Common
 
             private Token CreateToken(TokenType tokenType, int readCount)
             {
-                string tokenValue = readCount == 0 ? null : _value.Substring(_position - readCount, readCount);
+                string tokenValue = readCount == 0
+                    ? null
+                    : _value.Substring(_position - readCount, readCount);
 
                 return new Token(tokenType, tokenValue);
             }

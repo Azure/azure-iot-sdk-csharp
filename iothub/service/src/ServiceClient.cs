@@ -225,9 +225,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type.
+        /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
+        /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
         /// <returns>An instance of ServiceClient.</returns>
@@ -237,9 +237,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of ServiceClient from the specified IoT Hub connection string using specified Transport Type and transport settings.
+        /// Create an instance of ServiceClient from the specified IoT hub connection string using specified Transport Type and transport settings.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT Hub.</param>
+        /// <param name="connectionString">Connection string for the IoT hub.</param>
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
         /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client.</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
@@ -381,7 +381,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT Hub.
+        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT hub.
         /// This call is made over AMQP.
         /// For more information see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
         /// </summary>
@@ -403,10 +403,10 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets service statistics for the IoT Hub. This call is made over HTTP.
+        /// Gets service statistics for the IoT hub. This call is made over HTTP.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The service statistics that can be retrieved from IoT Hub, eg. the number of devices connected to the hub.</returns>
+        /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
         public virtual Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
@@ -433,13 +433,28 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// Interactively invokes a method on a device.
+        /// Additional 15s is added to the timeout in cloudToDeviceMethod to account for time taken to wire a request
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> is null, empty string, or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
+        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(
+            string deviceId,
+            CloudToDeviceMethod cloudToDeviceMethod,
+            CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+            if (cloudToDeviceMethod == null)
+            {
+                throw new ArgumentNullException(nameof(cloudToDeviceMethod));
+            }
+
             return InvokeDeviceMethodAsync(GetDeviceMethodUri(deviceId), cloudToDeviceMethod, cancellationToken);
         }
 
@@ -451,7 +466,13 @@ namespace Microsoft.Azure.Devices
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the module.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> or <paramref name="moduleId"/> are null, empty string, or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
+        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(
+            string deviceId,
+            string moduleId,
+            CloudToDeviceMethod cloudToDeviceMethod,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -461,6 +482,10 @@ namespace Microsoft.Azure.Devices
             if (string.IsNullOrWhiteSpace(moduleId))
             {
                 throw new ArgumentNullException(nameof(moduleId));
+            }
+            if (cloudToDeviceMethod == null)
+            {
+                throw new ArgumentNullException(nameof(cloudToDeviceMethod));
             }
 
             return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
@@ -596,9 +621,24 @@ namespace Microsoft.Azure.Devices
             // for the Device to connect and send a response. We also need to take into account
             // the transmission time for the request send/receive
             var timeout = TimeSpan.FromSeconds(15); // For wire time
-            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
-            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
-            return timeout <= s_defaultOperationTimeout ? s_defaultOperationTimeout : timeout;
+            var connectionTimeOut = TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
+            var responseTimeOut = TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
+
+            ValidateTimeOut(connectionTimeOut);
+            ValidateTimeOut(responseTimeOut);
+
+            timeout += connectionTimeOut;
+            timeout += responseTimeOut;
+
+            return timeout;
+        }
+
+        private static void ValidateTimeOut(TimeSpan connectionTimeOut)
+        {
+            if (connectionTimeOut.Seconds < 0)
+            {
+                throw new ArgumentException("Negative timeout");
+            }
         }
 
         private static Uri GetStatisticsUri()

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -42,14 +41,14 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         /// The connection string contains a set of information that uniquely identify an IoT Service.
         /// 
         /// A valid connection string shall be in the following format:
-        /// <code>
+        /// <c>
         /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
-        /// </code>
+        /// </c>
         /// 
-        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object. 
+        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
         /// </remarks>
-        /// <param name="serviceConnectionString">the <code>string</code> with the connection string information.</param>
-        /// <returns>A <code>ServiceConnectionStringBuilder</code> object with the parsed connection string.</returns>
+        /// <param name="serviceConnectionString">the <c>string</c> with the connection string information.</param>
+        /// <returns>A <c>ServiceConnectionStringBuilder</c> object with the parsed connection string.</returns>
         public static ServiceConnectionStringBuilder Create(string serviceConnectionString)
         {
             if (string.IsNullOrWhiteSpace(serviceConnectionString))
@@ -57,9 +56,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(serviceConnectionString));
             }
 
-            var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();        
+            var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();
             serviceConnectionStringBuilder.Parse(serviceConnectionString);
-            serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(serviceConnectionStringBuilder);
+            serviceConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory
+                .GetAuthenticationMethod(serviceConnectionStringBuilder);
 
             return serviceConnectionStringBuilder;
         }
@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         public string SharedAccessSignature { get; internal set; }
 
         public string ServiceName { get; private set; }
+
 
         internal ServiceConnectionString ToServiceConnectionString()
         {
@@ -145,7 +146,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             {
                 SharedAccessSignatureParser.Parse(ServiceName, SharedAccessSignature);
             }
-            
+
             ValidateFormat(HostName, s_hostNamePropertyName, s_hostNameRegex);
             ValidateFormatIfSpecified(SharedAccessKeyName, s_sharedAccessKeyNamePropertyName, s_sharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(SharedAccessKey, s_sharedAccessKeyPropertyName, s_sharedAccessKeyRegex);
@@ -191,7 +192,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (!regex.IsMatch(value))
             {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), nameof(value));
+                    $"The connection string has an invalid value for property: {propertyName}",
+                    nameof(value));
             }
         }
 
@@ -208,7 +210,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (!map.TryGetValue(propertyName, out string value))
             {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName),
+                    $"The connection string is missing the property: {propertyName}",
                     nameof(map));
             }
 

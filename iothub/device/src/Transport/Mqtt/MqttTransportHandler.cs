@@ -1246,13 +1246,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, ClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
+            IotHubConnectionString iotHubConnectionString,
+            MqttTransportSettings settings,
+            ProductInfo productInfo,
+            ClientOptions options)
         {
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{iotHubConnectionString.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
@@ -1263,7 +1267,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         // Configure proxy server
                         websocket.Options.Proxy = _webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting ClientWebSocket.Options.Proxy");
+                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set ClientWebSocket.Options.Proxy to {_webProxy}");
                     }
                 }
                 catch (PlatformNotSupportedException)
@@ -1273,13 +1277,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Error(this, $"{nameof(CreateWebSocketChannelFactory)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
+                if (settings.WebSocketKeepAlive.HasValue)
+                {
+                    websocket.Options.KeepAliveInterval = settings.WebSocketKeepAlive.Value;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set websocket keep-alive to {settings.WebSocketKeepAlive}");
+                }
+
                 if (settings.ClientCertificate != null)
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
 
                 // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
                 if (settings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;

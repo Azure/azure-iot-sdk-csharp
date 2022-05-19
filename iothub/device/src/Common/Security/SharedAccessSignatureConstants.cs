@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.Client
         public const string KeyNameFieldName = "skn";
         public const string ExpiryFieldName = "se";
         public const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
-        public const string KeyValueSeparator = "=";
-        public const string PairSeparator = "&";
+        public const char KeyValueSeparator = '=';
+        public const char PairSeparator = '&';
         public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
     }

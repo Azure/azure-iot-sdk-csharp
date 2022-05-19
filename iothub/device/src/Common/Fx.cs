@@ -78,18 +78,18 @@ namespace Microsoft.Azure.Devices.Client
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception AssertAndThrowFatal(string description)
         {
-            Fx.Assert(description);
-            throw Fx.Exception.AsError(new FatalException(description));
+            Assert(description);
+            throw Exception.AsError(new FatalException(description));
         }
 
-        public static bool IsFatal(Exception exception)
+        public static bool IsFatal(Exception ex)
         {
-            while (exception != null)
+            while (ex != null)
             {
                 // FYI, CallbackException is-a FatalException
-                if (exception is FatalException ||
-                    exception is OutOfMemoryException ||
-                    exception is SEHException)
+                if (ex is FatalException
+                    || ex is OutOfMemoryException
+                    || ex is SEHException)
                 {
                     return true;
                 }
@@ -97,17 +97,17 @@ namespace Microsoft.Azure.Devices.Client
                 // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
                 // we want to check to see whether they've been used to wrap a fatal exception.  If so, then they
                 // count as fatal.
-                if (exception is TypeInitializationException ||
-                    exception is TargetInvocationException)
+                if (ex is TypeInitializationException
+                    || ex is TargetInvocationException)
                 {
-                    exception = exception.InnerException;
+                    ex = ex.InnerException;
                 }
-                else if (exception is AggregateException)
+                else if (ex is AggregateException aggEx)
                 {
                     // AggregateExceptions have a collection of inner exceptions, which may themselves be other
                     // wrapping exceptions (including nested AggregateExceptions).  Recursively walk this
                     // hierarchy.  The (singular) InnerException is included in the collection.
-                    ReadOnlyCollection<Exception> innerExceptions = ((AggregateException)exception).InnerExceptions;
+                    ReadOnlyCollection<Exception> innerExceptions = aggEx.InnerExceptions;
                     foreach (Exception innerException in innerExceptions)
                     {
                         if (IsFatal(innerException))
@@ -116,11 +116,6 @@ namespace Microsoft.Azure.Devices.Client
                         }
                     }
 
-                    break;
-                }
-                else if (exception is NullReferenceException)
-                {
-                    ////MessagingClientEtwProvider.Provider.EventWriteNullReferenceErrorOccurred(exception.ToString());
                     break;
                 }
                 else
@@ -137,12 +132,13 @@ namespace Microsoft.Azure.Devices.Client
         {
             get
             {
-                if (!Fx.s_breakOnExceptionTypesRetrieved)
+                if (!s_breakOnExceptionTypesRetrieved)
                 {
                     if (TryGetDebugSwitch(out object value))
                     {
                         string[] typeNames = value as string[];
-                        if (typeNames != null && typeNames.Length > 0)
+                        if (typeNames != null
+                            && typeNames.Length > 0)
                         {
                             var types = new List<Type>(typeNames.Length);
                             for (int i = 0; i < typeNames.Length; i++)
@@ -151,13 +147,13 @@ namespace Microsoft.Azure.Devices.Client
                             }
                             if (types.Count != 0)
                             {
-                                Fx.s_breakOnExceptionTypesCache = types.ToArray();
+                                s_breakOnExceptionTypesCache = types.ToArray();
                             }
                         }
                     }
-                    Fx.s_breakOnExceptionTypesRetrieved = true;
+                    s_breakOnExceptionTypesRetrieved = true;
                 }
-                return Fx.s_breakOnExceptionTypesCache;
+                return s_breakOnExceptionTypesCache;
             }
         }
 
@@ -243,50 +239,6 @@ namespace Microsoft.Azure.Devices.Client
                 internal const string Infinite = "infinite";
             }
 
-            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Constructor,
-                AllowMultiple = true, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class ExternalResourceAttribute : Attribute
-            {
-                public ExternalResourceAttribute(Location location, string description)
-                {
-                    Location = location;
-                    Description = description;
-                }
-
-                public Location Location { get; private set; }
-
-                public string Description { get; private set; }
-            }
-
-            [AttributeUsage(AttributeTargets.Field)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class CacheAttribute : Attribute
-            {
-                public CacheAttribute(Type elementType, CacheAttrition cacheAttrition)
-                {
-                    Scope = Strings.DeclaringInstance;
-                    SizeLimit = Strings.Unbounded;
-                    Timeout = Strings.Infinite;
-
-                    if (elementType == null)
-                    {
-                        throw Fx.Exception.ArgumentNull(nameof(elementType));
-                    }
-
-                    ElementType = elementType;
-                    CacheAttrition = cacheAttrition;
-                }
-
-                public Type ElementType { get; private set; }
-
-                public CacheAttrition CacheAttrition { get; private set; }
-
-                public string Scope { get; set; }
-                public string SizeLimit { get; set; }
-                public string Timeout { get; set; }
-            }
-
             [AttributeUsage(AttributeTargets.Field)]
             [Conditional("CODE_ANALYSIS")]
             public sealed class QueueAttribute : Attribute
@@ -295,11 +247,10 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Scope = Strings.DeclaringInstance;
                     SizeLimit = Strings.Unbounded;
-                    ElementType = elementType ?? throw Fx.Exception.ArgumentNull(nameof(elementType));
+                    ElementType = elementType ?? throw Exception.ArgumentNull(nameof(elementType));
                 }
 
                 public Type ElementType { get; private set; }
-
                 public string Scope { get; set; }
                 public string SizeLimit { get; set; }
                 public bool StaleElementsRemovedImmediately { get; set; }
@@ -307,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Set on a class when that class uses lock (this) - acts as though it were on a field
-            //     private object this;
+            // private object this;
             [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = false)]
             [Conditional("CODE_ANALYSIS")]
             public sealed class SynchronizationObjectAttribute : Attribute
@@ -320,9 +271,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public bool Blocking { get; set; }
-
                 public string Scope { get; set; }
-
                 public SynchronizationKind Kind { get; set; }
             }
 
@@ -336,11 +285,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public BlocksUsing BlocksUsing { get; private set; }
-
                 public bool SupportsAsync { get; set; }
-
                 public bool Spins { get; set; }
-
                 public string ReleaseMethod { get; set; }
             }
 
@@ -348,14 +294,8 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class BlockingAttribute : Attribute
             {
-                public BlockingAttribute()
-                {
-                }
-
                 public string CancelMethod { get; set; }
-
                 public Type CancelDeclaringType { get; set; }
-
                 public string Conditional { get; set; }
             }
 
@@ -369,31 +309,6 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class GuaranteeNonBlockingAttribute : Attribute
             {
-                public GuaranteeNonBlockingAttribute()
-                {
-                }
-            }
-
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class NonThrowingAttribute : Attribute
-            {
-                public NonThrowingAttribute()
-                {
-                }
-            }
-
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class InheritThrowsAttribute : Attribute
-            {
-                public InheritThrowsAttribute()
-                {
-                }
-
-                public Type FromDeclaringType { get; set; }
-
-                public string From { get; set; }
             }
 
             [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class |
@@ -403,14 +318,8 @@ namespace Microsoft.Azure.Devices.Client
             [Conditional("CODE_ANALYSIS")]
             public sealed class SecurityNoteAttribute : Attribute
             {
-                public SecurityNoteAttribute()
-                {
-                }
-
                 public string Critical { get; set; }
-
                 public string Safe { get; set; }
-
                 public string Miscellaneous { get; set; }
             }
         }

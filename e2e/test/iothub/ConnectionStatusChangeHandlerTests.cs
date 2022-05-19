@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        // IoT Hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
+        // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
         // [LoggedTestMethod]
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        // IoT Hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
+        // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
         // [LoggedTestMethod]
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Shared.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
-                // Delete/disable the device in IoT Hub. This should trigger the ConnectionStatusChangesHandler.
+                // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangesHandler.
                 using (var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Shared.Twin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(twin);
 
-                // Delete/disable the device in IoT Hub.
+                // Delete/disable the device in IoT hub.
                 using (var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);

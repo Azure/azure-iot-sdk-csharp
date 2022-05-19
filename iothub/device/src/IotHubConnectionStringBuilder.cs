@@ -14,7 +14,7 @@ using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessS
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Builds a connection string for the IoT Hub service based on the properties populated by the user.
+    /// Builds a connection string for the IoT hub service based on the properties populated by the user.
     /// </summary>
     public sealed class IotHubConnectionStringBuilder
     {
@@ -58,9 +58,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string based on the hostname of the IoT Hub and the authentication method passed as a parameter.
+        /// Creates a connection string based on the hostname of the IoT hub and the authentication method passed as a parameter.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
         public static IotHubConnectionStringBuilder Create(string hostname, IAuthenticationMethod authenticationMethod)
@@ -69,9 +69,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string based on the hostname of the IoT Hub, the hostname of Gateway and the authentication method passed as a parameter.
+        /// Creates a connection string based on the hostname of the IoT hub, the hostname of Gateway and the authentication method passed as a parameter.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of the gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string based on the hostname of the IoT Hub and the authentication method passed as a parameter.
+        /// Creates a connection string based on the hostname of the IoT hub and the authentication method passed as a parameter.
         /// </summary>
         /// <param name="iotHubConnectionString">The connection string.</param>
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
@@ -116,8 +116,8 @@ namespace Microsoft.Azure.Devices.Client
             if (authenticationMethod == null)
             {
                 iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
-                iotHubConnectionStringBuilder.AuthenticationMethod =
-                    AuthenticationMethodFactory.GetAuthenticationMethod(iotHubConnectionStringBuilder);
+                iotHubConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(
+                    iotHubConnectionStringBuilder);
             }
             else
             {
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the value of the fully-qualified DNS hostname of the IoT Hub service.
+        /// Gets or sets the value of the fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
         public string HostName
         {
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the authentication method to be used with the IoT Hub service.
+        /// Gets or sets the authentication method to be used with the IoT hub service.
         /// </summary>
         public IAuthenticationMethod AuthenticationMethod
         {
@@ -157,12 +157,12 @@ namespace Microsoft.Azure.Devices.Client
         public string ModuleId { get; internal set; }
 
         /// <summary>
-        /// Gets the shared access key name used to connect the device to the IoT Hub service.
+        /// Gets the shared access key name used to connect the device to the IoT hub service.
         /// </summary>
         public string SharedAccessKeyName { get; internal set; }
 
         /// <summary>
-        /// Gets the shared access key used to connect to the IoT Hub service.
+        /// Gets the shared access key used to connect to the IoT hub service.
         /// </summary>
         public string SharedAccessKey { get; internal set; }
 
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client
         public string GatewayHostName { get; internal set; }
 
         /// <summary>
-        /// Gets the shared access signature used to connect to the IoT Hub service.
+        /// Gets the shared access signature used to connect to the IoT hub service.
         /// </summary>
         /// <remarks>
         /// This is used when a device app creates its own limited-lifespan SAS token, instead of letting
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // We expect the hostname to be of the format "acme.azure-devices.net", in which case the IotHubName is "acme".
             // For transparent gateway scenarios, we can simplify the input credentials to only specify the gateway device hostname,
-            // instead of having to specify both the IoT Hub hostname and the gateway device hostname.
+            // instead of having to specify both the IoT hub hostname and the gateway device hostname.
             // In this case, the hostname will be of the format "myGatewayDevice", and will not have ".azure-devices.net" suffix.
             if (IotHubName.IsNullOrWhiteSpace())
             {

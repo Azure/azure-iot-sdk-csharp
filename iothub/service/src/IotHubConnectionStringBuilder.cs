@@ -12,7 +12,7 @@ using SharedAccessSignatureParser = Microsoft.Azure.Devices.Common.Security.Shar
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Builds a connection string for the IoT Hub service based on the properties populated by the user.
+    /// Builds a connection string for the IoT hub service based on the properties populated by the user.
     /// </summary>
     public class IotHubConnectionStringBuilder
     {
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices
         public string GatewayHostName { get; internal set; }
 
         /// <summary>
-        /// Gets the IoT Hub name.
+        /// Gets the IoT hub name.
         /// </summary>
         public string IotHubName { get; private set; }
 
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices
 
             if (string.IsNullOrWhiteSpace(IotHubName))
             {
-                throw new FormatException("Missing IOT hub name");
+                throw new FormatException("Missing IoT hub name");
             }
 
             if (!SharedAccessKey.IsNullOrWhiteSpace())
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices
 
             if (string.IsNullOrWhiteSpace(IotHubName))
             {
-                throw new FormatException("Missing IOT hub name");
+                throw new FormatException("Missing IoT hub name");
             }
         }
 

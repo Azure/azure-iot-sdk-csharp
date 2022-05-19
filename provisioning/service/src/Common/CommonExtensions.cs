@@ -22,8 +22,9 @@ namespace Microsoft.Azure.Devices.Common
                 throw new ArgumentException("Malformed Token");
             }
 
-            IEnumerable<string[]> parts = valuePairString.Split(kvpDelimiter).
-                Select((part) => part.Split(new char[] { kvpSeparator }, 2));
+            IEnumerable<string[]> parts = valuePairString
+                .Split(kvpDelimiter)
+                .Select((part) => part.Split(new char[] { kvpSeparator }, 2));
 
             if (parts.Any((part) => part.Length != 2))
             {

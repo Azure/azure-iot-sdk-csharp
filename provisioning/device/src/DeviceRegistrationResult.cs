@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -28,7 +24,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             DateTime? lastUpdatedDateTimeUtc,
             int errorCode,
             string errorMessage,
-            string etag) : this(registrationId, createdDateTimeUtc, assignedHub, deviceId, status, ProvisioningRegistrationSubstatusType.InitialAssignment, generationId, lastUpdatedDateTimeUtc, errorCode, errorMessage, etag)
+            string etag)
+            : this(
+                  registrationId,
+                  createdDateTimeUtc,
+                  assignedHub,
+                  deviceId,
+                  status,
+                  ProvisioningRegistrationSubstatusType.InitialAssignment,
+                  generationId,
+                  lastUpdatedDateTimeUtc,
+                  errorCode,
+                  errorMessage,
+                  etag)
         {
         }
 
@@ -104,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public DateTime? CreatedDateTimeUtc { get; protected set; }
 
         /// <summary>
-        /// The assigned Azure IoT Hub.
+        /// The assigned Azure IoT hub.
         /// </summary>
         public string AssignedHub { get; protected set; }
 
@@ -149,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string Etag { get; protected set; }
 
         /// <summary>
-        /// The Custom data returned from the webhook to the device.
+        /// The custom data returned from the webhook to the device.
         /// </summary>
         public string JsonPayload { get; private set; }
     }

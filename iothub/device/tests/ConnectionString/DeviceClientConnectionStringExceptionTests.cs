@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void DeviceClientMalformedConnectionStringTest()
         {
-            string connectionString = "TODO: IoT Hub connection string to connect to";
+            string connectionString = "TODO: IoT hub connection string to connect to";
             try
             {
                 var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
