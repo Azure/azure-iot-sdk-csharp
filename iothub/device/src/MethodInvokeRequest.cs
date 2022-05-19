@@ -20,11 +20,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of DirectMethodRequest type.
         /// </summary>
-        /// <param name="methodName">Method name</param>
-        /// <param name="payload">Method invocation payload</param>
-        /// <param name="responseTimeout">Method timeout</param>
-        /// <param name="connectionTimeout">Device connection timeout</param>
-        /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace</exception>
+        /// <param name="methodName">Method name.</param>
+        /// <param name="payload">Method invocation payload.</param>
+        /// <param name="responseTimeout">Method timeout.</param>
+        /// <param name="connectionTimeout">Device connection timeout.</param>
+        /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace.</exception>
         public MethodInvokeRequest(string methodName, string payload, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
         {
             if (string.IsNullOrWhiteSpace(methodName))

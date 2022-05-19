@@ -9,14 +9,14 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// contains Http1 transport-specific settings for DeviceClient
+    /// Contains HTTP transport-specific settings for the device and module clients.
     /// </summary>
     public sealed class Http1TransportSettings : ITransportSettings
     {
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Http1TransportSettings"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         public Http1TransportSettings()
         {

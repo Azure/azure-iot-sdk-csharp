@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// contains Amqp transport-specific settings for DeviceClient
+    /// Contains Amqp transport-specific settings for the device and module clients.
     /// </summary>
     public sealed class AmqpTransportSettings : ITransportSettings
     {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         public const uint DefaultPrefetchCount = 50;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
         public AmqpTransportSettings(TransportType transportType)
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
         /// <param name="prefetchCount">The pre-fetch count.</param>
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AmqpTransportSettings" />
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="transportType">The AMQP transport type.</param>
         /// <param name="prefetchCount">The pre-fetch count.</param>
@@ -180,17 +180,17 @@ namespace Microsoft.Azure.Devices.Client
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
 
         /// <summary>
+        /// The time to wait for a receive operation. The default value is 1 minute.
+        /// </summary>
+        public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
+
+        /// <summary>
         /// Returns the configured transport type
         /// </summary>
         public TransportType GetTransportType()
         {
             return _transportType;
         }
-
-        /// <summary>
-        /// The time to wait for a receive operation. The default value is 1 minute.
-        /// </summary>
-        public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
 
         /// <summary>
         /// Compares the properties of this instance to another
