@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                     return new SubAckPacket() { PacketId = packet.PacketId };
                 };
 
-            await SendRequestAndAcknowledgementsInSpecificOrder(request, ackFactory, false).ConfigureAwait(false);
+            await SendRequestAndAcksInSpecificOrderAsync(request, ackFactory, false).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Func<PacketWithId, SubAckPacket> ackFactory =
                 (packet) => new SubAckPacket() { PacketId = packet.PacketId };
 
-            await SendRequestAndAcknowledgementsInSpecificOrder(request, ackFactory, true).ConfigureAwait(false);
+            await SendRequestAndAcksInSpecificOrderAsync(request, ackFactory, true).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Func<PacketWithId, UnsubAckPacket> ackFactory =
                 (packet) => new UnsubAckPacket() { PacketId = packet.PacketId };
 
-            await SendRequestAndAcknowledgementsInSpecificOrder(request, ackFactory, false).ConfigureAwait(false);
+            await SendRequestAndAcksInSpecificOrderAsync(request, ackFactory, false).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Func<PacketWithId, UnsubAckPacket> ackFactory =
                 (packet) => new UnsubAckPacket() { PacketId = packet.PacketId };
 
-            await SendRequestAndAcknowledgementsInSpecificOrder(request, ackFactory, true).ConfigureAwait(false);
+            await SendRequestAndAcksInSpecificOrderAsync(request, ackFactory, true).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Assert.AreEqual(authChain, queryParams.Get("auth-chain"));
         }
 
-        private async Task SendRequestAndAcknowledgementsInSpecificOrder<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)
+        private async Task SendRequestAndAcksInSpecificOrderAsync<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)
         {
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
@@ -143,14 +143,25 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
 
-            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
+            var mqttIotHubAdapter = new MqttIotHubAdapter(
+                "deviceId",
+                string.Empty,
+                string.Empty,
+                passwordProvider.Object,
+                mqttTransportSetting,
+                null,
+                mqttIotHubEventHandler.Object,
+                productInfo,
+                options);
 
             // Setup internal state to be "Connected". Only then can we manage subscriptions
             // "NotConnected" -> (ChannelActive) -> "Connecting" -> (ChannelRead ConnAck) -> "Connected".
-            channelHandlerContext.Setup(context => context.Channel.EventLoop.ScheduleAsync(It.IsAny<Action>(), It.IsAny<TimeSpan>())).Returns(TaskHelpers.CompletedTask);
+            channelHandlerContext
+                .Setup(context => context.Channel.EventLoop.ScheduleAsync(It.IsAny<Action>(), It.IsAny<TimeSpan>()))
+                .Returns(TaskHelpers.CompletedTask);
             channelHandlerContext.SetupGet(context => context.Handler).Returns(mqttIotHubAdapter);
             mqttIotHubAdapter.ChannelActive(channelHandlerContext.Object);
-            mqttIotHubAdapter.ChannelRead(channelHandlerContext.Object, new ConnAckPacket() { ReturnCode = ConnectReturnCode.Accepted, SessionPresent = false });
+            mqttIotHubAdapter.ChannelRead(channelHandlerContext.Object, new ConnAckPacket { ReturnCode = ConnectReturnCode.Accepted, SessionPresent = false });
 
             // Setup sending of a Packet so that the matching response is received before sending task is completed.
             var startRequest = new TaskCompletionSource<T>();
@@ -161,8 +172,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             };
 
             channelHandlerContext.Setup(context => context.WriteAndFlushAsync(It.IsAny<T>()))
-            .Callback<object>((packet) => startRequest.SetResult((T)packet))
-            .Returns(receiveResponseBeforeSendingRequestContinues ? Task.Run(sendResponse) : TaskHelpers.CompletedTask);
+                .Callback<object>((packet) => startRequest.SetResult((T)packet))
+                .Returns(receiveResponseBeforeSendingRequestContinues
+                    ? Task.Run(sendResponse)
+                    : TaskHelpers.CompletedTask);
 
             // Act:
             // Send the request (and response if not done as mocked "sending" task) packets

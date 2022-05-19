@@ -172,19 +172,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 BlobName = blobName
             };
 
-            FileUploadSasUriResponse fileUploadResponse = await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
-                GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
-                fileUploadRequest,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                null,
-                cancellationToken).ConfigureAwait(false);
+            FileUploadSasUriResponse fileUploadResponse = await _httpClientHelper
+                .PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
+                    GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
+                    fileUploadRequest,
+                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             string putString = string.Format(
                 CultureInfo.InvariantCulture,
                 "https://{0}/{1}/{2}{3}",
                 fileUploadResponse.HostName,
                 fileUploadResponse.ContainerName,
-                Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters
+                // Pass URL encoded device name and blob name to support special characters
+                Uri.EscapeDataString(fileUploadResponse.BlobName),
                 fileUploadResponse.SasToken);
 
             var notification = new FileUploadCompletionNotification();
@@ -202,12 +205,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
 
                 // 3. POST to IoTHub with upload status
-                await _httpClientHelper.PostAsync(
-                    GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
-                    notification,
-                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                    null,
-                    cancellationToken).ConfigureAwait(false);
+                await _httpClientHelper
+                    .PostAsync(
+                        GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
+                        notification,
+                        ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                        null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsFatal() && !(ex is OperationCanceledException))
             {
@@ -235,37 +240,45 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return await _httpClientHelper.PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
-                GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
-                request,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                null,
-                cancellationToken).ConfigureAwait(false);
+            return await _httpClientHelper
+                .PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
+                    GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
+                    request,
+                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _httpClientHelper.PostAsync(
-                GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
-                notification,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                null,
-                cancellationToken).ConfigureAwait(false);
+            await _httpClientHelper
+                .PostAsync(
+                    GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
+                    notification,
+                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("Device twins are not supported over HTTP; they are only supported over the MQTT and AMQP protocols.");
+            throw new NotImplementedException(
+                "Device twins are not supported over HTTP; they are only supported over the MQTT and AMQP protocols.");
         }
 
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            IDictionary<string, string> customHeaders = PrepareCustomHeaders(CommonConstants.DeviceBoundPathTemplate.FormatInvariant(_deviceId), null, CommonConstants.CloudToDeviceOperation);
-            IDictionary<string, string> queryValueDictionary = new Dictionary<string, string>
+            IDictionary<string, string> customHeaders = PrepareCustomHeaders(
+                CommonConstants.DeviceBoundPathTemplate.FormatInvariant(_deviceId),
+                null,
+                CommonConstants.CloudToDeviceOperation);
+            var queryValueDictionary = new Dictionary<string, string>
             {
                 { CustomHeaderConstants.MessageLockTimeout, s_defaultOperationTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture) }
             };
@@ -279,16 +292,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            if (responseMessage == null || responseMessage.StatusCode == HttpStatusCode.NoContent)
+            if (responseMessage == null
+                || responseMessage.StatusCode == HttpStatusCode.NoContent)
             {
                 return null;
             }
 
-            byte[] byteContent = await responseMessage.Content.ReadHttpContentAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            byte[] byteContent = await responseMessage.Content
+                .ReadHttpContentAsByteArrayAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-            Message message = byteContent != null
-                ? new Message(byteContent)
-                : new Message();
+            Message message = byteContent == null
+                ? new Message()
+                : new Message(byteContent);
 
             // Read Http headers and map them to message system properties.
             foreach (KeyValuePair<string, IEnumerable<string>> header in responseMessage.Headers)
@@ -311,7 +327,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (keyValue.Key.StartsWith(CustomHeaderConstants.HttpAppPropertyPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    message.Properties.Add(keyValue.Key.Substring(CustomHeaderConstants.HttpAppPropertyPrefix.Length), keyValue.Value.First());
+                    message.Properties.Add(
+                        keyValue.Key.Substring(CustomHeaderConstants.HttpAppPropertyPrefix.Length),
+                        keyValue.Value.First());
                 }
             }
 
@@ -323,7 +341,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TimeSpan timeout = timeoutHelper.GetRemainingTime();
             if (timeout > TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(timeoutHelper), "HTTP Protocol does not support a non-zero receive timeout.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(timeoutHelper),
+                    "HTTP Protocol does not support a non-zero receive timeout.");
             }
             else
             {
@@ -348,7 +368,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 " or set the callback over MQTT or AMQP.");
         }
 
-        public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
                 CommonConstants.DeviceBoundPathCompleteTemplate.FormatInvariant(_deviceId, lockToken),
@@ -357,15 +377,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             var eTag = new ETagHolder { ETag = lockToken };
 
-            return _httpClientHelper.DeleteAsync(
-                GetRequestUri(_deviceId, CommonConstants.DeviceBoundPathTemplate + "/{0}".FormatInvariant(lockToken), null),
-                eTag,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                customHeaders,
-                cancellationToken);
+            await _httpClientHelper
+                .DeleteAsync(
+                    GetRequestUri(_deviceId, CommonConstants.DeviceBoundPathTemplate + "/{0}".FormatInvariant(lockToken), null),
+                    eTag,
+                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                    customHeaders,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
                 CommonConstants.DeviceBoundPathAbandonTemplate.FormatInvariant(_deviceId, lockToken),
@@ -375,15 +397,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // Even though If-Match is not a customHeader, add it here for convenience
             customHeaders.Add(HttpRequestHeader.IfMatch.ToString(), lockToken);
 
-            return _httpClientHelper.PostAsync(
+            await _httpClientHelper
+                .PostAsync(
                     GetRequestUri(_deviceId, CommonConstants.DeviceBoundPathTemplate + "/{0}/abandon".FormatInvariant(lockToken), null),
                     (object)null,
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
                     customHeaders,
-                    cancellationToken);
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
                 CommonConstants.DeviceBoundPathRejectTemplate.FormatInvariant(_deviceId, lockToken),
@@ -392,19 +416,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             var eTag = new ETagHolder { ETag = lockToken };
 
-            return _httpClientHelper.DeleteAsync(
-                GetRequestUri(_deviceId, CommonConstants.DeviceBoundPathTemplate + "/{0}".FormatInvariant(lockToken), new Dictionary<string, string>
-                {
-                    { "reject", null }
-                }),
-                eTag,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                customHeaders,
-                cancellationToken);
+            await _httpClientHelper
+                .DeleteAsync(
+                    GetRequestUri(
+                        _deviceId,
+                        CommonConstants.DeviceBoundPathTemplate + "/{0}".FormatInvariant(lockToken),
+                        new Dictionary<string, string> { { "reject", null } }),
+                    eTag,
+                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                    customHeaders,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.
-        internal Task<MethodInvokeResponse> InvokeMethodAsync(MethodInvokeRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        internal async Task<MethodInvokeResponse> InvokeMethodAsync(
+            MethodInvokeRequest methodInvokeRequest,
+            Uri uri,
+            CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(_moduleId))
             {
@@ -417,12 +446,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { CustomHeaderConstants.ModuleId, $"{_deviceId}/{_moduleId}" }
             };
 
-            return _httpClientHelper.PostAsync<MethodInvokeRequest, MethodInvokeResponse>(
-                uri,
-                methodInvokeRequest,
-                null,
-                customHeaders,
-                cancellationToken);
+            return await _httpClientHelper
+                .PostAsync<MethodInvokeRequest, MethodInvokeResponse>(
+                    uri,
+                    methodInvokeRequest,
+                    null,
+                    customHeaders,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         private static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
@@ -433,7 +464,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var timeout = TimeSpan.FromSeconds(15); // For wire time
             timeout += TimeSpan.FromSeconds(methodInvokeRequest.ConnectionTimeoutInSeconds ?? 0);
             timeout += TimeSpan.FromSeconds(methodInvokeRequest.ResponseTimeoutInSeconds ?? 0);
-            return timeout <= s_defaultMethodOperationTimeout ? s_defaultMethodOperationTimeout : timeout;
+            return timeout <= s_defaultMethodOperationTimeout
+                ? s_defaultMethodOperationTimeout
+                : timeout;
         }
 
         private static IDictionary<string, string> PrepareCustomHeaders(string toHeader, string messageId, string operation)
@@ -480,7 +513,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             deviceId = WebUtility.UrlEncode(deviceId);
 
-            var stringBuilder = new StringBuilder("{0}?{1}".FormatInvariant(path.FormatInvariant(deviceId), ClientApiVersionHelper.ApiVersionQueryStringLatest));
+            var stringBuilder = new StringBuilder("{0}?{1}".FormatInvariant(
+                path.FormatInvariant(deviceId),
+                ClientApiVersionHelper.ApiVersionQueryStringLatest));
 
             if (queryValueDictionary != null)
             {

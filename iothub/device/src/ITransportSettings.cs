@@ -24,16 +24,23 @@ namespace Microsoft.Azure.Devices.Client
         TimeSpan DefaultReceiveTimeout { get; }
 
         /// <summary>
-        /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the HTTP protocol.
+        /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the
+        /// HTTP protocol.
         /// </summary>
         /// <value>
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// This setting will be used when the client attempts to connect over web sockets. For example, if the client attempts to connect to IoT hub using <see cref="TransportType.Amqp"/> or <see cref="TransportType.Mqtt"/> the client will first try over TCP. If that fails, the client will fall back to using web sockets and will use the proxy setting. The setting will also be used when <see cref="TransportType.Amqp_WebSocket_Only"/>, <see cref="TransportType.Mqtt_WebSocket_Only"/>, or <see cref="TransportType.Http1"/> is specified. 
+        /// This setting will be used when the client attempts to connect over web sockets. For example, if the client attempts
+        /// to connect to IoT hub using <see cref="TransportType.Amqp"/> or <see cref="TransportType.Mqtt"/> the client will first
+        /// try over TCP. If that fails, the client will fall back to using web sockets and will use the proxy setting. The setting
+        /// will also be used when <see cref="TransportType.Amqp_WebSocket_Only"/>, <see cref="TransportType.Mqtt_WebSocket_Only"/>,
+        /// or <see cref="TransportType.Http1"/> is specified. 
         /// </remarks>
         /// <example>
-        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from
+        /// <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost
+        /// on port 8888.
         /// <c>
         /// static DeviceClient GetClientWithProxy()
         /// {

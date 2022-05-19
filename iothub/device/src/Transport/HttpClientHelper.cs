@@ -110,7 +110,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = timeout;
-            _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            _httpClientObj.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 
             preRequestActionForAllRequests?.Invoke(_httpClientObj);
@@ -139,25 +140,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (throwIfNotFound)
             {
                 await ExecuteAsync(
-                    HttpMethod.Get,
-                    new Uri(_baseAddress, requestUri),
-                    (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                    async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                    errorMappingOverrides,
-                    cancellationToken).ConfigureAwait(false);
+                        HttpMethod.Get,
+                        new Uri(_baseAddress, requestUri),
+                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                        errorMappingOverrides,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             else
             {
                 await ExecuteAsync(
-                   HttpMethod.Get,
-                   new Uri(_baseAddress, requestUri),
-                   (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                   message => message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound,
-                   async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound
-                       ? default
-                       : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
-                   errorMappingOverrides,
-                   cancellationToken).ConfigureAwait(false);
+                       HttpMethod.Get,
+                       new Uri(_baseAddress, requestUri),
+                       (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
+                       message => message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound,
+                       async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound
+                           ? default
+                           : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
+                       errorMappingOverrides,
+                       cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             return result;
@@ -183,7 +186,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -270,9 +274,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (errorMappingOverrides != null)
             {
-                foreach (KeyValuePair<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> @override in errorMappingOverrides)
+                foreach (KeyValuePair<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorOverride in errorMappingOverrides)
                 {
-                    mergedMapping[@override.Key] = @override.Value;
+                    mergedMapping[errorOverride.Key] = errorOverride.Value;
                 }
             }
 
@@ -326,12 +330,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             T2 result = default;
             await PostAsyncHelper(
-                requestUri,
-                entity,
-                errorMappingOverrides,
-                customHeaders,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
-                cancellationToken).ConfigureAwait(false);
+                    requestUri,
+                    entity,
+                    errorMappingOverrides,
+                    customHeaders,
+                    async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result;
         }
@@ -452,7 +457,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 responseMsg = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                 if (responseMsg == null)
                 {
-                    throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
+                    throw new InvalidOperationException(
+                        $"The response message was null when executing operation {httpMethod}.");
                 }
 
                 if (isSuccessful(responseMsg))

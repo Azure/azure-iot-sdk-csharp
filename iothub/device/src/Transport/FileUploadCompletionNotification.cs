@@ -11,8 +11,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
     public class FileUploadCompletionNotification
     {
         /// <summary>
-        /// The correlation id that maps this completion notification to the file upload. The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId">correlation id </see>
-        /// returned from IoT hub when first getting the SAS Uri for this file upload .
+        /// The correlation id that maps this completion notification to the file upload.
+        /// The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId">correlation id </see>
+        /// returned from IoT hub when first getting the SAS Uri for this file upload 
         /// </summary>
         [JsonProperty(PropertyName = "correlationId")]
         public string CorrelationId { get; set; }

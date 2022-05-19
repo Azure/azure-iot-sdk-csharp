@@ -15,15 +15,15 @@ namespace Microsoft.Azure.Devices.Client
         internal const int DefaultBufferPercentage = 15;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
-        /// TTL and TTL buffer time settings.
+        /// Initializes a new instance of the the class using default TTL and TTL buffer time settings.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// associated device client instance is disposed. To reuse the authentication method instance
+        /// across multiple client instance lifetimes, use <see cref="DeviceAuthenticationWithTokenRefresh(string, int, int, bool)"/>
+        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
-        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
         public DeviceAuthenticationWithTokenRefresh(string deviceId)
             : this(deviceId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
         {
@@ -75,7 +75,10 @@ namespace Microsoft.Azure.Devices.Client
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
             bool disposeWithClient)
-            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage), disposeWithClient)
+            : base(
+                  SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds),
+                  SetSasTokenRenewalBufferPercentage(timeBufferPercentage),
+                  disposeWithClient)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
@@ -91,8 +94,7 @@ namespace Microsoft.Azure.Devices.Client
         public string DeviceId { get; private set; }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of
-        /// the current instance.
+        /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithTpm : DeviceAuthenticationWithTokenRefresh
     {
-        private SecurityProviderTpm _securityProvider;
+        private readonly SecurityProviderTpm _securityProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class with default
