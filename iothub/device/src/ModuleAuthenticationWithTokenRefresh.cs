@@ -15,16 +15,6 @@ namespace Microsoft.Azure.Devices.Client
         private const int DefaultBufferPercentage = 15;
 
         /// <summary>
-        /// Gets the module's Id.
-        /// </summary>
-        public string ModuleId { get; }
-
-        /// <summary>
-        /// Gets the device's Id.
-        /// </summary>
-        public string DeviceId { get; }
-
-        /// <summary>
         /// Initializes a new instance of this class using default TTL and TTL buffer time settings.
         /// </summary>
         /// <remarks>
@@ -110,6 +100,16 @@ namespace Microsoft.Azure.Devices.Client
             ModuleId = moduleId;
             DeviceId = deviceId;
         }
+
+        /// <summary>
+        /// Gets the module's Id.
+        /// </summary>
+        public string ModuleId { get; }
+
+        /// <summary>
+        /// Gets the device's Id.
+        /// </summary>
+        public string DeviceId { get; }
 
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.

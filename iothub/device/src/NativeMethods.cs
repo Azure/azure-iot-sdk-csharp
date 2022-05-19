@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                    GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
                 {
                     return productType;
                 }
@@ -32,11 +32,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Catch any DLL not found exceptions
                 Debug.Assert(false, ex.Message);
+                
                 if (Logging.IsEnabled)
-                {
                     Logging.Error(null, ex, nameof(NativeMethods));
-                }
             }
+
             return 0;
         }
     }
