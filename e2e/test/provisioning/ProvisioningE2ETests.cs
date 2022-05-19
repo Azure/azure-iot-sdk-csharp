@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
@@ -13,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
@@ -1129,7 +1129,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // For the purpose of the E2E tests we will be using openssl to generate the certificate signing requests.
                         if (connectToHubUsingOperationalCertificate)
                         {
-                            string certificateRequest = GenerateClientCertKeyPairAndCsr(security.GetRegistrationID());
+                            string certificateRequest = X509Certificate2Generator.GenerateClientCertKeyPairAndCsr(
+                                security.GetRegistrationID(),
+                                s_dpsClientCertificateFolder,
+                                Logger);
 
                             result = timeout != TimeSpan.MaxValue
                                 ? await provClient.RegisterAsync(
@@ -1163,7 +1166,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     if (result.IssuedClientCertificate != null)
                     {
-                        operationalCertificate = GenerateOperationalCertificateFromIssuedCertificate(result.RegistrationId, result.IssuedClientCertificate);
+                        operationalCertificate = X509Certificate2Generator.GenerateOperationalCertificateFromIssuedCertificate(
+                            result.RegistrationId,
+                            result.IssuedClientCertificate,
+                            s_dpsClientCertificateFolder,
+                            Logger);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                         // The authentication method is disposed at the end of the test method.
@@ -1523,7 +1530,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
-                            GenerateSelfSignedCertificates(registrationId);
+                            X509Certificate2Generator.GenerateSelfSignedCertificates(registrationId, s_selfSignedCertificatesFolder, Logger);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
@@ -1735,115 +1742,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
         }
 
-        private string GenerateClientCertKeyPairAndCsr(string registrationId)
-        {
-            // Generate keypair
-            Logger.Trace($"Generating ECC P-256 {registrationId}.key file using ...\n");
-            string keygen = $"ecparam" +
-                $" -genkey" +
-                $" -name prime256v1" +
-                $" -out {s_dpsClientCertificateFolder}\\{registrationId}.key";
-
-            Logger.Trace($"openssl {keygen}\n");
-            using var keygenCmdProcess = Process.Start("openssl", keygen);
-            keygenCmdProcess.WaitForExit();
-
-            Logger.Trace("Certificates generated:");
-            ListAllFiles(s_dpsClientCertificateFolder.FullName, Logger);
-
-            // Generate csr
-            Logger.Trace($"Generating {registrationId}.csr file using ...\n");
-            string csrgen = $"req" +
-                $" -new" +
-                $" -key {s_dpsClientCertificateFolder}\\{registrationId}.key" +
-                $" -out {s_dpsClientCertificateFolder}\\{registrationId}.csr" +
-                $" -subj /CN={registrationId}";
-
-            Logger.Trace($"openssl {csrgen}\n");
-            using var csrgenCmdProcess = Process.Start("openssl", csrgen);
-            csrgenCmdProcess.WaitForExit();
-
-            Logger.Trace("Certificates generated:");
-            ListAllFiles(s_dpsClientCertificateFolder.FullName, Logger);
-
-            return File.ReadAllText($"{s_dpsClientCertificateFolder}\\{registrationId}.csr");
-        }
-
-        private X509Certificate2 GenerateOperationalCertificateFromIssuedCertificate(string registrationId, string issuedCertificate)
-        {
-            // Write the issued certificate to disk
-            File.WriteAllText($"{s_dpsClientCertificateFolder}\\{registrationId}.cer", issuedCertificate);
-
-            Logger.Trace($"Generating {registrationId}.pfx file using ...\n");
-            string pfxgen = $"pkcs12" +
-                $" -export" +
-                $" -out {s_dpsClientCertificateFolder}\\{registrationId}.pfx" +
-                $" -inkey {s_dpsClientCertificateFolder}\\{registrationId}.key" +
-                $" -in {s_dpsClientCertificateFolder}\\{registrationId}.cer" +
-                $" -passout pass:";
-
-            Logger.Trace($"openssl {pfxgen}\n");
-            using var pfxgenCmdProcess = Process.Start("openssl", pfxgen);
-            pfxgenCmdProcess.WaitForExit();
-
-            Logger.Trace("Certificates generated:");
-            ListAllFiles(s_dpsClientCertificateFolder.FullName, Logger);
-
-            return new X509Certificate2($"{s_dpsClientCertificateFolder}\\{registrationId}.pfx");
-        }
-
-        private void GenerateSelfSignedCertificates(string registrationId)
-        {
-            // Generate the private key for the self-signed certificate
-            Logger.Trace($"Generating the private key for the self-signed certificate with subject {registrationId} using ...\n");
-            string keygen = $"genpkey" +
-                $" -out {s_selfSignedCertificatesFolder}\\{registrationId}.key" +
-                $" -algorithm RSA" +
-                $" -pkeyopt rsa_keygen_bits:2048";
-
-            Logger.Trace($"openssl {keygen}\n");
-            using var keygenCmdProcess = Process.Start("openssl", keygen);
-            keygenCmdProcess.WaitForExit();
-
-            // Generate the certificate signing request for the self-signed certificate
-            Logger.Trace($"Generating the certificate signing request for the self-signed certificate with subject {registrationId} using ...\n");
-            string csrgen = $"req" +
-                $" -new" +
-                $" -subj /CN={registrationId}" +
-                $" -key {s_selfSignedCertificatesFolder}\\{registrationId}.key" +
-                $" -out {s_selfSignedCertificatesFolder}\\{registrationId}.csr";
-
-            Logger.Trace($"openssl {csrgen}\n");
-            using var csrgenCmdProcess = Process.Start("openssl", csrgen);
-            csrgenCmdProcess.WaitForExit();
-
-            // Self-sign the certificate signing request
-            Logger.Trace($"Self-sign the certificate with subject {registrationId} using ...\n");
-            string signgen = $"x509" +
-                $" -req" +
-                $" -days 7" +
-                $" -in {s_selfSignedCertificatesFolder}\\{registrationId}.csr" +
-                $" -signkey {s_selfSignedCertificatesFolder}\\{registrationId}.key" +
-                $" -out {s_selfSignedCertificatesFolder}\\{registrationId}.crt";
-
-            Logger.Trace($"openssl {signgen}\n");
-            using var signgenCmdProcess = Process.Start("openssl", signgen);
-            signgenCmdProcess.WaitForExit();
-
-            // Generate the pfx file containing both public and private certificate information
-            Logger.Trace($"Generating {registrationId}.pfx file using ...\n");
-            string pfxgen = $"pkcs12" +
-                $" -export" +
-                $" -in {s_selfSignedCertificatesFolder}\\{registrationId}.crt" +
-                $" -inkey {s_selfSignedCertificatesFolder}\\{registrationId}.key" +
-                $" -out {s_selfSignedCertificatesFolder}\\{registrationId}.pfx" +
-                $" -passout pass:{TestConfiguration.Provisioning.CertificatePassword}";
-
-            Logger.Trace($"openssl {pfxgen}\n");
-            using var pfxgenCmdProcess = Process.Start("openssl", pfxgen);
-            pfxgenCmdProcess.WaitForExit();
-        }
-
         private X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
         {
             return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.crt");
@@ -1852,15 +1750,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
         {
             return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.pfx", TestConfiguration.Provisioning.CertificatePassword);
-        }
-
-        private static void ListAllFiles(string path, MsTestLogger logger)
-        {
-            logger.Trace($"Listing files in: {path}");
-            foreach (string fileName in Directory.GetFiles(path))
-            {
-                logger.Trace(fileName);
-            }
         }
 
         [ClassCleanup]
