@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Common.Api;
-using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
@@ -67,7 +67,8 @@ namespace Microsoft.Azure.Devices.Client
         /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
-        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the client library, or by the calling application.</param>
+        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the
+        /// client library, or by the calling application.</param>
         internal Message(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
             : this(stream)
         {
@@ -186,7 +187,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// True if the message is set as a security message
         /// </summary>
-        public bool IsSecurityMessage => CommonConstants.SecurityMessageInterfaceId.Equals(GetSystemProperty<string>(MessageSystemPropertyNames.InterfaceId), StringComparison.Ordinal);
+        public bool IsSecurityMessage => CommonConstants.SecurityMessageInterfaceId.Equals(
+            GetSystemProperty<string>(MessageSystemPropertyNames.InterfaceId),
+            StringComparison.Ordinal);
 
         /// <summary>
         /// Used to specify the content type of the message.
@@ -259,7 +262,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The body stream of the current event data instance
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Naming",
             "CA1721:Property names should not match get methods",
             Justification = "Cannot remove public property on a public facing type")]

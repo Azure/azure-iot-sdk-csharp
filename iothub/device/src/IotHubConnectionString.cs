@@ -39,7 +39,9 @@ namespace Microsoft.Azure.Devices.Client
                 TokenRefresher = authWithTokenRefresh;
                 if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                    Logging.Info(
+                        this,
+                        $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
                     Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
                 }
 
@@ -49,16 +51,31 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
-                    // Since the SDK creates the instance of disposable DeviceAuthenticationWithSakRefresh, the SDK needs to dispose it once the client is disposed.
-                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(DeviceId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposeWithClient: true);
+                    // Since the SDK creates the instance of disposable DeviceAuthenticationWithSakRefresh, the SDK needs to
+                    // dispose it once the client is disposed.
+                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(
+                        DeviceId,
+                        this,
+                        builder.SasTokenTimeToLive,
+                        builder.SasTokenRenewalBuffer,
+                        disposeWithClient: true);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                        Logging.Info(
+                            this,
+                            $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
                 }
                 else
                 {
-                    // Since the SDK creates the instance of disposable ModuleAuthenticationWithSakRefresh, the SDK needs to dispose it once the client is disposed.
-                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(DeviceId, ModuleId, this, builder.SasTokenTimeToLive, builder.SasTokenRenewalBuffer, disposeWithClient: true);
+                    // Since the SDK creates the instance of disposable ModuleAuthenticationWithSakRefresh, the SDK needs to
+                    // dispose it once the client is disposed.
+                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(
+                        DeviceId, 
+                        ModuleId, 
+                        this, 
+                        builder.SasTokenTimeToLive, 
+                        builder.SasTokenRenewalBuffer, 
+                        disposeWithClient: true);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");

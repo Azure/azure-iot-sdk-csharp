@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -18,24 +18,6 @@ namespace Microsoft.Azure.Devices.Client
         private readonly TransportType _transportType;
         private TimeSpan _operationTimeout;
         private TimeSpan _openTimeout;
-
-        /// <summary>
-        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
-        /// </summary>
-        internal string AuthenticationChain { get; set; }
-
-        /// <summary>
-        /// To enable certificate revocation check. Default to be false.
-        /// </summary>
-        [SuppressMessage(
-            "Performance",
-            "CA1822:Mark members as static",
-            Justification = "Cannot change public property in public facing classes.")]
-        public bool CertificateRevocationCheck
-        {
-            get => TlsVersions.Instance.CertificateRevocationCheck;
-            set => TlsVersions.Instance.CertificateRevocationCheck = value;
-        }
 
         /// <summary>
         /// The default operation timeout
@@ -104,13 +86,34 @@ namespace Microsoft.Azure.Devices.Client
                     break;
 
                 case TransportType.Amqp:
-                    throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Must specify Amqp_WebSocket_Only or Amqp_Tcp_Only");
+                    throw new ArgumentOutOfRangeException(
+                        nameof(transportType),
+                        transportType,
+                        "Must specify Amqp_WebSocket_Only or Amqp_Tcp_Only");
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, null);
             }
 
             AmqpConnectionPoolSettings = amqpConnectionPoolSettings;
+        }
+
+        /// <summary>
+        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
+        /// </summary>
+        internal string AuthenticationChain { get; set; }
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        [SuppressMessage(
+            "Performance",
+            "CA1822:Mark members as static",
+            Justification = "Cannot change public property in public facing classes.")]
+        public bool CertificateRevocationCheck
+        {
+            get => TlsVersions.Instance.CertificateRevocationCheck;
+            set => TlsVersions.Instance.CertificateRevocationCheck = value;
         }
 
         /// <summary>
@@ -196,14 +199,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>True if equal</returns>
         public bool Equals(AmqpTransportSettings other)
         {
-            return other == null
-                ? false
-                : ReferenceEquals(this, other)
-                    // ClientCertificates are usually different, so ignore them in the comparison
-                    || PrefetchCount == other.PrefetchCount
-                        && OpenTimeout == other.OpenTimeout
-                        && OperationTimeout == other.OperationTimeout
-                        && AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings);
+            return other != null
+                && (ReferenceEquals(this, other)
+                // ClientCertificates are usually different, so ignore them in the comparison
+                || PrefetchCount == other.PrefetchCount
+                && OpenTimeout == other.OpenTimeout
+                && OperationTimeout == other.OperationTimeout
+                && AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings));
         }
 
         private void SetOperationTimeout(TimeSpan timeout)

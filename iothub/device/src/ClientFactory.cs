@@ -141,7 +141,9 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     catch (Exception ex)
                     {
-                        if (Logging.IsEnabled) Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+                        if (Logging.IsEnabled)
+                            Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+
                         throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
                     }
                 }
@@ -477,7 +479,8 @@ namespace Microsoft.Azure.Devices.Client
                         break;
 
                     default:
-                        throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportSetting.GetTransportType()));
+                        throw new InvalidOperationException(
+                            $"Unsupported Transport Type {transportSetting.GetTransportType()}");
                 }
             }
 
@@ -618,11 +621,13 @@ namespace Microsoft.Azure.Devices.Client
                     };
 
                 default:
-                    throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportType));
+                    throw new InvalidOperationException($"Unsupported Transport {transportType}");
             }
         }
 
-        private static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
+        private static ITransportSettings[] PopulateCertificateInTransportSettings(
+            IotHubConnectionStringBuilder connectionStringBuilder, 
+            ITransportSettings[] transportSettings)
         {
             foreach (ITransportSettings transportSetting in transportSettings)
             {
@@ -643,7 +648,7 @@ namespace Microsoft.Azure.Devices.Client
                         break;
 
                     default:
-                        throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportSetting.GetTransportType()));
+                        throw new InvalidOperationException($"Unsupported Transport {transportSetting.GetTransportType()}");
                 }
             }
 

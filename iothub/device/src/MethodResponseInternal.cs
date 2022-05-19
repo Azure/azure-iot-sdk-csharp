@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.IO;
 using System.Threading;
@@ -8,7 +9,7 @@ using Microsoft.Azure.Devices.Client.Common.Api;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure represent the method response that is used for interacting with IotHub.
+    /// The data structure represent the method response that is used for interacting with IoT hub.
     /// </summary>
     public sealed class MethodResponseInternal : IDisposable
     {
@@ -16,10 +17,9 @@ namespace Microsoft.Azure.Devices.Client
         private bool _disposed;
         private bool _ownsBodyStream;
         private int _getBodyCalled;
-        private long _sizeInBytesCalled;
 
         /// <summary>
-        /// Default constructor with no body data
+        /// Default constructor with no body data.
         /// </summary>
         internal MethodResponseInternal()
         {
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Default constructor with no requestId and status data
+        /// Default constructor with no requestId and status data.
         /// </summary>
         internal MethodResponseInternal(string requestId, int status)
         {
@@ -98,12 +98,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
-            if (_bodyStream != null)
-            {
-                return _bodyStream;
-            }
-
-            return Stream.Null;
+            return _bodyStream ?? Stream.Null;
         }
 
         /// <summary>
@@ -147,6 +142,7 @@ namespace Microsoft.Azure.Devices.Client
                 Interlocked.Exchange(ref _getBodyCalled, 0);
                 return true;
             }
+
             return false;
         }
 
@@ -160,11 +156,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private void SetSizeInBytesCalled()
-        {
-            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
-        }
-
         private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
@@ -175,11 +166,9 @@ namespace Microsoft.Azure.Devices.Client
 
         private static byte[] ReadFullStream(Stream inputStream)
         {
-            using (var ms = new MemoryStream())
-            {
-                inputStream.CopyTo(ms);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            inputStream.CopyTo(ms);
+            return ms.ToArray();
         }
 
         internal void ThrowIfDisposed()

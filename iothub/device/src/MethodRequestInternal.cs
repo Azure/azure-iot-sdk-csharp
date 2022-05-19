@@ -7,7 +7,7 @@ using System.Threading;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure represent the method request coming from the IotHub.
+    /// The data structure represent the method request coming from the IoT hub.
     /// </summary>
     public sealed class MethodRequestInternal : IDisposable
     {
@@ -15,10 +15,9 @@ namespace Microsoft.Azure.Devices.Client
         private bool _disposed;
         private bool _ownsBodyStream;
         private int _getBodyCalled;
-        private long _sizeInBytesCalled;
 
         /// <summary>
-        /// Default constructor with no body data
+        /// Default constructor with no body data.
         /// </summary>
         internal MethodRequestInternal(CancellationToken cancellationToken)
         {
@@ -27,8 +26,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// This constructor is only used in the receive path from Amqp path,
-        /// or in Cloning from a Message that has serialized.
+        /// This constructor is only used in the receive path from Amqp path, or in cloning from a message
+        /// that has serialized.
         /// </summary>
 
         internal MethodRequestInternal(string name, string requestId, Stream bodyStream, CancellationToken cancellationToken)
@@ -43,19 +42,19 @@ namespace Microsoft.Azure.Devices.Client
         internal CancellationToken CancellationToken { get; private set; }
 
         /// <summary>
-        /// Property indicating the method name for this instance
+        /// Property indicating the method name for this instance.
         /// </summary>
         internal string Name { get; private set; }
 
         /// <summary>
-        /// the request Id for the transport layer
+        /// the request Id for the transport layer.
         /// </summary>
         internal string RequestId { get; private set; }
 
         internal Stream BodyStream => _bodyStream;
 
         /// <summary>
-        /// Dispose the current method data instance
+        /// Dispose the current method data instance.
         /// </summary>
         public void Dispose()
         {
@@ -63,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Return the body stream of the current method data instance
+        /// Return the body stream of the current method data instance.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
@@ -73,16 +72,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
-            if (_bodyStream != null)
-            {
-                return _bodyStream;
-            }
-
-            return Stream.Null;
+            return _bodyStream ?? Stream.Null;
         }
 
         /// <summary>
-        /// This methods return the body stream as a byte array
+        /// This methods return the body stream as a byte array.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
@@ -100,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
             }
 
-            // This is just fail safe code in case we are not using the Amqp protocol.
+            // This is just fail safe code in case we are not using the AMQP protocol.
             return ReadFullStream(_bodyStream);
         }
 
@@ -135,11 +129,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private void SetSizeInBytesCalled()
-        {
-            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
-        }
-
         private void InitializeWithStream(Stream stream, bool ownsStream)
         {
             // This method should only be used in constructor because
@@ -150,11 +139,9 @@ namespace Microsoft.Azure.Devices.Client
 
         private static byte[] ReadFullStream(Stream inputStream)
         {
-            using (var ms = new MemoryStream())
-            {
-                inputStream.CopyTo(ms);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream();
+            inputStream.CopyTo(ms);
+            return ms.ToArray();
         }
 
         private void ThrowIfDisposed()

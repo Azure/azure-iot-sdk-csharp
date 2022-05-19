@@ -16,7 +16,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal class ProtocolRoutingDelegatingHandler : DefaultDelegatingHandler
     {
-        internal delegate IDelegatingHandler TransportHandlerFactory(IotHubConnectionString iotHubConnectionString, ITransportSettings transportSettings);
+        internal delegate IDelegatingHandler TransportHandlerFactory(
+            IotHubConnectionString iotHubConnectionString,
+            ITransportSettings transportSettings);
 
         /// <summary>
         /// After we've verified that we could open the transport for any operation, we will stop attempting others in the list.
@@ -27,8 +29,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
 
-        public ProtocolRoutingDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler) :
-            base(context, innerHandler)
+        public ProtocolRoutingDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+            : base(context, innerHandler)
         {
         }
 
@@ -37,9 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-                }
 
                 bool gain = await _handlerLock.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
                 if (!gain)
@@ -70,9 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-                }
             }
         }
 
@@ -95,12 +93,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Debug.Assert(transportSettings != null);
 
                 if (Logging.IsEnabled)
-                {
                     Logging.Info(
-                    this,
-                    $"Trying {transportSettings?.GetTransportType()}",
-                    $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-                }
+                        this,
+                        $"Trying {transportSettings?.GetTransportType()}",
+                        $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
 
                 // Configure the transportSettings for this context (Important! Within Context, 'ITransportSettings' != 'ITransportSettings[]').
                 Context.Set<ITransportSettings>(transportSettings);
@@ -115,9 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-                }
 
                 cancellationToken.ThrowIfCancellationRequested();
                 await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -144,9 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-                }
             }
         }
 
@@ -174,9 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await base.WaitForTransportClosedAsync().ConfigureAwait(false);
 
             if (Logging.IsEnabled)
-            {
                 Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
-            }
 
             await _handlerLock.WaitAsync().ConfigureAwait(false);
             Debug.Assert(InnerHandler != null);

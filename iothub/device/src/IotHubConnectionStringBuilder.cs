@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
         private IAuthenticationMethod _authenticationMethod;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IotHubConnectionStringBuilder"/> class.
+        /// Initializes a new instance of the this class.
         /// </summary>
         internal IotHubConnectionStringBuilder()
         {
@@ -69,7 +69,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string based on the hostname of the IoT hub, the hostname of Gateway and the authentication method passed as a parameter.
+        /// Creates a connection string based on the hostname of the IoT hub, the hostname of Gateway and the authentication
+        /// method passed as a parameter.
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of the gateway</param>
@@ -261,7 +262,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (!(UsingX509Cert || AuthenticationMethod is AuthenticationWithTokenRefresh))
                 {
-                    throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
+                    throw new ArgumentException(
+                        "Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
                 }
             }
 
@@ -269,7 +271,8 @@ namespace Microsoft.Azure.Devices.Client
                 (!SharedAccessKey.IsNullOrWhiteSpace()
                     || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
-                throw new ArgumentException("Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
+                throw new ArgumentException(
+                    "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
             }
 
             if (IotHubName.IsNullOrWhiteSpace())
@@ -331,7 +334,8 @@ namespace Microsoft.Azure.Devices.Client
             // In this case, the hostname will be of the format "myGatewayDevice", and will not have ".azure-devices.net" suffix.
             if (IotHubName.IsNullOrWhiteSpace())
             {
-                Logging.Info(this, $"Connecting to a gateway device with hostname=[{HostName}]");
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Connecting to a gateway device with hostname=[{HostName}]");
                 IotHubName = HostName;
             }
         }

@@ -27,8 +27,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated device/ module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// associated device/ module client instance is disposed. To reuse the authentication method instance across
+        /// multiple client instance lifetimes, use the <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/>
+        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
@@ -126,9 +127,7 @@ namespace Microsoft.Azure.Devices.Client
                 UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 
                 if (Logging.IsEnabled)
-                {
                     Logging.GenerateToken(this, ExpiresOn);
-                }
 
                 return _token;
             }
