@@ -569,7 +569,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     else
                     {
                         Assert.AreNotEqual(twin.Properties.Desired.Count, 1);
-                        Assert.AreEqual(ProvisioningRegistrationSubstatusType.InitialAssignment, result.Substatus);
+                        Assert.AreEqual(ProvisioningRegistrationSubstatusType.ReprovisionedToInitialAssignment, result.Substatus);
                     }
                 }
 
