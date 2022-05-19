@@ -1193,6 +1193,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 operationalCertificate?.Dispose();
 
+                if (security is SecurityProviderX509 x509Security)
+                {
+                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
+                    publicPrivateCertificate?.Dispose();
+                }
+
                 if (auth != null && auth is IDisposable disposableAuth)
                 {
                     disposableAuth?.Dispose();
@@ -1299,9 +1305,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+
+                if (security is SecurityProviderX509 x509Security)
                 {
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
+                    publicPrivateCertificate?.Dispose();
                 }
             }
         }
@@ -1362,9 +1371,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+
+                if (security is SecurityProviderX509 x509Security)
                 {
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
+                    publicPrivateCertificate?.Dispose();
                 }
             }
         }
@@ -1399,9 +1411,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+
+                if (security is SecurityProviderX509 x509Security)
                 {
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
+                    publicPrivateCertificate?.Dispose();
                 }
             }
         }
@@ -1511,23 +1526,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             GenerateSelfSignedCertificates(registrationId);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                            X509Certificate2 publicCertificate = CreateX509CertificateWithPublicKey(registrationId);
+                            // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
                             X509Certificate2 publicPrivateCertificate = CreateX509CertificateWithPublicPrivateKey(registrationId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                            IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
-                                provisioningServiceClient,
-                                registrationId,
-                                AttestationMechanismType.X509,
-                                publicCertificate,
-                                reprovisionPolicy,
-                                allocationPolicy,
-                                customAllocationDefinition,
-                                iothubs,
-                                capabilities,
-                                connectToHubUsingOperationalCertificate).ConfigureAwait(false);
+                            using (X509Certificate2 publicCertificate = CreateX509CertificateWithPublicKey(registrationId))
+                            {
+                                IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
+                                    provisioningServiceClient,
+                                    registrationId,
+                                    AttestationMechanismType.X509,
+                                    publicCertificate,
+                                    reprovisionPolicy,
+                                    allocationPolicy,
+                                    customAllocationDefinition,
+                                    iothubs,
+                                    capabilities,
+                                    connectToHubUsingOperationalCertificate).ConfigureAwait(false);
 
-                            x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
+                                x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
+                            }
 
                             return new SecurityProviderX509Certificate(publicPrivateCertificate);
 
