@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the key associated with the module.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Performance",
             "CA1819:Properties should not return arrays",
             Justification = "Cannot change property types on public classes.")]
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on the properties of the current instance.
+        /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>

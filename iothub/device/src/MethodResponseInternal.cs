@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.IO;
 using System.Threading;
@@ -8,7 +9,7 @@ using Microsoft.Azure.Devices.Client.Common.Api;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure represent the method response that is used for interacting with IotHub.
+    /// The data structure represent the method response that is used for interacting with IoT hub.
     /// </summary>
     public sealed class MethodResponseInternal : IDisposable
     {
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         private int _getBodyCalled;
 
         /// <summary>
-        /// Default constructor with no body data
+        /// Default constructor with no body data.
         /// </summary>
         internal MethodResponseInternal()
         {
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Default constructor with no requestId and status data
+        /// Default constructor with no requestId and status data.
         /// </summary>
         internal MethodResponseInternal(string requestId, int status)
         {
@@ -97,12 +98,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
-            if (_bodyStream != null)
-            {
-                return _bodyStream;
-            }
-
-            return Stream.Null;
+            return _bodyStream ?? Stream.Null;
         }
 
         /// <summary>
@@ -142,6 +138,7 @@ namespace Microsoft.Azure.Devices.Client
                 Interlocked.Exchange(ref _getBodyCalled, 0);
                 return true;
             }
+
             return false;
         }
 

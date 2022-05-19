@@ -7,7 +7,7 @@ using System.Threading;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure represent the method request coming from the IotHub.
+    /// The data structure represent the method request coming from the IoT hub.
     /// </summary>
     public sealed class MethodRequestInternal : IDisposable
     {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         private int _getBodyCalled;
 
         /// <summary>
-        /// Default constructor with no body data
+        /// Default constructor with no body data.
         /// </summary>
         internal MethodRequestInternal(CancellationToken cancellationToken)
         {
@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// This constructor is only used in the receive path from Amqp path,
-        /// or in Cloning from a Message that has serialized.
+        /// This constructor is only used in the receive path from Amqp path, or in cloning from a message
+        /// that has serialized.
         /// </summary>
 
         internal MethodRequestInternal(string name, string requestId, Stream bodyStream, CancellationToken cancellationToken)
@@ -42,19 +42,19 @@ namespace Microsoft.Azure.Devices.Client
         internal CancellationToken CancellationToken { get; private set; }
 
         /// <summary>
-        /// Property indicating the method name for this instance
+        /// Property indicating the method name for this instance.
         /// </summary>
         internal string Name { get; private set; }
 
         /// <summary>
-        /// the request Id for the transport layer
+        /// the request Id for the transport layer.
         /// </summary>
         internal string RequestId { get; private set; }
 
         internal Stream BodyStream => _bodyStream;
 
         /// <summary>
-        /// Dispose the current method data instance
+        /// Dispose the current method data instance.
         /// </summary>
         public void Dispose()
         {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Return the body stream of the current method data instance
+        /// Return the body stream of the current method data instance.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
@@ -72,16 +72,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             ThrowIfDisposed();
             SetGetBodyCalled();
-            if (_bodyStream != null)
-            {
-                return _bodyStream;
-            }
-
-            return Stream.Null;
+            return _bodyStream ?? Stream.Null;
         }
 
         /// <summary>
-        /// This methods return the body stream as a byte array
+        /// This methods return the body stream as a byte array.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
@@ -95,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
                 return Array.Empty<byte>();
             }
 
-            // This is just fail safe code in case we are not using the Amqp protocol.
+            // This is just fail safe code in case we are not using the AMQP protocol.
             return ReadFullStream(_bodyStream);
         }
 

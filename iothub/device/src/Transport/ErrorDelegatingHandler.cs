@@ -1,28 +1,29 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-using System.Security.Authentication;
-using System.Runtime.InteropServices;
-using System.Net.Sockets;
-using System.Net.WebSockets;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
-        public ErrorDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler) : base(context, innerHandler)
+        public ErrorDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+            : base(context, innerHandler)
         {
         }
 
@@ -158,13 +159,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private static bool IsTlsSecurity(Exception singleException)
         {
             if (// WinHttpException (0x80072F8F): A security error occurred.
-                (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    && singleException.HResult == unchecked((int)0x80072F8F))
-                ||
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                && singleException.HResult == unchecked((int)0x80072F8F)
                 // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
-                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && singleException.HResult == 60)
-                ||
-                singleException is AuthenticationException)
+                || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && singleException.HResult == 60
+                || singleException is AuthenticationException)
             {
                 return true;
             }
@@ -179,7 +178,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)
         {
-            return ExecuteWithErrorHandlingAsync<bool>(async () => { await asyncOperation().ConfigureAwait(false); return false; });
+            return ExecuteWithErrorHandlingAsync<bool>(async () =>
+            {
+                await asyncOperation().ConfigureAwait(false);
+                return false;
+            });
         }
 
         private async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation)
@@ -187,9 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
-                }
 
                 try
                 {
@@ -198,9 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 catch (Exception exception) when (!exception.IsFatal())
                 {
                     if (Logging.IsEnabled)
-                    {
                         Logging.Error(this, $"Exception caught: {exception}");
-                    }
 
                     if (IsSecurityExceptionChain(exception))
                     {
@@ -225,9 +224,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
-                }
             }
         }
     }

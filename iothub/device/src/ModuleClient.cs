@@ -72,10 +72,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates an AMQP ModuleClient from individual parameters
+        /// Creates an AMQP ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
@@ -84,11 +84,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates an AMQP ModuleClient from individual parameters
+        /// Creates an AMQP ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
@@ -97,11 +97,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient from individual parameters
+        /// Creates a ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="transportType">The transportType used (Http1 or AMQP).</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
@@ -110,12 +110,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient from individual parameters
+        /// Creates a ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportType">The transportType used (Http1 or AMQP)</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="transportType">The transportType used (Http1 or AMQP).</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
@@ -125,11 +125,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient from individual parameters
+        /// Creates a ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod,
@@ -139,12 +139,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient from individual parameters
+        /// Creates a ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
@@ -154,9 +154,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient using AMQP transport from the specified connection string
+        /// Creates a ModuleClient using AMQP transport from the specified connection string.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
+        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
@@ -165,10 +165,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates ModuleClient from the specified connection string using the specified transport type
+        /// Creates ModuleClient from the specified connection string using the specified transport type.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
-        /// <param name="transportType">Specifies whether AMQP or HTTP transport is used</param>
+        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
+        /// <param name="transportType">Specifies whether AMQP or HTTP transport is used.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient CreateFromConnectionString(string connectionString, TransportType transportType, ClientOptions options = default)
@@ -177,10 +177,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates ModuleClient from the specified connection string using a prioritized list of transports
+        /// Creates ModuleClient from the specified connection string using a prioritized list of transports.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
-        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="connectionString">Connection string for the IoT hub (with DeviceId).</param>
+        /// <param name="transportSettings">Prioritized list of transports and their settings.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient CreateFromConnectionString(string connectionString,
@@ -190,8 +190,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient instance in an IoT Edge deployment
-        /// based on environment variables.
+        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
@@ -201,10 +200,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient instance in an IoT Edge deployment
-        /// based on environment variables.
+        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
         /// </summary>
-        /// <param name="transportType">Specifies whether AMQP or HTTP transport is used</param>
+        /// <param name="transportType">Specifies whether AMQP or HTTP transport is used.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
         public static Task<ModuleClient> CreateFromEnvironmentAsync(TransportType transportType, ClientOptions options = default)
@@ -213,10 +211,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient instance in an IoT Edge deployment
-        /// based on environment variables.
+        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
         /// </summary>
-        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="transportSettings">Prioritized list of transports and their settings.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
         public static Task<ModuleClient> CreateFromEnvironmentAsync(ITransportSettings[] transportSettings, ClientOptions options = default)
@@ -250,7 +247,6 @@ namespace Microsoft.Azure.Devices.Client
         /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the
         /// provided cancellation token.
         /// </summary>
-        // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         public uint OperationTimeoutInMilliseconds
         {
             get => InternalClient.OperationTimeoutInMilliseconds;
@@ -270,9 +266,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the retry policy used in the operation retries.
         /// The change will take effect after any in-progress operations.
         /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with back-off
-        // parameters for calculating delay in between retries.]
+        /// <remarks>
+        /// The default is:
+        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c>
+        /// </remarks>
+        /// <param name="retryPolicy">The retry policy.</param>
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             InternalClient.SetRetryPolicy(retryPolicy);
@@ -291,27 +289,26 @@ namespace Microsoft.Azure.Devices.Client
         public Task OpenAsync(CancellationToken cancellationToken) => InternalClient.OpenAsync(cancellationToken);
 
         /// <summary>
-        /// Close the ModuleClient instance
+        /// Close the ModuleClient instance.
         /// </summary>
         public Task CloseAsync() => InternalClient.CloseAsync();
 
         /// <summary>
-        /// Close the ModuleClient instance
+        /// Close the ModuleClient instance.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns></returns>
         public Task CloseAsync(CancellationToken cancellationToken) => InternalClient.CloseAsync(cancellationToken);
 
         /// <summary>
-        /// Deletes a received message from the module queue
+        /// Deletes a received message from the module queue.
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task CompleteAsync(string lockToken) => InternalClient.CompleteAsync(lockToken);
 
         /// <summary>
-        /// Deletes a received message from the module queue
+        /// Deletes a received message from the module queue.
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -320,14 +317,14 @@ namespace Microsoft.Azure.Devices.Client
         public Task CompleteAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.CompleteAsync(lockToken, cancellationToken);
 
         /// <summary>
-        /// Deletes a received message from the module queue
+        /// Deletes a received message from the module queue.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message) => InternalClient.CompleteAsync(message);
 
         /// <summary>
-        /// Deletes a received message from the module queue
+        /// Deletes a received message from the module queue.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <param name="message">The message.</param>
@@ -336,14 +333,14 @@ namespace Microsoft.Azure.Devices.Client
         public Task CompleteAsync(Message message, CancellationToken cancellationToken) => InternalClient.CompleteAsync(message, cancellationToken);
 
         /// <summary>
-        /// Puts a received message back onto the module queue
+        /// Puts a received message back onto the module queue.
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
         public Task AbandonAsync(string lockToken) => InternalClient.AbandonAsync(lockToken);
 
         /// <summary>
-        /// Puts a received message back onto the module queue
+        /// Puts a received message back onto the module queue.
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -352,13 +349,13 @@ namespace Microsoft.Azure.Devices.Client
         public Task AbandonAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.AbandonAsync(lockToken, cancellationToken);
 
         /// <summary>
-        /// Puts a received message back onto the module queue
+        /// Puts a received message back onto the module queue.
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message) => InternalClient.AbandonAsync(message);
 
         /// <summary>
-        /// Puts a received message back onto the module queue
+        /// Puts a received message back onto the module queue.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -367,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task AbandonAsync(Message message, CancellationToken cancellationToken) => InternalClient.AbandonAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends an event to IoT hub
+        /// Sends an event to IoT hub.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
@@ -390,7 +387,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventAsync(Message message) => InternalClient.SendEventAsync(message);
 
         /// <summary>
-        /// Sends an event to IoT hub
+        /// Sends an event to IoT hub.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -415,7 +412,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// </summary>
         /// <param name="messages">The messages.</param>
         /// <returns>The task containing the event</returns>
@@ -423,7 +420,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>/// Sends a batch of events to IoT hub. Requires AMQP or AMQP over WebSockets.
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -432,8 +429,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken) => InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with
-        /// the named method, it will be replaced with the new delegate.
+        /// Sets a new delegate for the named method. If a delegate is already associated with the named method, it will be replaced with the new delegate.
         /// A method handler can be unset by passing a null MethodCallback.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
@@ -443,8 +439,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
         /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with
-        /// the named method, it will be replaced with the new delegate.
+        /// Sets a new delegate for the named method. If a delegate is already associated with the named method, it will be replaced with the new delegate.
         /// A method handler can be unset by passing a null MethodCallback.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
@@ -555,8 +550,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         /// </remarks>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
+        /// <param name="callback">Callback to call after the state update has been received and applied.</param>
+        /// <param name="userContext">Context object that will be passed into callback.</param>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
             InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
 
@@ -568,8 +563,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         /// </remarks>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
+        /// <param name="callback">Callback to call after the state update has been received and applied.</param>
+        /// <param name="userContext">Context object that will be passed into callback.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken) =>
@@ -592,14 +587,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Push reported property changes up to the service.
         /// </summary>
-        /// <param name="reportedProperties">Reported properties to push</param>
+        /// <param name="reportedProperties">Reported properties to push.</param>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties);
 
         /// <summary>
         /// Push reported property changes up to the service.
         /// </summary>
-        /// <param name="reportedProperties">Reported properties to push</param>
+        /// <param name="reportedProperties">Reported properties to push.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
@@ -612,8 +607,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sends an event to IoT hub.
         /// </summary>
-        /// <param name="outputName">The output target for sending the given message</param>
-        /// <param name="message">The message to send</param>
+        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="message">The message to send.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="TimeoutException">Thrown if the service does not respond to the request within the timeout specified for the operation.
         /// The timeout values are largely transport protocol specific. Check the corresponding transport settings to see if they can be configured.
@@ -637,8 +632,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sends an event to IoT hub.
         /// </summary>
-        /// <param name="outputName">The output target for sending the given message</param>
-        /// <param name="message">The message to send</param>
+        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown if the service does not respond to the request before the expiration of the passed <see cref="CancellationToken"/>.
@@ -664,8 +659,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
-        /// <param name="outputName">The output target for sending the given message</param>
-        /// <param name="messages">A list of one or more messages to send</param>
+        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="messages">A list of one or more messages to send.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages) =>
@@ -675,8 +670,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
         /// </summary>
-        /// <param name="outputName">The output target for sending the given message</param>
-        /// <param name="messages">A list of one or more messages to send</param>
+        /// <param name="outputName">The output target for sending the given message.</param>
+        /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>

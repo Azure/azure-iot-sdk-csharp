@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
-using Microsoft.Azure.Devices.Shared;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.TransientFaultHandling;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -46,7 +47,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _internalRetryPolicy = new RetryPolicy(new TransientErrorStrategy(), new RetryStrategyAdapter(defaultRetryStrategy));
             _onConnectionStatusChanged = context.Get<ConnectionStatusChangesHandler>();
 
-            Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
+            if (Logging.IsEnabled)
+                Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
 
         private class TransientErrorStrategy : ITransientErrorDetectionStrategy
@@ -63,14 +65,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 new TransientErrorStrategy(),
                 new RetryStrategyAdapter(retryPolicy));
 
-            Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
+            if (Logging.IsEnabled)
+                Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             try
             {
-                Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -90,7 +94,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, message, cancellationToken, nameof(SendEventAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, cancellationToken, nameof(SendEventAsync));
             }
         }
 
@@ -98,7 +103,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -121,7 +127,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, messages, cancellationToken, nameof(SendEventAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, messages, cancellationToken, nameof(SendEventAsync));
             }
         }
 
@@ -129,7 +136,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -143,7 +151,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, method, cancellationToken, nameof(SendMethodResponseAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, method, cancellationToken, nameof(SendMethodResponseAsync));
             }
         }
 
@@ -151,7 +160,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
 
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -165,7 +175,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(ReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(ReceiveAsync));
             }
         }
 
@@ -173,7 +184,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
 
                 using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
                 return await _internalRetryPolicy
@@ -188,7 +200,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, timeoutHelper, nameof(ReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, timeoutHelper, nameof(ReceiveAsync));
             }
         }
 
@@ -196,7 +209,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -224,7 +238,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
             }
         }
 
@@ -234,7 +249,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -262,7 +278,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
             }
         }
 
@@ -270,7 +287,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -298,7 +316,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
             }
         }
 
@@ -306,7 +325,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -331,7 +351,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableMethodsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableMethodsAsync));
             }
         }
 
@@ -339,7 +360,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -363,7 +385,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
             }
         }
 
@@ -372,7 +395,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 _isAnEdgeModule = isAnEdgeModule;
-                Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -396,7 +420,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
             }
         }
 
@@ -405,7 +430,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 _isAnEdgeModule = isAnEdgeModule;
-                Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -429,7 +455,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(DisableEventReceiveAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableEventReceiveAsync));
             }
         }
 
@@ -437,7 +464,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -461,7 +489,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
             }
         }
 
@@ -469,7 +498,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -493,7 +523,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
             }
         }
 
@@ -501,7 +532,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
 
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -515,7 +547,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
             }
         }
 
@@ -523,7 +556,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -537,7 +571,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
             }
         }
 
@@ -545,7 +580,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -559,7 +595,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteAsync));
             }
         }
 
@@ -567,7 +604,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -581,7 +619,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonAsync));
             }
         }
 
@@ -589,7 +628,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -603,7 +643,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
             }
         }
 
@@ -622,14 +663,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return;
                 }
 
-                Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
                 _handleDisconnectCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(CloseAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(CloseAsync));
 
                 _handlerSemaphore?.Release();
                 Dispose(true);
@@ -659,7 +702,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (!_opened)
                 {
-                    Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
                     // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
@@ -683,7 +727,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else
                     {
-                        Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
 
                         _handleDisconnectCts.Cancel();
                     }
@@ -712,7 +757,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (!_opened)
                 {
-                    Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
                     // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
                     // we are returning the corresponding connection status change event => disconnected: retry_expired.
@@ -736,7 +782,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else
                     {
-                        Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
 
                         _handleDisconnectCts.Cancel();
                     }
@@ -758,7 +805,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         {
                             try
                             {
-                                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+                                if (Logging.IsEnabled)
+                                    Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
                                 // Will throw on error.
                                 await base.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -771,7 +819,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                             finally
                             {
-                                Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                                if (Logging.IsEnabled)
+                                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
                             }
                         },
                         cancellationToken).ConfigureAwait(false);
@@ -780,7 +829,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 try
                 {
-                    Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
                     // Will throw on error.
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -793,7 +843,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 finally
                 {
-                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Exit(this, cancellationToken, nameof(OpenAsync));
                 }
             }
         }
@@ -810,7 +861,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         try
                         {
-                            Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+                            if (Logging.IsEnabled)
+                                Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
 
                             // Will throw on error.
                             await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
@@ -823,7 +875,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         finally
                         {
-                            Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                            if (Logging.IsEnabled)
+                                Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                         }
                     },
                     cts.Token)
@@ -833,7 +886,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 try
                 {
-                    Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
 
                     // Will throw on error.
                     await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
@@ -846,7 +900,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 finally
                 {
-                    Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
                 }
             }
 
@@ -858,7 +913,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (_disposed)
             {
-                Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
 
                 _handleDisconnectCts.Cancel();
             }
@@ -871,13 +927,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (OperationCanceledException)
             {
                 // Canceled when the transport is being closed by the application.
-                Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
                 _onConnectionStatusChanged(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close);
                 return;
             }
 
-            Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
+            if (Logging.IsEnabled)
+                Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
             await _handlerSemaphore.WaitAsync().ConfigureAwait(false);
             _opened = false;
@@ -887,7 +945,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
                 if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
                 {
-                    Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
                     _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
                     return;
@@ -905,7 +964,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // This will recover to the state before the disconnect.
                 await _internalRetryPolicy.RunWithRetryAsync(async () =>
                 {
-                    Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
 
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -952,13 +1012,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _opened = true;
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
-                    Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
                 },
                 cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logging.Error(this, ex.ToString(), nameof(HandleDisconnectAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, ex.ToString(), nameof(HandleDisconnectAsync));
 
                 HandleConnectionStatusExceptions(ex, true);
             }
@@ -972,7 +1034,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // vs calling this when no more retry attempts are being made.
         private void HandleConnectionStatusExceptions(Exception exception, bool retryAttemptsExhausted = false)
         {
-            Logging.Info(this, $"Received exception: {exception}, retryAttemptsExhausted={retryAttemptsExhausted}", nameof(HandleConnectionStatusExceptions));
+            if (Logging.IsEnabled)
+                Logging.Info(
+                    this,
+                    $"Received exception: {exception}, retryAttemptsExhausted={retryAttemptsExhausted}",
+                    nameof(HandleConnectionStatusExceptions));
 
             ConnectionStatusChangeReason reason = ConnectionStatusChangeReason.Communication_Error;
             ConnectionStatus status = ConnectionStatus.Disconnected;
@@ -1001,7 +1067,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _onConnectionStatusChanged(status, reason);
-            Logging.Info(this, $"Connection status change: status={status}, reason={reason}", nameof(HandleConnectionStatusExceptions));
+            if (Logging.IsEnabled)
+                Logging.Info(
+                    this,
+                    $"Connection status change: status={status}, reason={reason}",
+                    nameof(HandleConnectionStatusExceptions));
         }
 
         protected override void Dispose(bool disposing)

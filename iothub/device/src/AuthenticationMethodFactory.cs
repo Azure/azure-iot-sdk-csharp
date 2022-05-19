@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -38,13 +37,13 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (csBuilder.SharedAccessSignature != null)
             {
-                return csBuilder.ModuleId != null
-                    ? new ModuleAuthenticationWithToken(
+                return csBuilder.ModuleId == null
+                    ? (IAuthenticationMethod)new DeviceAuthenticationWithToken(
+                        csBuilder.DeviceId,
+                        csBuilder.SharedAccessSignature)
+                    : new ModuleAuthenticationWithToken(
                         csBuilder.DeviceId,
                         csBuilder.ModuleId,
-                        csBuilder.SharedAccessSignature)
-                    : (IAuthenticationMethod)new DeviceAuthenticationWithToken(
-                        csBuilder.DeviceId,
                         csBuilder.SharedAccessSignature);
             }
             else if (csBuilder.UsingX509Cert)
