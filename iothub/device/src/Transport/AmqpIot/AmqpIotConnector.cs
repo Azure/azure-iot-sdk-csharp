@@ -30,7 +30,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public async Task<AmqpIotConnection> OpenConnectionAsync(CancellationToken cancellationToken)
         {
-            Logging.Enter(this, nameof(OpenConnectionAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(OpenConnectionAsync));
 
             var amqpTransportProvider = new AmqpTransportProvider();
             amqpTransportProvider.Versions.Add(s_amqpVersion_1_0_0);
@@ -56,7 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpConnection.Closed += amqpIotConnection.AmqpConnectionClosed;
                 await amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
 
                 return amqpIotConnection;
             }
@@ -68,7 +70,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                Logging.Exit(this, nameof(OpenConnectionAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(OpenConnectionAsync));
             }
         }
 

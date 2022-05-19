@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Used in cloud-to-device messages to request IoT Hub to generate feedback messages as a result of the consumption of the message by the device.
+        /// Used in cloud-to-device messages to request IoT hub to generate feedback messages as a result of the consumption of the message by the device.
         /// </summary>
         /// <remarks>
         /// Possible values:

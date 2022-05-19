@@ -14,11 +14,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     {
         private const SignRequestAlgo DefaultSignRequestAlgo = SignRequestAlgo.HMACSHA256;
         private const string DefaultKeyId = "primary";
+
         private readonly string _apiVersion;
         private readonly Uri _providerUri;
 
-        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy =
-            new ErrorDetectionStrategy();
+        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
 
         private static readonly RetryStrategy s_transientRetryStrategy = new ExponentialBackoffRetryStrategy(
             retryCount: 3,
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 throw new ArgumentNullException(nameof(generationId));
             }
 
-            var signRequest = new SignRequest()
+            var signRequest = new SignRequest
             {
                 KeyId = DefaultKeyId,
                 Algo = DefaultSignRequestAlgo,
@@ -80,10 +80,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                         throw new HttpHsmComunicationException(
                             $"Error calling SignAsync: {errorResponseException.Result?.Message ?? string.Empty}",
                             errorResponseException.StatusCode);
+
                     case SwaggerException swaggerException:
                         throw new HttpHsmComunicationException(
                             $"Error calling SignAsync: {swaggerException.Response ?? string.Empty}",
                             swaggerException.StatusCode);
+
                     default:
                         throw;
                 }

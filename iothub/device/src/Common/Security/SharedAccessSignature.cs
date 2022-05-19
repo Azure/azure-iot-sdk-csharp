@@ -23,18 +23,17 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             ExpiresOn = expiresOn;
-
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException($"The specified SAS token is expired on {ExpiresOn}.");
+                throw new UnauthorizedAccessException($"The specified SAS token has already expired - on {expiresOn}.");
             }
 
             IotHubName = iotHubName;
+            _expiry = expiry;
+            KeyName = keyName ?? string.Empty;
             Signature = signature;
             Audience = WebUtility.UrlDecode(encodedAudience);
             _encodedAudience = encodedAudience;
-            _expiry = expiry;
-            KeyName = keyName ?? string.Empty;
         }
 
         public string IotHubName { get; }
@@ -63,12 +62,12 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.SignatureFieldName));
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.SignatureFieldName}");
             }
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out string expiry))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.ExpiryFieldName));
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.ExpiryFieldName}");
             }
 
             // KeyName (skn) is optional.
@@ -76,10 +75,16 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.AudienceFieldName));
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.AudienceFieldName}");
             }
 
-            return new SharedAccessSignature(iotHubName, SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), expiry, keyName, signature, encodedAudience);
+            return new SharedAccessSignature(
+                iotHubName,
+                SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
+                expiry,
+                keyName,
+                signature,
+                encodedAudience);
         }
 
         public static bool IsSharedAccessSignature(string rawSignature)
@@ -108,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public string ComputeSignature(byte[] key)
         {
-            var fields = new List<string>
+            var fields = new string[]
             {
                 _encodedAudience,
                 _expiry,
@@ -127,20 +132,26 @@ namespace Microsoft.Azure.Devices.Client
         {
             string[] lines = sharedAccessSignature.Split();
 
-            if (!string.Equals(lines[0].Trim(), SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.Ordinal) || lines.Length != 2)
+            if (lines.Length != 2
+                || !StringComparer.Ordinal.Equals(SharedAccessSignatureConstants.SharedAccessSignature, lines[0].Trim()))
             {
                 throw new FormatException("Malformed signature");
             }
 
             IDictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            string[] fields = lines[1].Trim().Split(new string[] { SharedAccessSignatureConstants.PairSeparator }, StringSplitOptions.None);
+            string[] fields = lines[1].Trim().Split(SharedAccessSignatureConstants.PairSeparator);
 
             foreach (string field in fields)
             {
                 if (!string.IsNullOrEmpty(field))
                 {
-                    string[] fieldParts = field.Split(new string[] { SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
-                    if (string.Equals(fieldParts[0], SharedAccessSignatureConstants.AudienceFieldName, StringComparison.OrdinalIgnoreCase))
+                    string[] fieldParts = field.Split(SharedAccessSignatureConstants.KeyValueSeparator);
+                    if (fieldParts.Length < 2)
+                    {
+                        throw new FormatException("Malformed signature");
+                    }
+
+                    if (StringComparer.OrdinalIgnoreCase.Equals(SharedAccessSignatureConstants.AudienceFieldName, fieldParts[0]))
                     {
                         // We need to preserve the casing of the escape characters in the audience,
                         // so defer decoding the URL until later.

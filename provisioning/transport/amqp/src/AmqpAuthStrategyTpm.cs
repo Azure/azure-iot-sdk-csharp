@@ -1,21 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Sasl;
-using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using System.Net;
 using System.Net.Security;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Sasl;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyTpm : AmqpAuthStrategy
     {
-        private SecurityProviderTpm _security;
+        private readonly SecurityProviderTpm _security;
 
         public AmqpAuthStrategyTpm(SecurityProviderTpm security)
         {
@@ -39,10 +39,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         public override Task OpenConnectionAsync(
-            AmqpClientConnection connection, 
-            bool useWebSocket, 
-            IWebProxy proxy, 
-            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            AmqpClientConnection connection,
+            bool useWebSocket,
+            IWebProxy proxy,
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback,
             CancellationToken cancellationToken)
         {
             return connection.OpenAsync(useWebSocket, null, proxy, remoteCertificateValidationCallback, cancellationToken);
@@ -53,23 +53,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)
             {
                 if (Logging.IsEnabled)
-                {
-                    Logging.Error(
-                    this,
-                    $"Authentication key not found. OperationId=${operation?.OperationId}");
-                }
+                    Logging.Error(this,$"Authentication key not found. OperationId=${operation?.OperationId}");
 
-                throw new ProvisioningTransportException(
-                    "Authentication key not found.",
-                    null,
-                    false);
+                throw new ProvisioningTransportException("Authentication key not found.", null, false);
             }
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
             if (Logging.IsEnabled)
-            {
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
-            }
 
             _security.ActivateIdentityKey(key);
         }

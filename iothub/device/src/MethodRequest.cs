@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client
         public byte[] Data { get; private set; }
 
         /// <summary>
-        /// The method response timeout value. This value is the amount of time that IoT Hub service must await for
+        /// The method response timeout value. This value is the amount of time that IoT hub service must await for
         /// completion of a direct method execution on a device. The minimum and maximum values are 5 and 300 seconds.
         /// Note: This value is relevant only when invoking methods from one edge module to another.
         /// </summary>
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The device connection timeout value. This value is the amount of time upon invocation of a direct method that
-        /// IoT Hub service must await for a disconnected device to come online.
+        /// IoT hub service must await for a disconnected device to come online.
         /// The default value is 0, meaning that devices must already be online upon invocation of a direct method.
         /// The maximum value for connectTimeoutInSeconds is 300 seconds.
         /// Note: This value is relevant only when invoking methods from one edge module to another.

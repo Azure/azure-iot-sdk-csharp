@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         private ManualResetEvent _manualResetEvent;
 
         [Fx.Tag.SynchronizationObject(Blocking = false)]
-        private readonly object _thisLock;
+        private readonly object _thisLock = new object();
 
 #if DEBUG
         private UncompletedAsyncResultMarker _marker;
@@ -37,7 +37,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             _callback = callback;
             AsyncState = state;
-            _thisLock = new object();
 
 #if DEBUG
             _marker = new UncompletedAsyncResultMarker(this);
@@ -110,12 +109,8 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     OnCompleting(this, _exception);
                 }
-                catch (Exception e)
+                catch (Exception e) when (!Fx.IsFatal(e))
                 {
-                    if (Fx.IsFatal(e))
-                    {
-                        throw;
-                    }
                     _exception = e;
                 }
             }
@@ -234,14 +229,9 @@ namespace Microsoft.Azure.Devices.Client
 
         protected bool SyncContinue(IAsyncResult result)
         {
-            if (TryContinueHelper(result, out AsyncCompletion callback))
-            {
-                return callback(result);
-            }
-            else
-            {
-                return false;
-            }
+            return TryContinueHelper(result, out AsyncCompletion callback)
+                ? callback(result)
+                : false;
         }
 
         private bool TryContinueHelper(IAsyncResult result, out AsyncCompletion callback)
@@ -299,9 +289,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.ArgumentNull(nameof(result));
             }
 
-            var asyncResult = result as TAsyncResult;
-
-            if (asyncResult == null)
+            if (!(result is TAsyncResult asyncResult))
             {
                 throw Fx.Exception.Argument(nameof(result), CommonResources.InvalidAsyncResult);
             }

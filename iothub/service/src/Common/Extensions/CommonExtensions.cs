@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             return value[length - 1] == suffix
-                    ? value
-                    : value + suffix;
+                ? value
+                : value + suffix;
         }
 
         /// <summary>

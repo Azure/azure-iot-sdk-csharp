@@ -17,11 +17,16 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
 
             var buffer = new StringBuilder();
-            buffer.AppendFormat(CultureInfo.InvariantCulture, "{0} {1}={2}&{3}={4}&{5}={6}",
+            buffer.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "{0} {1}={2}&{3}={4}&{5}={6}",
                 SharedAccessSignatureConstants.SharedAccessSignature,
-                SharedAccessSignatureConstants.AudienceFieldName, audience,
-                SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
-                SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiry));
+                SharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiry));
 
             return buffer.ToString();
         }
@@ -37,10 +42,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         public static string BuildAudience(string iotHub, string deviceId, string moduleId)
         {
             // DeviceId and ModuleId need to be double encoded.
-            string audience = WebUtility.UrlEncode("{0}/devices/{1}/modules/{2}".FormatInvariant(
-                iotHub,
-                WebUtility.UrlEncode(deviceId),
-                WebUtility.UrlEncode(moduleId)));
+            string audience = WebUtility.UrlEncode(
+                "{0}/devices/{1}/modules/{2}".FormatInvariant(
+                    iotHub,
+                    WebUtility.UrlEncode(deviceId),
+                    WebUtility.UrlEncode(moduleId)));
 
             return audience;
         }

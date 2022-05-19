@@ -30,15 +30,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private void AmqpSessionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, nameof(AmqpSessionClosed));
-            }
 
             Closed?.Invoke(this, e);
+
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, nameof(AmqpSessionClosed));
-            }
         }
 
         internal Task CloseAsync(CancellationToken cancellationToken)
@@ -290,9 +287,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(typeof(AmqpIotSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
-            }
 
             uint prefetchCount = deviceIdentity.AmqpTransportSettings.PrefetchCount;
 
@@ -348,9 +343,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(typeof(AmqpIotSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
-                }
             }
         }
 

@@ -23,6 +23,11 @@ namespace Microsoft.Azure.Devices.Common.Tracing
             ActivityId = activityId;
         }
 
+        public static string Name => "E2EActivity";
+
+        // this field is passed as reference to native code.
+        public Guid ActivityId { get; set; }
+
         public static EventTraceActivity Empty
         {
             get
@@ -36,20 +41,12 @@ namespace Microsoft.Azure.Devices.Common.Tracing
             }
         }
 
-        public static string Name => "E2EActivity";
-
-        // this field is passed as reference to native code.
-        public Guid ActivityId;
-
         public static EventTraceActivity CreateFromThread()
         {
             Guid id = Trace.CorrelationManager.ActivityId;
-            if (id == Guid.Empty)
-            {
-                return Empty;
-            }
-
-            return new EventTraceActivity(id);
+            return id == Guid.Empty
+                ? Empty
+                : new EventTraceActivity(id);
         }
     }
 }

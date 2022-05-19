@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Shared
         private const int DumpArrayEventId = 7;
 
         // Provisioning event reservations: [10, 20)
-        // IoT Hub event reservations: [20, 30)
+        // IoT hub event reservations: [20, 30)
 
         private const string MissingMember = "(?)";
         private const string NullInstance = "(null)";

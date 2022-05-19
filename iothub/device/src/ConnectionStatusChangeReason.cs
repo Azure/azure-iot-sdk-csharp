@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         Expired_SAS_Token,
 
         /// <summary>
-        /// The device/ module has been deleted or marked as disabled (on your IoT Hub instance).
+        /// The device/ module has been deleted or marked as disabled (on your IoT hub instance).
         /// Fix the device/ module status in Azure before attempting to create the associated client instance.
         /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/></para>
         /// </summary>

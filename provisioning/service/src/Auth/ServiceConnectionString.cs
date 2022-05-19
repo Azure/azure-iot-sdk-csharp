@@ -13,11 +13,11 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     /// The connection string contains a set of information that uniquely identify an IoT Service.
     /// 
     /// A valid connection string shall be in the following format:
-    /// <code>
+    /// <c>
     /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
-    /// </code>
+    /// </c>
     /// 
-    /// This object parse and store the connection string. It is responsible to provide the authorization token too. 
+    /// This object parse and store the connection string. It is responsible to provide the authorization token too.
     /// </remarks>
     internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
     {
@@ -44,43 +44,19 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
         }
 
-        public string ServiceName
-        {
-            get;
-            private set;
-        }
+        public string ServiceName { get; private set; }
 
-        public string HostName
-        {
-            get;
-            private set;
-        }
+        public string HostName { get; private set; }
 
-        public Uri HttpsEndpoint
-        {
-            get;
-            private set;
-        }
+        public Uri HttpsEndpoint { get; private set; }
 
         public string Audience => HostName;
 
-        public string SharedAccessKeyName
-        {
-            get;
-            private set;
-        }
+        public string SharedAccessKeyName { get; private set; }
 
-        public string SharedAccessKey
-        {
-            get;
-            private set;
-        }
+        public string SharedAccessKey { get; private set; }
 
-        public string SharedAccessSignature
-        {
-            get;
-            private set;
-        }
+        public string SharedAccessSignature { get; private set; }
 
         public string GetUser()
         {
@@ -96,16 +72,9 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string GetPassword()
         {
-            string password;
-            if (string.IsNullOrWhiteSpace(SharedAccessSignature))
-            {
-                password = BuildToken(out _);
-            }
-            else
-            {
-                password = SharedAccessSignature;
-            }
-
+            string password = string.IsNullOrWhiteSpace(SharedAccessSignature)
+                ? BuildToken(out TimeSpan _)
+                : SharedAccessSignature;
             return password;
         }
 
@@ -122,12 +91,12 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         private string BuildToken(out TimeSpan ttl)
         {
-            var builder = new SharedAccessSignatureBuilder()
+            var builder = new SharedAccessSignatureBuilder
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
                 TimeToLive = s_defaultTokenTimeToLive,
-                Target = Audience
+                Target = Audience,
             };
 
             ttl = builder.TimeToLive;

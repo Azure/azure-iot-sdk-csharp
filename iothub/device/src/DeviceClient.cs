@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters, that uses AMQP transport protocol.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a disposable, AMQP DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (HTTP1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient using AMQP transport from the specified connection string
         /// </summary>
-        /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
+        /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified connection string using the specified transport type
         /// </summary>
-        /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
+        /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
         /// </summary>
         public string ProductInfo
         {
@@ -480,7 +480,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT Hub service.
+        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <remarks>
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.GetFileUploadSasUriAsync(request, cancellationToken);
 
         /// <summary>
-        /// Notify IoT Hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
+        /// Notify IoT hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
         /// </summary>
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -655,11 +655,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Includes a call to <see cref="CloseAsync()"/>.
         /// </remarks>
         /// <example>
-        /// <code>
+        /// <c>
         /// await using var client = DeviceClient.CreateFromConnectionString(...);
-        /// </code>
+        /// </c>
         /// or
-        /// <code>
+        /// <c>
         /// var client = DeviceClient.CreateFromConnectionString(...);
         /// try
         /// {
@@ -669,7 +669,7 @@ namespace Microsoft.Azure.Devices.Client
         /// {
         ///     await client.DisposeAsync();
         /// }
-        /// </code>
+        /// </c>
         /// </example>
         [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
         public async ValueTask DisposeAsync()

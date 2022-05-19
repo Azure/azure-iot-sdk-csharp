@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
-        /// <code>
+        /// <c>
         /// static DeviceClient GetClientWithProxy()
         /// {
         ///     try
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
         ///         throw;
         ///     }
         /// }
-        /// </code>
+        /// </c>
         /// </example>
         IWebProxy Proxy { get; set; }
     }

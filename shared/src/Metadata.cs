@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
-using DateTimeT = System.DateTime;
 
 namespace Microsoft.Azure.Devices.Shared
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="lastUpdated"></param>
         /// <param name="lastUpdatedVersion"></param>
-        public Metadata(DateTimeT lastUpdated, long? lastUpdatedVersion)
+        public Metadata(DateTime lastUpdated, long? lastUpdatedVersion)
         {
             LastUpdated = lastUpdated;
             LastUpdatedVersion = lastUpdatedVersion;
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Time when a property was last updated
         /// </summary>
-        public DateTimeT LastUpdated { get; set; }
+        public DateTime LastUpdated { get; set; }
 
         /// <remarks>
         /// This SHOULD be null for Reported properties metadata and MUST not be null for Desired properties metadata.

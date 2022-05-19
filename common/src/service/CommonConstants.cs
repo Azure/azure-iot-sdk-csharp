@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Common
     internal static class CommonConstants
     {
         // Custom HTTP response contents
-        internal const string ErrorCode = "errorCode";
+        public const string ErrorCode = "errorCode";
 
         // TODO: move these to ConfigProvider
         public const string DeviceAudienceFormat = "{0}/devices/{1}";

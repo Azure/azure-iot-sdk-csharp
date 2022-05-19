@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     public sealed class IotHubThrottledException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="IotHubThrottledException"/> with the value of the
+        /// Creates an instance of this class with the value of the
         /// maximum allowed count of active requests and marks it as non-transient.
         /// </summary>
         /// <param name="maximumBatchCount">The maximum allowed count of active requests.</param>
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubThrottledException"/> with a specified error message and
+        /// Creates an instance of this class with a specified error message and
         /// a reference to the inner exception that caused this exception, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>

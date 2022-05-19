@@ -14,21 +14,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private const string IsTransientValueSerializationStoreName = "ProvisioningTransportException-IsTransient";
 
         /// <summary>
-        /// If true, the error is transient and the application should retry at a later time.
-        /// </summary>
-        public bool IsTransient { get; private set; }
-
-        /// <summary>
-        /// Service reported Tracking Id. Use this when reporting a Service issue.
-        /// </summary>
-        public string TrackingId { get; set; }
-
-        /// <summary>
-        /// Service reported Error details. Use this when reporting a Service issue.
-        /// </summary>
-        public ProvisioningErrorDetails ErrorDetails { get; private set; }
-
-        /// <summary>
         /// Creates a new instance of the ProvisioningTransportException class.
         /// </summary>
         public ProvisioningTransportException()
@@ -116,6 +101,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 TrackingId = info.GetString(IsTransientValueSerializationStoreName);
             }
         }
+
+        /// <summary>
+        /// If true, the error is transient and the application should retry at a later time.
+        /// </summary>
+        public bool IsTransient { get; private set; }
+
+        /// <summary>
+        /// Service reported tracking Id. Use this when reporting a service issue.
+        /// </summary>
+        public string TrackingId { get; set; }
+
+        /// <summary>
+        /// Service reported error details. Use this when reporting a service issue.
+        /// </summary>
+        public ProvisioningErrorDetails ErrorDetails { get; private set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

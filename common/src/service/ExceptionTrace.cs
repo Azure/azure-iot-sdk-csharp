@@ -67,14 +67,16 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// When throwing ObjectDisposedException, it is highly recommended that you use this ctor: public ObjectDisposedException(string objectName, string message)
+        /// When throwing ObjectDisposedException, it is highly recommended that you use this ctor:
+        /// public ObjectDisposedException(string objectName, string message)
         /// and provide null for objectName, but a meaningful and relevant message for message.
-        /// It is recommended because end user really does not care or can do anything on the disposed object, commonly an internal or private object.
+        /// It is recommended because end user really does not care or can do anything on the
+        /// disposed object, commonly an internal or private object.
         /// </summary>
         public ObjectDisposedException ObjectDisposed(string message)
         {
             // pass in null, not disposedObject.GetType().FullName as per the above guideline
-            return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
+            return TraceException(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",

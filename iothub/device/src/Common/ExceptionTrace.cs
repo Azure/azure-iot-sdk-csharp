@@ -82,38 +82,11 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     case TraceEventType.Critical:
                     case TraceEventType.Error:
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Error,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionError(activity, GetDetailsForThrownException(exception));
-                        ////}
-
+                        Trace.TraceError($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
                         break;
 
                     case TraceEventType.Warning:
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Warning,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionWarning(activity, GetDetailsForThrownException(exception));
-                        ////}
-
-                        break;
-
-                    default:
-#if DEBUG
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Verbose,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionVerbose(activity, GetDetailsForThrownException(exception));
-                        ////}
-#endif
-
+                        Trace.TraceWarning($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
                         break;
                 }
             }

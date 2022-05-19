@@ -84,11 +84,11 @@ namespace Microsoft.Azure.Devices.Client
             Fx.Assert(callback != null, "Cannot schedule a null callback");
             if (lowPriority)
             {
-                IOThreadScheduler.ScheduleCallbackLowPriNoFlow(callback, state);
+                IoThreadScheduler.ScheduleCallbackLowPriNoFlow(callback, state);
             }
             else
             {
-                IOThreadScheduler.ScheduleCallbackNoFlow(callback, state);
+                IoThreadScheduler.ScheduleCallbackNoFlow(callback, state);
             }
         }
 
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client
             public DefaultActionItem(Action<object> callback, object state, bool isLowPriority)
             {
                 Fx.Assert(callback != null, "Shouldn't instantiate an object to wrap a null callback");
-                base.LowPriority = isLowPriority;
+                LowPriority = isLowPriority;
                 _callback = callback;
                 _state = state;
             }

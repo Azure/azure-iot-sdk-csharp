@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// The name of the blob that will be created in the provided output blob container. This blob will contain
-        /// the exported device registry information for the IoT Hub.
+        /// the exported device registry information for the IoT hub.
         /// </summary>
         /// <remarks>
         /// If not specified, defaults to "devices.txt"
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices
         /// The service assumes this is false, if not specified. If true, then configurations are included in the data export/import.
         /// </remarks>
         [JsonProperty(PropertyName = "includeConfigurations", NullValueHandling = NullValueHandling.Ignore)]
-        private bool? IncludeConfigurations { get; set; } // waiting for bug fix before publicizing
+        public bool? IncludeConfigurations { get; set; }
 
         /// <summary>
         /// Specifies the name of the blob to use when exporting/importing configurations.
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices
         /// The service assumes this is configurations.txt, if not specified.
         /// </remarks>
         [JsonProperty(PropertyName = "configurationsBlobName", NullValueHandling = NullValueHandling.Ignore)]
-        private string ConfigurationsBlobName { get; set; } // waiting for bug fix before publicizing
+        public string ConfigurationsBlobName { get; set; }
 
         /// <summary>
         /// Creates an instance of JobProperties with parameters ready to start an import job.

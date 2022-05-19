@@ -394,9 +394,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         throw FxTrace.Exception.AsError(new SerializationException(
                             IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
                     }
-                    else if (amqpObject is AmqpMap)
+                    else if (amqpObject is AmqpMap map)
                     {
-                        var map = (AmqpMap)amqpObject;
                         var dictionary = new Dictionary<string, object>();
                         foreach (KeyValuePair<MapKey, object> pair in map)
                         {
@@ -464,11 +463,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     break;
 
                 case PropertyValueType.Unknown:
-                    if (netObject is Stream)
+                    if (netObject is Stream netStream)
                     {
                         if (mappingType == MappingType.ApplicationProperty)
                         {
-                            amqpObject = ReadStream((Stream)netObject);
+                            amqpObject = ReadStream(netStream);
                         }
                     }
                     else if (mappingType == MappingType.ApplicationProperty)

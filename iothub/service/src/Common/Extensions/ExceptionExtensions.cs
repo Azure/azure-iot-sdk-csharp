@@ -108,11 +108,11 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// Indicates if the supplied exception is an IoT Hub exception and its error code belongs to the supplied error code list.
+        /// Indicates if the supplied exception is an IoT hub exception and its error code belongs to the supplied error code list.
         /// </summary>
         /// <param name="ex">The exception to test.</param>
         /// <param name="errorCodeList">The list containing possible error codes.</param>
-        /// <returns>True if the exception is an IoT Hub exception, and its error code is present in the supplied error code list; otherwise, false.</returns>
+        /// <returns>True if the exception is an IoT hub exception, and its error code is present in the supplied error code list; otherwise, false.</returns>
         public static bool CheckIotHubErrorCode(this Exception ex, params ErrorCode[] errorCodeList)
         {
             foreach (ErrorCode errorCode in errorCodeList)

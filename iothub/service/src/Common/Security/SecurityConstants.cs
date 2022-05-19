@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Common.Security
     public static class SecurityConstants
     {
         /// <summary>
-        /// The scheme name for Bearer token auth.
+        /// The scheme name for bearer token auth.
         /// </summary>
         public const string BearerTokenScheme = "Bearer";
 
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const string AuthenticationScheme = "Scheme";
 
         /// <summary>
-        /// The role capable of invoking ResourceProvider from CSM. 
+        /// The role capable of invoking ResourceProvider from CSM.
         /// </summary>
         public const string ResourceProviderClientAccessRole = "ResourceProviderClientAccess";
 
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         /// <summary>
         /// Authentication failed message.
         /// </summary>
-        public const string NonSecureConnection = "Connection does not use secure sockets (i.e. https)";
+        public const string NonSecureConnection = "Connection does not use secure sockets (i.e. HTTPS)";
 
         /// <summary>
         /// Authentication failed message.
@@ -79,32 +79,32 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const string WwwAuthenticateHeader = "WWW-Authenticate";
 
         /// <summary>
-        /// Default Owner SaS Key name.
+        /// Default owner SAS key name.
         /// </summary>
         public const string DefaultOwnerSaSKeyName = "iothubowner";
 
         /// <summary>
-        /// Default Service SaS Key name.
+        /// Default service SAS key name.
         /// </summary>
         public const string DefaultServiceSaSKeyName = "service";
 
         /// <summary>
-        /// Default Device SaS Key name.
+        /// Default device SAS key name.
         /// </summary>
         public const string DefaultDeviceSaSKeyName = "device";
 
         /// <summary>
-        /// Default Device Registry Read Key name.
+        /// Default device registry read key name.
         /// </summary>
         public const string DefaultRegistryReadSaSKeyName = "registryRead";
 
         /// <summary>
-        /// Default Device Registry ReadWrite Key name.
+        /// Default device registry ReadWrite key name.
         /// </summary>
         public const string DefaultRegistryReadWriteSaSKeyName = "registryReadWrite";
 
         /// <summary>
-        /// Admin SaS Key name.
+        /// Admin SAS key name.
         /// </summary>
         public const string AdminSaSKeyName = "admin";
 
@@ -114,24 +114,24 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const int SaSKeyLength = 32;
 
         /// <summary>
-        /// Maximum SaS Key Name Length.
+        /// Maximum SAS key name length.
         /// </summary>
         public const int SasKeyNameMaxLength = 64;
 
-        // Shared Access Key Constants
+        // Shared access key constants
 
         /// <summary>
-        /// Shared Access Key.
+        /// Shared access key.
         /// </summary>
         public const string SharedAccessKey = "SharedAccessKey";
 
         /// <summary>
-        /// Shared Access Key Field Name.
+        /// Shared access key field name.
         /// </summary>
         public const string SharedAccessKeyFieldName = "sk";
 
         /// <summary>
-        /// Shared Access Key Full Field Name.
+        /// Shared access key full field name.
         /// </summary>
         public const string SharedAccessKeyFullFieldName = SharedAccessKey + " " + SharedAccessKeyFieldName + "=";
     }
