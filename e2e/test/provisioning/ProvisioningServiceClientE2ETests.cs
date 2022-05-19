@@ -132,15 +132,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentAsync(
-                provisioningServiceClient,
-                registrationId,
-                attestationType,
-                null,
-                null,
-                AllocationPolicy.Static,
-                null,
-                null,
-                null);
+                    provisioningServiceClient,
+                    registrationId,
+                    attestationType,
+                    null,
+                    null,
+                    AllocationPolicy.Static,
+                    null,
+                    null,
+                    null)
+                .ConfigureAwait(false);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
 
