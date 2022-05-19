@@ -8,22 +8,23 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Parameters to execute a direct method on the device or module
+    /// Parameters to execute a direct method on the device or module.
     /// </summary>
     internal class MethodInvokeRequest
     {
+        // For serialization
         internal MethodInvokeRequest()
         {
-        } // @ailn: for serialization only
+        }
 
         /// <summary>
-        /// Creates an instance of DirectMethodRequest type
+        /// Creates an instance of DirectMethodRequest type.
         /// </summary>
-        /// <param name="methodName">Method name</param>
-        /// <param name="payload">Method invocation payload</param>
-        /// <param name="responseTimeout">Method timeout</param>
-        /// <param name="connectionTimeout">Device connection timeout</param>
-        /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace</exception>
+        /// <param name="methodName">Method name.</param>
+        /// <param name="payload">Method invocation payload.</param>
+        /// <param name="responseTimeout">Method timeout.</param>
+        /// <param name="connectionTimeout">Device connection timeout.</param>
+        /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace.</exception>
         public MethodInvokeRequest(string methodName, string payload, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
         {
             if (string.IsNullOrWhiteSpace(methodName))
@@ -43,34 +44,38 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Method to run
+        /// Method to invoke.
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
         public string MethodName { get; private set; }
 
         /// <summary>
-        /// Method timeout
+        /// Method timeout.
         /// </summary>
         [JsonIgnore]
         public TimeSpan? ResponseTimeout { get; private set; }
 
         /// <summary>
-        /// Timeout for device to come online
+        /// Timeout for device to come online.
         /// </summary>
         [JsonIgnore]
         public TimeSpan? ConnectionTimeout { get; private set; }
 
         /// <summary>
-        /// Method timeout in seconds
+        /// Method timeout, in seconds.
         /// </summary>
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => !ResponseTimeout.HasValue || ResponseTimeout <= TimeSpan.Zero ? (int?)null : (int)ResponseTimeout.Value.TotalSeconds;
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
+            ? (int)ResponseTimeout.Value.TotalSeconds
+            : (int?)null;
 
         /// <summary>
-        /// Connection timeout in seconds
+        /// Connection timeout, in seconds.
         /// </summary>
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => !ConnectionTimeout.HasValue || ConnectionTimeout <= TimeSpan.Zero ? (int?)null : (int)ConnectionTimeout.Value.TotalSeconds;
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
+            ? (int)ConnectionTimeout.Value.TotalSeconds
+            : (int?)null;
 
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         internal JRaw Payload { get; set; }

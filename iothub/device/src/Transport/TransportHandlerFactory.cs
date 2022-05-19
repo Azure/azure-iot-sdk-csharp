@@ -37,7 +37,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
                 case TransportType.Http1:
-                    return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings, isClientPrimaryTransportHandler: true);
+                    return new HttpTransportHandler(
+                        context,
+                        connectionString,
+                        transportSetting as Http1TransportSettings,
+                        isClientPrimaryTransportHandler: true);
 
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
@@ -51,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
                 default:
-                    throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
+                    throw new InvalidOperationException($"Unsupported transport setting {transportSetting}");
             }
         }
     }

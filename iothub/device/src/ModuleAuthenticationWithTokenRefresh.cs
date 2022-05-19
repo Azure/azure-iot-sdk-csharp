@@ -15,23 +15,13 @@ namespace Microsoft.Azure.Devices.Client
         private const int DefaultBufferPercentage = 15;
 
         /// <summary>
-        /// Gets the ModuleId.
-        /// </summary>
-        public string ModuleId { get; }
-
-        /// <summary>
-        /// Gets the DeviceId.
-        /// </summary>
-        public string DeviceId { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class using default
-        /// TTL and TTL buffer time settings.
+        /// Initializes a new instance of this class using default TTL and TTL buffer time settings.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// associated module client instance is disposed. To reuse the authentication method instance across multiple
+        /// client instance lifetimes, use the <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/>
+        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">The Id of the device.</param>
         /// <param name="moduleId">The Id of the module.</param>
@@ -41,12 +31,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated module client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// associated module client instance is disposed. To reuse the authentication method instance across multiple
+        /// client instance lifetimes,
+        /// use the <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set
+        /// <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
@@ -68,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
@@ -90,7 +82,10 @@ namespace Microsoft.Azure.Devices.Client
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
             bool disposeWithClient)
-            : base(SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds), SetSasTokenRenewalBufferPercentage(timeBufferPercentage), disposeWithClient)
+            : base(
+                  SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds),
+                  SetSasTokenRenewalBufferPercentage(timeBufferPercentage),
+                  disposeWithClient)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
@@ -107,8 +102,17 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of
-        /// the current instance.
+        /// Gets the module's Id.
+        /// </summary>
+        public string ModuleId { get; }
+
+        /// <summary>
+        /// Gets the device's Id.
+        /// </summary>
+        public string DeviceId { get; }
+
+        /// <summary>
+        /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>

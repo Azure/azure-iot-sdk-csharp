@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-
 using Microsoft.Azure.Devices.Common.WebApi;
 
 namespace Microsoft.Azure.Devices.Common

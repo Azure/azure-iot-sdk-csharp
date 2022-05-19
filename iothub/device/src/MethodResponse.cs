@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The data structure represent the Device Twin Method that is used for triggering an activity on the device
+    /// The data structure represent the Device Twin Method that is used for triggering an activity on the device.
     /// </summary>
     public sealed class MethodResponse
     {
@@ -25,9 +26,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Constructor which uses the input byte array as the body
+        /// Constructor which uses the input byte array as the body.
         /// </summary>
-        /// <param name="status">an integer code containing a method call status.</param>
+        /// <param name="status">An integer code containing a method call status.</param>
         public MethodResponse(int status)
         {
             Status = status;
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Property containing entire result data. The formatting is checked for JSON correctness
         /// upon setting this property.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Performance",
             "CA1819:Properties should not return arrays",
             Justification = "Cannot change property types on public classes.")]
@@ -45,8 +46,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             private set
             {
-                // codes_SRS_METHODCALLBACKRETURN_10_002: [ Result shall check if the input is validate JSON ]
-                // codes_SRS_METHODCALLBACKRETURN_10_003: [ Result shall percolate the invalid token exception to the caller ]
                 Utils.ValidateDataIsEmptyOrJson(value);
 
                 _result = value;
@@ -55,16 +54,15 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Property containing the entire result data, in Json format.
+        /// Property containing the entire result data, in JSON format.
         /// </summary>
-        public string ResultAsJson => Result == null || Result.Length == 0 ? null : Encoding.UTF8.GetString(Result);
+        public string ResultAsJson => Result == null || Result.Length == 0
+            ? null
+            : Encoding.UTF8.GetString(Result);
 
         /// <summary>
-        /// contains the response of the device client application method handler.
+        /// The response of the device client application method handler.
         /// </summary>
-        public int Status
-        {
-            get; private set;
-        }
+        public int Status { get; private set; }
     }
 }

@@ -11,7 +11,8 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class AmqpConnectionPoolSettings
     {
         private uint _maxPoolSize;
-        internal const uint MaxDevicesPerConnection = 995; // IotHub allows up to 999 tokens per connection. Setting the threshold just below that.
+        // IotHub allows up to 999 tokens per connection. Setting the threshold just below that.
+        internal const uint MaxDevicesPerConnection = 995;
 
         /// <summary>
         /// The default size of the pool

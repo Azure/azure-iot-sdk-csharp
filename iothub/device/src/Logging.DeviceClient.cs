@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
 using System;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Text;
+using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.Shared
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Shared
 
         [NonEvent]
         public static void CreateFromConnectionString(
-            object thisOrContextObject, 
+            object thisOrContextObject,
             string iotHubConnectionStringWithNoKey,
             ITransportSettings[] transportSettings,
             ClientOptions options)

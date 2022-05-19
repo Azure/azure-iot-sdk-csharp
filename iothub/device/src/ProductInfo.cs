@@ -37,7 +37,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <para>Example: "{runtime}; {operatingSystem}; {architecture}; {deviceId}"</para>
         /// </summary>
         /// <param name="format"></param>
-        /// <returns></returns>
         private string ToString(string format)
         {
             const string name = ".NET";
@@ -55,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
-#if NETSTANDARD2_0 || NET472
+#if NETSTANDARD2_0_OR_GREATER || NET472
                     infoParts = format
                         .Replace("{runtime}", runtime)
                         .Replace("{operatingSystem}", operatingSystem + productType)

@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Represents the Method Invocation Results.
+    /// Represents the method invocation result.
     /// </summary>
     internal class MethodInvokeResponse
     {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         public int Status { get; set; }
 
         /// <summary>
-        /// Get payload as json
+        /// Get payload as json.
         /// </summary>
         public string GetPayloadAsJson()
         {

@@ -77,18 +77,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Only trace if this is the first time an exception is thrown by this ExceptionTrace/EventSource.
                 exception.Data[_eventSourceName] = _eventSourceName;
-
-                switch (level)
-                {
-                    case TraceEventType.Critical:
-                    case TraceEventType.Error:
-                        Trace.TraceError($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
-                        break;
-
-                    case TraceEventType.Warning:
-                        Trace.TraceWarning($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
-                        break;
-                }
             }
 
             return exception;

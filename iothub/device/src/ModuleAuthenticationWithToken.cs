@@ -16,11 +16,11 @@ namespace Microsoft.Azure.Devices.Client
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithToken"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="moduleId">Module Identifier.</param>
-        /// <param name="token">Security Token.</param>
+        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="moduleId">Module identifier.</param>
+        /// <param name="token">Security token.</param>
         public ModuleAuthenticationWithToken(string deviceId, string moduleId, string token)
         {
             SetDeviceId(deviceId);
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on the properties of the current instance.
+        /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>

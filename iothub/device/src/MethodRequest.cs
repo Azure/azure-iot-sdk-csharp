@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
@@ -12,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class MethodRequest
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MethodRequest"/> class with without any method data
+        /// Initializes a new instance of this class with without any method data
         /// and extra time for device to connect and send a response.
         /// </summary>
         /// <param name="name">The method name.</param>
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MethodRequest"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="name">The method name.</param>
         /// <param name="data">The method data.</param>
@@ -30,17 +31,18 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MethodRequest"/> class without any method data.
+        /// Initializes a new instance of this class without any method data.
         /// </summary>
         /// <param name="name">The method name.</param>
         /// <param name="responseTimeout">The method timeout value.</param>
         /// <param name="connectionTimeout">The device connection timeout value.</param>
-        public MethodRequest(string name, TimeSpan? responseTimeout, TimeSpan? connectionTimeout) : this(name, null, responseTimeout, connectionTimeout)
+        public MethodRequest(string name, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
+            : this(name, null, responseTimeout, connectionTimeout)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MethodRequest"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="name">The method name.</param>
         /// <param name="data">The method data.</param>
@@ -62,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method data.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        [SuppressMessage(
             "Performance",
             "CA1819:Properties should not return arrays",
             Justification = "Cannot change property types on public classes.")]
@@ -87,6 +89,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method data in Json format.
         /// </summary>
-        public string DataAsJson => (Data == null || Data.Length == 0) ? null : Encoding.UTF8.GetString(Data);
+        public string DataAsJson => (Data == null || Data.Length == 0)
+            ? null
+            : Encoding.UTF8.GetString(Data);
     }
 }

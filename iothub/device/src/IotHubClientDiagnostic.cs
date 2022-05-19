@@ -18,7 +18,11 @@ namespace Microsoft.Azure.Devices.Client
 
             if (ShouldAddDiagnosticInfo(diagnosticSamplingPercentage, ref currentMessageCount))
             {
-                string creationTimeUtc = string.Format(CultureInfo.InvariantCulture, "{0}={1}", DiagnosticCreationTimeUtcKey, CurrentUtcTimeToSecond().ToString("0.000", CultureInfo.InvariantCulture));
+                string creationTimeUtc = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}={1}",
+                    DiagnosticCreationTimeUtcKey,
+                    CurrentUtcTimeToSecond().ToString("0.000", CultureInfo.InvariantCulture));
                 message.SystemProperties[MessageSystemPropertyNames.DiagId] = GenerateEightRandomCharacters();
                 message.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext] = creationTimeUtc;
                 result = true;
@@ -29,7 +33,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal static bool HasDiagnosticProperties(Message message)
         {
-            return message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagId) && message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagCorrelationContext);
+            return message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagId)
+                && message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagCorrelationContext);
         }
 
         private static string GenerateEightRandomCharacters()
@@ -51,7 +56,8 @@ namespace Microsoft.Azure.Devices.Client
             if (diagnosticSamplingPercentage > 0)
             {
                 currentMessageCount = currentMessageCount == 100 ? 1 : currentMessageCount + 1;
-                result = Math.Floor((currentMessageCount - 2) * diagnosticSamplingPercentage / 100.0) < Math.Floor((currentMessageCount - 1) * diagnosticSamplingPercentage / 100.0);
+                result = Math.Floor((currentMessageCount - 2) * diagnosticSamplingPercentage / 100.0) <
+                    Math.Floor((currentMessageCount - 1) * diagnosticSamplingPercentage / 100.0);
             }
 
             return result;

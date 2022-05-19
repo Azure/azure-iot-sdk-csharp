@@ -20,7 +20,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="certificate">X.509 Certificate.</param>
         /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
-        public DeviceAuthenticationWithX509Certificate(string deviceId, X509Certificate2 certificate, X509Certificate2Collection chainCertificates = null)
+        public DeviceAuthenticationWithX509Certificate(
+            string deviceId,
+            X509Certificate2 certificate,
+            X509Certificate2Collection chainCertificates = null)
         {
             SetDeviceId(deviceId);
             Certificate = certificate;
@@ -38,18 +41,20 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Gets or sets the X.509 certificate associated with this device.
-        /// The private key should be available in the <see cref="X509Certificate2"/> object, or should be loaded into the system where the <see cref="DeviceClient"/> will be used. />
+        /// The private key should be available in the <see cref="X509Certificate2"/> object, or should be loaded into
+        /// the system where the <see cref="DeviceClient"/> will be used. />
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
 
         /// <summary>
-        /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the service. Private keys are not required for these certificates.
+        /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the
+        /// service. Private keys are not required for these certificates.
         /// This is only supported on AMQP_Tcp_Only and Mqtt_Tcp_Only
         /// </summary>
         public X509Certificate2Collection ChainCertificates { get; }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on the properties of the current instance.
+        /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
