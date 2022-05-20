@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
             return this;
         }
 
-        public IDelegatingHandler Build(IPipelineContext context)
+        public IDelegatingHandler Build(PipelineContext context)
         {
             if (_pipeline.Count == 0)
             {

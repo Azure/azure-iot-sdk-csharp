@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private Action<Message> _twinResponseEvent;
 
         internal MqttTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         internal MqttTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<IPAddress[], int, Task<IChannel>> channelFactory)
@@ -188,15 +188,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                ClientOptions options = context.Get<ClientOptions>();
+                ClientOptions options = context.ClientOptions;
                 switch (settings.GetTransportType())
                 {
                     case TransportType.Mqtt_Tcp_Only:
-                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
+                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
                         break;
 
                     case TransportType.Mqtt_WebSocket_Only:
-                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
+                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
                         break;
 
                     default:

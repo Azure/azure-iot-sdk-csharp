@@ -7,6 +7,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> delegatingHandlerCreator);
 
-        IDelegatingHandler Build(IPipelineContext context);
+        IDelegatingHandler Build(PipelineContext context);
     }
 }

@@ -5,6 +5,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     interface ITransportHandlerFactory
     {
-        IDelegatingHandler Create(IPipelineContext context);
+        IDelegatingHandler Create(PipelineContext context);
     }
 }

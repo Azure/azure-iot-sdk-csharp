@@ -61,14 +61,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly string _moduleId;
 
         internal HttpTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             Http1TransportSettings transportSettings,
             HttpClientHandler httpClientHandler = null,
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
-            ProductInfo productInfo = context.Get<ProductInfo>();
+            ProductInfo productInfo = context.ProductInfo;
             _deviceId = iotHubConnectionString.DeviceId;
             _moduleId = iotHubConnectionString.ModuleId;
             _httpClientHelper = new HttpClientHelper(
