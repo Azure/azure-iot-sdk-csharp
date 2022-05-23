@@ -11,7 +11,7 @@
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
 
     <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>Authentication/HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Include="HsmAuthentication\**" />
+    <Compile Include="Authentication\HsmAuthentication\**" />
     <Compile Remove="ClientWebSocketTransportTests.cs" />
     <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
