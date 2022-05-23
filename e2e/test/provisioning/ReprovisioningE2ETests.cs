@@ -360,11 +360,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromName)}({attestationType})");
 
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
 
             switch (attestationType)
             {
                 case AttestationMechanismType.Tpm:
-                    string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
                     var tpmSim = new SecurityProviderTpmSimulator(registrationId);
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
@@ -431,7 +431,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         case EnrollmentType.Individual:
                             IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
                                 provisioningServiceClient,
+                                registrationId,
                                 AttestationMechanismType.SymmetricKey,
+                                null,
                                 reprovisionPolicy, allocationPolicy,
                                 customAllocationDefinition,
                                 iothubs,
