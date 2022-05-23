@@ -1196,7 +1196,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                {
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                }
+                else
+                {
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
 
                 operationalCertificate?.Dispose();
 
@@ -1312,7 +1320,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                {
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                }
+                else
+                {
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
 
                 if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
                 {
@@ -1349,6 +1365,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
+                Logger.Trace($"Deleting test enrollment type {AttestationMechanismType.Tpm}-{EnrollmentType.Individual} with registration Id {security.GetRegistrationID()}.");
                 await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, security).ConfigureAwait(false);
             }
         }
@@ -1378,7 +1395,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                {
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                }
+                else
+                {
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
 
                 if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
                 {
@@ -1418,7 +1443,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             finally
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                {
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                }
+                else
+                {
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                }
 
                 if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
                 {
