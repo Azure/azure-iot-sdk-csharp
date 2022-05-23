@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 
-        public RetryDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+        public RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
             IRetryPolicy defaultRetryStrategy = new ExponentialBackoff(
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 deltaBackoff: TimeSpan.FromMilliseconds(100));
 
             _internalRetryPolicy = new RetryPolicy(new TransientErrorStrategy(), new RetryStrategyAdapter(defaultRetryStrategy));
-            _onConnectionStatusChanged = context.Get<ConnectionStatusChangesHandler>();
+            _onConnectionStatusChanged = context.ConnectionStatusChangesHandler;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));

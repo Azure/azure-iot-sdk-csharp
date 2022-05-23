@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private TaskCompletionSource<bool> _transportShouldRetry;
         protected ITransportSettings _transportSettings;
 
-        protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
+        protected TransportHandler(PipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
         {
             _transportSettings = transportSettings;

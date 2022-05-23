@@ -167,16 +167,18 @@ namespace Microsoft.Azure.Devices.Client
             _clientOptions = options;
             IotHubConnectionString = iotHubConnectionString;
 
-            var pipelineContext = new PipelineContext();
-            pipelineContext.Set(transportSettings);
-            pipelineContext.Set(iotHubConnectionString);
-            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalledAsync);
-            pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
-            pipelineContext.Set<ConnectionStatusChangesHandler>(OnConnectionStatusChanged);
-            pipelineContext.Set<OnModuleEventMessageReceivedDelegate>(OnModuleEventMessageReceivedAsync);
-            pipelineContext.Set<OnDeviceMessageReceivedDelegate>(OnDeviceMessageReceivedAsync);
-            pipelineContext.Set(_productInfo);
-            pipelineContext.Set(options);
+            var pipelineContext = new PipelineContext()
+            {
+                TransportSettingsArray = transportSettings,
+                IotHubConnectionString = iotHubConnectionString,
+                MethodCallback = OnMethodCalledAsync,
+                DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
+                ConnectionStatusChangesHandler = OnConnectionStatusChanged,
+                ModuleEventCallback = OnModuleEventMessageReceivedAsync,
+                DeviceEventCallback = OnDeviceMessageReceivedAsync,
+                ProductInfo = _productInfo,
+                ClientOptions = options
+            };
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 

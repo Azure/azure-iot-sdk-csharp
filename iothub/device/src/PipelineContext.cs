@@ -1,51 +1,32 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class PipelineContext : IPipelineContext
+    internal class PipelineContext
     {
-        private readonly Dictionary<string, object> _context = new Dictionary<string, object>();
+        internal ITransportSettings TransportSettings { get; set; }
 
-        public void Set<T>(T value)
-        {
-            Set(typeof(T).Name, value);
-        }
+        internal ITransportSettings[] TransportSettingsArray { get; set; }
 
-        public void Set<T>(string key, T value)
-        {
-            if (Logging.IsEnabled)
-                Logging.Info(this, $"{key} = {value}");
+        internal ProductInfo ProductInfo { get; set; }
 
-            _context[key] = value;
-        }
+        internal IotHubConnectionString IotHubConnectionString { get; set; }
 
-        public T Get<T>() where T : class
-        {
-            return Get<T>(typeof(T).Name);
-        }
+        internal ClientOptions ClientOptions { get; set; }
 
-        public T Get<T>(string key)
-        {
-            return _context.TryGetValue(key, out object value)
-                ? (T)value
-                : default;
-        }
+        internal ConnectionStatusChangesHandler ConnectionStatusChangesHandler { get; set; }
 
-        public bool TryGet<T>(string key, out T value)
-        {
-            value = default;
+        internal Action<TwinCollection> DesiredPropertyUpdateCallback { get; set; }
 
-            if (_context.TryGetValue(key, out object data))
-            {
-                value = (T)data;
-                return true;
-            }
+        internal InternalClient.OnMethodCalledDelegate MethodCallback { get; set; }
 
-            return false;
-        }
+        internal InternalClient.OnModuleEventMessageReceivedDelegate ModuleEventCallback { get; set; }
+
+        internal InternalClient.OnDeviceMessageReceivedDelegate DeviceEventCallback { get; set; }
     }
 }

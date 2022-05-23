@@ -807,8 +807,13 @@ namespace Microsoft.Azure.Devices.Client
 #endif
                 }
 
-                var context = new PipelineContext();
-                context.Set(new ProductInfo { Extra = InternalClient.ProductInfo });
+                var context = new PipelineContext()
+                {
+                    ProductInfo = new ProductInfo
+                    {
+                        Extra = InternalClient.ProductInfo
+                    }
+                };
 
                 var transportSettings = new Http1TransportSettings();
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate

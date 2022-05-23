@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
 
-        public ProtocolRoutingDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+        public ProtocolRoutingDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
         }
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 // Try next protocol if we're still searching.
 
-                ITransportSettings[] transportSettingsArray = Context.Get<ITransportSettings[]>();
+                ITransportSettings[] transportSettingsArray = Context.TransportSettingsArray;
                 Debug.Assert(transportSettingsArray != null);
 
                 // Keep cycling through all transports until we find one that works.
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
 
                 // Configure the transportSettings for this context (Important! Within Context, 'ITransportSettings' != 'ITransportSettings[]').
-                Context.Set<ITransportSettings>(transportSettings);
+                Context.TransportSettings = transportSettings;
                 CreateNewTransportHandler();
 
                 _nextTransportIndex++;

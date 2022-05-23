@@ -12,16 +12,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal class TransportHandlerFactory : ITransportHandlerFactory
     {
-        public IDelegatingHandler Create(IPipelineContext context)
+        public IDelegatingHandler Create(PipelineContext context)
         {
             // ProtocolRoutingDelegatingHandler configures the ITransportSettings configuration
             // which is different from ITransportSettings[] element.
-            ITransportSettings transportSetting = context.Get<ITransportSettings>();
-            IotHubConnectionString connectionString = context.Get<IotHubConnectionString>();
-            InternalClient.OnMethodCalledDelegate onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
-            Action<TwinCollection> onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
-            InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.Get<InternalClient.OnModuleEventMessageReceivedDelegate>();
-            InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.Get<InternalClient.OnDeviceMessageReceivedDelegate>();
+            ITransportSettings transportSetting = context.TransportSettings;
+            IotHubConnectionString connectionString = context.IotHubConnectionString;
+            InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
+            Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
+            InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
+            InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
             switch (transportSetting.GetTransportType())
             {
