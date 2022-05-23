@@ -874,23 +874,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
 
-            try
-            {
-                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+            DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
-                Logger.Trace($"{result.Status}");
+            Logger.Trace($"{result.Status}");
 
-                Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
-                Assert.IsNull(result.AssignedHub);
-                Assert.IsNull(result.DeviceId);
-                // Exception message must contain the errorCode value as below
-                Assert.AreEqual(404201, result.ErrorCode);
-            }
-            finally
-            {
-                Logger.Trace($"Deleting test enrollment type {AttestationMechanismType.Tpm}-{EnrollmentType.Individual} with registration Id {security.GetRegistrationID()}.");
-                await DeleteCreatedEnrollmentAsync(EnrollmentType.Individual, security).ConfigureAwait(false);
-            }
+            Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
+            Assert.IsNull(result.AssignedHub);
+            Assert.IsNull(result.DeviceId);
+            // Exception message must contain the errorCode value as below
+            Assert.AreEqual(404201, result.ErrorCode);
         }
 
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
@@ -1266,7 +1258,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 await dpsClient.DeleteIndividualEnrollmentAsync(security.GetRegistrationID()).ConfigureAwait(false);
             }
-            else
+            else if (enrollmentType == EnrollmentType.Group)
             {
                 await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
             }
