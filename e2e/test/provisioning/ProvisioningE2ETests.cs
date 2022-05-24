@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         [LoggedTestMethod]
-        [DoNotParallelize] //TPM tests need to execute in serial as TPM only accepts one connection at a time
+        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Http_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -707,10 +707,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 ValidateDeviceRegistrationResult(false, result);
 
-    #pragma warning disable CA2000 // Dispose objects before losing scope
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
                 auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
-    #pragma warning restore CA2000 // Dispose objects before losing scope
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
                 await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
@@ -837,7 +837,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ValidateDeviceRegistrationResult(false, result);
 
             try
-                {
+            {
                 if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
                 {
                     Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
@@ -849,15 +849,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
 
                 if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
-                    {
-                        X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                        publicPrivateCertificate?.Dispose();
-                    }
-                }
-                catch (Exception ex)
                 {
-                    Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
+                    publicPrivateCertificate?.Dispose();
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+            }
         }
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
@@ -963,7 +963,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
             Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
-            
+
             try
             {
                 ProvisioningTransportException exception = await Assert.
@@ -1087,23 +1087,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         iothubs,
                         capabilities).ConfigureAwait(false);
 
-                    Logger.Trace($"Getting enrollment: RegistrationID = {registrationId}");
-                    var individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
-                    {
-                        AllocationPolicy = allocationPolicy,
-                        ReprovisionPolicy = reprovisionPolicy,
-                        IotHubs = iothubs,
-                        CustomAllocationDefinition = customAllocationDefinition,
-                        Capabilities = capabilities
-                    };
-                    IndividualEnrollment enrollment = await provisioningServiceClient
-                        .CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment)
-                        .ConfigureAwait(false);
-                    var attestation = new TpmAttestation(base64Ek);
-                    enrollment.Attestation = attestation;
-                    Logger.Trace($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                    await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
-                    return tpmSim;
+                    return new SecurityProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
                 case AttestationMechanismType.X509:
                     X509Certificate2 certificate = null;
@@ -1173,15 +1157,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
 
                         case EnrollmentType.Individual:
-                            IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollment(
-                                    provisioningServiceClient,
-                                    AttestationMechanismType.SymmetricKey,
-                                    reprovisionPolicy,
-                                    allocationPolicy,
-                                    customAllocationDefinition,
-                                    iothubs,
-                                    capabilities)
-                                .ConfigureAwait(false);
+                            IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
+                                provisioningServiceClient,
+                                registrationId,
+                                AttestationMechanismType.SymmetricKey,
+                                null,
+                                reprovisionPolicy,
+                                allocationPolicy,
+                                customAllocationDefinition,
+                                iothubs,
+                                capabilities).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;

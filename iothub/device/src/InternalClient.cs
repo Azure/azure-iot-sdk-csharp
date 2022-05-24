@@ -151,8 +151,6 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
-
             _transportSettings = transportSettings;
             _clientOptions = options;
             IotHubConnectionString = iotHubConnectionString;
