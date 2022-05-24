@@ -191,7 +191,6 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     # By specifying the root dir, the test runner will run all tests in test projects in the VS solution there
     Set-Location $rootDir
 
-    $runTestCmd = "dotnet test -s test.runsettings --verbosity q --configuration DEBUG --logger trx --no-build --filter 'ClassName=Microsoft.Azure.Devices.E2ETests.Provisioning.ReprovisioningE2ETests' --framework $framework"
     Write-Host "Invoking expression: $runTestCmd ----------"
 
     # Ensure the E2E tests can log to Application Insights
