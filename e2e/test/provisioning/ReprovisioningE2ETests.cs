@@ -414,8 +414,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
 
-                            string primaryKeyIndividual = ProvisioningE2ETests.ComputeDerivedSymmetricKey(Convert.FromBase64String(primaryKeyEnrollmentGroup), registrationIdSymmetricKey);
-                            string secondaryKeyIndividual = ProvisioningE2ETests.ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKeyEnrollmentGroup), registrationIdSymmetricKey);
+                            string primaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(primaryKeyEnrollmentGroup), registrationIdSymmetricKey);
+                            string secondaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKeyEnrollmentGroup), registrationIdSymmetricKey);
 
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
 
@@ -428,7 +428,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 reprovisionPolicy, allocationPolicy,
                                 customAllocationDefinition,
                                 iothubs,
-                                capabilities).ConfigureAwait(false);
+                                capabilities,
+                                Logger).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;

@@ -1085,7 +1085,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         allocationPolicy,
                         customAllocationDefinition,
                         iothubs,
-                        capabilities).ConfigureAwait(false);
+                        capabilities,
+                        Logger).ConfigureAwait(false);
 
                     return new SecurityProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
@@ -1113,7 +1114,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     allocationPolicy,
                                     customAllocationDefinition,
                                     iothubs,
-                                    capabilities).ConfigureAwait(false);
+                                    capabilities,
+                                    Logger).ConfigureAwait(false);
 
                                 x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
                             }
@@ -1166,7 +1168,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 allocationPolicy,
                                 customAllocationDefinition,
                                 iothubs,
-                                capabilities).ConfigureAwait(false);
+                                capabilities,
+                                Logger).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
