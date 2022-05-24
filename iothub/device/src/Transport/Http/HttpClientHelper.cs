@@ -47,7 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
             _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
             _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
@@ -70,7 +69,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Timeout = timeout
             };
 
-            _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            _httpClientObj.BaseAddress = _baseAddress;
+            _httpClientObj.Timeout = timeout;
+            _httpClientObj.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 
             preRequestActionForAllRequests?.Invoke(_httpClientObj);

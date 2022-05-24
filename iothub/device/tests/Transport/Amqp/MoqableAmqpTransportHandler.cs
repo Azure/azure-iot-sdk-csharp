@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         internal MoqableAmqpTransportHandler(
-            IPipelineContext context, 
+            PipelineContext context, 
             IotHubConnectionString connectionString, 
             AmqpTransportSettings transportSettings, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 

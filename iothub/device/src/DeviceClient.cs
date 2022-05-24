@@ -605,7 +605,8 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.GetFileUploadSasUriAsync(request, cancellationToken);
 
         /// <summary>
-        /// Notify IoT hub that a device's file upload has finished. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>
+        /// Notify IoT hub that a device's file upload has finished. See
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload">this documentation for more details</see>.
         /// </summary>
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>

@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         internal AmqpTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString connectionString,
             AmqpTransportSettings transportSettings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _operationTimeout = transportSettings.OperationTimeout;
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
-            IDeviceIdentity deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>(), context.Get<ClientOptions>());
+            IDeviceIdentity deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.ProductInfo, context.ClientOptions);
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 deviceIdentity,
                 onMethodCallback,

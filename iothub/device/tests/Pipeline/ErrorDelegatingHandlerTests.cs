@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ErrorHandler_NoErrors_Success()
         {
-            var contextMock = Substitute.For<IPipelineContext>();
+            var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Type thrownExceptionType,
             Type expectedExceptionType)
         {
-            var contextMock = Substitute.For<IPipelineContext>();
+            var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Type thrownExceptionType,
             Type expectedExceptionType)
         {
-            var contextMock = Substitute.For<IPipelineContext>();
+            var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Type thrownExceptionType,
             Type expectedExceptionType)
         {
-            var contextMock = Substitute.For<IPipelineContext>();
+            var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 

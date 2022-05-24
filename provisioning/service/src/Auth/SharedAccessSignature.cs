@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new FormatException($"Missing field: {SharedAccessSignatureConstants.ExpiryFieldName}");
             }
 
-            // KeyName (skn) is optional .
+            // KeyName (skn) is optional
             parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out string keyName);
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))

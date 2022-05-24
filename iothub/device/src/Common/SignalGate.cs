@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         private int _state;
 
         internal bool IsLocked => _state == GateState.Locked;
+
         internal bool IsSignalled => _state == GateState.Signalled;
 
         // Returns true if this brings the gate to the Signalled state.

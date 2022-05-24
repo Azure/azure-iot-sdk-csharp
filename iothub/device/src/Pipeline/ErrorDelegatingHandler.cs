@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
-        public ErrorDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+        public ErrorDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
         }

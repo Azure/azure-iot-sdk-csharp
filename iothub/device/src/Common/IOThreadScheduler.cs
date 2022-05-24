@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private static IoThreadScheduler s_current = new IoThreadScheduler(32, 32);
-        private readonly ScheduledOverlapped _overlapped;
+        private static IoThreadScheduler current = new IoThreadScheduler(32, 32);
+        private readonly ScheduledOverlapped overlapped;
 
         [Fx.Tag.Queue(typeof(Slot), Scope = Fx.Tag.Strings.AppDomain)]
         [Fx.Tag.SecurityNote(Critical = "holds callbacks which get called outside of the app security context")]
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Wrapped around the circular buffer. Create a new, bigger IoThreadScheduler.
                 var next = new IoThreadScheduler(Math.Min(_slots.Length * 2, MaximumCapacity), _slotsLowPri.Length);
-                Interlocked.CompareExchange(ref s_current, next, this);
+                Interlocked.CompareExchange(ref current, next, this);
             }
 
             if (wasIdle)
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client
             if (wrapped)
             {
                 var next = new IoThreadScheduler(_slots.Length, Math.Min(_slotsLowPri.Length * 2, MaximumCapacity));
-                Interlocked.CompareExchange(ref s_current, next, this);
+                Interlocked.CompareExchange(ref current, next, this);
             }
 
             if (wasIdle)

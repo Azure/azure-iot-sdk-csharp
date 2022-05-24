@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private volatile IDelegatingHandler _innerHandler;
         protected volatile bool _disposed;
 
-        protected DefaultDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
+        protected DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
         {
             Context = context;
             _innerHandler = innerHandler;
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Associate(this, _innerHandler, nameof(InnerHandler));
         }
 
-        public IPipelineContext Context { get; protected set; }
+        public PipelineContext Context { get; protected set; }
 
         public ContinuationFactory<IDelegatingHandler> ContinuationFactory { get; set; }
 
