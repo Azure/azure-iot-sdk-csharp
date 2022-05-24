@@ -223,12 +223,6 @@ namespace Microsoft.Azure.Devices.Client
             set => _productInfo.Extra = value;
         }
 
-        /// <summary>
-        /// Stores the retry strategy used in the operation retries.
-        /// </summary>
-        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
-        public RetryPolicyType RetryPolicy { get; set; }
-
         internal X509Certificate2 Certificate { get; set; }
 
         internal IDelegatingHandler InnerHandler { get; set; }
@@ -846,33 +840,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with
-        /// the named method, it will be replaced with the new delegate.
-        /// </summary>
-        /// <param name="methodName">The name of the method to associate with the delegate.</param>
-        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-
-        [Obsolete("Please use SetMethodHandlerAsync.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandler));
-
-            try
-            {
-                // Dangerous: can cause deadlocks.
-                SetMethodHandlerAsync(methodName, methodHandler, userContext).GetAwaiter().GetResult();
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandler));
-            }
-        }
-
-        /// <summary>
         /// The delegate for handling direct methods received from service.
         /// </summary>
         internal async Task OnMethodCalledAsync(MethodRequestInternal methodRequestInternal)
@@ -1061,21 +1028,6 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
             }
-        }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service.  This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
-        /// </summary>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
-        {
-            // Obsoleted due to incorrect naming:
-            return SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
         }
 
         /// <summary>
@@ -1371,67 +1323,6 @@ namespace Microsoft.Azure.Devices.Client
             CancellationToken cancellationToken = default)
         {
             return _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken);
-        }
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoT hub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
-        /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source)
-        {
-            return UploadToBlobAsync(blobName, source, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to
-        /// receive notice of cancellation.</param>
-        /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
-
-                if (string.IsNullOrEmpty(blobName))
-                {
-                    throw Fx.Exception.ArgumentNull(nameof(blobName));
-                }
-                if (source == null)
-                {
-                    throw Fx.Exception.ArgumentNull(nameof(source));
-                }
-                if (blobName.Length > 1024)
-                {
-                    throw Fx.Exception.Argument(nameof(blobName), "Length cannot exceed 1024 characters");
-                }
-                if (blobName.Split('/').Length > 254)
-                {
-                    throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
-                }
-
-                return _fileUploadHttpTransportHandler.UploadToBlobAsync(blobName, source, cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, blobName, nameof(UploadToBlobAsync));
-            }
         }
 
         #endregion Device Specific API

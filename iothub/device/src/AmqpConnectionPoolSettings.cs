@@ -54,12 +54,6 @@ namespace Microsoft.Azure.Devices.Client
         public bool Pooling { get; set; }
 
         /// <summary>
-        /// An unused property. Do not reference.
-        /// </summary>
-        [Obsolete("This property is not used and will be removed in a future update.")]
-        public TimeSpan ConnectionIdleTimeout { get; set; }
-
-        /// <summary>
         /// Compares the properties of this instance to another's
         /// </summary>
         /// <param name="other">The other instance to compare to</param>

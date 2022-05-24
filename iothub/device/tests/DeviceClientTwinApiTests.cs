@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
 #pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(myCallback, context).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             // assert
@@ -92,9 +92,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
 #pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             // assert
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return TaskHelpers.CompletedTask;
             };
 #pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             // act

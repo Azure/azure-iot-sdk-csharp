@@ -410,46 +410,6 @@ namespace Microsoft.Azure.Devices
         /// Register a list of new devices with the system
         /// </summary>
         /// <param name="devices">The Device objects being registered.</param>
-        /// <returns>Returns a string array of error messages.</returns>
-        [Obsolete("Use AddDevices2Async")]
-        public virtual Task<string[]> AddDevicesAsync(IEnumerable<Device> devices)
-        {
-            return AddDevicesAsync(devices, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Register a list of new devices with the system
-        /// </summary>
-        /// <param name="devices">The Device objects being registered.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>Returns a string array of error messages.</returns>
-        [Obsolete("Use AddDevices2Async")]
-        public virtual Task<string[]> AddDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
-
-            try
-            {
-                return BulkDeviceOperationsAsync<string[]>(
-                    GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
-                    ClientApiVersionHelper.ApiVersionQueryString,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Logging.Error(this, $"{nameof(AddDevicesAsync)} threw an exception: {ex}", nameof(AddDevicesAsync));
-                throw;
-            }
-            finally
-            {
-                Logging.Exit(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
-            }
-        }
-
-        /// <summary>
-        /// Register a list of new devices with the system
-        /// </summary>
-        /// <param name="devices">The Device objects being registered.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
         public virtual Task<BulkRegistryOperationResult> AddDevices2Async(IEnumerable<Device> devices)
         {
@@ -661,47 +621,6 @@ namespace Microsoft.Azure.Devices
         /// Update a list of devices with the system
         /// </summary>
         /// <param name="devices">The Device objects being updated.</param>
-        /// <returns>Returns a string array of error messages.</returns>
-        [Obsolete("Use UpdateDevices2Async")]
-        public virtual Task<string[]> UpdateDevicesAsync(IEnumerable<Device> devices)
-        {
-            return UpdateDevicesAsync(devices, false, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Update a list of devices with the system
-        /// </summary>
-        /// <param name="devices">The Device objects being updated.</param>
-        /// <param name="forceUpdate">Forces the device object to be replaced even if it was updated since it was retrieved last time.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>Returns a string array of error messages.</returns>
-        [Obsolete("Use UpdateDevices2Async")]
-        public virtual Task<string[]> UpdateDevicesAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()}", nameof(UpdateDevicesAsync));
-
-            try
-            {
-                return BulkDeviceOperationsAsync<string[]>(
-                GenerateExportImportDeviceListForBulkOperations(devices, forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryString,
-                cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Logging.Error(this, $"{nameof(UpdateDevicesAsync)} threw an exception: {ex}", nameof(UpdateDevicesAsync));
-                throw;
-            }
-            finally
-            {
-                Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()}", nameof(UpdateDevicesAsync));
-            }
-        }
-
-        /// <summary>
-        /// Update a list of devices with the system
-        /// </summary>
-        /// <param name="devices">The Device objects being updated.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
         public virtual Task<BulkRegistryOperationResult> UpdateDevices2Async(IEnumerable<Device> devices)
         {
@@ -904,44 +823,6 @@ namespace Microsoft.Azure.Devices
         /// Deletes a list of previously registered devices from the system.
         /// </summary>
         /// <param name="devices">The devices being deleted.</param>
-        [Obsolete("Use RemoveDevices2Async")]
-        public virtual Task<string[]> RemoveDevicesAsync(IEnumerable<Device> devices)
-        {
-            return RemoveDevicesAsync(devices, false, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Deletes a list of previously registered devices from the system.
-        /// </summary>
-        /// <param name="devices">The devices being deleted.</param>
-        /// <param name="forceRemove">Forces the device object to be removed without regard for an ETag match.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        [Obsolete("Use RemoveDevices2Async")]
-        public virtual Task<string[]> RemoveDevicesAsync(IEnumerable<Device> devices, bool forceRemove, CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
-            try
-            {
-                return BulkDeviceOperationsAsync<string[]>(
-                   GenerateExportImportDeviceListForBulkOperations(devices, forceRemove ? ImportMode.Delete : ImportMode.DeleteIfMatchETag),
-                   ClientApiVersionHelper.ApiVersionQueryString,
-                   cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Logging.Error(this, $"{nameof(RemoveDevicesAsync)} threw an exception: {ex}", nameof(RemoveDevicesAsync));
-                throw;
-            }
-            finally
-            {
-                Logging.Exit(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
-            }
-        }
-
-        /// <summary>
-        /// Deletes a list of previously registered devices from the system.
-        /// </summary>
-        /// <param name="devices">The devices being deleted.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
         public virtual Task<BulkRegistryOperationResult> RemoveDevices2Async(IEnumerable<Device> devices)
         {
@@ -968,12 +849,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(RemoveDevicesAsync)} threw an exception: {ex}", nameof(RemoveDevicesAsync));
+                Logging.Error(this, $"{nameof(RemoveDevices2Async)} threw an exception: {ex}", nameof(RemoveDevices2Async));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
+                Logging.Exit(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevices2Async));
             }
         }
 
@@ -1153,50 +1034,6 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 Logging.Exit(this, $"Getting module on device: {deviceId}", nameof(GetModulesOnDeviceAsync));
-            }
-        }
-
-        /// <summary>
-        /// Retrieves specified number of devices from every IoT hub partition.
-        /// This is an approximation and not a definitive list. Results are not ordered.
-        /// </summary>
-        /// <returns>The list of devices.</returns>
-        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
-        public virtual Task<IEnumerable<Device>> GetDevicesAsync(int maxCount)
-        {
-            return GetDevicesAsync(maxCount, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Retrieves specified number of devices from every IoT hub partition.
-        /// This is an approximation and not a definitive list. Results are not ordered.
-        /// </summary>
-        /// <returns>The list of devices.</returns>
-        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
-        public virtual Task<IEnumerable<Device>> GetDevicesAsync(int maxCount, CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, $"Getting devices - max count: {maxCount}", nameof(GetDevicesAsync));
-
-            try
-            {
-                EnsureInstanceNotClosed();
-
-                return _httpClientHelper.GetAsync<IEnumerable<Device>>(
-                    GetDevicesRequestUri(maxCount),
-                    s_defaultGetDevicesOperationTimeout,
-                    null,
-                    null,
-                    true,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Logging.Error(this, $"{nameof(GetDevicesAsync)} threw an exception: {ex}", nameof(GetDevicesAsync));
-                throw;
-            }
-            finally
-            {
-                Logging.Exit(this, $"Getting devices - max count: {maxCount}", nameof(GetDevicesAsync));
             }
         }
 
