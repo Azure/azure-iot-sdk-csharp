@@ -477,12 +477,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             return methodCallReceived.Task;
         }
 
-        private static Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient, string methodName, MsTestLogger logger)
+        private static async Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
 #pragma warning disable CS0618
-            deviceClient.SetMethodHandler(methodName, (request, context) =>
+            await deviceClient.SetMethodHandlerAsync(methodName, (request, context) =>
             {
                 logger.Trace($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 

@@ -29,13 +29,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         InvalidProtocolVersion = 400001,
 
         /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        DeviceInvalidResultCount = 400002,
-
-        /// <summary>
         /// The client has requested an operation that the hub recognizes as invalid. Check the error message
         /// for more information about what is invalid.
         /// </summary>
@@ -63,47 +56,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         IotHubFormatError = 400006,
 
         /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        DeviceStorageEntitySerializationError = 400007,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        BlobContainerValidationError = 400008,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        ImportWarningExistsError = 400009,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        InvalidSchemaVersion = 400010,
-
-        /// <summary>
         /// A devices with the same Id was present multiple times in the input request for bulk device registry operations.
         /// <para>
         /// For more information on bulk registry operations, see <see href="https://docs.microsoft.com/rest/api/iothub/service/bulk-registry/update-registry"/>.
         /// </para>
         /// </summary>
         DeviceDefinedMultipleTimes = 400011,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        DeserializationError = 400012,
 
         /// <summary>
         /// An error was encountered processing bulk registry operations.
@@ -114,21 +72,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         BulkRegistryOperationFailure = 400013,
 
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        CannotRegisterModuleToModule = 400301,
-
         // Unauthorized - 401
-
-        /// <summary>
-        /// The error is internal to IoT hub and is likely transient.
-        /// </summary>
-        [Obsolete("This error does should not be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        IotHubNotFound = 401001,
 
         /// <summary>
         /// The SAS token has expired or IoT hub couldn't authenticate the authentication header, rule, or key.
@@ -136,22 +80,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         IotHubUnauthorizedAccess = 401002,
 
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// Replaced by <see cref="IotHubUnauthorizedAccess"/>
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        IotHubUnauthorized = 401003,
-
         // Forbidden - 403
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        IotHubSuspended = 403001,
 
         /// <summary>
         /// Total number of messages on the hub exceeded the allocated quota.
@@ -161,13 +90,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </para>
         /// </summary>
         IotHubQuotaExceeded = 403002,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        JobQuotaExceeded = 403003,
 
         /// <summary>
         /// The underlying cause is that the number of cloud-to-device messages enqueued for the device exceeds the queue limit.
@@ -180,13 +102,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         DeviceMaximumQueueDepthExceeded = 403004,
 
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        IotHubMaxCbsTokenExceeded = 403005,
-
         // NotFound - 404
 
         /// <summary>
@@ -197,23 +112,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </para>
         /// </summary>
         DeviceNotFound = 404001,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        JobNotFound = 404002,
-
-        /// <summary>
-        /// The error is internal to IoT hub and is likely transient.
-        /// <para>
-        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
-        /// </para>
-        /// </summary>
-        [Obsolete("This error does should not be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        PartitionNotFound = 503003,
 
         /// <summary>
         /// The operation failed because the module cannot be found by IoT hub.
@@ -252,17 +150,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         PreconditionFailed = 412001, // PreconditionFailed - 412
 
-        /// <summary>
-        /// If the device tries to complete the message after the lock timeout expires, IoT hub throws this exception.
-        /// <para>
-        /// When a device receives a cloud-to-device message from the queue (for example, using ReceiveAsync())
-        /// the message is locked by IoT hub for a lock timeout duration of one minute.
-        /// </para>
-        /// </summary>
-        [Obsolete("This error should not be returned to a service application. This is relevant only for a device application.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        DeviceMessageLockLost = 412002,
-
         // RequestEntityTooLarge - 413
 
         /// <summary>
@@ -283,13 +170,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         TooManyDevices = 413002,
 
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        TooManyModulesOnDevice = 413003,
-
         // Throttling Exception
 
         /// <summary>
@@ -306,16 +186,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         ThrottleBacklogLimitExceeded = 429002,
 
-        /// <summary>
-        /// IoT hub ran into a server side issue when attempting to throttle.
-        /// <para>
-        /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>.
-        /// </para>
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        InvalidThrottleParameter = 500009,
-
         // InternalServerError - 500
 
         /// <summary>
@@ -327,13 +197,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </para>
         /// </summary>
         ServerError = 500001,
-
-        /// <summary>
-        /// Unused error code. Service does not return it and neither does the SDK.
-        /// </summary>
-        [Obsolete("This error does not appear to be returned by the service.")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        JobCancelled = 500002,
 
         // ServiceUnavailable
 

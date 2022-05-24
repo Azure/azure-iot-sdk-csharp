@@ -493,7 +493,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var propertyUpdateReceived = new TaskCompletionSource<bool>();
 
             await deviceClient
-                .SetDesiredPropertyUpdateCallback(
+                .SetDesiredPropertyUpdateCallbackAsync(
                     (patch, context) =>
                     {
                         logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");

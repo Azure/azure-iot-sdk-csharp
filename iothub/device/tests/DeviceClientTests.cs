@@ -425,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             bool isMethodHandlerCalled = false;
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler("testMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("testMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
@@ -446,7 +446,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             bool isMethodHandlerCalled = false;
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
@@ -470,7 +470,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
@@ -574,7 +574,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(200));
@@ -597,7 +597,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
@@ -1049,7 +1049,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
 #pragma warning restore CS0618 // Type or member is obsolete
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
@@ -1087,7 +1087,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
 #pragma warning restore CS0618 // Type or member is obsolete
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
@@ -1150,7 +1150,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
 #pragma warning restore CS0618 // Type or member is obsolete
             await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
@@ -1178,7 +1178,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            deviceClient.SetMethodHandler("TestMethodName", null, null);
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", null, null);
 #pragma warning restore CS0618 // Type or member is obsolete
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
