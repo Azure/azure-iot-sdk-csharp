@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
             {
-                await DeleteCreatedEnrollmentAsync(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
+                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
             }
 
             if (auth is IDisposable disposableAuth)
@@ -360,11 +360,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromName)}({attestationType})");
 
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
 
             switch (attestationType)
             {
                 case AttestationMechanismType.Tpm:
-                    string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
                     var tpmSim = new SecurityProviderTpmSimulator(registrationId);
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
@@ -420,7 +420,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
 
                         case EnrollmentType.Individual:
-                            IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, AttestationMechanismType.SymmetricKey, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, capabilities).ConfigureAwait(false);
+                            IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
+                                provisioningServiceClient,
+                                registrationId,
+                                AttestationMechanismType.SymmetricKey,
+                                null,
+                                reprovisionPolicy, allocationPolicy,
+                                customAllocationDefinition,
+                                iothubs,
+                                capabilities).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
