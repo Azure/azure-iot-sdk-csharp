@@ -28,6 +28,7 @@
     <Compile Remove="iothub\service\DigitalTwinClientE2ETests.cs" />
     <Compile Remove="helpers\digitaltwins\models\ThermostatTwin.cs" />
     <Compile Remove="helpers\digitaltwins\models\TemperatureControllerTwin.cs" />
+    <Compile Remove="helpers\ProvisioningServiceRetryPolicy.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->
