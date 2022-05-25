@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
@@ -365,6 +366,18 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             return lastException == null
                 ? (T)default
                 : throw lastException;
+        }
+
+        /// <summary>
+        /// Always returns false.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        /// <returns>
+        /// Always false.
+        /// </returns>
+        public bool IsTransient(Exception ex)
+        {
+            return !ex.IsFatal();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0;net472;</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -78,10 +78,6 @@
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpBufferedStream.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
-    <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
-    <PackageReference Include="DotNetty.Common" Version="0.7.1" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
   </ItemGroup>
 
   <!-- net451 only -->
@@ -89,8 +85,6 @@
     <Compile Include="net451\IotHubClientWebSocket.cs" />
     <Compile Include="net451\Common\LegacyClientWebSocketTransport.cs" />
     <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -105,6 +99,7 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
+    <PackageReference Include="MQTTnet" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

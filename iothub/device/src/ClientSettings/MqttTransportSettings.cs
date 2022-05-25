@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using DotNetty.Codecs.Mqtt.Packets;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
@@ -19,13 +18,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly TransportType _transportType;
 
         private const bool DefaultCleanSession = false;
-        private const bool DefaultDeviceReceiveAckCanTimeout = false;
         private const bool DefaultHasWill = false;
-        private const bool DefaultMaxOutboundRetransmissionEnforced = false;
         private const int DefaultKeepAliveInSeconds = 300;
         private const int DefaultMaxPendingInboundMessages = 50;
-        private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
-        private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
 
         // The CONNACK timeout has been chosen to be 60 seconds to be in alignment with the service implemented timeout for processing connection requests.
         private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(60);
@@ -61,18 +56,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             CleanSession = DefaultCleanSession;
             ConnectArrivalTimeout = s_defaultConnectArrivalTimeout;
-            DeviceReceiveAckCanTimeout = DefaultDeviceReceiveAckCanTimeout;
-            DeviceReceiveAckTimeout = s_defaultDeviceReceiveAckTimeout;
-            DupPropertyName = "mqtt-dup";
             HasWill = DefaultHasWill;
             KeepAliveInSeconds = DefaultKeepAliveInSeconds;
-            MaxOutboundRetransmissionEnforced = DefaultMaxOutboundRetransmissionEnforced;
             MaxPendingInboundMessages = DefaultMaxPendingInboundMessages;
-            PublishToServerQoS = DefaultPublishToServerQoS;
-            ReceivingQoS = DefaultReceivingQoS;
-            QoSPropertyName = "mqtt-qos";
-            RetainPropertyName = "mqtt-retain";
-            WillMessage = null;
             DefaultReceiveTimeout = s_defaultReceiveTimeout;
         }
 
@@ -90,73 +76,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
-        /// Indicates if a device can timeout while waiting for a acknowledgment from service.
-        /// The default value is <c>false</c>.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public bool DeviceReceiveAckCanTimeout { get; set; }
-
-        /// <summary>
-        /// The time a device will wait for an acknowledgment from service.
-        /// The default is 5 minutes.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public TimeSpan DeviceReceiveAckTimeout { get; set; }
-
-        /// <summary>
-        /// The QoS to be used when sending packets to service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
-        /// </summary>
-        public QualityOfService PublishToServerQoS { get; set; }
-
-        /// <summary>
-        /// The QoS to be used when subscribing to receive packets from the service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
-        /// </summary>
-        public QualityOfService ReceivingQoS { get; set; }
-
-        /// <summary>
-        /// The property on a message that indicates the publish packet has requested to be retained.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public string RetainPropertyName { get; set; }
-
-        /// <summary>
-        /// The property on a message that indicates the publish packet is marked as a duplicate.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public string DupPropertyName { get; set; }
-
-        /// <summary>
-        /// The property name setting the QoS for a packet.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public string QoSPropertyName { get; set; }
-
-        /// <summary>
-        /// Indicates if max outbound retransmission is enforced.
-        /// The default value is <c>false</c>.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public bool MaxOutboundRetransmissionEnforced { get; set; }
-
-        /// <summary>
         /// The maximum no. of inbound messages that are read from the channel.
         /// The default value is 50.
         /// </summary>
-        public int MaxPendingInboundMessages { get; set; }
+        public int MaxPendingInboundMessages { get; set; } //TODO remove this?
 
         /// <summary>
         /// The time to wait for receiving an acknowledgment for a CONNECT packet.
@@ -169,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// To know more about IoT hub's throttling limits and traffic shaping feature, see
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles"/>.
         /// </remarks>
-        public TimeSpan ConnectArrivalTimeout { get; set; }
+        public TimeSpan ConnectArrivalTimeout { get; set; } //TODO remove this? cancellation token support is already in place
 
         /// <summary>
         /// Flag to specify if a subscription should persist across different sessions. The default value is false.
@@ -191,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
-        public int KeepAliveInSeconds { get; set; }
+        public int KeepAliveInSeconds { get; set; } //TODO convert to timespan
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

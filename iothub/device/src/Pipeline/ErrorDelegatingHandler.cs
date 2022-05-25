@@ -13,7 +13,6 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
@@ -31,7 +30,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(ClosedChannelException),
             typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
