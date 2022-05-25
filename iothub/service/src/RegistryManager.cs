@@ -411,9 +411,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="devices">The Device objects being registered.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
-        public virtual Task<BulkRegistryOperationResult> AddDevices2Async(IEnumerable<Device> devices)
+        public virtual Task<BulkRegistryOperationResult> AddDevicesAsync(IEnumerable<Device> devices)
         {
-            return AddDevices2Async(devices, CancellationToken.None);
+            return AddDevicesAsync(devices, CancellationToken.None);
         }
 
         /// <summary>
@@ -422,9 +422,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="devices">The Device objects being registered.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
-        public virtual Task<BulkRegistryOperationResult> AddDevices2Async(IEnumerable<Device> devices, CancellationToken cancellationToken)
+        public virtual Task<BulkRegistryOperationResult> AddDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevices2Async));
+            Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
 
             try
             {
@@ -435,12 +435,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(AddDevices2Async)} threw an exception: {ex}", nameof(AddDevices2Async));
+                Logging.Error(this, $"{nameof(AddDevicesAsync)} threw an exception: {ex}", nameof(AddDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Adding {devices?.Count()} devices", nameof(AddDevices2Async));
+                Logging.Exit(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
             }
         }
 
@@ -622,9 +622,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="devices">The Device objects being updated.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
-        public virtual Task<BulkRegistryOperationResult> UpdateDevices2Async(IEnumerable<Device> devices)
+        public virtual Task<BulkRegistryOperationResult> UpdateDevicesAsync(IEnumerable<Device> devices)
         {
-            return UpdateDevices2Async(devices, false, CancellationToken.None);
+            return UpdateDevicesAsync(devices, false, CancellationToken.None);
         }
 
         /// <summary>
@@ -634,9 +634,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="forceUpdate">Forces the device object to be replaced even if it was updated since it was retrieved last time.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
-        public virtual Task<BulkRegistryOperationResult> UpdateDevices2Async(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken)
+        public virtual Task<BulkRegistryOperationResult> UpdateDevicesAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevices2Async));
+            Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
 
             try
             {
@@ -647,12 +647,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(UpdateDevices2Async)} threw an exception: {ex}", nameof(UpdateDevices2Async));
+                Logging.Error(this, $"{nameof(UpdateDevicesAsync)} threw an exception: {ex}", nameof(UpdateDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevices2Async));
+                Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
             }
         }
 
@@ -824,9 +824,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="devices">The devices being deleted.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
-        public virtual Task<BulkRegistryOperationResult> RemoveDevices2Async(IEnumerable<Device> devices)
+        public virtual Task<BulkRegistryOperationResult> RemoveDevicesAsync(IEnumerable<Device> devices)
         {
-            return RemoveDevices2Async(devices, false, CancellationToken.None);
+            return RemoveDevicesAsync(devices, false, CancellationToken.None);
         }
 
         /// <summary>
@@ -836,9 +836,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="forceRemove">Forces the device object to be removed even if it was updated since it was retrieved last time.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>Returns a BulkRegistryOperationResult object.</returns>
-        public virtual Task<BulkRegistryOperationResult> RemoveDevices2Async(IEnumerable<Device> devices, bool forceRemove, CancellationToken cancellationToken)
+        public virtual Task<BulkRegistryOperationResult> RemoveDevicesAsync(IEnumerable<Device> devices, bool forceRemove, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevices2Async));
+            Logging.Enter(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
 
             try
             {
@@ -849,12 +849,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(RemoveDevices2Async)} threw an exception: {ex}", nameof(RemoveDevices2Async));
+                Logging.Error(this, $"{nameof(RemoveDevicesAsync)} threw an exception: {ex}", nameof(RemoveDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevices2Async));
+                Logging.Exit(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
             }
         }
 
@@ -1752,9 +1752,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="twins">List of <see cref="Twin"/>s with updated fields.</param>
         /// <returns>Result of the bulk update operation.</returns>
-        public virtual Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins)
+        public virtual Task<BulkRegistryOperationResult> UpdateTwinsAsync(IEnumerable<Twin> twins)
         {
-            return UpdateTwins2Async(twins, false, CancellationToken.None);
+            return UpdateTwinsAsync(twins, false, CancellationToken.None);
         }
 
         /// <summary>
@@ -1763,9 +1763,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="twins">List of <see cref="Twin"/>s with updated fields.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Result of the bulk update operation.</returns>
-        public virtual Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, CancellationToken cancellationToken)
+        public virtual Task<BulkRegistryOperationResult> UpdateTwinsAsync(IEnumerable<Twin> twins, CancellationToken cancellationToken)
         {
-            return UpdateTwins2Async(twins, false, cancellationToken);
+            return UpdateTwinsAsync(twins, false, cancellationToken);
         }
 
         /// <summary>
@@ -1774,9 +1774,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="twins">List of <see cref="Twin"/>s with updated fields.</param>
         /// <param name="forceUpdate">Forces the <see cref="Twin"/> object to be updated even if it has changed since it was retrieved last time.</param>
         /// <returns>Result of the bulk update operation.</returns>
-        public virtual Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate)
+        public virtual Task<BulkRegistryOperationResult> UpdateTwinsAsync(IEnumerable<Twin> twins, bool forceUpdate)
         {
-            return UpdateTwins2Async(twins, forceUpdate, CancellationToken.None);
+            return UpdateTwinsAsync(twins, forceUpdate, CancellationToken.None);
         }
 
         /// <summary>
@@ -1786,7 +1786,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="forceUpdate">Forces the <see cref="Twin"/> object to be updated even if it has changed since it was retrieved last time.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Result of the bulk update operation.</returns>
-        public virtual Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate, CancellationToken cancellationToken)
+        public virtual Task<BulkRegistryOperationResult> UpdateTwinsAsync(IEnumerable<Twin> twins, bool forceUpdate, CancellationToken cancellationToken)
         {
             return BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForTwinBulkOperations(twins, forceUpdate ? ImportMode.UpdateTwin : ImportMode.UpdateTwinIfMatchETag),
