@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, $"Disposal with client={_connectionString.TokenRefresher.DisposalWithClient}; disposed={_isDisposed}" , $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"Disposal with client={_connectionString?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}" , $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
                 }
 
                 if (!_isDisposed)
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"Disposal with client={_connectionString.TokenRefresher.DisposalWithClient}", $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"Disposal with client={_connectionString?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}", $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
                 }
             }
         }

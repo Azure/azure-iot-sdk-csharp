@@ -956,7 +956,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, $"Device pooling={_deviceIdentity.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"Device pooling={_deviceIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
                 }
 
                 if (!_disposed)
@@ -991,7 +991,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"Device pooling={_deviceIdentity.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"Device pooling={_deviceIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
                 }
             }
         }
