@@ -416,75 +416,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
-        public async Task DeviceClient_OnMethodCalled_NullMethodRequest_With_SetMethodHandler()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-
-            bool isMethodHandlerCalled = false;
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync("testMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
-            }, "custom data");
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            await deviceClient.InternalClient.OnMethodCalledAsync(null).ConfigureAwait(false);
-            await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsFalse(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody_With_SetMethodHandler()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-
-            bool isMethodHandlerCalled = false;
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
-            }, "custom data");
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]), CancellationToken.None);
-
-            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
-        // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-            bool isMethodHandlerCalled = false;
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
-            }, "custom data");
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
-
-            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
         // Tests_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodDefaultHandler()
@@ -567,48 +498,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         // Tests_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler_With_No_Result()
+        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_No_Result()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
-#pragma warning disable CS0618 // Type or member is obsolete
             await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(200));
-            }, "custom data");
-#pragma warning restore CS0618 // Type or member is obsolete
+            }, "custom data").ConfigureAwait(false);
 
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
-        public async Task DeviceClientOnMethodCalledMethodResponseHasInvalidJsonWithSetMethodHandler()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            bool isMethodHandlerCalled = false;
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
-            }, "custom data");
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
-
-            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
-            Assert.IsTrue(isMethodHandlerCalled);
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 500), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -1018,168 +924,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
 
             await deviceClient.SetMethodHandlerAsync("TestMethodName", null, null).ConfigureAwait(false);
-            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
-        // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
-        public async Task DeviceClientSetMethodHandlerSetFirstMethodHandlerWithSetMethodHandler()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
-            using var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
-
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-
-            bool methodCallbackCalled = false;
-            string actualMethodName = string.Empty;
-            string actualMethodBody = string.Empty;
-            object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
-            {
-                actualMethodName = methodRequest.Name;
-                actualMethodBody = methodRequest.DataAsJson;
-                actualMethodUserContext = userContext;
-                methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(new byte[0], 200));
-            };
-
-            string methodName = "TestMethodName";
-            string methodUserContext = "UserContext";
-            string methodBody = "{\"grade\":\"good\"}";
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
-#pragma warning restore CS0618 // Type or member is obsolete
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
-
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled);
-            Assert.AreEqual(methodName, actualMethodName);
-            Assert.AreEqual(methodBody, actualMethodBody);
-            Assert.AreEqual(methodUserContext, actualMethodUserContext);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
-        public async Task DeviceClientSetMethodHandlerOverwriteExistingDelegateWithSetMethodHandler()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
-            using var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
-
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-
-            bool methodCallbackCalled = false;
-            string actualMethodName = string.Empty;
-            string actualMethodBody = string.Empty;
-            object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
-            {
-                actualMethodName = methodRequest.Name;
-                actualMethodBody = methodRequest.DataAsJson;
-                actualMethodUserContext = userContext;
-                methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(new byte[0], 200));
-            };
-
-            string methodName = "TestMethodName";
-            string methodUserContext = "UserContext";
-            string methodBody = "{\"grade\":\"good\"}";
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
-#pragma warning restore CS0618 // Type or member is obsolete
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
-
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled);
-            Assert.AreEqual(methodName, actualMethodName);
-            Assert.AreEqual(methodBody, actualMethodBody);
-            Assert.AreEqual(methodUserContext, actualMethodUserContext);
-
-            bool methodCallbackCalled2 = false;
-            string actualMethodName2 = string.Empty;
-            string actualMethodBody2 = string.Empty;
-            object actualMethodUserContext2 = null;
-            MethodCallback methodCallback2 = (methodRequest, userContext) =>
-            {
-                actualMethodName2 = methodRequest.Name;
-                actualMethodBody2 = methodRequest.DataAsJson;
-                actualMethodUserContext2 = userContext;
-                methodCallbackCalled2 = true;
-                return Task.FromResult(new MethodResponse(new byte[0], 200));
-            };
-
-            string methodUserContext2 = "UserContext2";
-            string methodBody2 = "{\"grade\":\"bad\"}";
-            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
-
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled2);
-            Assert.AreEqual(methodName, actualMethodName2);
-            Assert.AreEqual(methodBody2, actualMethodBody2);
-            Assert.AreEqual(methodUserContext2, actualMethodUserContext2);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
-        public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandlerWithSetMethodHandler()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
-            using var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
-
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-
-            bool methodCallbackCalled = false;
-            string actualMethodName = string.Empty;
-            string actualMethodBody = string.Empty;
-            object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
-            {
-                actualMethodName = methodRequest.Name;
-                actualMethodBody = methodRequest.DataAsJson;
-                actualMethodUserContext = userContext;
-                methodCallbackCalled = true;
-                return Task.FromResult(new MethodResponse(new byte[0], 200));
-            };
-
-            string methodName = "TestMethodName";
-            string methodUserContext = "UserContext";
-            string methodBody = "{\"grade\":\"good\"}";
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
-#pragma warning restore CS0618 // Type or member is obsolete
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
-
-            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsTrue(methodCallbackCalled);
-            Assert.AreEqual(methodName, actualMethodName);
-            Assert.AreEqual(methodBody, actualMethodBody);
-            Assert.AreEqual(methodUserContext, actualMethodUserContext);
-
-            methodCallbackCalled = false;
-            await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
-
-            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsFalse(methodCallbackCalled);
-        }
-
-        [TestMethod]
-        public async Task DeviceClientSetMethodHandlerUnsetWhenNoMethodHandlerWithSetMethodHandler()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
-            using var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
-
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", null, null);
-#pragma warning restore CS0618 // Type or member is obsolete
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 

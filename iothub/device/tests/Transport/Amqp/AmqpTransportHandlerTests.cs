@@ -95,6 +95,29 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             enableReceiveMessageAsyncWasCalled.Should().BeTrue();
         }
 
+        [TestMethod]
+        public void AmqpTransportHandler_RejectAmqpSettingsChange()
+        {
+            var amqpTransportHandler1 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
+            {
+                Pooling = true,
+                MaxPoolSize = 10,
+            }));
+
+            try
+            {
+                var amqpTransportHandler2 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
+                {
+                    Pooling = true,
+                    MaxPoolSize = 7, // different pool size
+                }));
+            }
+            catch (ArgumentException ae)
+            {
+                Assert.IsTrue(ae.Message.Contains("AmqpTransportSettings cannot be modified from the initial settings."), "Did not return the correct error message");
+            }
+        }
+
         private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             using var tokenSource = new CancellationTokenSource();

@@ -15,29 +15,6 @@ namespace Microsoft.Azure.Devices.Client.Test
     {
         private static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
 
-        // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
-        [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackRegistersForPatchesOnFirstCall()
-        {
-            // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
-            var context = new object();
-
-            // act
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.AreEqual(client.InternalClient._desiredPropertyUpdateCallback, myCallback);
-        }
-
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
@@ -78,29 +55,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Received(1)
                 .DisableTwinPatchAsync(Arg.Any<CancellationToken>())
                 .ConfigureAwait(false);
-        }
-
-        // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
-        [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackDoesNotRegisterForPatchesAfterFirstCall()
-        {
-            // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
-
-            // act
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
@@ -173,36 +127,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act and assert
             await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
-        }
-
-        //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
-        [TestMethod]
-        public async Task DeviceClientCallbackIsCalledWhenPatchIsReceived()
-        {
-            // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            var myPatch = new TwinCollection();
-
-            int callCount = 0;
-            TwinCollection receivedPatch = null;
-            DesiredPropertyUpdateCallback myCallback = (p, c) =>
-            {
-                callCount++;
-                receivedPatch = p;
-                return TaskHelpers.CompletedTask;
-            };
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            // act
-            client.InternalClient.OnReportedStatePatchReceived(myPatch);
-
-            //assert
-            Assert.AreEqual(callCount, 1);
-            Assert.ReferenceEquals(myPatch, receivedPatch);
         }
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.

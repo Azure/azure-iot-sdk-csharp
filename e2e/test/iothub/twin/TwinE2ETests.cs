@@ -216,46 +216,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Mqtt()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Mqtt_Tcp_Only,
-                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_MqttWs()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Mqtt_WebSocket_Only,
-                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Amqp()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
-                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_AmqpWs()
-        {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
-                    SetTwinPropertyUpdateCallbackObsoleteHandlerAsync,
-                    Guid.NewGuid().ToString())
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
@@ -481,42 +441,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     },
                     userContext)
                 .ConfigureAwait(false);
-
-            return propertyUpdateReceived.Task;
-        }
-
-        private static async Task<Task> SetTwinPropertyUpdateCallbackObsoleteHandlerAsync(DeviceClient deviceClient, string expectedPropName, object expectedPropValue, MsTestLogger logger)
-        {
-#pragma warning disable CS0618
-
-            string userContext = "myContext";
-            var propertyUpdateReceived = new TaskCompletionSource<bool>();
-
-            await deviceClient
-                .SetDesiredPropertyUpdateCallbackAsync(
-                    (patch, context) =>
-                    {
-                        logger.Trace($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
-
-                        try
-                        {
-                            Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
-                            Assert.AreEqual(userContext, context, "Context");
-                        }
-                        catch (Exception e)
-                        {
-                            propertyUpdateReceived.SetException(e);
-                        }
-                        finally
-                        {
-                            propertyUpdateReceived.SetResult(true);
-                        }
-
-                        return Task.FromResult<bool>(true);
-                    },
-                    userContext)
-                .ConfigureAwait(false);
-#pragma warning restore CS0618
 
             return propertyUpdateReceived.Task;
         }

@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common
     /// Extension method helpers
     /// </summary>
     [Obsolete("Not supported for external use", true)]
-    public static class CommonExtensionMethods
+    internal static class CommonExtensionMethods
     {
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
