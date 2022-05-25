@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 // act
                 BulkRegistryOperationResult bulkAddResult = await registryManager
-                    .AddDevices2Async(new List<Device> { edge, device })
+                    .AddDevicesAsync(new List<Device> { edge, device })
                     .ConfigureAwait(false);
 
                 // assert
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 addedDevice1.Scope = addedEdge.Scope;
                 addedDevice2.Scope = addedEdge.Scope;
                 BulkRegistryOperationResult result = await registryManager
-                    .UpdateDevices2Async(new[] { addedDevice1, addedDevice2 })
+                    .UpdateDevicesAsync(new[] { addedDevice1, addedDevice2 })
                     .ConfigureAwait(false);
 
                 // assert
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
 
                 BulkRegistryOperationResult result = await registryManager
-                    .UpdateTwins2Async(new[] { twin1, twin2 })
+                    .UpdateTwinsAsync(new[] { twin1, twin2 })
                     .ConfigureAwait(false);
 
                 // assert
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // act
 
                 BulkRegistryOperationResult bulkDeleteResult = await registryManager
-                    .RemoveDevices2Async(new[] { device1, device2 }, true, default)
+                    .RemoveDevicesAsync(new[] { device1, device2 }, true, default)
                     .ConfigureAwait(false);
 
                 // assert
