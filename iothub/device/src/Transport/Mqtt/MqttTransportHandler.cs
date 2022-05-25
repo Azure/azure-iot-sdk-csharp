@@ -452,33 +452,48 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                if (TryStop())
+                if (Logging.IsEnabled)
                 {
-                    CleanUpAsync().GetAwaiter().GetResult();
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
 
-                _disconnectAwaitersCancellationSource?.Dispose();
-                _disconnectAwaitersCancellationSource = null;
-
-                _receivingSemaphore?.Dispose();
-                _receivingSemaphore = null;
-
-                _deviceReceiveMessageSemaphore?.Dispose();
-                _deviceReceiveMessageSemaphore = null;
-
-                if (_channel is IDisposable disposableChannel)
+                if (!_disposed)
                 {
-                    disposableChannel.Dispose();
-                    _channel = null;
+                    base.Dispose(disposing);
+
+                    if (disposing)
+                    {
+                        if (TryStop())
+                        {
+                            CleanUpAsync().GetAwaiter().GetResult();
+                        }
+
+                        _disconnectAwaitersCancellationSource?.Dispose();
+                        _disconnectAwaitersCancellationSource = null;
+
+                        _receivingSemaphore?.Dispose();
+                        _receivingSemaphore = null;
+
+                        _deviceReceiveMessageSemaphore?.Dispose();
+                        _deviceReceiveMessageSemaphore = null;
+
+                        if (_channel is IDisposable disposableChannel)
+                        {
+                            disposableChannel.Dispose();
+                            _channel = null;
+                        }
+                    }
+
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
             }
         }

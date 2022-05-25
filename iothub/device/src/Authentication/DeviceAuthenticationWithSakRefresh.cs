@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -34,25 +35,40 @@ namespace Microsoft.Azure.Devices.Client
         ///<inheritdoc/>
         protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
         {
-            var builder = new SharedAccessSignatureBuilder
+            try
             {
-                Key = _connectionString.SharedAccessKey,
-                TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
-            };
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewToken));
+                }
 
-            if (_connectionString.SharedAccessKeyName == null)
-            {
-                builder.Target = "{0}/devices/{1}".FormatInvariant(
-                    iotHub,
-                    WebUtility.UrlEncode(DeviceId));
-            }
-            else
-            {
-                builder.KeyName = _connectionString.SharedAccessKeyName;
-                builder.Target = _connectionString.Audience;
-            }
+                var builder = new SharedAccessSignatureBuilder
+                {
+                    Key = _connectionString.SharedAccessKey,
+                    TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
+                };
 
-            return Task.FromResult(builder.ToSignature());
+                if (_connectionString.SharedAccessKeyName == null)
+                {
+                    builder.Target = "{0}/devices/{1}".FormatInvariant(
+                        iotHub,
+                        WebUtility.UrlEncode(DeviceId));
+                }
+                else
+                {
+                    builder.KeyName = _connectionString.SharedAccessKeyName;
+                    builder.Target = _connectionString.Audience;
+                }
+
+                return Task.FromResult(builder.ToSignature());
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewToken));
+                }
+            }
         }
     }
 }

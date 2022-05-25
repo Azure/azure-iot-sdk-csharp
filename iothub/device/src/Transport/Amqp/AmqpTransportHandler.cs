@@ -616,23 +616,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         protected override void Dispose(bool disposing)
         {
-            lock (_lock)
+            try
             {
-                if (_disposed)
+                if (Logging.IsEnabled)
                 {
-                    return;
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
                 }
 
-                base.Dispose(disposing);
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, nameof(disposing));
-
-                if (disposing)
+                lock (_lock)
                 {
-                    _closed = true;
-                    AmqpUnitManager.GetInstance()?.RemoveAmqpUnit(_amqpUnit);
-                    _disposed = true;
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
+                    base.Dispose(disposing);
+                    if (disposing)
+                    {
+                        _closed = true;
+                        AmqpUnitManager.GetInstance()?.RemoveAmqpUnit(_amqpUnit);
+                    }
+
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
                 }
             }
         }
