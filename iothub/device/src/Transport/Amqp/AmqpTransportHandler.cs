@@ -625,16 +625,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 lock (_lock)
                 {
-                    if (_disposed)
+                    if (!_disposed)
                     {
-                        return;
-                    }
-
-                    base.Dispose(disposing);
-                    if (disposing)
-                    {
-                        _closed = true;
-                        AmqpUnitManager.GetInstance()?.RemoveAmqpUnit(_amqpUnit);
+                        if (disposing)
+                        {
+                            _closed = true;
+                            AmqpUnitManager.GetInstance()?.RemoveAmqpUnit(_amqpUnit);
+                        }
                     }
 
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.

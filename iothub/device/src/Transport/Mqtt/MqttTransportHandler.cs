@@ -461,8 +461,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (!_disposed)
                 {
-                    base.Dispose(disposing);
-
                     if (disposing)
                     {
                         if (TryStop())
