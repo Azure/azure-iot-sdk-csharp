@@ -627,10 +627,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     if (!_disposed)
                     {
+                        base.Dispose(disposing);
                         if (disposing)
                         {
                             _closed = true;
                             AmqpUnitManager.GetInstance()?.RemoveAmqpUnit(_amqpUnit);
+                            _disposed = true;
                         }
                     }
 

@@ -160,6 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (!_disposed)
                 {
+                    base.Dispose(disposing);
                     if (disposing)
                     {
                         _httpClientHelper?.Dispose();

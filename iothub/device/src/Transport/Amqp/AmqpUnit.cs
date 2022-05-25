@@ -963,8 +963,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     if (disposing)
                     {
-                        Logging.Enter(this, disposing, nameof(Dispose));
-
                         Cleanup();
                         if (!_deviceIdentity.IsPooling())
                         {
