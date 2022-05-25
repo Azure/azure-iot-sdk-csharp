@@ -182,7 +182,6 @@ jobs:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
-
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
         inputs:
@@ -669,6 +668,14 @@ jobs:
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
+          
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection

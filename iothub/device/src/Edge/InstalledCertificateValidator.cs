@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-
             try
             {
                 foreach (X509Certificate2 cert in _certs)

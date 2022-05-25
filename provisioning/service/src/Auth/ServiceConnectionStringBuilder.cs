@@ -84,7 +84,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ServiceName { get; private set; }
 
-
         internal ServiceConnectionString ToServiceConnectionString()
         {
             Validate();

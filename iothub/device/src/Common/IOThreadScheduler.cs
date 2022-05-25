@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private static IoThreadScheduler s_current = new IoThreadScheduler(32, 32);
-        private readonly ScheduledOverlapped _overlapped;
+        private static IoThreadScheduler current = new IoThreadScheduler(32, 32);
+        private readonly ScheduledOverlapped overlapped;
 
         [Fx.Tag.Queue(typeof(Slot), Scope = Fx.Tag.Strings.AppDomain)]
         [Fx.Tag.SecurityNote(Critical = "holds callbacks which get called outside of the app security context")]
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client
             _slotsLowPri = new Slot[capacityLowPri];
             Fx.Assert((_slotsLowPri.Length & SlotMaskLowPri) == 0, "Low-priority capacity must be a power of two.");
 
-            _overlapped = new ScheduledOverlapped();
+            overlapped = new ScheduledOverlapped();
         }
 
         [Fx.Tag.SecurityNote(Critical = "Calls into critical class CriticalHelper, doesn't flow context")]
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
                 finally
                 {
                     // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
-                    queued = s_current.ScheduleCallbackHelper(callback, state);
+                    queued = current.ScheduleCallbackHelper(callback, state);
                 }
             }
         }
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client
                 finally
                 {
                     // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
-                    queued = s_current.ScheduleCallbackLowPriHelper(callback, state);
+                    queued = current.ScheduleCallbackLowPriHelper(callback, state);
                 }
             }
         }
@@ -176,13 +176,13 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Wrapped around the circular buffer. Create a new, bigger IoThreadScheduler.
                 var next = new IoThreadScheduler(Math.Min(_slots.Length * 2, MaximumCapacity), _slotsLowPri.Length);
-                Interlocked.CompareExchange(ref s_current, next, this);
+                Interlocked.CompareExchange(ref current, next, this);
             }
 
             if (wasIdle)
             {
                 // It's our responsibility to kick off the overlapped.
-                _overlapped.Post(this);
+                overlapped.Post(this);
             }
 
             return queued;
@@ -231,16 +231,130 @@ namespace Microsoft.Azure.Devices.Client
             if (wrapped)
             {
                 var next = new IoThreadScheduler(_slots.Length, Math.Min(_slotsLowPri.Length * 2, MaximumCapacity));
-                Interlocked.CompareExchange(ref s_current, next, this);
+                Interlocked.CompareExchange(ref current, next, this);
             }
 
             if (wasIdle)
             {
                 // It's our responsibility to kick off the overlapped.
-                _overlapped.Post(this);
+                overlapped.Post(this);
             }
 
             return queued;
+        }
+
+        [Fx.Tag.SecurityNote(Critical = "calls into ScheduledOverlapped to post it, touches slots, may be called outside of user context")]
+        [SecurityCritical]
+        private void CompletionCallback(out Action<object> callback, out object state)
+        {
+            int slot = _headTail;
+            int slotLowPri;
+
+            while (true)
+            {
+                Fx.Assert(Bits.Count(slot) != -1, "CompletionCallback called on idle IOTS!");
+
+                bool wasEmpty = Bits.Count(slot) == 0;
+                if (wasEmpty)
+                {
+                    // We're about to set this to idle. First check the low-priority queue. This alone doesn't
+                    // guarantee we service all the low-pri items - there hasn't even been an Interlocked yet. But
+                    // we take care of that later.
+                    slotLowPri = _headTailLowPri;
+                    while (Bits.CountNoIdle(slotLowPri) != 0)
+                    {
+                        if (slotLowPri == (slotLowPri = Interlocked.CompareExchange(
+                            ref _headTailLowPri,
+                            Bits.IncrementLo(slotLowPri),
+                            slotLowPri)))
+                        {
+                            overlapped.Post(this);
+                            _slotsLowPri[slotLowPri & SlotMaskLowPri].DequeueWorkItem(out callback, out state);
+                            return;
+                        }
+                    }
+                }
+
+                if (slot == (slot = Interlocked.CompareExchange(ref _headTail, Bits.IncrementLo(slot), slot)))
+                {
+                    if (!wasEmpty)
+                    {
+                        overlapped.Post(this);
+                        _slots[slot & SlotMask].DequeueWorkItem(out callback, out state);
+                        return;
+                    }
+
+                    // We just set the IOThreadScheduler to idle. Check if a low-priority item got added in the
+                    // interim.
+                    // Interlocked calls create a thread barrier, so this read will give us the value of
+                    // headTailLowPri at the time of the interlocked that set us to idle, or later. The invariant
+                    // here is that either the low-priority queue was empty at some point after we set the IOTS to
+                    // idle (so that the next enqueue will notice, and issue a Post), or that the IOTS was unidle at
+                    // some point after we set it to idle (so that the next attempt to go idle will verify that the
+                    // low-priority queue is empty).
+                    slotLowPri = _headTailLowPri;
+
+                    if (Bits.CountNoIdle(slotLowPri) != 0)
+                    {
+                        // Whoops, go back from being idle (unless someone else already did). If we go back, start
+                        // over. (We still owe a Post.)
+                        slot = Bits.IncrementLo(slot);
+                        if (slot == Interlocked.CompareExchange(ref _headTail, slot + Bits.HiOne, slot))
+                        {
+                            slot += Bits.HiOne;
+                            continue;
+                        }
+
+                        // We know that there's a low-priority work item. But we also know that the IOThreadScheduler
+                        // wasn't idle. It's best to let it take care of itself, since according to this method, we
+                        // just set the IOThreadScheduler to idle so shouldn't take on any tasks.
+                    }
+
+                    break;
+                }
+            }
+
+            callback = null;
+            state = null;
+            return;
+        }
+
+        [Fx.Tag.SecurityNote(Critical = "touches slots, may be called outside of user context")]
+        [SecurityCritical]
+        private bool TryCoalesce(out Action<object> callback, out object state)
+        {
+            int slot = _headTail;
+            int slotLowPri;
+            while (true)
+            {
+                if (Bits.Count(slot) > 0)
+                {
+                    if (slot == (slot = Interlocked.CompareExchange(ref _headTail, Bits.IncrementLo(slot), slot)))
+                    {
+                        _slots[slot & SlotMask].DequeueWorkItem(out callback, out state);
+                        return true;
+                    }
+                    continue;
+                }
+
+                slotLowPri = _headTailLowPri;
+                if (Bits.CountNoIdle(slotLowPri) > 0)
+                {
+                    if (slotLowPri == (slotLowPri = Interlocked.CompareExchange(ref _headTailLowPri, Bits.IncrementLo(slotLowPri), slotLowPri)))
+                    {
+                        _slotsLowPri[slotLowPri & SlotMaskLowPri].DequeueWorkItem(out callback, out state);
+                        return true;
+                    }
+                    slot = _headTail;
+                    continue;
+                }
+
+                break;
+            }
+
+            callback = null;
+            state = null;
+            return false;
         }
 
         private int SlotMask
@@ -275,9 +389,9 @@ namespace Microsoft.Azure.Devices.Client
 
         private void Cleanup()
         {
-            if (_overlapped != null)
+            if (overlapped != null)
             {
-                _overlapped.Cleanup();
+                overlapped.Cleanup();
             }
         }
 

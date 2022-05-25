@@ -85,7 +85,6 @@ namespace Microsoft.Azure.Devices.Client
         public static string GetDetailsForThrownException(Exception e)
         {
             string details = e.GetType().ToString();
-
             details += Environment.NewLine + "Exception ToString:" + Environment.NewLine;
             details += e.ToStringSlim();
             return details;

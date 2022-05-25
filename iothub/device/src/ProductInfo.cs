@@ -2,10 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Win32;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -13,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client
     {
         public string Extra { get; set; } = "";
 
-        private readonly Lazy<int> _productType = new Lazy<int>(() => NativeMethods.GetWindowsProductType());
-        private readonly Lazy<string> _sqmId = new Lazy<string>(() => TelemetryMethods.GetSqmMachineId());
+        private readonly Lazy<int> _productType = new Lazy<int>(() => GetWindowsProductType());
+        private readonly Lazy<string> _sqmId = new Lazy<string>(() => GetSqmMachineId());
 
         public override string ToString()
         {
@@ -95,6 +98,60 @@ namespace Microsoft.Azure.Devices.Client
 
             return userAgent;
         }
+
+        internal static string GetSqmMachineId()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                try
+                {
+                    RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\SQMClient");
+                    if (key != null)
+                    {
+                        return key.GetValue("MachineId") as string;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Assert(false, ex.Message);
+
+                    if (Logging.IsEnabled)
+                        Logging.Error(null, ex, nameof(ProductInfo));
+                }
+            }
+
+            return null;
+        }
+
+        internal static int GetWindowsProductType()
+        {
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
+                {
+                    return productType;
+                }
+            }
+            catch (DllNotFoundException ex)
+            {
+                // Catch any DLL not found exceptions
+                Debug.Assert(false, ex.Message);
+
+                if (Logging.IsEnabled)
+                    Logging.Error(null, ex, nameof(ProductInfo));
+            }
+
+            return 0;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = false)]
+        private static extern bool GetProductInfo(
+           int dwOSMajorVersion,
+           int dwOSMinorVersion,
+           int dwSpMajorVersion,
+           int dwSpMinorVersion,
+           out int pdwReturnedProductType);
     }
 
     internal enum UserAgentFormats

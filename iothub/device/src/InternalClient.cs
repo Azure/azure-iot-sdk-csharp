@@ -155,16 +155,18 @@ namespace Microsoft.Azure.Devices.Client
             _clientOptions = options;
             IotHubConnectionString = iotHubConnectionString;
 
-            var pipelineContext = new PipelineContext();
-            pipelineContext.Set(transportSettings);
-            pipelineContext.Set(iotHubConnectionString);
-            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalledAsync);
-            pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
-            pipelineContext.Set<ConnectionStatusChangesHandler>(OnConnectionStatusChanged);
-            pipelineContext.Set<OnModuleEventMessageReceivedDelegate>(OnModuleEventMessageReceivedAsync);
-            pipelineContext.Set<OnDeviceMessageReceivedDelegate>(OnDeviceMessageReceivedAsync);
-            pipelineContext.Set(_productInfo);
-            pipelineContext.Set(options);
+            var pipelineContext = new PipelineContext()
+            {
+                TransportSettingsArray = transportSettings,
+                IotHubConnectionString = iotHubConnectionString,
+                MethodCallback = OnMethodCalledAsync,
+                DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
+                ConnectionStatusChangesHandler = OnConnectionStatusChanged,
+                ModuleEventCallback = OnModuleEventMessageReceivedAsync,
+                DeviceEventCallback = OnDeviceMessageReceivedAsync,
+                ProductInfo = _productInfo,
+                ClientOptions = options
+            };
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
@@ -400,7 +402,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue
         /// </summary>
         /// <param name="lockToken"></param>
-        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <param name="cancellationToken">A token to cancel the operation. </param>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
@@ -438,7 +440,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue
         /// </summary>
         /// <param name="message">The message to complete</param>
-        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <param name="cancellationToken">A token to cancel the operation. </param>
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message, CancellationToken cancellationToken)
         {
@@ -447,8 +449,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire
-            // or unrecoverable error(authentication, quota exceed) occurs.
+            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds
+            // property expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
                 return CompleteAsync(message.LockToken, cancellationToken);
