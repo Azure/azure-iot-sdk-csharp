@@ -102,7 +102,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     catch (IotHubCommunicationException ex)
                     {
                         if (Logging.IsEnabled)
-                            Logging.Info(this, refreshesOn, $"Refresh token failed {ex}");
+                        {
+                            Logging.Error(this, refreshesOn, $"Refresh token failed {ex}");
+                        }
                     }
                     finally
                     {
@@ -129,21 +131,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
+                }
+
+                if (!_disposed)
+                {
+                    if (disposing)
+                    {
+                        StopLoop();
+                        _amqpIotCbsTokenProvider?.Dispose();
+                    }
+
+                    _disposed = true;
+                }
             }
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, disposing, nameof(Dispose));
-
-            if (disposing)
+            finally
             {
-                StopLoop();
-                _amqpIotCbsTokenProvider?.Dispose();
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
+                }
             }
-
-            _disposed = true;
         }
     }
 }

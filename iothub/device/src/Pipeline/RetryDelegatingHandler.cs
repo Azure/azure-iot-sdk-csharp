@@ -1076,22 +1076,37 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            base.Dispose(disposing);
-            if (disposing)
-            {
-                _handleDisconnectCts?.Cancel();
-                _handleDisconnectCts?.Dispose();
-                if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
+                if (Logging.IsEnabled)
                 {
-                    _handlerSemaphore.Release();
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
                 }
-                _handlerSemaphore?.Dispose();
-                _handlerSemaphore = null;
+
+                if (!_disposed)
+                {
+                    base.Dispose(disposing);
+                    if (disposing)
+                    {
+                        _handleDisconnectCts?.Cancel();
+                        _handleDisconnectCts?.Dispose();
+                        if (_handlerSemaphore != null && _handlerSemaphore.CurrentCount == 0)
+                        {
+                            _handlerSemaphore.Release();
+                        }
+                        _handlerSemaphore?.Dispose();
+                        _handlerSemaphore = null;
+                    }
+
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                }
             }
         }
     }
