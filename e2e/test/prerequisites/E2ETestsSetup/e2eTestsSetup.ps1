@@ -130,7 +130,7 @@ if (-not $isAdmin)
 $Region = $Region.Replace(' ', '')
 $logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $iotHubAadTestAppRegName = "$ResourceGroup-IotHubAadApp"
-$uploadCertificateName = "group1-certificate"
+$dpsUploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
 $managedIdentityName = "$ResourceGroup-user-msi"
@@ -187,21 +187,18 @@ $rootCommonName = "$subjectPrefix Test Root CA";
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA";
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
 $groupCertCommonName = "xdevice1";
-$deviceCertCommonName = "iothubx509device1";
 $iotHubCertCommonName = "iothubx509device1";
 $iotHubCertChainDeviceCommonName = "iothubx509chaindevice1";
 
 $rootCertPath = "$PSScriptRoot/Root.cer";
-$individualDeviceCertPath = "$PSScriptRoot/Device.cer";
 $verificationCertPath = "$PSScriptRoot/verification.cer";
 
-$groupPfxPath = "$PSScriptRoot/Group.pfx";
-$individualDevicePfxPath = "$PSScriptRoot/Device.pfx";
 $iotHubPfxPath = "$PSScriptRoot/IotHub.pfx";
 $iotHubChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx";
 $intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer";
 $intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
 
+$intermediateCert2PfxPath = "$PSScriptRoot/intermediateCert2.pfx"
 $groupCertChainPath = "$PSScriptRoot/GroupCertChain.p7b";
 
 ############################################################################################################################
@@ -241,6 +238,12 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
 
+$certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
+
+# Export the intermediate2 certificate as a pfx file. This certificate will be used to sign and generate the device certificates that are used in DPS group enrollment E2E tests.
+Export-PFXCertificate -cert $intermediateCert2 -filePath $intermediateCert2PfxPath -password $certPassword | Out-Null
+$dpsGroupX509Intermediate2PfxCertificate = [Convert]::ToBase64String((Get-Content $intermediateCert2PfxPath -AsByteStream));
+
 # Create Certificate chain from Root to IntermediateCert2. This chain will be combined with the cert signed by IntermediateCert2 to test group enrollment.
 # Chain: Root->Intermediate1->Intermediate2, cert: Intermediate2->deviceCert
 Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.contains("CN=$subjectPrefix") } | Export-Certificate -FilePath $groupCertChainPath -Type p7b | Out-Null
@@ -248,36 +251,8 @@ Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.contains("CN=$s
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
 $iothubX509RootCACertificate = [Convert]::ToBase64String((Get-Content $rootCertPath -AsByteStream))
 
-$certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
-
 # Create leaf certificates, expiring in 2 years
 # These certs are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
-
-# Certificate for enrollment of a device using group enrollment.
-$groupDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$groupCertCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2) `
-    -Signer $intermediateCert2
-
-Export-PFXCertificate -cert $groupDeviceCert -filePath $groupPfxPath -password $certPassword | Out-Null
-$dpsGroupX509PfxCertificate = [Convert]::ToBase64String((Get-Content $groupPfxPath -AsByteStream));
-
-# Certificate for enrollment of a device using individual enrollment.
-$individualDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$deviceCertCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2)
-
-Export-Certificate -cert $individualDeviceCert -FilePath $individualDeviceCertPath -Type CERT | Out-Null
-Export-PFXCertificate -cert $individualDeviceCert -filePath $individualDevicePfxPath -password $certPassword | Out-Null
-$dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -AsByteStream));
 
 # IoT hub certificate for authentication. The tests are not setup to use a password for the certificate so create the certificate is created with no password.
 $iotHubCert = New-SelfSignedCertificate `
@@ -602,22 +577,22 @@ $symmetricKeySampleEnrollmentPrimaryKey = az iot dps enrollment show -g $Resourc
 ##################################################################################################################################
 
 $dpsIdScope = az iot dps show -g $ResourceGroup --name $dpsName --query 'properties.idScope' --output tsv
-$certExists = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$uploadCertificateName']" --output tsv
+$certExists = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$dpsUploadCertificateName']" --output tsv
 if ($certExists)
 {
     Write-Host "`nDeleting existing certificate from DPS."
-    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
-    az iot dps certificate delete -g $ResourceGroup --dps-name $dpsName --name $uploadCertificateName --etag $etag
+    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
+    az iot dps certificate delete -g $ResourceGroup --dps-name $dpsName --name $dpsUploadCertificateName --etag $etag
 }
 Write-Host "`nUploading new certificate to DPS."
-az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $dpsName --certificate-name $uploadCertificateName --output none
+az iot dps certificate create -g $ResourceGroup --path $rootCertPath --dps-name $dpsName --certificate-name $dpsUploadCertificateName --output none
 
-$isVerified = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'properties.isVerified' --output tsv
+$isVerified = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'properties.isVerified' --output tsv
 if ($isVerified -eq 'false')
 {
     Write-Host "`nVerifying certificate uploaded to DPS."
-    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
-    $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName -e $etag --query 'properties.verificationCode'
+    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
+    $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
         "-DnsName"             = $requestedCommonName;
         "-CertStoreLocation"   = "cert:\LocalMachine\My";
@@ -628,8 +603,8 @@ if ($isVerified -eq 'false')
     }
     $verificationCert = New-SelfSignedCertificate @verificationCertArgs
     Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
-    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName --query 'etag'
-    az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $uploadCertificateName -e $etag --path $verificationCertPath --output none
+    $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
+    az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --path $verificationCertPath --output none
 }
 
 $groupEnrollmentId = "Group1"
@@ -640,25 +615,7 @@ if ($groupEnrollmentExists)
     az iot dps enrollment-group delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId
 }
 Write-Host "`nAdding group enrollment $groupEnrollmentId."
-az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $uploadCertificateName --output none
-
-$individualEnrollmentId = "iothubx509device1"
-$individualDeviceId = "provisionedx509device1"
-$individualEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$individualDeviceId'].deviceId" --output tsv
-if ($individualEnrollmentExists)
-{
-    Write-Host "`nDeleting existing individual enrollment $individualEnrollmentId for device $individualDeviceId."
-    az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $individualEnrollmentId
-}
-Write-Host "`nAdding individual enrollment $individualEnrollmentId for device $individualDeviceId."
-az iot dps enrollment create `
-    -g $ResourceGroup `
-    --dps-name $dpsName `
-    --enrollment-id $individualEnrollmentId `
-    --device-id $individualDeviceId `
-    --attestation-type x509 `
-    --certificate-path $individualDeviceCertPath `
-    --output none
+az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
 
 if ($EnableIotHubSecuritySolution)
 {
@@ -702,8 +659,7 @@ $keyvaultKvps = @{
     "DPS-GLOBALDEVICEENDPOINT" = $dpsEndpoint;
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $dpsX509PfxCertificatePassword;
     "IOTHUB-X509-PFX-CERTIFICATE" = $iothubX509PfxCertificate;
-    "DPS-INDIVIDUALX509-PFX-CERTIFICATE" = $dpsIndividualX509PfxCertificate;
-    "DPS-GROUPX509-PFX-CERTIFICATE" = $dpsGroupX509PfxCertificate;
+    "DPS-GROUPX509-INTERMEDIATE2-PFX-CERTIFICATE" = $dpsGroupX509Intermediate2PfxCertificate;
     "DPS-GROUPX509-CERTIFICATE-CHAIN" = $dpsGroupX509CertificateChain;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
     "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
@@ -718,6 +674,8 @@ $keyvaultKvps = @{
     "IOTHUB-X509-CHAIN-DEVICE-NAME" = $iotHubCertChainDeviceCommonName;
     "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" = $msiResourceId;
     "E2E-IKEY" = $instrumentationKey;
+
+    <# The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception. #>
 
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "IOTHUB-DEVICE-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=";

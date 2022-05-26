@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
-        private static readonly X509Certificate2 s_groupEnrollmentCertificate = TestConfiguration.Provisioning.GetGroupEnrollmentCertificate();
 
         private readonly string _idPrefix = $"E2E-{nameof(ReprovisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
@@ -41,15 +40,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
-        private static DirectoryInfo s_dpsClientCertificateFolder;
-        private static DirectoryInfo s_selfSignedCertificatesFolder;
+        private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
+
+        private static DirectoryInfo s_x509CertificatesFolder;
+        private static string s_intermediateCertificateSubject;
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            s_dpsClientCertificateFolder = Directory.CreateDirectory("DpsClientCertificates");
-            s_selfSignedCertificatesFolder = s_dpsClientCertificateFolder.CreateSubdirectory("SelfSignedCertificates");
+            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ReprovisioningE2ETests)}-{Guid.NewGuid()}");
+
+            // Extract the public certificate and private key information from the intermediate certificate pfx file.
+            // These keys will be used to sign the test leaf device certificates.
+            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfx(
+                TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateString(),
+                s_certificatePassword,
+                s_x509CertificatesFolder);
         }
 
         [LoggedTestMethod]
@@ -409,14 +416,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
-                            X509Certificate2Generator.GenerateSelfSignedCertificates(registrationId, s_selfSignedCertificatesFolder, Logger);
+                            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(registrationId, s_certificatePassword, s_x509CertificatesFolder, Logger);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
-                            X509Certificate2 publicPrivateCertificate = CreateX509CertificateWithPublicPrivateKey(registrationId);
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(
+                                registrationId,
+                                s_certificatePassword,
+                                s_x509CertificatesFolder);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                            using (X509Certificate2 publicCertificate = CreateX509CertificateWithPublicKey(registrationId))
+                            using (X509Certificate2 publicCertificate = X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder))
                             {
                                 IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
                                     provisioningServiceClient,
@@ -433,11 +443,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
                             }
 
-                            return new SecurityProviderX509Certificate(publicPrivateCertificate);
+                            break;
 
                         case EnrollmentType.Group:
-                            certificate = s_groupEnrollmentCertificate;
+                            X509Certificate2Helper.GenerateIntermediateCertificateSignedCertificateFiles(
+                                registrationId,
+                                s_certificatePassword,
+                                s_intermediateCertificateSubject,
+                                s_x509CertificatesFolder,
+                                Logger);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                            // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(
+                                registrationId,
+                                s_certificatePassword,
+                                s_x509CertificatesFolder);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                            // The X509 enrollment group has been hardcoded for the purpose of E2E tests.
+                            // Each device identity provisioning through the above enrollment group is created on-demand.
                             collection = TestConfiguration.Provisioning.GetGroupEnrollmentChain();
+
                             break;
 
                         default:
@@ -715,25 +742,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        private X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
-        {
-            return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.crt");
-        }
-
-        private X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
-        {
-            return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.pfx", TestConfiguration.Provisioning.CertificatePassword);
-        }
-
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-            s_groupEnrollmentCertificate?.Dispose();
-
             // Delete all the test client certificates created
             try
             {
-                s_dpsClientCertificateFolder.Delete(true);
+                s_x509CertificatesFolder.Delete(true);
             }
             catch (Exception)
             {
