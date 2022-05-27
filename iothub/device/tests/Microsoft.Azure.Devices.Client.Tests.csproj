@@ -48,5 +48,6 @@
 
   <ItemGroup>
     <Folder Include="Mqtt\" />
+    <Folder Include="Transport\Mqtt\" />
   </ItemGroup>
 </Project>
