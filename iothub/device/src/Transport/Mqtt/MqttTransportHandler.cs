@@ -1154,7 +1154,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (status >= 300)
                             {
-                                throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                // Retry for Http status code 429 (too many requests)
+                                if (status == 429)
+                                {
+                                    throw new IotHubThrottledException($"Request {rid} was throttled by the server");
+                                }
+                                else
+                                {
+                                    throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                }
                             }
                             else
                             {
