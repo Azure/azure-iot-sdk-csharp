@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0;net472;</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -11,7 +11,7 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 
     <!-- Don't auto-compile platform-specific files: -->
-    <DefaultItemExcludes>ModernDotNet/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>ModernDotNet/**;$(DefaultItemExcludes)</DefaultItemExcludes>
 
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
@@ -73,18 +73,11 @@
   </ItemGroup>
 
   <!-- All the "new" .NET targets -->
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpBufferedStream.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
-  </ItemGroup>
-
-  <!-- net451 only -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Include="net451\IotHubClientWebSocket.cs" />
-    <Compile Include="net451\Common\LegacyClientWebSocketTransport.cs" />
-    <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -107,18 +100,8 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
   </ItemGroup>
 </Project>

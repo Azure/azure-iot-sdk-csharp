@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private class TpmSharedAccessSignatureBuilder : SharedAccessSignatureBuilder
         {
-            private SecurityProviderTpm _securityProvider;
+            private readonly SecurityProviderTpm _securityProvider;
 
             public TpmSharedAccessSignatureBuilder(SecurityProviderTpm securityProvider)
             {

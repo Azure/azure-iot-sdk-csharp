@@ -5,15 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-
-#if NET451
-    using Microsoft.Owin;
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Extensions
 {
@@ -114,47 +108,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 ? throw new ArgumentException("Invalid request URI")
                 : iotHubName;
         }
-
-#if NET451 // Depends on Owin
-        public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
-        {
-            // note that this only works if we are hosted as an OWIN app
-            if (requestMessage.Properties.ContainsKey("MS_OwinContext"))
-            {
-                var owinContext = requestMessage.Properties["MS_OwinContext"] as OwinContext;
-                if (owinContext != null)
-                {
-                    string remoteIpAddress = owinContext.Request.RemoteIpAddress;
-
-                    string maskedRemoteIpAddress = string.Empty;
-
-                    IPAddress remoteIp = null;
-
-                    if (IPAddress.TryParse(remoteIpAddress, out remoteIp))
-                    {
-                        byte[] addressBytes = remoteIp.GetAddressBytes();
-                        if (remoteIp.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            addressBytes[addressBytes.Length - 1] = 0xFF;
-                            addressBytes[addressBytes.Length - 2] = 0xFF;
-                            maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
-                        }
-                        else if (remoteIp.AddressFamily == AddressFamily.InterNetworkV6)
-                        {
-                            addressBytes[addressBytes.Length - 1] = 0xFF;
-                            addressBytes[addressBytes.Length - 2] = 0xFF;
-                            addressBytes[addressBytes.Length - 3] = 0xFF;
-                            addressBytes[addressBytes.Length - 4] = 0xFF;
-                            maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
-                        }
-                    }
-
-                    return maskedRemoteIpAddress;
-                }
-            }
-            return null;
-        }
-#endif
 
         public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
         {

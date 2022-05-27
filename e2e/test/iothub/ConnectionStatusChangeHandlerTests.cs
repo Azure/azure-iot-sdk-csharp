@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
-            await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
-            await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_Tcp_Only, async (r, d) =>
                 {
                     Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
-            await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_WebSocket_Only, async (r, d) =>
                 {
                     Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
-            await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
-            await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // [LoggedTestMethod]
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
-            await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_Tcp_Only, async (r, d) =>
                 {
                     Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // [LoggedTestMethod]
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
-            await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_WebSocket_Only, async (r, d) =>
             {
                 Device device = await r.GetDeviceAsync(d).ConfigureAwait(false);

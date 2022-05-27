@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>true if the specified property is present; otherwise, false</returns>
         public bool Contains(string propertyName)
         {
-            return JObject.TryGetValue(propertyName, out JToken ignored);
+            return JObject.TryGetValue(propertyName, out _);
         }
 
         /// <inheritdoc />

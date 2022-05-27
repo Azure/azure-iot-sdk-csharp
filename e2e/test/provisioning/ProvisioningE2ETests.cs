@@ -707,10 +707,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 ValidateDeviceRegistrationResult(false, result);
 
-    #pragma warning disable CA2000 // Dispose objects before losing scope
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
                 auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
-    #pragma warning restore CA2000 // Dispose objects before losing scope
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
                 await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
                 await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
@@ -837,7 +837,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ValidateDeviceRegistrationResult(false, result);
 
             try
-                {
+            {
                 if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
                 {
                     Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
@@ -849,15 +849,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
 
                 if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
-                    {
-                        X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                        publicPrivateCertificate?.Dispose();
-                    }
-                }
-                catch (Exception ex)
                 {
-                    Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
+                    publicPrivateCertificate?.Dispose();
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+            }
         }
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
@@ -963,7 +963,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
             Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
-            
+
             try
             {
                 ProvisioningTransportException exception = await Assert.

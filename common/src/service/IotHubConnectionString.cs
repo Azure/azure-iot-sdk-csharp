@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     internal sealed class IotHubConnectionString
         : IotHubConnectionProperties
     {
-        private static readonly TimeSpan _tokenTimeToLive = TimeSpan.FromHours(1);
+        private static readonly TimeSpan s_tokenTimeToLive = TimeSpan.FromHours(1);
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder) : base(builder?.HostName)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,
-                TimeToLive = _tokenTimeToLive,
+                TimeToLive = s_tokenTimeToLive,
                 Target = Audience
             };
 

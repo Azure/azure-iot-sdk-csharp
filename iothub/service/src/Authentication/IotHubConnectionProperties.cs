@@ -18,12 +18,6 @@ namespace Microsoft.Azure.Devices
         private const string HostNameSeparator = ".";
         private const string HttpsEndpointPrefix = "https";
 
-        // Azure.Core (used in IotHubTokenCredential) is not available in NET451.
-        // So we need this constructor for the build to pass.
-        protected IotHubConnectionProperties()
-        {
-        }
-
         protected IotHubConnectionProperties(string hostName)
         {
             if (string.IsNullOrWhiteSpace(hostName))

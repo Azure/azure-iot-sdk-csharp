@@ -33,11 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private void SetupCertificateValidation()
         {
             Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
-#if NET451
-            var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-#else
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-#endif
             try
             {
                 foreach (X509Certificate2 cert in _certs)

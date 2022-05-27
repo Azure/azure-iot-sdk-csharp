@@ -6,10 +6,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if NET451
-using System.Transactions;
-#endif
-
 namespace Microsoft.Azure.Devices.Common
 {
     internal static class TaskHelpers
@@ -21,13 +17,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         public static void Fork(this Task thisTask)
         {
-            Fork(thisTask, "TaskExtensions.Fork");
-        }
-
-        public static void Fork(this Task thisTask, string tracingInfo)
-        {
             Fx.Assert(thisTask != null, "task is required!");
-            thisTask.ContinueWith(t => Fx.Exception.TraceHandled(t.Exception, tracingInfo), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
         }
 
         public static IAsyncResult ToAsyncResult(this Task task, AsyncCallback callback, object state)
@@ -63,10 +53,7 @@ namespace Microsoft.Azure.Devices.Common
                         tcs.TrySetResult(null);
                     }
 
-                    if (callback != null)
-                    {
-                        callback(tcs.Task);
-                    }
+                    callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
@@ -108,10 +95,7 @@ namespace Microsoft.Azure.Devices.Common
                         tcs.TrySetResult(task.Result);
                     }
 
-                    if (callback != null)
-                    {
-                        callback(tcs.Task);
-                    }
+                    callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,

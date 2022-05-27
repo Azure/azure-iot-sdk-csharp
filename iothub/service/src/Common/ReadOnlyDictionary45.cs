@@ -27,9 +27,7 @@ namespace Microsoft.Azure.Devices.Common
     /// <typeparam name="TValue">Type to be used for values</typeparam>
     [Serializable]
     [DebuggerDisplay("Count = {Count}")]
-#pragma warning disable CA1710 // Identifiers should have correct suffix
     public sealed class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary
-#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         [NonSerialized]
         private object _syncRoot;
@@ -41,7 +39,7 @@ namespace Microsoft.Azure.Devices.Common
         private ValueCollection _values;
 
         [NonSerialized]
-        private IReadOnlyIndicator _readOnlyIndicator;
+        private readonly IReadOnlyIndicator _readOnlyIndicator;
 
         /// <summary>
         /// Creates a readonly dictionary from a specified IDictionary
@@ -400,7 +398,7 @@ namespace Microsoft.Azure.Devices.Common
                     }
                     else
                     {
-                        System.Threading.Interlocked.CompareExchange<Object>(ref _syncRoot, new Object(), null);
+                        _ = Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
                     }
                 }
 
@@ -412,7 +410,7 @@ namespace Microsoft.Azure.Devices.Common
         private struct DictionaryEnumerator : IDictionaryEnumerator
         {
             private readonly IDictionary<TKey, TValue> _dictionary;
-            private IEnumerator<KeyValuePair<TKey, TValue>> _enumerator;
+            private readonly IEnumerator<KeyValuePair<TKey, TValue>> _enumerator;
 
             public DictionaryEnumerator(IDictionary<TKey, TValue> dictionary)
             {
@@ -446,9 +444,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         [DebuggerDisplay("Count = {Count}")]
         [Serializable]
-#pragma warning disable CA1034 // Nested types should not be visible
         public sealed class KeyCollection : ICollection<TKey>, ICollection
-#pragma warning restore CA1034 // Nested types should not be visible
         {
             private readonly ICollection<TKey> _collection;
 
@@ -579,9 +575,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         [DebuggerDisplay("Count = {Count}")]
         [Serializable]
-#pragma warning disable CA1034 // Nested types should not be visible
         public sealed class ValueCollection : ICollection<TValue>, ICollection
-#pragma warning restore CA1034 // Nested types should not be visible
         {
             private readonly ICollection<TValue> _collection;
 

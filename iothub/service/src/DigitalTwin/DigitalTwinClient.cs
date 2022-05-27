@@ -261,11 +261,11 @@ namespace Microsoft.Azure.Devices
             };
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
             // When this client is disposed, all the http message handlers and delegating handlers will be disposed automatically
-            _client = new IotHubGatewayServiceAPIs(credentials, httpClient, true);
-            _client.BaseUri = httpsEndpoint;
+            _client = new IotHubGatewayServiceAPIs(credentials, httpClient, true)
+            {
+                BaseUri = httpsEndpoint
+            };
             _protocolLayer = new PnpDigitalTwin(_client);
         }
 

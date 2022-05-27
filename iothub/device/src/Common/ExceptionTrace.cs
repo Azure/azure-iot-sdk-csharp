@@ -6,12 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Devices.Client.Extensions;
 
-#if NET451
-using System.Globalization;
-using System.Runtime.Versioning;
-using System.Threading;
-#endif
-
 namespace Microsoft.Azure.Devices.Client
 {
     internal class ExceptionTrace
@@ -74,25 +68,6 @@ namespace Microsoft.Azure.Devices.Client
             return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameter catchLocation is inside of the DEBUG compilation flag.")]
-        public void TraceHandled(Exception exception, string catchLocation)
-        {
-#if NET451 && DEBUG
-            Trace.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "IotHub/TraceHandled ThreadID=\"{0}\" catchLocation=\"{1}\" exceptionType=\"{2}\" exception=\"{3}\"",
-                Thread.CurrentThread.ManagedThreadId,
-                catchLocation,
-                exception.GetType(),
-                exception.ToStringSlim()));
-#endif
-            BreakOnException(exception);
-        }
-
-#if NET451
-        [ResourceConsumption(ResourceScope.Process)]
-#endif
-
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
             Safe = "Does not leak any resource, needed for debugging")]
         public TException TraceException<TException>(TException exception, TraceEventType level)
@@ -102,75 +77,17 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Only trace if this is the first time an exception is thrown by this ExceptionTrace/EventSource.
                 exception.Data[_eventSourceName] = _eventSourceName;
-
-#if NET451
-                switch (level)
-                {
-                    case TraceEventType.Critical:
-                    case TraceEventType.Error:
-                        Trace.TraceError($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
-                        break;
-
-                    case TraceEventType.Warning:
-                        Trace.TraceWarning($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
-                        break;
-                }
-#endif
             }
 
-            BreakOnException(exception);
             return exception;
         }
 
         public static string GetDetailsForThrownException(Exception e)
         {
             string details = e.GetType().ToString();
-
-#if NET451
-            const int maxStackFrames = 10;
-            // Include the current callstack (this ensures we see the Stack in case exception is not output when caught)
-            var stackTrace = new StackTrace();
-            string stackTraceString = stackTrace.ToString();
-
-            if (stackTrace.FrameCount > maxStackFrames)
-            {
-                string[] frames = stackTraceString.Split(new[] { Environment.NewLine }, maxStackFrames + 1, StringSplitOptions.RemoveEmptyEntries);
-                stackTraceString = string.Join(Environment.NewLine, frames, 0, maxStackFrames) + "...";
-            }
-
-            details += Environment.NewLine + stackTraceString;
-#endif
             details += Environment.NewLine + "Exception ToString:" + Environment.NewLine;
             details += e.ToStringSlim();
             return details;
-        }
-
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the NET451 compilation flag.")]
-        [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
-        [Fx.Tag.SecurityNote(Critical = "Calls into critical method UnsafeNativeMethods.IsDebuggerPresent and UnsafeNativeMethods.DebugBreak",
-            Safe = "Safe because it's a no-op in retail builds.")]
-        internal void BreakOnException(Exception exception)
-        {
-#if DEBUG
-            if (Fx.BreakOnExceptionTypes != null)
-            {
-                foreach (Type breakType in Fx.BreakOnExceptionTypes)
-                {
-#if NET451
-                    if (breakType.IsAssignableFrom(exception.GetType()))
-                    {
-                        // This is intended to "crash" the process so that a debugger can be attached.  If a managed
-                        // debugger is already attached, it will already be able to hook these exceptions.  We don't
-                        // want to simulate an unmanaged crash (DebugBreak) in that case.
-                        if (!Debugger.IsAttached && !UnsafeNativeMethods.IsDebuggerPresent())
-                        {
-                            Debugger.Launch();
-                        }
-                    }
-#endif
-                }
-            }
-#endif
         }
     }
 }

@@ -203,8 +203,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public void Dispose()
         {
-            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
-
             // Normally we wouldn't be disposing the X509 Certificates here, but rather delegate that to whoever was creating the TestDevice.
             // For the design that our test suite follows, it is ok to dispose the X509 certificate here since it won't be referenced by anyone else
             // within the scope of the test using this TestDevice.

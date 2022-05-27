@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices
 {
-    sealed class IotHubApiResources : ApiResources
+    internal sealed class IotHubApiResources : ApiResources
     {
         internal static string GetString(string value, params object[] args)
         {

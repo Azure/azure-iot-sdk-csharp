@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-
-    interface IHttpClientHelper : IDisposable
+    internal interface IHttpClientHelper : IDisposable
     {
         Task<T> GetAsync<T>(
             Uri requestUri,

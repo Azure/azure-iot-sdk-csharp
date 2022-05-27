@@ -61,8 +61,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
-            string signature;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
                 throw new FormatException($"Missing field: {SharedAccessSignatureConstants.SignatureFieldName}");
             }

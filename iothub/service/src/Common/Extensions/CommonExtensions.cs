@@ -4,16 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text;
 using Microsoft.Azure.Devices.Common.WebApi;
-
-#if NET451
-using Microsoft.Owin;
-#endif
-
 
 namespace Microsoft.Azure.Devices.Common
 {
@@ -53,9 +46,7 @@ namespace Microsoft.Azure.Devices.Common
             int length = value.Length;
             if (length == 0)
             {
-#pragma warning disable CA1305 // Specify IFormatProvider
                 return suffix.ToString();
-#pragma warning restore CA1305 // Specify IFormatProvider
             }
 
             return value[length - 1] == suffix
@@ -78,9 +69,7 @@ namespace Microsoft.Azure.Devices.Common
 
             if (value.Length == 0)
             {
-#pragma warning disable CA1305 // Specify IFormatProvider
                 return prefix.ToString();
-#pragma warning restore CA1305 // Specify IFormatProvider
             }
             else
             {
@@ -182,50 +171,6 @@ namespace Microsoft.Azure.Devices.Common
                 ? throw new ArgumentException("Invalid request URI")
                 : iotHubName;
         }
-
-#if NET451
-        /// <summary>
-        /// Get the masked client IP address
-        /// </summary>
-        /// <param name="requestMessage">The HTTP request message.</param>
-        /// <returns>The masked client IP address, if hosted as on OWIN application; otherwise returns null.</returns>
-        public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
-        {
-            // note that this only works if we are hosted as an OWIN app
-            if (requestMessage.Properties.ContainsKey("MS_OwinContext"))
-            {
-                if (requestMessage.Properties["MS_OwinContext"] is OwinContext owinContext)
-                {
-                    string remoteIpAddress = owinContext.Request.RemoteIpAddress;
-
-                    string maskedRemoteIpAddress = string.Empty;
-
-                    if (IPAddress.TryParse(remoteIpAddress, out IPAddress remoteIp))
-                    {
-                        byte[] addressBytes = remoteIp.GetAddressBytes();
-                        if (remoteIp.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            addressBytes[addressBytes.Length - 1] = 0xFF;
-                            addressBytes[addressBytes.Length - 2] = 0xFF;
-                            maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
-                        }
-                        else if (remoteIp.AddressFamily == AddressFamily.InterNetworkV6)
-                        {
-                            addressBytes[addressBytes.Length - 1] = 0xFF;
-                            addressBytes[addressBytes.Length - 2] = 0xFF;
-                            addressBytes[addressBytes.Length - 3] = 0xFF;
-                            addressBytes[addressBytes.Length - 4] = 0xFF;
-                            maskedRemoteIpAddress = new IPAddress(addressBytes).ToString();
-                        }
-                    }
-
-                    return maskedRemoteIpAddress;
-                }
-            }
-
-            return null;
-        }
-#endif
 
         /// <summary>
         /// Append a key value pair to a non-null <see cref="StringBuilder"/>.

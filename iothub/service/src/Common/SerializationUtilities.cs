@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-    using System.Collections.Generic;
-
     // WARNING: Consult filter engine owner before modifying this enum.
     // Introducing a new member here has impact to filtering engine in data type precedence and data conversion.
     // ALWASYS insert new types before Unknown!
-    enum PropertyValueType
+    internal enum PropertyValueType
     {
         Null,
         Byte, SByte, Char, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Decimal, // Numeric types
@@ -18,9 +17,9 @@ namespace Microsoft.Azure.Devices.Common
         Unknown,
     }
 
-    static class SerializationUtilities
+    internal static class SerializationUtilities
     {
-        static readonly Dictionary<Type, PropertyValueType> TypeToIntMap = new Dictionary<Type, PropertyValueType>()
+        private static readonly Dictionary<Type, PropertyValueType> s_typeToIntMap = new Dictionary<Type, PropertyValueType>()
         {
             { typeof(byte), PropertyValueType.Byte },
             { typeof(sbyte), PropertyValueType.SByte },
@@ -41,7 +40,6 @@ namespace Microsoft.Azure.Devices.Common
             { typeof(DateTime), PropertyValueType.DateTime },
             { typeof(DateTimeOffset), PropertyValueType.DateTimeOffset },
             { typeof(TimeSpan), PropertyValueType.TimeSpan },
-            { typeof(BufferedInputStream), PropertyValueType.Stream },
         };
 
         public static PropertyValueType GetTypeId(object value)
@@ -51,8 +49,7 @@ namespace Microsoft.Azure.Devices.Common
                 return PropertyValueType.Null;
             }
 
-            PropertyValueType typeId;
-            if (TypeToIntMap.TryGetValue(value.GetType(), out typeId))
+            if (s_typeToIntMap.TryGetValue(value.GetType(), out PropertyValueType typeId))
             {
                 return typeId;
             }

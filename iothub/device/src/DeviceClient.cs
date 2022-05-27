@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public class DeviceClient : IDisposable
-#if !NET451 && !NET472 && !NETSTANDARD2_0
+#if !NET472 && !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
     {
@@ -697,7 +697,7 @@ namespace Microsoft.Azure.Devices.Client
             GC.SuppressFinalize(this);
         }
 
-#if !NET451 && !NET472 && !NETSTANDARD2_0
+#if !NET472 && !NETSTANDARD2_0
         // IAsyncDisposable is available in .NET Standard 2.1 and above
 
         /// <summary>

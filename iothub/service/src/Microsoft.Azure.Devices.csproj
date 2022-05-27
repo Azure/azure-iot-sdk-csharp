@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
     <!--See #1874 for additional details-->
-    <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0;net472;net451;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0;net472;netcoreapp2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -12,7 +12,7 @@
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>ModernDotNet/**;net451/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>ModernDotNet/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
@@ -74,16 +74,9 @@
     <Compile Include="$(Common)\service\CommonResources.cs">
       <Link>Common\CommonResources.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\EventTraceActivity.cs">
-      <Link>Common\Tracing\EventTraceActivity.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionDispatcher.cs">
-      <Link>Common\ExceptionDispatcher.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
       <Link>ExceptionHandlingHelper.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionTrace.cs">
+    </Compile>    <Compile Include="$(Common)\service\ExceptionTrace.cs">
       <Link>Common\ExceptionTrace.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\FatalException.cs">
@@ -140,24 +133,6 @@
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
-  <!-- Net451 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="net451\Common\ActionItem.cs" />
-    <Compile Include="net451\Common\IOThreadTimer.cs" />
-    <Compile Include="net451\Common\SynchronizedPool.cs" />
-    <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web" Version="4.0.0.0" />
-    <Reference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
-
   <!-- net472 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
@@ -165,12 +140,12 @@
   </ItemGroup>
 
   <!-- NetStandard 2.1, NetStandard 2.0 and net472 -->
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
     <Compile Include="DigitalTwin\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />

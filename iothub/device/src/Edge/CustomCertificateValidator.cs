@@ -94,20 +94,12 @@ namespace Microsoft.Azure.Devices.Client.Edge
             // Allow the chain the chance to rebuild itself with the expected root
             chain.ChainPolicy.ExtraStore.Add(trustedCertificate);
             chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-#if !NET451
             using var cert = new X509Certificate2(certificate);
             if (!chain.Build(cert))
             {
                 Debug.WriteLine("Unable to build the chain using the expected root certificate.");
                 return false;
             }
-#else
-            if (!chain.Build(new X509Certificate2(certificate.Export(X509ContentType.Cert))))
-            {
-                Debug.WriteLine("Unable to build the chain using the expected root certificate.");
-                return false;
-            }
-#endif
 
             // Pin the trusted root of the chain to the expected root certificate
             X509Certificate2 actualRoot = chain.ChainElements[chain.ChainElements.Count - 1].Certificate;

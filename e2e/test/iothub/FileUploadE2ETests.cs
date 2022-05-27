@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
 
-#if NET451 || NET472
+#if NET472
             File.WriteAllBytes(filePath, buffer);
             await Task.Delay(0).ConfigureAwait(false);
 #else
@@ -261,7 +261,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-            // X509Certificate needs to be disposed for implementations !NET451 (NET451 doesn't implement X509Certificates as IDisposable).
             if (s_selfSignedCertificate is IDisposable disposableCertificate)
             {
                 disposableCertificate?.Dispose();

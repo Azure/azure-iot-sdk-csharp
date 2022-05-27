@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
-#if NETSTANDARD2_0_OR_GREATER || NET451 || NET472
+#if NETSTANDARD2_0_OR_GREATER || NET472
                     infoParts = format
                         .Replace("{runtime}", runtime)
                         .Replace("{operatingSystem}", operatingSystem + productType)

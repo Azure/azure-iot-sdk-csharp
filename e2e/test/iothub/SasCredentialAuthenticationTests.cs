@@ -11,13 +11,8 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Amqp;
-
-#if !NET451
-
 using Microsoft.Rest;
 using Azure;
-
-#endif
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
@@ -32,8 +27,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     public class SasCredentialAuthenticationTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"E2E_{nameof(SasCredentialAuthenticationTests)}_";
-
-#if !NET451
 
         [LoggedTestMethod]
         public async Task RegistryManager_Http_SasCredentialAuth_Success()
@@ -215,7 +208,5 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // cleanup
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
-
-#endif
     }
 }

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.18;net472;</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.18;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.18</TargetFrameworks>
     <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
     <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.18'">False</IsTestProject>
@@ -14,23 +14,6 @@
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <!-- Legacy .NET 4.5.1 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Remove="config\Configuration.Provisioning.cs" />
-    <Compile Remove="provisioning\ProvisioningE2ETests.cs" />
-    <Compile Remove="provisioning\ProvisioningServiceClientE2ETests.cs" />
-    <Compile Remove="provisioning\ProvisioningCertificateValidationE2ETest.cs" />
-    <Compile Remove="provisioning\ReprovisioningE2ETests.cs" />
-    <Compile Remove="helpers\StorageContainer.cs" />
-    <Compile Remove="helpers\ImportExportDevicesHelpers.cs" />
-    <Compile Remove="iothub\service\RegistryManagerImportDevicesTests.cs" />
-    <Compile Remove="iothub\service\RegistryManagerExportDevicesTests.cs" />
-    <Compile Remove="iothub\service\DigitalTwinClientE2ETests.cs" />
-    <Compile Remove="helpers\digitaltwins\models\ThermostatTwin.cs" />
-    <Compile Remove="helpers\digitaltwins\models\TemperatureControllerTwin.cs" />
-    <Compile Remove="helpers\ProvisioningServiceRetryPolicy.cs" />
-  </ItemGroup>
-
   <!-- All Platforms -->
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.0" />
@@ -43,12 +26,8 @@
     <PackageReference Include="System.Diagnostics.Tracing" Version="4.3.0" />
   </ItemGroup>
 
-  <!-- Legacy .NET 4.5.1 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <!-- .NET 4.5.1 requires the System.ValueTuple NuGet package to be referenced explicitly. -->
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <!-- NetCore and .NET 4.7.2 -->
+  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
     <PackageReference Include="Azure.Identity" Version="1.3.0" />
   </ItemGroup>
@@ -57,8 +36,6 @@
     <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
     <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES)' == '') And ( '$(TargetFramework)' != 'net451' ) ">
     <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
@@ -74,8 +51,6 @@
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
-  </ItemGroup>
-  <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES.ToUpper())' != '') And ( '$(TargetFramework)' != 'net451' ) ">
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />

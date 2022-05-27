@@ -358,11 +358,7 @@ namespace Microsoft.Azure.Devices
             SetGetBodyCalled();
             if (_bodyStream == null)
             {
-#if NET451
-                return new byte[] { };
-#else
                 return Array.Empty<byte>();
-#endif
             }
 
             if (_bodyStream is BufferListStream listStream)
@@ -400,11 +396,6 @@ namespace Microsoft.Azure.Devices
             {
                 throw Fx.Exception.AsError(new InvalidOperationException(ApiResources.MessageBodyConsumed));
             }
-        }
-
-        private void SetSizeInBytesCalled()
-        {
-            Interlocked.Exchange(ref _sizeInBytesCalled, 1);
         }
 
         private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
@@ -451,12 +442,6 @@ namespace Microsoft.Azure.Devices
                 throw Fx.AssertAndThrow("Does not support cloning of Stream Type: " + originalStream.GetType());
             }
             return null;
-        }
-
-        private AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
-        {
-            MessageConverter.UpdateAmqpMessageHeadersAndProperties(message, this);
-            return message;
         }
 
         private T GetSystemProperty<T>(string key)

@@ -182,7 +182,6 @@ jobs:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
-    
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 6.0'
         inputs:
@@ -212,6 +211,14 @@ jobs:
         inputs:
           packageType: sdk
           version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+        
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -457,8 +464,6 @@ jobs:
           FRAMEWORK: netcoreapp2.1.18
         .Net Framework 4.7.2:
           FRAMEWORK: net472
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
@@ -475,11 +480,6 @@ jobs:
         displayName: 'Install .NET 4.7.2'
         inputs:
           script: 'choco install netfx-4.7.2-devpack'
-
-      - task: CmdLine@2
-        displayName: 'Install .NET 4.5.1'
-        inputs:
-          script: 'choco install dotnet4.5.1'
 
       - task: UseDotNet@2
         displayName: 'Use .NET Core SDK 3.1'
@@ -669,6 +669,14 @@ jobs:
         inputs:
           AllTools: true
           
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
+
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
         inputs:

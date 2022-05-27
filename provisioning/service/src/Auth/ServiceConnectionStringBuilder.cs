@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
         /// </c>
         /// 
-        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object. 
+        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
         /// </remarks>
         /// <param name="serviceConnectionString">the <c>string</c> with the connection string information.</param>
         /// <returns>A <c>ServiceConnectionStringBuilder</c> object with the parsed connection string.</returns>

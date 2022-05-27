@@ -5,17 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
-#if NET451
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Threading;
-using System.Transactions;
-using Microsoft.Win32;
-#endif
 
 namespace Microsoft.Azure.Devices.Common
 {
@@ -25,11 +16,6 @@ namespace Microsoft.Azure.Devices.Common
         private const string DefaultEventSource = "Microsoft.IotHub";
 
 #if DEBUG
-#if NET451
-        private const string SBRegistryKey = @"SOFTWARE\Microsoft\IotHub\v2.0";
-#endif
-        private const string BreakOnExceptionTypesName = "BreakOnExceptionTypes";
-
         private static bool s_breakOnExceptionTypesRetrieved;
         private static Type[] s_breakOnExceptionTypesCache;
 #endif
@@ -103,24 +89,9 @@ namespace Microsoft.Azure.Devices.Common
                 // FYI, CallbackException is-a FatalException
                 if (exception is FatalException || exception is OutOfMemoryException)
                 {
-#if !NET451
                     return true;
-#else
-                    if (!(exception is InsufficientMemoryException))
-                    {
-                        return true;
-                    }
-#endif
                 }
 
-#if NET451
-                if (exception is ThreadAbortException
-                    || exception is AccessViolationException
-                    || exception is SEHException)
-                {
-                    return true;
-                }
-#endif
                 if (exception is NullReferenceException)
                 {
                     return true;
@@ -159,15 +130,6 @@ namespace Microsoft.Azure.Devices.Common
             return false;
         }
 
-#if NET451
-        [Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
-        [SecurityCritical]
-        public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
-        {
-            return new IOCompletionThunk(callback).ThunkFrame;
-        }
-#endif
-
 #if DEBUG
 
         internal static Type[] BreakOnExceptionTypes
@@ -176,7 +138,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 if (!s_breakOnExceptionTypesRetrieved)
                 {
-                    if (TryGetDebugSwitch(BreakOnExceptionTypesName, out object value))
+                    if (TryGetDebugSwitch(out object value))
                     {
                         if (value is string[] typeNames && typeNames.Length > 0)
                         {
@@ -198,61 +160,12 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "Parameter 'name' used in NET451; remove when no longer supported.")]
-        private static bool TryGetDebugSwitch(string name, out object value)
+        private static bool TryGetDebugSwitch(out object value)
         {
             value = null;
-#if NET451
-            try
-            {
-                RegistryKey key = Registry.LocalMachine.OpenSubKey(SBRegistryKey);
-                if (key != null)
-                {
-                    using (key)
-                    {
-                        value = key.GetValue(name);
-                    }
-                }
-            }
-            catch (SecurityException)
-            {
-                // This debug-only code shouldn't trace.
-            }
-#endif
             return value != null;
         }
 
-#endif
-
-#if NET451
-        // This can't derive from Thunk since T would be unsafe.
-        [Tag.SecurityNote(Critical = "unsafe object")]
-        [SecurityCritical]
-        private sealed unsafe class IOCompletionThunk
-        {
-            [Tag.SecurityNote(Critical = "Make these safe to use in SecurityCritical contexts.")]
-            private readonly IOCompletionCallback _callback;
-
-            [Tag.SecurityNote(Critical = "Accesses critical field.", Safe = "Data provided by caller.")]
-            public IOCompletionThunk(IOCompletionCallback callback)
-            {
-                _callback = callback;
-            }
-
-            public IOCompletionCallback ThunkFrame
-            {
-                [Tag.SecurityNote(Safe = "returns a delegate around the safe method UnhandledExceptionFrame")]
-                get => new IOCompletionCallback(UnhandledExceptionFrame);
-            }
-
-            [Tag.SecurityNote(Critical = "Accesses critical field, calls PrepareConstrainedRegions which has a LinkDemand",
-                Safe = "Delegates can be invoked, guaranteed not to call into PT user code from the finally.")]
-            private void UnhandledExceptionFrame(uint error, uint bytesRead, NativeOverlapped* nativeOverlapped)
-            {
-                RuntimeHelpers.PrepareConstrainedRegions();
-                _callback(error, bytesRead, nativeOverlapped);
-            }
-        }
 #endif
 
         public static class Tag

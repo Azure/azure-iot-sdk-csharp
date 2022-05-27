@@ -7,14 +7,7 @@ using System.Net;
 using System.Globalization;
 using System.Text;
 using System.Security.Cryptography;
-
-#if !NET451
-
 using Azure.Identity;
-using Azure;
-
-#endif
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -31,8 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var connectionString = new ConnectionStringParser(ConnectionString);
                 return connectionString.IotHubHostName;
             }
-
-#if !NET451
 
             public static ClientSecretCredential GetClientSecretCredential()
             {
@@ -51,8 +42,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     timeToLive,
                     connectionString.SharedAccessKeyName);
             }
-
-#endif
 
             public static string UserAssignedMsiResourceId => GetValue("IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID");
 
@@ -107,8 +96,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             /// </summary>
             public const string InvalidProxyServerAddress = "127.0.0.1:1234";
 
-#if !NET451
-
             private static string GenerateSasToken(string resourceUri, string sharedAccessKey, TimeSpan timeToLive, string policyName = default)
             {
                 var epochTime = new DateTime(1970, 1, 1);
@@ -137,8 +124,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 return token;
             }
-
-#endif
 
             public class ConnectionStringParser
             {

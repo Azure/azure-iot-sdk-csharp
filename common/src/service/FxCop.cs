@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Common
 {
-    static class FxCop
+    internal static class FxCop
     {
         public static class Category
         {
