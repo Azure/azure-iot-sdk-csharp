@@ -7,9 +7,12 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
@@ -21,6 +24,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     {
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"E2E_{nameof(ProvisioningServiceClientE2ETests)}_";
+
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
 #pragma warning disable CA1823
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
@@ -138,7 +144,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AllocationPolicy.Static,
                     null,
                     null,
-                    null)
+                    null,
+                    Logger)
                 .ConfigureAwait(false);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetIndividualEnrollmentAttestationAsync(individualEnrollment.RegistrationId);
@@ -173,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null);
+            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null, Logger);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetEnrollmentGroupAttestationAsync(enrollmentGroup.EnrollmentGroupId);
 
@@ -215,12 +222,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
+        public async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(proxyServerAddress, attestationType, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
         }
 
-        public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo)
+        public async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(
+            string proxyServerAddress,
+            AttestationMechanismType attestationType,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            ICollection<string> iotHubsToProvisionTo)
         {
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
@@ -235,7 +248,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     allocationPolicy,
                     customAllocationDefinition,
                     iotHubsToProvisionTo,
-                    null).ConfigureAwait(false);
+                    null,
+                    Logger).ConfigureAwait(false);
                 IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
                 Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
 
@@ -258,12 +272,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
+        public async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
         {
             await ProvisioningServiceClient_GroupEnrollments_Create_Ok(proxyServerAddress, attestationType, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false);
         }
 
-        public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(
+        public async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(
             string proxyServerAddress,
             AttestationMechanismType attestationType,
             ReprovisionPolicy reprovisionPolicy,
@@ -282,7 +296,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     allocationPolicy,
                     customAllocationDefinition,
                     iothubs,
-                    null).ConfigureAwait(false);
+                    null,
+                    Logger).ConfigureAwait(false);
 
                 EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
                 Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
@@ -321,17 +336,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iotHubsToProvisionTo,
-            DeviceCapabilities capabilities)
+            DeviceCapabilities capabilities,
+            MsTestLogger logger)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
+            IndividualEnrollment createdEnrollment = null;
             switch (attestationType)
             {
                 case AttestationMechanismType.Tpm:
                     using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                        using var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))
                         {
                             Capabilities = capabilities,
@@ -341,11 +357,45 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             IotHubs = iotHubsToProvisionTo
                         };
 
-                        IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                        IndividualEnrollment temporaryCreatedEnrollment = null;
+                        await RetryOperationHelper
+                            .RetryOperationsAsync(
+                                async () =>
+                                {
+                                    temporaryCreatedEnrollment = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                                },
+                                s_provisioningServiceRetryPolicy,
+                                s_retryableExceptions,
+                                logger)
+                            .ConfigureAwait(false);
+
+                        if (temporaryCreatedEnrollment == null)
+                        {
+                            throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be created, exiting test.");
+                        }
+
                         attestation = new TpmAttestation(base64Ek);
-                        enrollment.Attestation = attestation;
-                        return await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                        temporaryCreatedEnrollment.Attestation = attestation;
+
+                        await RetryOperationHelper
+                            .RetryOperationsAsync(
+                                async () =>
+                                {
+                                    createdEnrollment = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(temporaryCreatedEnrollment).ConfigureAwait(false);
+                                },
+                                s_provisioningServiceRetryPolicy,
+                                s_retryableExceptions,
+                                logger)
+                            .ConfigureAwait(false);
+
+                        if (createdEnrollment == null)
+                        {
+                            throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be updated, exiting test.");
+                        }
+
+                        return createdEnrollment;
                     }
+
                 case AttestationMechanismType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
@@ -354,31 +404,50 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 case AttestationMechanismType.X509:
                     attestation = X509Attestation.CreateFromClientCertificates(authenticationCertificate);
-
-                    individualEnrollment = new IndividualEnrollment(registrationId, attestation)
-                    {
-                        Capabilities = capabilities,
-                        AllocationPolicy = allocationPolicy,
-                        ReprovisionPolicy = reprovisionPolicy,
-                        CustomAllocationDefinition = customAllocationDefinition,
-                        IotHubs = iotHubsToProvisionTo,
-                    };
-                    return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                    break;
 
                 default:
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
 
-            individualEnrollment = new IndividualEnrollment(registrationId, attestation);
-            individualEnrollment.Capabilities = capabilities;
-            individualEnrollment.CustomAllocationDefinition = customAllocationDefinition;
-            individualEnrollment.ReprovisionPolicy = reprovisionPolicy;
-            individualEnrollment.IotHubs = iotHubsToProvisionTo;
-            individualEnrollment.AllocationPolicy = allocationPolicy;
-            return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+            individualEnrollment = new IndividualEnrollment(registrationId, attestation)
+            {
+                Capabilities = capabilities,
+                AllocationPolicy = allocationPolicy,
+                ReprovisionPolicy = reprovisionPolicy,
+                CustomAllocationDefinition = customAllocationDefinition,
+                IotHubs = iotHubsToProvisionTo,
+            };
+
+            await RetryOperationHelper
+                .RetryOperationsAsync(
+                    async () =>
+                    {
+                        createdEnrollment = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                    },
+                    s_provisioningServiceRetryPolicy,
+                    s_retryableExceptions,
+                    logger)
+                .ConfigureAwait(false);
+
+            if (createdEnrollment == null)
+            {
+                throw new ArgumentException($"The enrollment entry with registration Id {registrationId} could not be created, exiting test.");
+            }
+
+            return createdEnrollment;
         }
 
-        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationMechanismType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities)
+        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(
+            ProvisioningServiceClient provisioningServiceClient,
+            AttestationMechanismType attestationType,
+            string groupId,
+            ReprovisionPolicy reprovisionPolicy,
+            AllocationPolicy allocationPolicy,
+            CustomAllocationDefinition customAllocationDefinition,
+            ICollection<string> iothubs,
+            DeviceCapabilities capabilities,
+            MsTestLogger logger)
         {
             Attestation attestation;
             switch (attestationType)
@@ -405,7 +474,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 IotHubs = iothubs,
             };
 
-            return await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup).ConfigureAwait(false);
+            EnrollmentGroup createdEnrollmentGroup = null;
+            await RetryOperationHelper
+               .RetryOperationsAsync(
+                   async () =>
+                   {
+                       createdEnrollmentGroup = await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup).ConfigureAwait(false);
+                   },
+                   s_provisioningServiceRetryPolicy,
+                   s_retryableExceptions,
+                   logger)
+               .ConfigureAwait(false);
+
+            if (createdEnrollmentGroup == null)
+            {
+                throw new ArgumentException($"The enrollment entry with group Id {groupId} could not be created, exiting test.");
+            }
+
+            return createdEnrollmentGroup;
         }
 
         /// <summary>
