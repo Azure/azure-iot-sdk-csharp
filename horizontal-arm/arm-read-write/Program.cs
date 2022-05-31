@@ -25,15 +25,22 @@ namespace arm_read_write
         //  https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
 
         private static DeviceClient s_deviceClient;
-        private readonly static string s_myDeviceId = "Contoso-Test-Device";
-        private readonly static string s_iotHubUri = "<hub-name-goes-here>.azure-devices.net";
+        private static string s_myDeviceId;
+        private static string s_iotHubUri;
 
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devic1es > select your device > copy the key. 
-        private readonly static string s_deviceKey = "<device-key-goes-here>";
+        private static string s_deviceKey;
 
         private static async Task Main()
         {
+            if (!ReadEnvironmentVariables())
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error! One or more environment variables not set");
+                return;
+            }
+
             Console.WriteLine("write messages to a hub and use routing to write them to storage");
 
             s_deviceClient = DeviceClient.Create(s_iotHubUri, 
@@ -47,6 +54,28 @@ namespace arm_read_write
             Console.ReadLine();
             cts.Cancel();
             await messages;
+        }
+
+        /// <summary>
+        /// Read local process environment variables for required values
+        /// </summary>
+        /// <returns>
+        /// True if all required environment variables are set
+        /// </returns>
+        private static bool ReadEnvironmentVariables()
+        {
+            bool result = true;
+
+            s_myDeviceId = Environment.GetEnvironmentVariable("IOT_DEVICE_ID");
+            s_iotHubUri = Environment.GetEnvironmentVariable("IOT_HUB_URI");
+            s_deviceKey = Environment.GetEnvironmentVariable("IOT_DEVICE_KEY");
+
+            if ((s_myDeviceId is null) || (s_iotHubUri is null) || (s_deviceKey is null))
+            {
+                result = false;
+            }
+
+            return result;
         }
 
         /// <summary>
