@@ -74,15 +74,5 @@ namespace Microsoft.Azure.Devices.Common
                 builder.Append(ValuePairDelimiter);
             }
         }
-
-        /// <summary>
-        /// Check if the value is null or empty.
-        /// </summary>
-        /// <param name="value">The value to check.</param>
-        /// <returns>Returns true if the value is null or empty, otherwise returns false.</returns>
-        internal static bool IsNullOrWhiteSpace(this string value)
-        {
-            return string.IsNullOrWhiteSpace(value);
-        }
     }
 }
