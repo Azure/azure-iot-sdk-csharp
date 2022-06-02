@@ -70,18 +70,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            try
             {
-                if (disposing)
+                if (Logging.IsEnabled)
                 {
-                    if (_connectionString?.TokenRefresher != null
-                        && _connectionString.TokenRefresher.DisposalWithClient)
-                    {
-                        _connectionString.TokenRefresher.Dispose();
-                    }
+                    Logging.Enter(this, $"Disposal with client={_connectionString?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}" , $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
                 }
 
-                _isDisposed = true;
+                if (!_isDisposed)
+                {
+                    if (disposing)
+                    {
+                        if (_connectionString?.TokenRefresher != null
+                            && _connectionString.TokenRefresher.DisposalWithClient)
+                        {
+                            _connectionString.TokenRefresher.Dispose();
+                        }
+                    }
+
+                    _isDisposed = true;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposal with client={_connectionString?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}", $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
+                }
             }
         }
     }

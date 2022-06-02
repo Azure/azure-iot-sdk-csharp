@@ -24,7 +24,14 @@ namespace Microsoft.Azure.Devices
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
     /// </summary>
     /// <remarks>
-    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>.
+    /// <para>
+    /// This client creates lifetime long instances of <see cref="HttpClient"/> that are tied to the URI of the
+    /// IoT hub specified, configure any proxy settings, and connection lease timeout.
+    /// For that reason, the instances are not static and an application using this client
+    /// should create and save it for all use. Repeated creation may cause
+    /// <see href="https://docs.microsoft.com/azure/architecture/antipatterns/improper-instantiation/">socket exhaustion</see>.
+    /// </para>
     /// </remarks>
     [SuppressMessage(
         "Naming",

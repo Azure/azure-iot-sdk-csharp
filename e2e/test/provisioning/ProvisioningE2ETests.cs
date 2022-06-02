@@ -1085,7 +1085,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         allocationPolicy,
                         customAllocationDefinition,
                         iothubs,
-                        capabilities).ConfigureAwait(false);
+                        capabilities,
+                        Logger).ConfigureAwait(false);
 
                     return new SecurityProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
@@ -1113,7 +1114,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     allocationPolicy,
                                     customAllocationDefinition,
                                     iothubs,
-                                    capabilities).ConfigureAwait(false);
+                                    capabilities,
+                                    Logger).ConfigureAwait(false);
 
                                 x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
                             }
@@ -1143,7 +1145,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     allocationPolicy,
                                     customAllocationDefinition,
                                     iothubs,
-                                    capabilities)
+                                    capabilities,
+                                    Logger)
                                 .ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
@@ -1166,7 +1169,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 allocationPolicy,
                                 customAllocationDefinition,
                                 iothubs,
-                                capabilities).ConfigureAwait(false);
+                                capabilities,
+                                Logger).ConfigureAwait(false);
 
                             Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
@@ -1310,6 +1314,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static void CleanupCertificates()
         {
             s_groupEnrollmentCertificate?.Dispose();
+
+            // Delete all the test client certificates created
+            try
+            {
+                s_dpsClientCertificateFolder.Delete(true);
+            }
+            catch (Exception)
+            {
+                // In case of an exception, silently exit. All systems images on Microsoft hosted agents will be cleaned up by the system.
+            }
         }
     }
 }
