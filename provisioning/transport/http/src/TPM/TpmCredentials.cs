@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 Action<string> action = (value) =>
                 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
                     _sasToken = value.Replace(SASHeaderName + " ", "", StringComparison.Ordinal);
 #else
                     _sasToken = value.Replace(SASHeaderName + " ", "");

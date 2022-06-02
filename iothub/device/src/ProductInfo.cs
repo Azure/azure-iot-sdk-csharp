@@ -57,18 +57,18 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
-#if NETSTANDARD2_0_OR_GREATER || NET451 || NET472
-                    infoParts = format
-                        .Replace("{runtime}", runtime)
-                        .Replace("{operatingSystem}", operatingSystem + productType)
-                        .Replace("{architecture}", processorArchitecture)
-                        .Replace("{deviceId}", deviceId);
-#else
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
                     infoParts = format
                         .Replace("{runtime}", runtime, StringComparison.InvariantCultureIgnoreCase)
                         .Replace("{operatingSystem}", operatingSystem + productType, StringComparison.InvariantCultureIgnoreCase)
                         .Replace("{architecture}", processorArchitecture, StringComparison.InvariantCultureIgnoreCase)
                         .Replace("{deviceId}", deviceId, StringComparison.InvariantCultureIgnoreCase);
+#else
+                    infoParts = format
+                        .Replace("{runtime}", runtime)
+                        .Replace("{operatingSystem}", operatingSystem + productType)
+                        .Replace("{architecture}", processorArchitecture)
+                        .Replace("{deviceId}", deviceId);
 #endif
                 }
                 else
