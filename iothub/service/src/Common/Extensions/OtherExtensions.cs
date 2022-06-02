@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
     /// <summary>
     /// Extension helper methods.
     /// </summary>
-    [Obsolete("Not recommended for external use.")]
     public static class OtherExtensions
     {
         /// <summary>

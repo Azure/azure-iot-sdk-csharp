@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Common
     /// <summary>
     /// Extension methods for <see cref="Exception"/> class.
     /// </summary>
-    [Obsolete("Not recommended for external use.")]
     public static class ExceptionExtensions
     {
         private const string ExceptionIdentifierName = "ExceptionId";
