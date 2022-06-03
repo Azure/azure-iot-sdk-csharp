@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iotHubsToProvisionTo)
+            IList<string> iotHubsToProvisionTo)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iothubs)
+            IList<string> iothubs)
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iotHubsToProvisionTo,
+            IList<string> iotHubsToProvisionTo,
             Devices.Provisioning.Service.DeviceCapabilities capabilities,
             MsTestLogger logger)
         {
@@ -346,7 +346,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             AllocationPolicy = allocationPolicy,
                             ReprovisionPolicy = reprovisionPolicy,
                             CustomAllocationDefinition = customAllocationDefinition,
-                            IotHubs = iotHubsToProvisionTo
+                            IotHubs = iotHubsToProvisionTo,
                         };
 
                         IndividualEnrollment temporaryCreatedEnrollment = null;
@@ -437,7 +437,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iothubs,
+            IList<string> iothubs,
             Devices.Provisioning.Service.DeviceCapabilities capabilities,
             MsTestLogger logger)
         {

@@ -644,7 +644,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iothubs,
+            IList<string> iothubs,
             Devices.Provisioning.Service.DeviceCapabilities deviceCapabilities,
             TimeSpan timeout,
             string proxyServerAddress = null)
@@ -755,7 +755,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             string closeHostName = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName;
 
-            ICollection<string> iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
+            var iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";
             if (closeHostName.Length > TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
             {
@@ -788,7 +788,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
-            ICollection<string> iotHubsToProvisionTo,
+            IList<string> iotHubsToProvisionTo,
             string expectedDestinationHub,
             string proxyServerAddress = null)
         {
@@ -1068,7 +1068,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iothubs,
+            IList<string> iothubs,
             Devices.Provisioning.Service.DeviceCapabilities capabilities = null)
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");

@@ -55,13 +55,13 @@ namespace Microsoft.Azure.Devices
         /// The key-value pairs used to describe the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "labels", NullValueHandling = NullValueHandling.Ignore)]
-        public IDictionary<string, string> Labels { get; set; } = new Dictionary<string, string>();
+        public IDictionary<string, string> Labels { get; } = new Dictionary<string, string>();
 
         /// <summary>
         /// The content of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "content", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationContent Content { get; set; } = new ConfigurationContent();
+        public ConfigurationContent Content { get; } = new();
 
         /// <summary>
         /// Gets the content type for configuration
@@ -100,13 +100,13 @@ namespace Microsoft.Azure.Devices
         /// The system metrics computed by the IoT hub that cannot be customized.
         /// </summary>
         [JsonProperty(PropertyName = "systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics SystemMetrics { get; internal set; } = new ConfigurationMetrics();
+        public ConfigurationMetrics SystemMetrics { get; } = new();
 
         /// <summary>
         /// The custom metrics specified by the developer as queries against twin reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "metrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics Metrics { get; set; } = new ConfigurationMetrics();
+        public ConfigurationMetrics Metrics { get; } = new();
 
         /// <summary>
         /// The ETag of the configuration.
