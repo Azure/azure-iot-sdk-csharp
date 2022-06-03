@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public override int GetHashCode()
         {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             return (_primaryKey + _secondaryKey).GetHashCode(StringComparison.Ordinal);
 #else
             return (_primaryKey + _secondaryKey).GetHashCode();
