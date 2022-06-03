@@ -90,20 +90,20 @@ namespace Microsoft.Azure.Devices.Common.Data
             int hashSecondaryKey;
             int hashRights;
 
-#if NETSTANDARD2_0_OR_GREATER || NET472
-            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
-
-            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
-
-            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
-
-            hashRights = rule.Rights.GetHashCode();
-#else
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
 
             hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
 
             hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashRights = rule.Rights.GetHashCode();
+#else
+            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
+
+            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
+
+            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
 
             hashRights = rule.Rights.GetHashCode();
 #endif
