@@ -222,7 +222,8 @@ namespace Microsoft.Azure.Devices
         /// <returns>The matching JobResponse object</returns>
         public virtual Task<JobResponse> GetJobAsync(string jobId, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, jobId, nameof(GetJobAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, jobId, nameof(GetJobAsync));
 
             try
             {
@@ -244,14 +245,15 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, jobId, nameof(GetJobAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, jobId, nameof(GetJobAsync));
             }
         }
 
         /// <summary>
         /// Get IQuery through which job responses for all job types and statuses are retrieved page by page
         /// </summary>
-        /// <returns>IQuery</returns>
+        /// <returns>A query object to get results and next pages.</returns>
         public virtual IQuery CreateQuery()
         {
             return CreateQuery(null, null, null);
@@ -261,7 +263,7 @@ namespace Microsoft.Azure.Devices
         /// Get IQuery through which job responses are retrieved page by page and specify page size
         /// </summary>
         /// <param name="pageSize">Number of job responses in a page</param>
-        /// <returns></returns>
+        /// <returns>A query object to get results and next pages.</returns>
         public virtual IQuery CreateQuery(int? pageSize)
         {
             return CreateQuery(null, null, pageSize);
@@ -272,7 +274,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobType">The job type to query. Could be null if not querying.</param>
         /// <param name="jobStatus">The job status to query. Could be null if not querying.</param>
-        /// <returns></returns>
+        /// <returns>A query object to get results and next pages.</returns>
         public virtual IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus)
         {
             return CreateQuery(jobType, jobStatus, null);
@@ -285,7 +287,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="jobType">The job type to query. Could be null if not querying.</param>
         /// <param name="jobStatus">The job status to query. Could be null if not querying.</param>
         /// <param name="pageSize">Number of job responses in a page</param>
-        /// <returns></returns>
+        /// <returns>A query object to get results and next pages.</returns>
         public virtual IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, int? pageSize)
         {
             return new Query((token) => GetJobsAsync(jobType, jobStatus, pageSize, token, CancellationToken.None));
@@ -307,7 +309,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token</param>
         public virtual Task<JobResponse> CancelJobAsync(string jobId, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, jobId, nameof(CancelJobAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, jobId, nameof(CancelJobAsync));
 
             try
             {
@@ -322,7 +325,8 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, jobId, nameof(CancelJobAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, jobId, nameof(CancelJobAsync));
             }
         }
 
@@ -423,7 +427,8 @@ namespace Microsoft.Azure.Devices
 
         private Task<JobResponse> CreateJobAsync(JobRequest jobRequest, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateJobAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateJobAsync));
 
             try
             {
@@ -452,7 +457,8 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateJobAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateJobAsync));
             }
         }
 
@@ -475,7 +481,8 @@ namespace Microsoft.Azure.Devices
 
         private async Task<QueryResult> GetJobsAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetJobsAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetJobsAsync));
 
             try
             {
@@ -502,7 +509,8 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetJobsAsync));
             }
         }
     }
