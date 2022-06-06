@@ -27,9 +27,6 @@ namespace arm_read_write
         private static DeviceClient s_deviceClient;
         private static string s_myDeviceId;
         private static string s_iotHubUri;
-
-        // This is the primary key for the device. This is in the portal. 
-        // Find your IoT hub in the portal > IoT devic1es > select your device > copy the key. 
         private static string s_deviceKey;
 
         private static async Task Main()
@@ -125,16 +122,13 @@ namespace arm_read_write
                 // serialize the telemetry data and convert it to JSON.
                 var telemetryDataString = JsonConvert.SerializeObject(telemetryDataPoint);
 
-                // Encode the serialized object using UTF-32. When it writes this to a file, 
-                //   it encodes it as base64. If you read it back in, you have to decode it from base64 
-                //   and utf-32 to be able to read it.
-
-                // You can encode this as ASCII, but if you want it to be the body of the message, 
-                //  and to be able to search the body, it must be encoded in UTF with base64 encoding.
-
-                // Take the string (telemetryDataString) and turn it into a byte array 
-                //   that is encoded as UTF-32.
-                var message = new Message(Encoding.UTF32.GetBytes(telemetryDataString));
+                // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
+                // processing messaging rules.
+                using var message = new Message(Encoding.UTF8.GetBytes(telemetryDataString))
+                {
+                    ContentEncoding = "utf-8",
+                    ContentType = "application/json",
+                };
 
                 //Add one property to the message.
                 message.Properties.Add("level", levelValue);
