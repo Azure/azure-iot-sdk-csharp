@@ -101,6 +101,14 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (_isDisposed)
             {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(
+                        this,
+                        $"Encountered {nameof(ObjectDisposedException)} - The authentication method instance has already been disposed, so this client is no longer usable.",
+                        nameof(GetTokenAsync));
+                }
+
                 throw new ObjectDisposedException(GetType().Name, "The authentication method instance has already been disposed, so this client is no longer usable. " +
                     "Please close and dispose your current client instance. To continue carrying out operations from your device/ module, " +
                     "create a new authentication method instance and use it for reinitializing your client.");
@@ -177,15 +185,30 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            try
             {
-                if (disposing)
+                if (Logging.IsEnabled)
                 {
-                    _lock?.Dispose();
-                    _lock = null;
+                    Logging.Enter(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AuthenticationWithTokenRefresh)}.{nameof(Dispose)}");
                 }
 
-                _isDisposed = true;
+                if (!_isDisposed)
+                {
+                    if (disposing)
+                    {
+                        _lock?.Dispose();
+                        _lock = null;
+                    }
+
+                    _isDisposed = true;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AuthenticationWithTokenRefresh)}.{nameof(Dispose)}");
+                }
             }
         }
 

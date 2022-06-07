@@ -105,27 +105,37 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, disposing, nameof(Dispose));
-
-            if (disposing)
-            {
-                _amqpIotConnection?.SafeClose();
-                _lock?.Dispose();
-                _amqpIotConnector?.Dispose();
-                lock (_unitsLock)
+                if (Logging.IsEnabled)
                 {
-                    _amqpUnits.Clear();
+                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpConnectionHolder)}.{nameof(Dispose)}");
                 }
-                _amqpAuthenticationRefresher?.Dispose();
-            }
 
-            _disposed = true;
+                if (!_disposed)
+                {
+                    if (disposing)
+                    {
+                        _amqpIotConnection?.SafeClose();
+                        _lock?.Dispose();
+                        _amqpIotConnector?.Dispose();
+                        lock (_unitsLock)
+                        {
+                            _amqpUnits.Clear();
+                        }
+                        _amqpAuthenticationRefresher?.Dispose();
+                    }
+
+                    _disposed = true;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpConnectionHolder)}.{nameof(Dispose)}");
+                }
+            }
         }
 
         public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken)

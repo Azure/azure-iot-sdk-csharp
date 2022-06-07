@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             if (RemoteCertificateValidationCallback != null)
             {
                 websocket.Options.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;

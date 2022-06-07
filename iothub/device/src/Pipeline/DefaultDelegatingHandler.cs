@@ -215,17 +215,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
+                }
 
-            if (disposing)
+                if (!_disposed)
+                {
+                    if (disposing)
+                    {
+                        _innerHandler?.Dispose();
+                    }
+
+                    _disposed = true;
+                }
+            }
+            finally
             {
-                _innerHandler?.Dispose();
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
+                }
             }
-
-            _disposed = true;
         }
 
         ~DefaultDelegatingHandler()

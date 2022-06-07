@@ -206,14 +206,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             if (TransportSettings.CertificateValidationCallback != null)
             {
                 websocket.Options.RemoteCertificateValidationCallback = TransportSettings.CertificateValidationCallback;
+
                 if (Logging.IsEnabled)
-                {
                     Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
-                }
             }
 #endif
             await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
