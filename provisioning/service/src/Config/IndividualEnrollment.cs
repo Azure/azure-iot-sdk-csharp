@@ -290,15 +290,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public AllocationPolicy? AllocationPolicy { get; set; }
 
-#pragma warning disable CA2227 // Collection properties should be read only. Would change public API.
-
         /// <summary>
         /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
         /// </summary>
         [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ICollection<string> IotHubs { get; set; }
-
-#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Convert this object in a pretty print format.

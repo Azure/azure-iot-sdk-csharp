@@ -81,8 +81,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		vsts\vsts.yaml = vsts\vsts.yaml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,9 +151,6 @@ Global
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CEEE435F-32FC-4DE5-8735-90F6AC950A01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,7 +184,6 @@ Global
 		{5A200FEC-F723-4A85-86DA-3F6E246FE273} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
 		{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
-		{CEEE435F-32FC-4DE5-8735-90F6AC950A01} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

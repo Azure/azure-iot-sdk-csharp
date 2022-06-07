@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Text;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
