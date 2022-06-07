@@ -19,11 +19,6 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Shared;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Client.Disconnecting;
-using MQTTnet.Client.Options;
-using MQTTnet.Client.Publishing;
-using MQTTnet.Client.Subscribing;
-using MQTTnet.Client.Unsubscribing;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
 
@@ -97,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string DeviceClientTypeParam = "DeviceClientType";
 
         private IMqttClient mqttClient;
-        private IMqttClientOptions mqttClientOptions;
+        private MqttClientOptions mqttClientOptions;
         private MqttClientOptionsBuilder mqttClientOptionsBuilder;
 
         private readonly Func<MethodRequestInternal, Task> _methodListener;
@@ -309,39 +304,36 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (settings.HasWill && settings.WillMessage != null)
             {
-                var willMessage = new MqttApplicationMessage();
-                willMessage.Topic = deviceToCloudMessagesTopic;
-                willMessage.Payload = settings.WillMessage.Message.GetBytes();
+                mqttClientOptionsBuilder.WithWillTopic(deviceToCloudMessagesTopic);
+                mqttClientOptionsBuilder.WithWillPayload(settings.WillMessage.Message.GetBytes());
 
                 if (settings.WillMessage.QualityOfService == QualityOfService.AtMostOnce)
                 {
-                    willMessage.QualityOfServiceLevel = MqttQualityOfServiceLevel.AtMostOnce;
+                    mqttClientOptionsBuilder.WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.AtMostOnce);
                 }
                 else if (settings.WillMessage.QualityOfService == QualityOfService.AtLeastOnce)
                 {
-                    willMessage.QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce;
+                    mqttClientOptionsBuilder.WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce);
                 }
                 else if (settings.WillMessage.QualityOfService == QualityOfService.ExactlyOnce)
                 {
-                    willMessage.QualityOfServiceLevel = MqttQualityOfServiceLevel.ExactlyOnce;
+                    mqttClientOptionsBuilder.WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce);
                 }
-
-                mqttClientOptionsBuilder.WithWillMessage(willMessage);
             }
 
-            mqttClient.UseApplicationMessageReceivedHandler(HandleReceivedMessage);
-            mqttClient.UseDisconnectedHandler(HandleDisconnection);
+            mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
+            mqttClient.DisconnectedAsync += HandleDisconnection;
 
             isSubscribedToCloudToDeviceMessages = false;
         }
 
-        private bool certificateValidationHandler(MqttClientCertificateValidationCallbackContext certificateValidationCallbackContext)
+        private bool certificateValidationHandler(MqttClientCertificateValidationEventArgs args)
         {
             return mqttTransportSettings.RemoteCertificateValidationCallback.Invoke(
                 new object(), //TODO what on earth is this? //https://stackoverflow.com/questions/3664109/what-is-the-sender-in-remotecertificatevalidationcallback
-                certificateValidationCallbackContext.Certificate,
-                certificateValidationCallbackContext.Chain,
-                certificateValidationCallbackContext.SslPolicyErrors);
+                args.Certificate,
+                args.Chain,
+                args.SslPolicyErrors);
         }
 
         #region Client operations
@@ -420,7 +412,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             var mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(TopicName)
                 .WithPayload(payloadStream)
-                .WithAtLeastOnceQoS()
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
                 .Build();
 
             MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
@@ -485,10 +477,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(methodResponse.BodyStream)
-                .WithAtLeastOnceQoS()
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
                 .Build();
 
-            MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage);
+            MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
@@ -564,7 +556,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(TwinGetTopic.FormatInvariant(requestId))
-                .WithAtLeastOnceQoS()
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
                 .Build();
 
             MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
@@ -617,11 +609,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
-                .WithAtLeastOnceQoS()
+                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
                 .WithPayload(Encoding.UTF8.GetBytes(body))
                 .Build();
 
-            MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage);
+            MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
@@ -699,7 +691,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            await mqttClient.DisconnectAsync(cancellationToken);
+            MqttClientDisconnectOptions disconnectOptions = new MqttClientDisconnectOptions();
+            await mqttClient.DisconnectAsync(disconnectOptions, cancellationToken);
         }
 
         #endregion Client operations
@@ -718,10 +711,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new Exception("Failed to subscribe to topic " + topic);
             }
 
-            if (subscribeResult.Items[0].ResultCode != expectedQoS)
+            if (subscribeResult.Items.GetEnumerator().Current.ResultCode != expectedQoS)
             {
                 //TODO
-                throw new Exception("Failed to subscribe to topic " + topic + " with reason " + subscribeResult.Items[0].ResultCode);
+                throw new Exception("Failed to subscribe to topic " + topic + " with reason " + subscribeResult.Items.GetEnumerator().Current.ResultCode);
             }
         }
 
@@ -739,19 +732,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new Exception("Failed to unsubscribe from topic " + topic);
             }
 
-            if (unsubscribeResult.Items[0].ReasonCode != MqttClientUnsubscribeResultCode.Success)
+            if (unsubscribeResult.Items.GetEnumerator().Current.ResultCode != MqttClientUnsubscribeResultCode.Success)
             {
                 //TODO
-                throw new Exception("Failed to subscribe to topic " + topic + " with reason " + unsubscribeResult.Items[0].ReasonCode);
+                throw new Exception("Failed to subscribe to topic " + topic + " with reason " + unsubscribeResult.Items.GetEnumerator().Current.ResultCode);
             }
         }
 
-        private void HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
+        private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
         {
             if (disconnectedEventArgs.ClientWasConnected)
             {
                 OnTransportDisconnected();
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task HandleReceivedMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
