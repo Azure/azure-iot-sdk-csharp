@@ -17,3 +17,8 @@ using System.Diagnostics.CodeAnalysis;
     "CA1031:Do not catch general exception types",
     Justification = "SDK hides non-actionable errors from user",
     Scope = "module")]
+
+[assembly: SuppressMessage("XmlDocumentationComments", "RS0010: Avoid using cref tags with a prefix", Justification = "We have a lot of documentation pointing to external links.")]
+
+// TODO #177 Remove localization.
+[assembly: SuppressMessage("Microsoft.Performance", "CA1824:MarkAssembliesWithNeutralResourcesLanguage.", Justification = "The SDKs are not localized.")]

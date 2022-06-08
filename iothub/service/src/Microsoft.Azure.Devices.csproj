@@ -101,7 +101,7 @@
       <Link>Authentication\IotHubConnectionString.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\PutOperationType.cs">
-      <Link>PutOperationType.cs</Link>
+      <Link>Utilities\PutOperationType.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\QuerySpecification.cs">
       <Link>Query\QuerySpecification.cs</Link>
