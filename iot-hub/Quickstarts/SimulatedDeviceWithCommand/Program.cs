@@ -4,13 +4,13 @@
 // This application uses the Azure IoT Hub device SDK for .NET
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
-using Microsoft.Azure.Devices.Client;
 using System;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
 
 namespace SimulatedDevice
 {
@@ -98,12 +98,12 @@ namespace SimulatedDevice
             }
         }
 
-        // Handle the direct method call
+        // Handle the direct method call.
         private static Task<MethodResponse> SetTelemetryInterval(MethodRequest methodRequest, object userContext)
         {
             var data = Encoding.UTF8.GetString(methodRequest.Data);
 
-            // Check the payload is a single integer value
+            // Check the payload is a single integer value.
             if (int.TryParse(data, out int telemetryIntervalInSeconds))
             {
                 s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalInSeconds);
@@ -112,62 +112,58 @@ namespace SimulatedDevice
                 Console.WriteLine($"Telemetry interval set to {s_telemetryInterval}");
                 Console.ResetColor();
 
-                // Acknowlege the direct method call with a 200 success message
+                // Acknowlege the direct method call with a 200 success message.
                 string result = $"{{\"result\":\"Executed direct method: {methodRequest.Name}\"}}";
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
             }
             else
             {
-                // Acknowlege the direct method call with a 400 error message
+                // Acknowlege the direct method call with a 400 error message.
                 string result = "{\"result\":\"Invalid parameter\"}";
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 400));
             }
         }
 
-        // Async method to send simulated telemetry
+        // Async method to send simulated telemetry.
         private static async Task SendDeviceToCloudMessagesAsync(CancellationToken ct)
         {
-            // Initial telemetry values
+            // Initial telemetry values.
             double minTemperature = 20;
             double minHumidity = 60;
             var rand = new Random();
 
-            while (!ct.IsCancellationRequested)
+            try
             {
-                double currentTemperature = minTemperature + rand.NextDouble() * 15;
-                double currentHumidity = minHumidity + rand.NextDouble() * 20;
+                while (!ct.IsCancellationRequested)
+                {
+                    double currentTemperature = minTemperature + rand.NextDouble() * 15;
+                    double currentHumidity = minHumidity + rand.NextDouble() * 20;
 
-                // Create JSON message
-                string messageBody = JsonSerializer.Serialize(
-                    new
+                    // Create JSON message.
+                    string messageBody = JsonSerializer.Serialize(
+                        new
+                        {
+                            temperature = currentTemperature,
+                            humidity = currentHumidity,
+                        });
+                    using var message = new Message(Encoding.ASCII.GetBytes(messageBody))
                     {
-                        temperature = currentTemperature,
-                        humidity = currentHumidity,
-                    });
-                using var message = new Message(Encoding.ASCII.GetBytes(messageBody))
-                {
-                    ContentType = "application/json",
-                    ContentEncoding = "utf-8",
-                };
+                        ContentType = "application/json",
+                        ContentEncoding = "utf-8",
+                    };
 
-                // Add a custom application property to the message.
-                // An IoT hub can filter on these properties without access to the message body.
-                message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
+                    // Add a custom application property to the message.
+                    // An IoT hub can filter on these properties without access to the message body.
+                    message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
-                // Send the telemetry message
-                await s_deviceClient.SendEventAsync(message);
-                Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
+                    // Send the telemetry message.
+                    await s_deviceClient.SendEventAsync(message, ct);
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
 
-                try
-                {
                     await Task.Delay(s_telemetryInterval, ct);
                 }
-                catch (TaskCanceledException)
-                {
-                    // User canceled
-                    return;
-                }
             }
+            catch (TaskCanceledException) { } // User canceled
         }
     }
 }
