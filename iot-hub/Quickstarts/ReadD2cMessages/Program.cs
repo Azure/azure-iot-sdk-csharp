@@ -5,13 +5,13 @@
 // For samples see: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/eventhub/Azure.Messaging.EventHubs/samples/README.md
 // For documentation see: https://docs.microsoft.com/azure/event-hubs/
 
-using Azure.Messaging.EventHubs.Consumer;
-using CommandLine;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Messaging.EventHubs.Consumer;
+using CommandLine;
 
 namespace ReadD2cMessages
 {
@@ -26,14 +26,8 @@ namespace ReadD2cMessages
         {
             // Parse application parameters
             ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
-                .WithParsed(parsedParams =>
-                {
-                    _parameters = parsedParams;
-                })
-                .WithNotParsed(errors =>
-                {
-                    Environment.Exit(1);
-                });
+                .WithParsed(parsedParams => _parameters = parsedParams)
+                .WithNotParsed(errors => Environment.Exit(1));
 
             // Either the connection string must be supplied, or the set of endpoint, name, and shared access key must be.
             if (string.IsNullOrWhiteSpace(_parameters.EventHubConnectionString)
@@ -103,7 +97,7 @@ namespace ReadD2cMessages
                         PrintProperties(prop);
                     }
 
-                    Console.WriteLine("\tSystem properties (set by IoT Hub):");
+                    Console.WriteLine("\tSystem properties (set by IoT hub):");
                     foreach (KeyValuePair<string, object> prop in partitionEvent.Data.SystemProperties)
                     {
                         PrintProperties(prop);
@@ -117,10 +111,10 @@ namespace ReadD2cMessages
             }
         }
 
-        private static void PrintProperties(KeyValuePair<string, object> prop) 
+        private static void PrintProperties(KeyValuePair<string, object> prop)
         {
-            string propValue = prop.Value is DateTime
-                ? ((DateTime)prop.Value).ToString("O") // using a built-in date format here that includes milliseconds
+            string propValue = prop.Value is DateTime time
+                ? time.ToString("O") // using a built-in date format here that includes milliseconds
                 : prop.Value.ToString();
 
             Console.WriteLine($"\t\t{prop.Key}: {propValue}");

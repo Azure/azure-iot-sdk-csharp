@@ -4,13 +4,13 @@
 // This application uses the Azure IoT Hub device SDK for .NET
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
-using Microsoft.Azure.Devices.Client;
 using System;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
 
 namespace SimulatedDevice
 {
@@ -100,34 +100,38 @@ namespace SimulatedDevice
             double minHumidity = 60;
             var rand = new Random();
 
-            while (!ct.IsCancellationRequested)
+            try
             {
-                double currentTemperature = minTemperature + rand.NextDouble() * 15;
-                double currentHumidity = minHumidity + rand.NextDouble() * 20;
-
-                // Create JSON message
-                string messageBody = JsonSerializer.Serialize(
-                    new
-                    {
-                        temperature = currentTemperature,
-                        humidity = currentHumidity,
-                    });
-                using var message = new Message(Encoding.ASCII.GetBytes(messageBody))
+                while (!ct.IsCancellationRequested)
                 {
-                    ContentType = "application/json",
-                    ContentEncoding = "utf-8",
-                };
+                    double currentTemperature = minTemperature + rand.NextDouble() * 15;
+                    double currentHumidity = minHumidity + rand.NextDouble() * 20;
 
-                // Add a custom application property to the message.
-                // An IoT hub can filter on these properties without access to the message body.
-                message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
+                    // Create JSON message
+                    string messageBody = JsonSerializer.Serialize(
+                        new
+                        {
+                            temperature = currentTemperature,
+                            humidity = currentHumidity,
+                        });
+                    using var message = new Message(Encoding.ASCII.GetBytes(messageBody))
+                    {
+                        ContentType = "application/json",
+                        ContentEncoding = "utf-8",
+                    };
 
-                // Send the telemetry message
-                await s_deviceClient.SendEventAsync(message);
-                Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
+                    // Add a custom application property to the message.
+                    // An IoT hub can filter on these properties without access to the message body.
+                    message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
-                await Task.Delay(1000);
+                    // Send the telemetry message
+                    await s_deviceClient.SendEventAsync(message, ct);
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
+
+                    await Task.Delay(1000, ct);
+                }
             }
+            catch (TaskCanceledException) { } // ct was signaled
         }
     }
 }
