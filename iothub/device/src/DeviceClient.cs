@@ -269,16 +269,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores the retry strategy used in the operation retries.
-        /// </summary>
-        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
-        public RetryPolicyType RetryPolicy
-        {
-            get => InternalClient.RetryPolicy;
-            set => InternalClient.RetryPolicy = value;
-        }
-
-        /// <summary>
         /// Sets the retry policy used in the operation retries.
         /// The change will take effect after any in-progress operations.
         /// </summary>
@@ -572,27 +562,6 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName">The name of the blob to upload.</param>
-        /// <param name="source">A stream with blob contents. Should be disposed after upload completes.</param>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source) => InternalClient.UploadToBlobAsync(blobName, source);
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName">The name of the blob to upload</param>
-        /// <param name="source">A stream with blob contents.. Should be disposed after upload completes.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken) =>
-            InternalClient.UploadToBlobAsync(blobName, source, cancellationToken);
-
-        /// <summary>
         /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device
         /// See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>.
         /// </summary>
@@ -668,18 +637,6 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
         /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with
-        /// the named method, it will be replaced with the new delegate.
-        /// <param name="methodName">The name of the method to associate with the delegate.</param>
-        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
-
-        [Obsolete("Please use SetMethodHandlerAsync.")]
-        public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext) =>
-            InternalClient.SetMethodHandler(methodName, methodHandler, userContext);
-
-        /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use
         /// HTTP, as that protocol is stateless.
@@ -748,17 +705,6 @@ namespace Microsoft.Azure.Devices.Client
                 InternalClient?.Dispose();
             }
         }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service. This has the side-effect of subscribing
-        /// to the PATCH topic on the service.
-        /// </summary>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
-        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext) =>
-            InternalClient.SetDesiredPropertyUpdateCallback(callback, userContext);
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update

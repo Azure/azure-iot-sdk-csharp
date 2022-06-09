@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwins2Async(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
             Twin twinUpd = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);

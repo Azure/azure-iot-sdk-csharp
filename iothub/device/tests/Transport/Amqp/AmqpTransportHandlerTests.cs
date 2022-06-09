@@ -96,25 +96,20 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [Obsolete]
         public void AmqpTransportHandler_RejectAmqpSettingsChange()
         {
-            // Added [Obsolete] attribute to this method to suppress CS0618 message for ConnectionIdleTimeout
             var amqpTransportHandler1 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
             {
                 Pooling = true,
                 MaxPoolSize = 10,
-                ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
             }));
 
             try
             {
-                // Try to create a set AmqpTransportHandler with different connection pool settings.
                 var amqpTransportHandler2 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
                 {
                     Pooling = true,
                     MaxPoolSize = 7, // different pool size
-                    ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
                 }));
             }
             catch (ArgumentException ae)
