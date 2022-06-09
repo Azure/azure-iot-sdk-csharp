@@ -298,14 +298,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             mqttClientOptionsBuilder.WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311);
 
-            mqttClientOptionsBuilder.WithCleanSession(settings.CleanSession); //TODO is that what we are used to?
+            mqttClientOptionsBuilder.WithCleanSession(settings.CleanSession);
 
             mqttClientOptionsBuilder.WithKeepAlivePeriod(TimeSpan.FromSeconds(settings.KeepAliveInSeconds));
 
             if (settings.HasWill && settings.WillMessage != null)
             {
                 mqttClientOptionsBuilder.WithWillTopic(deviceToCloudMessagesTopic);
-                mqttClientOptionsBuilder.WithWillPayload(settings.WillMessage.Message.GetBytes());
+                mqttClientOptionsBuilder.WithWillPayload(settings.WillMessage.Payload);
 
                 if (settings.WillMessage.QualityOfService == QualityOfService.AtMostOnce)
                 {
@@ -703,19 +703,32 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithTopicFilter(topic)
                 .Build();
 
-            MqttClientSubscribeResult subscribeResult = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken);
+            MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken);
 
-            if (subscribeResult.Items.Count != 1)
+            if (subscribeResults == null || subscribeResults.Items == null)
             {
                 //TODO
                 throw new Exception("Failed to subscribe to topic " + topic);
             }
 
-            if (subscribeResult.Items.GetEnumerator().Current.ResultCode != expectedQoS)
+            // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
+            foreach (MqttClientSubscribeResultItem subscribeResult in subscribeResults.Items)
             {
-                //TODO
-                throw new Exception("Failed to subscribe to topic " + topic + " with reason " + subscribeResult.Items.GetEnumerator().Current.ResultCode);
+                if (!subscribeResult.TopicFilter.Topic.Equals(topic))
+                {
+                    throw new Exception("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
+                }
+
+                if (subscribeResult.ResultCode != expectedQoS)
+                {
+                    //TODO
+                    throw new Exception("Failed to subscribe to topic " + topic + " with reason " + subscribeResult.ResultCode);
+                }
+
+                return;
             }
+
+            throw new Exception("Service did not acknowledge the subscription request for topic " + topic);
         }
 
         private async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
@@ -724,19 +737,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .WithTopicFilter(topic)
                     .Build();
 
-            MqttClientUnsubscribeResult unsubscribeResult = await mqttClient.UnsubscribeAsync(unsubscribeOptions, cancellationToken);
+            MqttClientUnsubscribeResult unsubscribeResults = await mqttClient.UnsubscribeAsync(unsubscribeOptions, cancellationToken);
 
-            if (unsubscribeResult.Items.Count != 1)
+            if (unsubscribeResults == null || unsubscribeResults.Items == null)
+            {
+                //TODO
+                throw new Exception("Failed to unsubscribe to topic " + topic);
+            }
+
+            if (unsubscribeResults.Items.Count != 1)
             {
                 //TODO
                 throw new Exception("Failed to unsubscribe from topic " + topic);
             }
 
-            if (unsubscribeResult.Items.GetEnumerator().Current.ResultCode != MqttClientUnsubscribeResultCode.Success)
+            // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
+            foreach (MqttClientUnsubscribeResultItem unsubscribeResult in unsubscribeResults.Items)
             {
-                //TODO
-                throw new Exception("Failed to subscribe to topic " + topic + " with reason " + unsubscribeResult.Items.GetEnumerator().Current.ResultCode);
+                if (!unsubscribeResult.TopicFilter.Equals(topic))
+                {
+                    throw new Exception("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter);
+                }
+
+                if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
+                {
+                    //TODO
+                    throw new Exception("Failed to unsubscribe to topic " + topic + " with reason " + unsubscribeResult.ResultCode);
+                }
+
+                return;
             }
+
+            throw new Exception("Service did not acknowledge the unsubscribe request for topic " + topic);
         }
 
         private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)

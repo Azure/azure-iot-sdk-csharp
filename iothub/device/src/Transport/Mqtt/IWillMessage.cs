@@ -9,13 +9,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public interface IWillMessage
     {
         /// <summary>
-        /// The message to be sent
+        /// The payload to be sent in the will message
         /// </summary>
-        Message Message { get; }
+        byte[] Payload { get; }
 
         /// <summary>
         /// An agreement between the sender of a message and the receiver of a message that defines the guarantee of delivery for a specific message
         /// </summary>
-        QualityOfService QualityOfService { get; set; } //TODO make this an enum
+        QualityOfService QualityOfService { get; set; }
     }
 }

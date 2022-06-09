@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public class WillMessage : IWillMessage
     {
         /// <inheritdoc />
-        public Message Message { get; private set; }
+        public byte[] Payload { get; private set; }
 
         /// <inheritdoc />
         public QualityOfService QualityOfService { get; set; }
@@ -18,11 +18,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Creates an instance of WillMessage
         /// </summary>
         /// <param name="qualityOfService">The quality of service</param>
-        /// <param name="message">The message to be sent</param>
-        public WillMessage(QualityOfService qualityOfService, Message message)
+        /// <param name="payload">The payload to be sent in the will message</param>
+        public WillMessage(QualityOfService qualityOfService, byte[] payload)
         {
             QualityOfService = qualityOfService;
-            Message = message;
+            Payload = payload;
         }
     }
 }
