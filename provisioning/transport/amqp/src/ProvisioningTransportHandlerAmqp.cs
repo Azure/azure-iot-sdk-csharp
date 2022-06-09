@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Globalization;
 using System.IO;
@@ -14,6 +8,12 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -316,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             //Check reprovisioning
             await UpdateEnrollmentToForceReprovision(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, security, groupId).ConfigureAwait(false);
             result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-            ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
+            ReprovisioningE2ETests.ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
             await ConfirmDeviceWorksAfterReprovisioning(result, auth, transportProtocol, reprovisionPolicy, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
 
             if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
@@ -336,38 +335,34 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         private async Task ConfirmRegisteredDeviceWorks(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, Client.TransportType transportProtocol, bool transportProtocolSupportsTwinOperations)
         {
-            using (var iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
+            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
+            Logger.Trace("DeviceClient OpenAsync.");
+            await iotClient.OpenAsync().ConfigureAwait(false);
+            Logger.Trace("DeviceClient SendEventAsync.");
+
+            using var message = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            await iotClient.SendEventAsync(message).ConfigureAwait(false);
+
+            if (transportProtocolSupportsTwinOperations)
             {
-                Logger.Trace("DeviceClient OpenAsync.");
-                await iotClient.OpenAsync().ConfigureAwait(false);
-                Logger.Trace("DeviceClient SendEventAsync.");
-
-                using var message = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
-                await iotClient.SendEventAsync(message).ConfigureAwait(false);
-
-                if (transportProtocolSupportsTwinOperations)
-                {
-                    Logger.Trace("DeviceClient updating reported property.");
-                    Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                    await iotClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
-                }
-
-                Logger.Trace("DeviceClient CloseAsync.");
-                await iotClient.CloseAsync().ConfigureAwait(false);
+                Logger.Trace("DeviceClient updating reported property.");
+                Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+                await iotClient.UpdateReportedPropertiesAsync(new Client.TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
             }
+
+            Logger.Trace("DeviceClient CloseAsync.");
+            await iotClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task ConfirmExpectedDeviceCapabilities(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, DeviceCapabilities capabilities)
+        private static async Task ConfirmExpectedDeviceCapabilities(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, DeviceCapabilities capabilities)
         {
             if (capabilities != null)
             {
                 //hardcoding amqp since http does not support twin, but tests that call into this may use http
-                using (var iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Amqp))
-                {
-                    //Confirm that the device twin reflects what the enrollment dictated
-                    Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                    twin.Capabilities.IotEdge.Should().Be(capabilities.IotEdge);
-                }
+                using var iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Amqp);
+                //Confirm that the device twin reflects what the enrollment dictated
+                Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
+                twin.Capabilities.IotEdge.Should().Be(capabilities.IotEdge);
             }
         }
 
@@ -379,7 +374,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iothubs,
-            DeviceCapabilities capabilities = null)
+            Devices.Provisioning.Service.DeviceCapabilities capabilities = null)
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
 
@@ -413,10 +408,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
-                            X509Certificate2 publicPrivateCertificate = CreateX509CertificateWithPublicPrivateKey(registrationId);
+                            X509Certificate2 publicPrivateCertificate = ReprovisioningE2ETests.CreateX509CertificateWithPublicPrivateKey(registrationId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                            using (X509Certificate2 publicCertificate = CreateX509CertificateWithPublicKey(registrationId))
+                            using (X509Certificate2 publicCertificate = ReprovisioningE2ETests.CreateX509CertificateWithPublicKey(registrationId))
                             {
                                 IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
                                     provisioningServiceClient,
@@ -546,9 +541,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         /// <summary>
-        /// Update the enrollment under test such that it forces it to reprovision to the hubs within <paramref name="iotHubsToReprovisionTo"/>
+        /// Update the enrollment under test such that it forces it to re-provision to the hubs within <paramref name="iotHubsToReprovisionTo"/>
         /// </summary>
-        private async Task UpdateEnrollmentToForceReprovision(EnrollmentType? enrollmentType, ProvisioningServiceClient provisioningServiceClient, ICollection<String> iotHubsToReprovisionTo, SecurityProvider security, string groupId)
+        private async Task UpdateEnrollmentToForceReprovision(EnrollmentType? enrollmentType, ProvisioningServiceClient provisioningServiceClient, ICollection<string> iotHubsToReprovisionTo, SecurityProvider security, string groupId)
         {
             if (enrollmentType == EnrollmentType.Individual)
             {
@@ -631,7 +626,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <summary>
         /// Confirm that the hub the device belongs to did or did not change, depending on the reprovision policy
         /// </summary>
-        private void ConfirmDeviceInExpectedHub(DeviceRegistrationResult result, ReprovisionPolicy reprovisionPolicy, ICollection<string> iotHubsToStartAt, ICollection<string> iotHubsToReprovisionTo, AllocationPolicy allocationPolicy)
+        private static void ConfirmDeviceInExpectedHub(DeviceRegistrationResult result, ReprovisionPolicy reprovisionPolicy, ICollection<string> iotHubsToStartAt, ICollection<string> iotHubsToReprovisionTo, AllocationPolicy allocationPolicy)
         {
             if (reprovisionPolicy.UpdateHubAssignment)
             {
@@ -657,48 +652,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             bool transportProtocolSupportsTwinOperations)
         {
-            using (var iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
+            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
+            Logger.Trace("DeviceClient OpenAsync.");
+            await iotClient.OpenAsync().ConfigureAwait(false);
+            Logger.Trace("DeviceClient SendEventAsync.");
+
+            using var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+            // Twin can be configured to revert back to default twin when provisioned, or to keep twin
+            // from previous hub's records.
+            if (transportProtocolSupportsTwinOperations)
             {
-                Logger.Trace("DeviceClient OpenAsync.");
-                await iotClient.OpenAsync().ConfigureAwait(false);
-                Logger.Trace("DeviceClient SendEventAsync.");
+                Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
 
-                using var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
-                await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                // Twin can be configured to revert back to default twin when provisioned, or to keep twin
-                // from previous hub's records.
-                if (transportProtocolSupportsTwinOperations)
+                // Reprovision
+                if (reprovisionPolicy.UpdateHubAssignment)
                 {
-                    Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-
-                    // Reprovision
-                    if (reprovisionPolicy.UpdateHubAssignment)
-                    {
-                        // Migrate data
-                        if (reprovisionPolicy.MigrateDeviceData)
-                        {
-                            // The reprovisioned twin should have an entry for the reprorted property updated previously in the test
-                            // as a part of ConfirmRegisteredDeviceWorks.
-                            // On device creation the twin reported property version starts at 1. For this scenario the reported property update
-                            // operation should increment the version to 2.
-                            twin.Properties.Reported.Count.Should().Be(1);
-                            twin.Properties.Reported.Version.Should().Be(2);
-                            result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataMigrated);
-                        }
-                        // Reset to initial configuration
-                        else
-                        {
-                            // The reprovisioned twin should not have an entry for the reprorted property updated previously in the test
-                            // as a part of ConfirmRegisteredDeviceWorks.
-                            // On device creation the twin reported property version starts at 1.
-                            twin.Properties.Reported.Count.Should().Be(0);
-                            twin.Properties.Reported.Version.Should().Be(1);
-                            result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataReset);
-                        }
-                    }
-                    // Do not reprovision
-                    else
+                    // Migrate data
+                    if (reprovisionPolicy.MigrateDeviceData)
                     {
                         // The reprovisioned twin should have an entry for the reprorted property updated previously in the test
                         // as a part of ConfirmRegisteredDeviceWorks.
@@ -706,21 +678,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // operation should increment the version to 2.
                         twin.Properties.Reported.Count.Should().Be(1);
                         twin.Properties.Reported.Version.Should().Be(2);
-                        result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.InitialAssignment);
+                        result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataMigrated);
+                    }
+                    // Reset to initial configuration
+                    else
+                    {
+                        // The reprovisioned twin should not have an entry for the reprorted property updated previously in the test
+                        // as a part of ConfirmRegisteredDeviceWorks.
+                        // On device creation the twin reported property version starts at 1.
+                        twin.Properties.Reported.Count.Should().Be(0);
+                        twin.Properties.Reported.Version.Should().Be(1);
+                        result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.DeviceDataReset);
                     }
                 }
-
-                Logger.Trace("DeviceClient CloseAsync.");
-                await iotClient.CloseAsync().ConfigureAwait(false);
+                // Do not reprovision
+                else
+                {
+                    // The reprovisioned twin should have an entry for the reprorted property updated previously in the test
+                    // as a part of ConfirmRegisteredDeviceWorks.
+                    // On device creation the twin reported property version starts at 1. For this scenario the reported property update
+                    // operation should increment the version to 2.
+                    twin.Properties.Reported.Count.Should().Be(1);
+                    twin.Properties.Reported.Version.Should().Be(2);
+                    result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.InitialAssignment);
+                }
             }
+
+            Logger.Trace("DeviceClient CloseAsync.");
+            await iotClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
+        private static X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
         {
             return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.crt");
         }
 
-        private X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
+        private static X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
         {
             return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.pfx", TestConfiguration.Provisioning.CertificatePassword);
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,13 +11,12 @@ using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Core;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
-using Azure;
-using Azure.Core;
 
 namespace Microsoft.Azure.Devices
 {

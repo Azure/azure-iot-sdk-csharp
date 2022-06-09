@@ -3,16 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
-using System.Security.Cryptography.X509Certificates;
-using System.IO;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using System.ComponentModel;
 
 namespace Microsoft.Azure.Devices.Client
 {

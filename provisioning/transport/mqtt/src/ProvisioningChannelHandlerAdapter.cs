@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using DotNetty.Buffers;
-using DotNetty.Codecs.Mqtt.Packets;
-using DotNetty.Transport.Channels;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -17,6 +10,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetty.Buffers;
+using DotNetty.Codecs.Mqtt.Packets;
+using DotNetty.Transport.Channels;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {

@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 () => jobClient.ScheduleTwinUpdateAsync(
                     "testDevice",
                     "DeviceId IN ['testDevice']",
-                    new Shared.Twin(),
+                    new Twin(),
                     DateTime.UtcNow,
                     60)).ConfigureAwait(false);
 

@@ -15,7 +15,6 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using NSubstitute;

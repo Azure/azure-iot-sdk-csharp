@@ -51,7 +51,7 @@
     <Compile Include="$(common)\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
     <Compile Include="$(common)\service\Utils.cs" Link="Common\Utils.cs" />
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" />
+    <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Utilities\HttpContentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

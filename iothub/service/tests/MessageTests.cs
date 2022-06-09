@@ -6,8 +6,6 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using FluentAssertions;
-using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;

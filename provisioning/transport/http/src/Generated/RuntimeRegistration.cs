@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Rest;
-using Microsoft.Rest.Serialization;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,6 +10,11 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Rest;
+using Microsoft.Rest.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
@@ -220,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string proxyAddress = null)
         {
             string propName = Guid.NewGuid().ToString();
-            var props = new TwinCollection();
+            var props = new Client.TwinCollection();
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
@@ -229,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-                Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
                 Assert.IsNotNull(deviceTwin, $"{nameof(deviceTwin)} is null");
                 Assert.IsNotNull(deviceTwin.Properties, $"{nameof(deviceTwin)}.Properties is null");
                 Assert.IsNotNull(deviceTwin.Properties.Reported, $"{nameof(deviceTwin)}.Properties.Reported is null");
