@@ -333,7 +333,10 @@ if ($InstallDependencies)
 ######################################################################################################
 
 $azureContext = Connect-AzureSubscription
-$userObjectId = az ad signed-in-user show --query objectId --output tsv
+
+# If using Azure CLI prior to v2.37.0, use the following command instead:
+# $userObjectId = az ad signed-in-user show --query objectId --output tsv
+$userObjectId = az ad signed-in-user show --query id --output tsv
 
 ######################################################################################################
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
@@ -711,7 +714,7 @@ if ($EnableIotHubSecuritySolution)
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
-az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$userObjectId" --output none --show-only-errors --secret-permissions delete get list set;
+az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$userObjectId" --output none --only-show-errors --secret-permissions delete get list set;
 foreach ($kvp in $keyvaultKvps.GetEnumerator())
 {
     Write-Host "`tWriting $($kvp.Name)."
