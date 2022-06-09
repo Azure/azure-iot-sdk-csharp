@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Shared;
 using MQTTnet;
 using MQTTnet.Client;
