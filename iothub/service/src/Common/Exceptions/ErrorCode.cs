@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for
-        /// <see cref="RegistryManager.UpdateTwinAsync(string, Shared.Twin, string)"/> is invalid.
+        /// <see cref="RegistryManager.UpdateTwinAsync(string, Twin, string)"/> is invalid.
         /// </summary>
         IotHubFormatError = 400006,
 

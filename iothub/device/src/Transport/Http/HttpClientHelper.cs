@@ -9,14 +9,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-using System.Text;
 using Newtonsoft.Json;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {

@@ -11,8 +11,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
@@ -36,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         public async Task ProvisioningServiceClient_IndividualEnrollments_Query_HttpWithProxy_Ok()
         {
-            await ProvisioningServiceClient_IndividualEnrollments_Query_Ok(s_proxyServerAddress).ConfigureAwait(false);
+            await ProvisioningServiceClientE2ETests.ProvisioningServiceClient_IndividualEnrollments_Query_Ok(s_proxyServerAddress).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -208,17 +206,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// </summary>
         /// <param name="proxyServerAddress">The address of the proxy to be used, or null/empty if no proxy should be used</param>
         /// <returns>If the query succeeded, otherwise this method will throw</returns>
-        private async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(string proxyServerAddress)
+        private static async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(string proxyServerAddress)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
-            using (Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification))
+            using Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
+            while (query.HasNext())
             {
-                while (query.HasNext())
-                {
-                    QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
-                    Assert.AreEqual(queryResult.Type, QueryResultType.Enrollment);
-                }
+                QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
+                Assert.AreEqual(queryResult.Type, QueryResultType.Enrollment);
             }
         }
 
@@ -235,41 +231,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iotHubsToProvisionTo)
         {
-            using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
+            string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+
+            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentAsync(
+                provisioningServiceClient,
+                registrationId,
+                attestationType,
+                null,
+                reprovisionPolicy,
+                allocationPolicy,
+                customAllocationDefinition,
+                iotHubsToProvisionTo,
+                null,
+                Logger).ConfigureAwait(false);
+            IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+            Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+
+            if (reprovisionPolicy != null)
             {
-                string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-
-                IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentAsync(
-                    provisioningServiceClient,
-                    registrationId,
-                    attestationType,
-                    null,
-                    reprovisionPolicy,
-                    allocationPolicy,
-                    customAllocationDefinition,
-                    iotHubsToProvisionTo,
-                    null,
-                    Logger).ConfigureAwait(false);
-                IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
-                Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
-
-                if (reprovisionPolicy != null)
-                {
-                    Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, individualEnrollmentResult.ReprovisionPolicy.UpdateHubAssignment);
-                    Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, individualEnrollmentResult.ReprovisionPolicy.MigrateDeviceData);
-                }
-
-                if (customAllocationDefinition != null)
-                {
-                    Assert.AreEqual(customAllocationDefinition.WebhookUrl, individualEnrollmentResult.CustomAllocationDefinition.WebhookUrl);
-                    Assert.AreEqual(customAllocationDefinition.ApiVersion, individualEnrollmentResult.CustomAllocationDefinition.ApiVersion);
-                }
-
-                //allocation policy is never null
-                Assert.AreEqual(allocationPolicy, individualEnrollmentResult.AllocationPolicy);
-
-                await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+                Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, individualEnrollmentResult.ReprovisionPolicy.UpdateHubAssignment);
+                Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, individualEnrollmentResult.ReprovisionPolicy.MigrateDeviceData);
             }
+
+            if (customAllocationDefinition != null)
+            {
+                Assert.AreEqual(customAllocationDefinition.WebhookUrl, individualEnrollmentResult.CustomAllocationDefinition.WebhookUrl);
+                Assert.AreEqual(customAllocationDefinition.ApiVersion, individualEnrollmentResult.CustomAllocationDefinition.ApiVersion);
+            }
+
+            //allocation policy is never null
+            Assert.AreEqual(allocationPolicy, individualEnrollmentResult.AllocationPolicy);
+
+            await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
         }
 
         public async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationMechanismType attestationType)
@@ -286,44 +280,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ICollection<string> iothubs)
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
+            using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
+            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(
+                provisioningServiceClient,
+                attestationType,
+                groupId,
+                reprovisionPolicy,
+                allocationPolicy,
+                customAllocationDefinition,
+                iothubs,
+                null,
+                Logger).ConfigureAwait(false);
+
+            EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+            Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+
+            if (reprovisionPolicy != null)
             {
-                EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(
-                    provisioningServiceClient,
-                    attestationType,
-                    groupId,
-                    reprovisionPolicy,
-                    allocationPolicy,
-                    customAllocationDefinition,
-                    iothubs,
-                    null,
-                    Logger).ConfigureAwait(false);
+                Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, enrollmentGroupResult.ReprovisionPolicy.MigrateDeviceData);
+                Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, enrollmentGroupResult.ReprovisionPolicy.UpdateHubAssignment);
+            }
 
-                EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
-                Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+            if (customAllocationDefinition != null)
+            {
+                Assert.AreEqual(customAllocationDefinition.WebhookUrl, enrollmentGroupResult.CustomAllocationDefinition.WebhookUrl);
+                Assert.AreEqual(customAllocationDefinition.ApiVersion, enrollmentGroupResult.CustomAllocationDefinition.ApiVersion);
+            }
 
-                if (reprovisionPolicy != null)
-                {
-                    Assert.AreEqual(reprovisionPolicy.MigrateDeviceData, enrollmentGroupResult.ReprovisionPolicy.MigrateDeviceData);
-                    Assert.AreEqual(reprovisionPolicy.UpdateHubAssignment, enrollmentGroupResult.ReprovisionPolicy.UpdateHubAssignment);
-                }
+            Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
 
-                if (customAllocationDefinition != null)
-                {
-                    Assert.AreEqual(customAllocationDefinition.WebhookUrl, enrollmentGroupResult.CustomAllocationDefinition.WebhookUrl);
-                    Assert.AreEqual(customAllocationDefinition.ApiVersion, enrollmentGroupResult.CustomAllocationDefinition.ApiVersion);
-                }
-
-                Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
-
-                try
-                {
-                    await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Cleanup of enrollment group failed due to {ex}");
-                }
+            try
+            {
+                await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cleanup of enrollment group failed due to {ex}");
             }
         }
 
@@ -336,7 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iotHubsToProvisionTo,
-            DeviceCapabilities capabilities,
+            Devices.Provisioning.Service.DeviceCapabilities capabilities,
             MsTestLogger logger)
         {
             Attestation attestation;
@@ -446,7 +438,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iothubs,
-            DeviceCapabilities capabilities,
+            Devices.Provisioning.Service.DeviceCapabilities capabilities,
             MsTestLogger logger)
         {
             Attestation attestation;

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,10 +8,8 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Rest;
-
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service

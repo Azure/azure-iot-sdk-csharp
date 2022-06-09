@@ -3,7 +3,6 @@
 
 using System;
 using System.Net;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {

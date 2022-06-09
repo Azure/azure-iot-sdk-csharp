@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -437,12 +436,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             logger.Trace($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new TwinCollection();
+            var props = new Client.TwinCollection();
             props[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             dynamic actual = deviceTwin.Properties.Reported[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
 
@@ -583,7 +582,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 updateReceivedTask).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             dynamic actual = deviceTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
 
@@ -609,7 +608,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             twinPatch.Properties.Desired[propName] = propValue;
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
-            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -625,7 +624,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
-            var patch = new TwinCollection();
+            var patch = new Client.TwinCollection();
             patch[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -648,7 +647,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new TwinCollection
+                    new Client.TwinCollection
                     {
                         [propName1] = null
                     })
@@ -658,7 +657,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new TwinCollection
+                    new Client.TwinCollection
                     {
                         [propName1] = new TwinCollection
                         {
@@ -674,7 +673,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new TwinCollection
+                    new Client.TwinCollection
                     {
                         [propName1] = new TwinCollection
                         {
@@ -702,7 +701,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 await deviceClient
                     .UpdateReportedPropertiesAsync(
-                        new TwinCollection
+                        new Client.TwinCollection
                         {
                             [propName1] = 123,
                             [propName2] = "abcd"
