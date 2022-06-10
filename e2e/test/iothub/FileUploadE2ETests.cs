@@ -26,17 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        [Obsolete]
-        public async Task FileUpload_SmallFile_Http()
-        {
-            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            // UploadFileAsync is marked obsolete due to a call to UploadToBlobAsync being obsolete
-            // Added [Obsolete] attribute to this method to suppress CS0618 message
-            await UploadFileAsync(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Http_NoFileTransportSettingSpecified()
         {
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -57,28 +46,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             await GetSasUriAsync(Client.TransportType.Mqtt, smallFileBlobName, true).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [TestCategory("LongRunning")]
-        [Obsolete]
-        public async Task FileUpload_BigFile_Http()
-        {
-            string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
-            // UploadFileAsync is marked obsolete due to a call to UploadToBlobAsync being obsolete
-            // Added [Obsolete] attribute to this method to suppress CS0618 message
-            await UploadFileAsync(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod]
-        [TestCategory("LongRunning")]
-        [Obsolete]
-        public async Task FileUpload_X509_SmallFile_Http()
-        {
-            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            // UploadFileAsync is marked obsolete due to a call to UploadToBlobAsync being obsolete
-            // Added [Obsolete] attribute to this method to suppress CS0618 message
-            await UploadFileAsync(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -164,42 +131,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 };
 
                 await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
-            }
-
-            x509Auth?.Dispose();
-        }
-
-        [Obsolete]
-        private async Task UploadFileAsync(Client.TransportType transport, string filename, bool useX509auth = false)
-        {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
-                Logger,
-                _devicePrefix,
-                useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
-
-            DeviceClient deviceClient;
-            X509Certificate2 cert = null;
-            DeviceAuthenticationWithX509Certificate x509Auth = null;
-            if (useX509auth)
-            {
-                cert = s_selfSignedCertificate;
-                x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
-
-                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, x509Auth, transport);
-            }
-            else
-            {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-            }
-
-            using (deviceClient)
-            {
-                using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-               
-                // UploadToBlobAsync is obsolete, added [Obsolete] attribute to suppress CS0618 message
-                await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
 
             x509Auth?.Dispose();

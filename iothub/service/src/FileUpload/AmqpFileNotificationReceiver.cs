@@ -59,19 +59,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
-        public override Task<FileNotification> ReceiveAsync()
-        {
-            return ReceiveAsync(OperationTimeout);
-        }
-
-        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
-        public override async Task<FileNotification> ReceiveAsync(TimeSpan timeout)
-        {
-            using var cts = new CancellationTokenSource(timeout);
-            return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-        }
-
         public override async Task<FileNotification> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
@@ -131,16 +118,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete("Use CompleteAsync(FileNotification fileNotification, CancellationToken cancellationToken).")]
-        public override Task CompleteAsync(FileNotification fileNotification)
-        {
-            return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
-                fileNotification.LockToken,
-                AmqpConstants.AcceptedOutcome,
-                false);
-        }
-
         public override Task CompleteAsync(FileNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -149,16 +126,6 @@ namespace Microsoft.Azure.Devices
                 AmqpConstants.AcceptedOutcome,
                 false,
                 cancellationToken);
-        }
-
-        [Obsolete("Use AbandonAsync(FileNotification fileNotification, CancellationToken cancellationToken).")]
-        public override Task AbandonAsync(FileNotification fileNotification)
-        {
-            return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
-                fileNotification.LockToken,
-                AmqpConstants.ReleasedOutcome,
-                false);
         }
 
         public override Task AbandonAsync(FileNotification fileNotification, CancellationToken cancellationToken)

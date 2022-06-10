@@ -61,19 +61,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
-        public override Task<FeedbackBatch> ReceiveAsync()
-        {
-            return ReceiveAsync(OperationTimeout);
-        }
-
-        [Obsolete("Use ReceiveAsync(CancellationToken cancellationToken).")]
-        public override async Task<FeedbackBatch> ReceiveAsync(TimeSpan timeout)
-        {
-            using var cts = new CancellationTokenSource(timeout);
-            return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-        }
-
         public override async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
@@ -138,16 +125,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        [Obsolete("Use CompleteAsync(FeeddbackBatch feedback, CancellationToken cancellationToken).")]
-        public override Task CompleteAsync(FeedbackBatch feedback)
-        {
-            return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
-                feedback.LockToken,
-                AmqpConstants.AcceptedOutcome,
-                true);
-        }
-
         public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
@@ -156,16 +133,6 @@ namespace Microsoft.Azure.Devices
                 AmqpConstants.AcceptedOutcome,
                 true,
                 cancellationToken);
-        }
-
-        [Obsolete("Use AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken).")]
-        public override Task AbandonAsync(FeedbackBatch feedback)
-        {
-            return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
-                feedback.LockToken,
-                AmqpConstants.ReleasedOutcome,
-                true);
         }
 
         public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)

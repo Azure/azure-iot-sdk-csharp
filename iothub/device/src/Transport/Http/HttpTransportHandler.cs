@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -175,80 +174,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(HttpTransportHandler)}.{nameof(Dispose)}");
                 }
-            }
-        }
-
-        internal async Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var fileUploadRequest = new FileUploadSasUriRequest()
-            {
-                BlobName = blobName
-            };
-
-            FileUploadSasUriResponse fileUploadResponse = await _httpClientHelper
-                .PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
-                    GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
-                    fileUploadRequest,
-                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                    null,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            string putString = string.Format(
-                CultureInfo.InvariantCulture,
-                "https://{0}/{1}/{2}{3}",
-                fileUploadResponse.HostName,
-                fileUploadResponse.ContainerName,
-                // Pass URL encoded device name and blob name to support special characters
-                Uri.EscapeDataString(fileUploadResponse.BlobName),
-                fileUploadResponse.SasToken);
-
-            var notification = new FileUploadCompletionNotification();
-
-            try
-            {
-                // 2. Use SAS URI to send data to Azure Storage Blob (PUT)
-                var blob = new CloudBlockBlob(new Uri(putString));
-                Task uploadTask = blob.UploadFromStreamAsync(source, null, null, null, cancellationToken);
-                await uploadTask.ConfigureAwait(false);
-
-                notification.CorrelationId = fileUploadResponse.CorrelationId;
-                notification.IsSuccess = uploadTask.IsCompleted;
-                notification.StatusCode = uploadTask.IsCompleted ? 0 : -1;
-                notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
-
-                // 3. POST to IoTHub with upload status
-                await _httpClientHelper
-                    .PostAsync(
-                        GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
-                        notification,
-                        ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                        null,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!ex.IsFatal() && !(ex is OperationCanceledException))
-            {
-                // 3. POST to IoTHub with upload status
-                notification.IsSuccess = false;
-                notification.StatusCode = -1;
-                notification.StatusDescription = ex.Message;
-
-                await _httpClientHelper
-                    .PostAsync(
-                        GetRequestUri(
-                            _deviceId,
-                            CommonConstants.BlobUploadStatusPathTemplate + "notifications/" + fileUploadResponse.CorrelationId,
-                            null),
-                        notification,
-                        ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                        null,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-
-                throw;
             }
         }
 
