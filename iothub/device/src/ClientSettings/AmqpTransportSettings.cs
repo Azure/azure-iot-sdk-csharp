@@ -67,7 +67,6 @@ namespace Microsoft.Azure.Devices.Client
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount, AmqpConnectionPoolSettings amqpConnectionPoolSettings)
         {
             OperationTimeout = DefaultOperationTimeout;
-            OpenTimeout = DefaultOpenTimeout;
             IdleTimeout = DefaultIdleTimeout;
 
             PrefetchCount = prefetchCount <= 0
@@ -138,18 +137,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The open timeout. The default is 1 minute.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public TimeSpan OpenTimeout
-        {
-            get => _openTimeout;
-            set => SetOpenTimeout(value);
-        }
-
-        /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
@@ -203,7 +190,6 @@ namespace Microsoft.Azure.Devices.Client
                 && (ReferenceEquals(this, other)
                 // ClientCertificates are usually different, so ignore them in the comparison
                 || PrefetchCount == other.PrefetchCount
-                && OpenTimeout == other.OpenTimeout
                 && OperationTimeout == other.OperationTimeout
                 && AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings));
         }

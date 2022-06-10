@@ -60,17 +60,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             CleanSession = DefaultCleanSession;
             ConnectArrivalTimeout = s_defaultConnectArrivalTimeout;
-            DeviceReceiveAckCanTimeout = DefaultDeviceReceiveAckCanTimeout;
-            DeviceReceiveAckTimeout = s_defaultDeviceReceiveAckTimeout;
-            DupPropertyName = "mqtt-dup";
             HasWill = DefaultHasWill;
             KeepAliveInSeconds = DefaultKeepAliveInSeconds;
-            MaxOutboundRetransmissionEnforced = DefaultMaxOutboundRetransmissionEnforced;
             MaxPendingInboundMessages = DefaultMaxPendingInboundMessages;
             PublishToServerQoS = DefaultPublishToServerQoS;
             ReceivingQoS = DefaultReceivingQoS;
-            QoSPropertyName = "mqtt-qos";
-            RetainPropertyName = "mqtt-retain";
             WillMessage = null;
             DefaultReceiveTimeout = s_defaultReceiveTimeout;
         }
@@ -89,24 +83,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
-        /// Indicates if a device can timeout while waiting for a acknowledgment from service.
-        /// The default value is <c>false</c>.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public bool DeviceReceiveAckCanTimeout { get; set; }
-
-        /// <summary>
-        /// The time a device will wait for an acknowledgment from service.
-        /// The default is 5 minutes.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public TimeSpan DeviceReceiveAckTimeout { get; set; }
-
-        /// <summary>
         /// The QoS to be used when sending packets to service.
         /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </summary>
@@ -117,39 +93,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </summary>
         public QualityOfService ReceivingQoS { get; set; }
-
-        /// <summary>
-        /// The property on a message that indicates the publish packet has requested to be retained.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public string RetainPropertyName { get; set; }
-
-        /// <summary>
-        /// The property on a message that indicates the publish packet is marked as a duplicate.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public string DupPropertyName { get; set; }
-
-        /// <summary>
-        /// The property name setting the QoS for a packet.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public string QoSPropertyName { get; set; }
-
-        /// <summary>
-        /// Indicates if max outbound retransmission is enforced.
-        /// The default value is <c>false</c>.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public bool MaxOutboundRetransmissionEnforced { get; set; }
 
         /// <summary>
         /// The maximum no. of inbound messages that are read from the channel.
