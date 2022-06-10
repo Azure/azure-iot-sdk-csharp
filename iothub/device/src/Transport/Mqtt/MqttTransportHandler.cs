@@ -17,6 +17,7 @@ using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using MQTTnet;
+using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
@@ -125,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly string moduleId;
         private readonly string hostName;
         private readonly ClientOptions clientOptions;
-        private readonly IAuthorizationProvider authorizationProvider;
+        private readonly IotHubConnectionString _connectionString;
         private bool isSymmetricKeyAuthenticated;
         private readonly ProductInfo productInfo;
 
@@ -216,6 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             : base(context, settings)
         {
             mqttTransportSettings = settings;
+            _connectionString = iotHubConnectionString;
             deviceId = iotHubConnectionString.DeviceId;
             moduleId = iotHubConnectionString.ModuleId;
 
@@ -237,8 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
             hostName = iotHubConnectionString.HostName;
-            authorizationProvider = iotHubConnectionString;
-            if (iotHubConnectionString.SharedAccessKey != null)
+            if (iotHubConnectionString.SharedAccessKey != null || iotHubConnectionString.TokenRefresher != null)
             {
                 isSymmetricKeyAuthenticated = true;
             }
@@ -363,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (isSymmetricKeyAuthenticated)
             {
                 // Symmetric key authenticated connections need to set client Id, username, and password
-                string password = authorizationProvider.GetPasswordAsync().Result;
+                string password = ((IAuthorizationProvider)_connectionString).GetPasswordAsync().Result;
                 mqttClientOptionsBuilder.WithCredentials(username, password);
             }
             else
@@ -378,10 +379,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await mqttClient.ConnectAsync(mqttClientOptions, cancellationToken);
             }
-            catch (Exception ex)
+            catch (MqttConnectingFailedException cfe)
             {
-                Console.WriteLine(ex);
-                throw;
+                var connectCode = cfe.ResultCode;
+                switch (connectCode)
+                {
+                    case MqttClientConnectResultCode.BadUserNameOrPassword:
+                    case MqttClientConnectResultCode.NotAuthorized:
+                    case MqttClientConnectResultCode.ClientIdentifierNotValid:
+                        throw new UnauthorizedException("Failed to open the MQTT connection due to incorrect or unauthorized credentials");
+
+                    default:
+                        throw; //TODO more granularity here
+                }
             }
         }
 
@@ -684,8 +694,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void Dispose(bool disposing)
         {
-            mqttClient?.Dispose();
             base.Dispose(disposing);
+            mqttClient?.Dispose();
+            receivedCloudToDeviceMessages?.Dispose();
+            receivedTwins?.Clear();
+            _getTwinSemaphore?.Dispose();
+            _reportedPropertyUpdateResponsesSemaphore?.Dispose();
+
+            if (_connectionString?.TokenRefresher != null
+                && _connectionString.TokenRefresher.DisposalWithClient)
+            {
+                _connectionString.TokenRefresher.Dispose();
+            }
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)

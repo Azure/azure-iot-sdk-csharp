@@ -82,11 +82,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await AuthenticationMethodDisposesTokenRefresher(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        // Even on encountering an exception, the MQTT layer keeps on reattempting CONNECT when communicating via DotNetty's TCP stack.
-        // As a result, instead of throwing the actual exception encountered an IotHubCommunicationException is thrown (on operation timeout).
-        // This is not an issue when the communication is over websockets (where we use the sdk's websocket implementation).
-        // This test has been ignored until we root-cause the issue on DotNetty's TCP stack.
-        [Ignore]
         [LoggedTestMethod]
         public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
         {
