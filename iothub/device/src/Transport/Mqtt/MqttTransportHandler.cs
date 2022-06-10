@@ -91,8 +91,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private const string DeviceClientTypeParam = "DeviceClientType";
 
-        private IMqttClient mqttClient;
-        private MqttClientOptions mqttClientOptions;
+        internal IMqttClient mqttClient;
+        internal MqttClientOptions mqttClientOptions;
         private MqttClientOptionsBuilder mqttClientOptionsBuilder;
 
         private readonly Func<MethodRequestInternal, Task> _methodListener;
