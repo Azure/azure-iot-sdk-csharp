@@ -17,10 +17,15 @@ param(
     [Parameter()]
     [switch] $InstallDependencies,
 
-    # Set this if you are generating resources for the DevOps test pipeline.
+    # Set this if you are generating resources for the E2E test DevOps pipeline.
     # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
     [Parameter()]
-    [switch] $GenerateResourcesForDevOpsPipeline,
+    [switch] $GenerateResourcesForTestDevOpsPipeline,
+
+    # Set this if you are generating resources for the samples DevOps pipeline.
+    # This will generate the resources required for running the DevOps pipline for the .NET samples.
+    [Parameter()]
+    [switch] $GenerateResourcesForSamplesDevOpsPipeline,
 
     # Set this if you would like to enable security solutions for your IoT Hub.
     # Security solution for IoT Hub enables you to route security messages to a specific Log Analytics Workspace.
@@ -42,7 +47,8 @@ $WarningActionPreference = "Continue"
 ########################################################################################################
 
 Write-Host "`nInstallDependencies $InstallDependencies"
-Write-Host "`GenerateResourcesForDevOpsPipeline $GenerateResourcesForDevOpsPipeline"
+Write-Host "`GenerateResourcesForTestDevOpsPipeline $GenerateResourcesForTestDevOpsPipeline"
+Write-Host "`GenerateResourcesForSamplesDevOpsPipeline $GenerateResourcesForSamplesDevOpsPipeline"
 Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
 
 ###########################################################################
@@ -78,6 +84,22 @@ Function Connect-AzureSubscription()
     }
 
     return $azureContext
+}
+
+Function Check-AzureCliVersion()
+{
+    $azCliVersionTested = [System.Version]"2.37.0"
+
+    $azCliVersionCurrentString = az version --query '\"azure-cli\"'
+    $azCliVersionCurrent = [System.Version]($azCliVersionCurrentString.Trim('"'))
+
+    if ($azCliVersionTested -gt $azCliVersionCurrent)
+    {
+        Write-Host "`nVersion of Azure CLI installed is $azCliVersionCurrent while this script has been tested on a newer version of $azCliVersionTested."
+        Write-Host "`nUpdating Azure CLI version to $azCliVersionTested."
+
+        az upgrade
+    }
 }
 
 Function CleanUp-Certs()
@@ -142,7 +164,7 @@ $certificateHashAlgorithm = "SHA256"
 # Make any special modifications required to generate resources for the DevOps test pipeline
 #################################################################################################
 
-if ($GenerateResourcesForDevOpsPipeline)
+if ($GenerateResourcesForTestDevOpsPipeline)
 {
     $iothubUnitsToBeCreated = 5;
 }
@@ -183,26 +205,28 @@ if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
 ########################################################################################################
 
 $subjectPrefix = "IoT Test";
-$rootCommonName = "$subjectPrefix Test Root CA";
+$rootCommonName = "$subjectPrefix Root CA";
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA";
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
-$groupCertCommonName = "xdevice1";
-$deviceCertCommonName = "iothubx509device1";
-$iotHubCertCommonName = "iothubx509device1";
-$iotHubCertChainDeviceCommonName = "iothubx509chaindevice1";
 
 $rootCertPath = "$PSScriptRoot/Root.cer";
-$individualDeviceCertPath = "$PSScriptRoot/Device.cer";
-$verificationCertPath = "$PSScriptRoot/verification.cer";
-
-$groupPfxPath = "$PSScriptRoot/Group.pfx";
-$individualDevicePfxPath = "$PSScriptRoot/Device.pfx";
-$iotHubPfxPath = "$PSScriptRoot/IotHub.pfx";
-$iotHubChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx";
 $intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer";
 $intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
+$verificationCertPath = "$PSScriptRoot/verification.cer";
 
+$groupCertCommonName = "xdevice1";
+$groupPfxPath = "$PSScriptRoot/Group.pfx";
 $groupCertChainPath = "$PSScriptRoot/GroupCertChain.p7b";
+
+$iotHubCertCommonName = "iothubx509device1";
+$iotHubPfxPath = "$PSScriptRoot/IotHub.pfx";
+$iotHubCertChainDeviceCommonName = "iothubx509chaindevice1";
+$iotHubChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx";
+
+# Extra/removed/deleted
+$deviceCertCommonName = "iothubx509device1";
+$individualDeviceCertPath = "$PSScriptRoot/Device.cer";
+$individualDevicePfxPath = "$PSScriptRoot/Device.pfx";
 
 ############################################################################################################################
 # Cleanup old certs and files that can cause a conflict
@@ -215,6 +239,11 @@ CleanUp-Certs
 
 Write-Host "`nGenerating self signed certs."
 
+# Generate the certificates used by both IoT Hub and DPS tests.
+
+# Create certificate chain from Root to Intermediate2.
+# This chain will be combined with the certificates that are signed by Intermediate2 to test X509 CA-chained devices for IoT Hub and DPS (group enrollment) tests.
+# Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
 $rootCACert = New-SelfSignedCertificate `
     -DnsName "$rootCommonName" `
     -KeyUsage CertSign `
@@ -241,19 +270,55 @@ $intermediateCert2 = New-SelfSignedCertificate `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert1
 
-# Create Certificate chain from Root to IntermediateCert2. This chain will be combined with the cert signed by IntermediateCert2 to test group enrollment.
-# Chain: Root->Intermediate1->Intermediate2, cert: Intermediate2->deviceCert
-Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.contains("CN=$subjectPrefix") } | Export-Certificate -FilePath $groupCertChainPath -Type p7b | Out-Null
-
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
 $iothubX509RootCACertificate = [Convert]::ToBase64String((Get-Content $rootCertPath -AsByteStream))
 
-$certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
+Export-Certificate -cert $intermediateCert1 -FilePath $intermediateCert1CertPath -Type CERT | Out-Null
+$iothubX509Intermediate1Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert1CertPath -AsByteStream));
 
-# Create leaf certificates, expiring in 2 years
-# These certs are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
+Export-Certificate -cert $intermediateCert2 -FilePath $intermediateCert2CertPath -Type CERT | Out-Null
+$iothubX509Intermediate2Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream));
 
-# Certificate for enrollment of a device using group enrollment.
+# Generate the certificates used by only IoT Hub E2E tests.
+# Generate an X509 self-signed certificate. This certificate will be used by test device identities that test X509 self-signed certificate device authentication.
+# Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
+$iotHubCert = New-SelfSignedCertificate `
+    -DnsName "$iotHubCertCommonName" `
+    -KeySpec Signature `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2)
+
+$iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
+Export-PFXCertificate -cert $iotHubCert -filePath $iotHubPfxPath -password $iotHubCredentials.Password | Out-Null
+$iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -AsByteStream));
+
+# Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that test X509 CA-signed certificate device authentication.
+# Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
+$iotHubChainDeviceCert = New-SelfSignedCertificate `
+    -DnsName "$iotHubCertChainDeviceCommonName" `
+    -KeySpec Signature `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2) `
+    -Signer $intermediateCert2
+
+# Extra/removed/deleted <start>
+$iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
+# Extra/removed/deleted <end>
+Export-PFXCertificate -cert $iotHubChainDeviceCert -filePath $iotHubChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
+$iothubX509ChainDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubChainDevicPfxPath -AsByteStream));
+
+# Generate the certificates used by only DPS E2E tests.
+# Create the certificate chain from Root to Intermediate2. This chain will be combined with the cert signed by IntermediateCert2 to test group enrollment.
+# Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
+Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.contains("CN=$subjectPrefix") } | Export-Certificate -FilePath $groupCertChainPath -Type p7b | Out-Null
+$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -AsByteStream));
+
+# Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that are provisioned by a DPS group enrollment created a bit further down this script.
+# Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
 $groupDeviceCert = New-SelfSignedCertificate `
     -DnsName "$groupCertCommonName" `
     -KeySpec Signature `
@@ -263,8 +328,13 @@ $groupDeviceCert = New-SelfSignedCertificate `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
 
+$certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
+
 Export-PFXCertificate -cert $groupDeviceCert -filePath $groupPfxPath -password $certPassword | Out-Null
 $dpsGroupX509PfxCertificate = [Convert]::ToBase64String((Get-Content $groupPfxPath -AsByteStream));
+
+
+# Extra/removed/deleted
 
 # Certificate for enrollment of a device using individual enrollment.
 $individualDeviceCert = New-SelfSignedCertificate `
@@ -279,40 +349,6 @@ Export-Certificate -cert $individualDeviceCert -FilePath $individualDeviceCertPa
 Export-PFXCertificate -cert $individualDeviceCert -filePath $individualDevicePfxPath -password $certPassword | Out-Null
 $dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -AsByteStream));
 
-# IoT hub certificate for authentication. The tests are not setup to use a password for the certificate so create the certificate is created with no password.
-$iotHubCert = New-SelfSignedCertificate `
-    -DnsName "$iotHubCertCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2)
-
-# IoT hub certificate signed by intermediate certificate for authentication.
-$iotHubChainDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$iotHubCertChainDeviceCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2) `
-    -Signer $intermediateCert2
-
-$iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
-Export-PFXCertificate -cert $iotHubCert -filePath $iotHubPfxPath -password $iotHubCredentials.Password | Out-Null
-$iothubX509PfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubPfxPath -AsByteStream));
-
-$iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
-Export-PFXCertificate -cert $iotHubChainDeviceCert -filePath $iotHubChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
-$iothubX509ChainDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $iotHubChainDevicPfxPath -AsByteStream));
-
-Export-Certificate -cert $intermediateCert1 -FilePath $intermediateCert1CertPath -Type CERT | Out-Null
-$iothubX509Intermediate1Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert1CertPath -AsByteStream));
-
-Export-Certificate -cert $intermediateCert2 -FilePath $intermediateCert2CertPath -Type CERT | Out-Null
-$iothubX509Intermediate2Certificate = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream));
-
-$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $groupCertChainPath -AsByteStream));
 $dpsX509PfxCertificatePassword = $GroupCertificatePassword;
 
 ########################################################################################################
@@ -325,6 +361,8 @@ if ($InstallDependencies)
     Install-Module -Name Az -AllowClobber -Force
     Update-Module -Name Az
 }
+
+Check-AzureCliVersion
 
 ########################################################################################################
 # Install chocolatey and docker
@@ -358,7 +396,7 @@ if ($InstallDependencies)
 ######################################################################################################
 
 $azureContext = Connect-AzureSubscription
-$userObjectId = az ad signed-in-user show --query objectId --output tsv
+$userObjectId = az ad signed-in-user show --query id --output tsv
 
 ######################################################################################################
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
@@ -417,8 +455,10 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 # Get propreties to setup the config file for Environment variables
 #########################################################################################################
 
+# Extra/removed/deleted <start>
 $iotHubThumbprint = "CADB8E398FA9C7DD382E2ED092258BB3D916652C"
 $proxyServerAddress = "127.0.0.1:8888"
+# Extra/removed/deleted <end>
 
 Write-Host "`nGetting generated names and secrets from ARM template output."
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
@@ -446,7 +486,7 @@ if ($EnableIotHubSecuritySolution)
 }
 
 #################################################################################################################################################
-# Configure an AAD app to perform IoT hub data actions.
+# Configure an AAD app and assign it contributor role to perform IoT hub data actions.
 #################################################################################################################################################
 
 Write-Host "`nCreating app registration $iotHubAadTestAppRegName for IoT hub data actions"
@@ -459,7 +499,7 @@ $iotHubAadTestAppPassword = $iotHubAadTestAppInfo.password
 Write-Host "`nCreated application $iotHubAadTestAppRegName with Id $iotHubAadTestAppId."
 
 #################################################################################################################################################
-# Configure AAD app to perform DPS data actions.
+# Configure the above created AAD app to perform DPS data actions.
 #################################################################################################################################################
 
 Write-Host "`nGiving app registration $iotHubAadTestAppRegName data contributor permission on DPS instance $dpsName"
@@ -536,66 +576,6 @@ if (-not $iotHubCertChainDevice)
     Write-Host "`nCreating X509 CA certificate authenticated device $iotHubCertChainDeviceCommonName on IoT hub."
     az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubCertChainDeviceCommonName --am x509_ca
 }
-
-##################################################################################################################################
-# Create the IoT devices and modules that are used by the .NET samples
-##################################################################################################################################
-
-$iotHubSasBasedDeviceId = "DoNotDeleteDevice1"
-$iotHubSasBasedDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubSasBasedDeviceId'].deviceId" --output tsv
-
-if (-not $iotHubSasBasedDevice)
-{
-    Write-Host "`nCreating SAS-based device $iotHubSasBasedDeviceId on IoT hub."
-    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --ee
-}
-$iotHubSasBasedDeviceConnectionString = az iot hub device-identity connection-string show --device-id $iotHubSasBasedDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-$iotHubSasBasedModuleId = "DoNotDeleteModule1"
-$iotHubSasBasedModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --query "[?moduleId=='$iotHubSasBasedModuleId'].moduleId" --output tsv
-
-if (-not $iotHubSasBasedModule)
-{
-    Write-Host "`nCreating SAS based module $iotHubSasBasedModuleId under device $iotHubSasBasedDeviceId on IoT hub."
-    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId
-}
-$iotHubSasBasedModuleConnectionString = az iot hub module-identity connection-string show --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-$thermostatSampleDeviceId = "ThermostatSample_DoNotDelete"
-$thermostatSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$thermostatSampleDeviceId'].deviceId" --output tsv
-
-if (-not $thermostatSampleDevice)
-{
-    Write-Host "`nCreating SAS-based device $thermostatSampleDeviceId on IoT hub."
-    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $thermostatSampleDeviceId --ee
-}
-$thermostatSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $thermostatSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-$temperatureControllerSampleDeviceId = "TemperatureControllerSample_DoNotDelete"
-$temperatureControllerSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$temperatureControllerSampleDeviceId'].deviceId" --output tsv
-
-if (-not $temperatureControllerSampleDevice)
-{
-    Write-Host "`nCreating SAS-based device $temperatureControllerSampleDeviceId on IoT hub."
-    az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $temperatureControllerSampleDeviceId --ee
-}
-$temperatureControllerSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $temperatureControllerSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-##################################################################################################################################
-# Create the DPS enrollments that are used by the .NET samples
-##################################################################################################################################
-
-$symmetricKeySampleEnrollmentRegistrationId = "SymmetricKeySampleIndividualEnrollment"
-$symmetricKeyEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$symmetricKeySampleEnrollmentRegistrationId'].deviceId" --output tsv
-if ($symmetricKeyEnrollmentExists)
-{
-    Write-Host "`nDeleting existing individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
-    az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId
-}
-Write-Host "`nAdding individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
-az iot dps enrollment create -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --attestation-type symmetrickey --output none
-
-$symmetricKeySampleEnrollmentPrimaryKey = az iot dps enrollment show -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --show-keys --query 'attestation.symmetricKey.primaryKey' --output tsv
 
 ##################################################################################################################################
 # Uploading certificate to DPS, verifying, and creating enrollment groups
@@ -681,6 +661,72 @@ if ($EnableIotHubSecuritySolution)
     Remove-Item -r $selfSignedCerts
 }
 
+##################################################################################################################################
+# Create the IoT devices and modules that are used by the .NET samples
+##################################################################################################################################
+
+if ($GenerateResourcesForSamplesDevOpsPipeline)
+{
+    $iotHubSasBasedDeviceId = "DoNotDeleteDevice1"
+    $iotHubSasBasedDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubSasBasedDeviceId'].deviceId" --output tsv
+
+    if (-not $iotHubSasBasedDevice)
+    {
+        Write-Host "`nCreating SAS-based device $iotHubSasBasedDeviceId on IoT hub."
+        az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --ee
+    }
+    $iotHubSasBasedDeviceConnectionString = az iot hub device-identity connection-string show --device-id $iotHubSasBasedDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+    $iotHubSasBasedModuleId = "DoNotDeleteModule1"
+    $iotHubSasBasedModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --query "[?moduleId=='$iotHubSasBasedModuleId'].moduleId" --output tsv
+
+    if (-not $iotHubSasBasedModule)
+    {
+        Write-Host "`nCreating SAS based module $iotHubSasBasedModuleId under device $iotHubSasBasedDeviceId on IoT hub."
+        az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId
+    }
+    $iotHubSasBasedModuleConnectionString = az iot hub module-identity connection-string show --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+    $thermostatSampleDeviceId = "ThermostatSample_DoNotDelete"
+    $thermostatSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$thermostatSampleDeviceId'].deviceId" --output tsv
+
+    if (-not $thermostatSampleDevice)
+    {
+        Write-Host "`nCreating SAS-based device $thermostatSampleDeviceId on IoT hub."
+        az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $thermostatSampleDeviceId --ee
+    }
+    $thermostatSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $thermostatSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+
+    $temperatureControllerSampleDeviceId = "TemperatureControllerSample_DoNotDelete"
+    $temperatureControllerSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$temperatureControllerSampleDeviceId'].deviceId" --output tsv
+
+    if (-not $temperatureControllerSampleDevice)
+    {
+        Write-Host "`nCreating SAS-based device $temperatureControllerSampleDeviceId on IoT hub."
+        az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $temperatureControllerSampleDeviceId --ee
+    }
+    $temperatureControllerSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $temperatureControllerSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+}
+
+##################################################################################################################################
+# Create the DPS enrollments that are used by the .NET samples
+##################################################################################################################################
+
+if ($GenerateResourcesForSamplesDevOpsPipeline)
+{
+    $symmetricKeySampleEnrollmentRegistrationId = "SymmetricKeySampleIndividualEnrollment"
+    $symmetricKeyEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$symmetricKeySampleEnrollmentRegistrationId'].deviceId" --output tsv
+    if ($symmetricKeyEnrollmentExists)
+    {
+        Write-Host "`nDeleting existing individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
+        az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId
+    }
+    Write-Host "`nAdding individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
+    az iot dps enrollment create -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --attestation-type symmetrickey --output none
+
+    $symmetricKeySampleEnrollmentPrimaryKey = az iot dps enrollment show -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --show-keys --query 'attestation.symmetricKey.primaryKey' --output tsv
+}
+
 ###################################################################################################################################
 # Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables
 ###################################################################################################################################
@@ -692,57 +738,69 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
 }
 
 $keyvaultKvps = @{
+    # Environment variables for IoT Hub E2E tests
     "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;
-    "IOTHUB-PFX-X509-THUMBPRINT" = $iotHubThumbprint;
-    "IOTHUB-PROXY-SERVER-ADDRESS" = $proxyServerAddress;
-    "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
-    "DPS-IDSCOPE" = $dpsIdScope;
-    "PROVISIONING-CONNECTION-STRING" = $dpsConnectionString;
-    "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
-    "DPS-GLOBALDEVICEENDPOINT" = $dpsEndpoint;
-    "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $dpsX509PfxCertificatePassword;
     "IOTHUB-X509-PFX-CERTIFICATE" = $iothubX509PfxCertificate;
-    "DPS-INDIVIDUALX509-PFX-CERTIFICATE" = $dpsIndividualX509PfxCertificate;
-    "DPS-GROUPX509-PFX-CERTIFICATE" = $dpsGroupX509PfxCertificate;
-    "DPS-GROUPX509-CERTIFICATE-CHAIN" = $dpsGroupX509CertificateChain;
-    "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
-    "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-    "IOTHUB-CLIENT-ID" = $iotHubAadTestAppId;
-    "IOTHUB-CLIENT-SECRET" = $iotHubAadTestAppPassword;
-    "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" = "invalidcertgde1.westus.cloudapp.azure.com";
-    "PIPELINE-ENVIRONMENT" = "prod";
+    "IOTHUB-X509-CHAIN-DEVICE-NAME" = $iotHubCertChainDeviceCommonName;
     "HUB-CHAIN-DEVICE-PFX-CERTIFICATE" = $iothubX509ChainDevicePfxCertificate;
     "HUB-CHAIN-ROOT-CA-CERTIFICATE" = $iothubX509RootCACertificate;
     "HUB-CHAIN-INTERMEDIATE1-CERTIFICATE" = $iothubX509Intermediate1Certificate;
     "HUB-CHAIN-INTERMEDIATE2-CERTIFICATE" = $iothubX509Intermediate2Certificate;
-    "IOTHUB-X509-CHAIN-DEVICE-NAME" = $iotHubCertChainDeviceCommonName;
     "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" = $msiResourceId;
+
+    # Environment variables for DPS E2E tests
+    "DPS-IDSCOPE" = $dpsIdScope;
+    "PROVISIONING-CONNECTION-STRING" = $dpsConnectionString;
+    "DPS-GLOBALDEVICEENDPOINT" = $dpsEndpoint;
+    "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
+    "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
+    "DPS-GROUPX509-PFX-CERTIFICATE" = $dpsGroupX509PfxCertificate;
+    "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $dpsX509PfxCertificatePassword;
+    "DPS-GROUPX509-CERTIFICATE-CHAIN" = $dpsGroupX509CertificateChain;
+
+    # Environment variables for Azure resources used for E2E tests (common)
+    "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
+    "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
+    "IOTHUB-CLIENT-ID" = $iotHubAadTestAppId;
+    "IOTHUB-CLIENT-SECRET" = $iotHubAadTestAppPassword;
     "E2E-IKEY" = $instrumentationKey;
 
+    # Environment variables for the DevOps pipeline
+    "PIPELINE-ENVIRONMENT" = "prod";
+
+    # Environment variables for invalid certificate tests
+    # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "IOTHUB-DEVICE-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=";
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "IOTHUB-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U=";
+    "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" = "invalidcertgde1.westus.cloudapp.azure.com";
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "PROVISIONING-CONNECTION-STRING-INVALIDCERT" = "HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=";
 
+    # Extra/removed/deleted
+    "IOTHUB-PROXY-SERVER-ADDRESS" = $proxyServerAddress;
+    "IOTHUB-PFX-X509-THUMBPRINT" = $iotHubThumbprint;
+    "DPS-INDIVIDUALX509-PFX-CERTIFICATE" = $dpsIndividualX509PfxCertificate;
+
     # These environment variables are only used in Java
- 
     "IOT-DPS-CONNECTION-STRING" = $dpsConnectionString; # DPS Connection string Environment variable for Java
     "IOT-DPS-ID-SCOPE" = $dpsIdScope; # DPS ID Scope Environment variable for Java
     "FAR-AWAY-IOTHUB-CONNECTION-STRING" = $farHubConnectionString;
     "IS-BASIC-TIER-HUB" = "false";
+}
 
-    # These environment variables are used by .NET samples
-
-    "IOTHUB-DEVICE-CONN-STRING" = $iotHubSasBasedDeviceConnectionString;
-    "IOTHUB-MODULE-CONN-STRING" = $iotHubSasBasedModuleConnectionString;
-    "PNP-TC-DEVICE-CONN-STRING" = $temperatureControllerSampleDeviceConnectionString;
-    "PNP-THERMOSTAT-DEVICE-CONN-STRING" = $thermostatSampleDeviceConnectionString;
-    "IOTHUB-SAS-KEY" = $iothubownerSasPrimaryKey;
-    "IOTHUB-SAS-KEY-NAME" = $iothubownerSasPolicy;
-    "DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID" = $symmetricKeySampleEnrollmentRegistrationId;
-    "DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY" = $symmetricKeySampleEnrollmentPrimaryKey;
+# Environment variables used by .NET samples
+if ($GenerateResourcesForSamplesDevOpsPipeline)
+{
+    $keyvaultKvps.Add("IOTHUB-DEVICE-CONN-STRING", $iotHubSasBasedDeviceConnectionString)
+    $keyvaultKvps.Add("IOTHUB-MODULE-CONN-STRING", $iotHubSasBasedModuleConnectionString)
+    $keyvaultKvps.Add("PNP-TC-DEVICE-CONN-STRING", $temperatureControllerSampleDeviceConnectionString)
+    $keyvaultKvps.Add("PNP-THERMOSTAT-DEVICE-CONN-STRING", $thermostatSampleDeviceConnectionString)
+    $keyvaultKvps.Add("IOTHUB-SAS-KEY", $iothubownerSasPrimaryKey)
+    $keyvaultKvps.Add("IOTHUB-SAS-KEY-NAME", $iothubownerSasPolicy)
+    $keyvaultKvps.Add("DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID", $symmetricKeySampleEnrollmentRegistrationId)
+    $keyvaultKvps.Add("DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY", $symmetricKeySampleEnrollmentPrimaryKey)
 }
 
 if ($EnableIotHubSecuritySolution)
@@ -753,7 +811,7 @@ if ($EnableIotHubSecuritySolution)
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
-az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$userObjectId" --output none --show-only-errors --secret-permissions delete get list set;
+az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$userObjectId" --output none --only-show-errors --secret-permissions delete get list set;
 foreach ($kvp in $keyvaultKvps.GetEnumerator())
 {
     Write-Host "`tWriting $($kvp.Name)."
