@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// This field is present on every digital twin.
         /// </remarks>
         [JsonProperty("$metadata")]
-        public DigitalTwinMetadata Metadata { get; set; } = new DigitalTwinMetadata();
+        public DigitalTwinMetadata Metadata { get; private set; } = new DigitalTwinMetadata();
 
         /// <summary>
         /// Additional properties of the digital twin.
@@ -36,6 +36,6 @@ namespace Microsoft.Azure.Devices.Serialization
         /// This field will contain any properties of the digital twin that are not already defined by the other strong types of this class.
         /// </remarks>
         [JsonExtensionData]
-        public IDictionary<string, object> CustomProperties { get; } = new Dictionary<string, object>();
+        public IDictionary<string, object> CustomProperties { get; private set; } = new Dictionary<string, object>();
     }
 }
