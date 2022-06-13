@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
         /// </summary>
         [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public IList<string> IotHubs { get; set; } = new List<string>();
+        public IList<string> IotHubs { get; private set; } = new List<string>();
 
         /// <summary>
         /// Convert this object in a pretty print format.
@@ -303,6 +303,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
+
+        /// <summary>
+        /// For use in serialization.
+        /// </summary>
+        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
+        public bool ShouldSerializeIotHubs()
+        {
+            return IotHubs.Any();
         }
     }
 }
