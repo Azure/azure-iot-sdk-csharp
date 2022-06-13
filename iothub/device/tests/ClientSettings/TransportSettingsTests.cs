@@ -115,16 +115,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_UnderOpenTimeoutMin()
-        {
-            _ = new AmqpTransportSettings(TransportType.Amqp, 200, new AmqpConnectionPoolSettings())
-            {
-                OpenTimeout = TimeSpan.Zero,
-            };
-        }
-
-        [TestMethod]
         public void AmqpTransportSettings_TimeoutPropertiesSet()
         {
             // arrange
@@ -134,12 +124,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200, new AmqpConnectionPoolSettings())
             {
-                OpenTimeout = fiveMinutes,
                 OperationTimeout = tenMinutes,
             };
 
             // assert
-            Assert.AreEqual(fiveMinutes, transportSetting.OpenTimeout, "Should match initialized value");
             Assert.AreEqual(tenMinutes, transportSetting.OperationTimeout, "Should match initialized value");
         }
 
@@ -150,7 +138,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200);
 
             // assert
-            Assert.AreEqual(AmqpTransportSettings.DefaultOpenTimeout, transportSetting.OpenTimeout, "Default OpenTimeout not set correctly");
             Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.OperationTimeout, "Default OperationTimeout not set correctly");
             Assert.AreEqual(AmqpTransportSettings.DefaultIdleTimeout, transportSetting.IdleTimeout, "Default IdleTimeout not set correctly");
             Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.DefaultReceiveTimeout, "Default DefaultReceiveTimeout not set correctly");
@@ -169,13 +156,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200)
             {
-                OpenTimeout = openTimeout,
                 OperationTimeout = operationTimeout,
                 IdleTimeout = idleTimeout,
             };
 
             // assert
-            Assert.AreEqual(openTimeout, transportSetting.OpenTimeout, "OpenTimeout not set correctly");
             Assert.AreEqual(operationTimeout, transportSetting.OperationTimeout, "OperationTimeout not set correctly");
             Assert.AreEqual(idleTimeout, transportSetting.IdleTimeout, "IdleTimeout not set correctly");
         }
@@ -224,31 +209,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             var amqpTransportSettings1 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
             {
                 PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(1),
                 OperationTimeout = TimeSpan.FromMinutes(1),
             };
             var amqpTransportSettings2 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
             {
                 PrefetchCount = 70,
-                OpenTimeout = TimeSpan.FromMinutes(1),
-                OperationTimeout = TimeSpan.FromMinutes(1),
-            };
-            var amqpTransportSettings4 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(1),
-                OperationTimeout = TimeSpan.FromMinutes(2),
-            };
-            var amqpTransportSettings5 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(1),
                 OperationTimeout = TimeSpan.FromMinutes(1),
             };
             var amqpTransportSettings3 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
             {
                 PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(2),
+                OperationTimeout = TimeSpan.FromMinutes(2),
+            };
+            var amqpTransportSettings4 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
+            {
+                PrefetchCount = 100,
                 OperationTimeout = TimeSpan.FromMinutes(1),
             };
 
@@ -258,8 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.IsFalse(amqpTransportSettings1.Equals(new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)));
             Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings2));
             Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings3));
-            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings4));
-            Assert.IsTrue(amqpTransportSettings1.Equals(amqpTransportSettings5));
+            Assert.IsTrue(amqpTransportSettings1.Equals(amqpTransportSettings4));
         }
 
         [TestMethod]
