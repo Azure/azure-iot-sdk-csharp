@@ -151,7 +151,7 @@ if (-not $isAdmin)
 
 $Region = $Region.Replace(' ', '')
 $logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
-$iotHubAadTestAppRegName = "$ResourceGroup-IotHubAadApp"
+$e2eTestAadAppRegName = "$ResourceGroup-E2eTestAadApp"
 $dpsUploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
@@ -215,13 +215,13 @@ $intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
 $verificationCertPath = "$PSScriptRoot/verification.cer";
 
 $iotHubX509DeviceCertCommonName = "iothubx509device1";
-$iotHubX509DevicePfxPath = "$PSScriptRoot/IotHub.pfx";
+$iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "iothubx509chaindevice1";
-$iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubChainDevice.pfx";
+$iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 
 $dpsX509GroupEnrollmentDeviceCertCommonName = "xdevice1";
-$dpsX509GroupEnrollmentDevicePfxPath = "$PSScriptRoot/Group.pfx";
-$dpsGroupX509CertChainPath = "$PSScriptRoot/GroupCertChain.p7b";
+$dpsX509GroupEnrollmentDevicePfxPath = "$PSScriptRoot/DpsGroupEnrollmentDevice.pfx";
+$dpsGroupX509CertChainPath = "$PSScriptRoot/DpsGroupCertChain.p7b";
 
 # Extra/removed/deleted
 $deviceCertCommonName = "iothubx509device1";
@@ -491,23 +491,23 @@ if ($EnableIotHubSecuritySolution)
 # Configure an AAD app and assign it contributor role to perform IoT hub data actions.
 #################################################################################################################################################
 
-Write-Host "`nCreating app registration $iotHubAadTestAppRegName for IoT hub data actions"
+Write-Host "`nCreating app registration $e2eTestAadAppRegName for IoT hub data actions"
 $iotHubDataContributorRoleId = "4fc6c259987e4a07842ec321cc9d413f"
 $iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/IotHubs/$iotHubName"
-$iotHubAadTestAppInfo = az ad sp create-for-rbac -n $iotHubAadTestAppRegName --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
+$e2eTestAadAppInfo = az ad sp create-for-rbac -n $e2eTestAadAppRegName --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
 
-$iotHubAadTestAppId = $iotHubAadTestAppInfo.appId
-$iotHubAadTestAppPassword = $iotHubAadTestAppInfo.password
-Write-Host "`nCreated application $iotHubAadTestAppRegName with Id $iotHubAadTestAppId."
+$e2eTestAadAppId = $e2eTestAadAppInfo.appId
+$e2eTestAadAppPassword = $e2eTestAadAppInfo.password
+Write-Host "`nCreated application $e2eTestAadAppRegName with Id $e2eTestAadAppId."
 
 #################################################################################################################################################
 # Configure the above created AAD app to perform DPS data actions.
 #################################################################################################################################################
 
-Write-Host "`nGiving app registration $iotHubAadTestAppRegName data contributor permission on DPS instance $dpsName"
+Write-Host "`nGiving app registration $e2eTestAadAppRegName data contributor permission on DPS instance $dpsName"
 $dpsContributorId = "dfce44e4-17b7-4bd1-a6d1-04996ec95633"
 $dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/ProvisioningServices/$dpsName"
-az role assignment create --role $dpsContributorId --assignee $iotHubAadTestAppId --scope $dpsScope
+az role assignment create --role $dpsContributorId --assignee $e2eTestAadAppId --scope $dpsScope
 
 #################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
@@ -763,8 +763,8 @@ $keyvaultKvps = @{
     "X509-CHAIN-INTERMEDIATE2-CERTIFICATE" = $x509ChainIntermediate2CertBase64;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
     "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-    "IOTHUB-CLIENT-ID" = $iotHubAadTestAppId;
-    "IOTHUB-CLIENT-SECRET" = $iotHubAadTestAppPassword;
+    "E2E-TEST-AAD-APP-CLIENT-ID" = $e2eTestAadAppId;
+    "E2E-TEST-AAD-APP-CLIENT-SECRET" = $e2eTestAadAppPassword;
     "E2E-IKEY" = $instrumentationKey;
 
     # Environment variables for the DevOps pipeline
