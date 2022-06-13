@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 => GetBase64EncodedCertificate("DPS_INDIVIDUALX509_PFX_CERTIFICATE", CertificatePassword);
 
             public static X509Certificate2 GetGroupEnrollmentCertificate()
-                => GetBase64EncodedCertificate("DPS_GROUPX509_PFX_CERTIFICATE", CertificatePassword);
+                => GetBase64EncodedCertificate("DPS_X509_GROUP_ENROLLMENT_DEVICE_PFX_CERTIFICATE", CertificatePassword);
 
             public static X509Certificate2Collection GetGroupEnrollmentChain()
                 => GetBase64EncodedCertificateCollection("DPS_GROUPX509_CERTIFICATE_CHAIN");
