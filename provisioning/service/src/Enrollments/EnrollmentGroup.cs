@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-                else if (!(value is X509Attestation) && !(value is SymmetricKeyAttestation))
+                else if (value is not X509Attestation && value is not SymmetricKeyAttestation)
                 {
                     throw new ArgumentException("Attestation for enrollmentGroup shall be X509 or symmetric key");
                 }
