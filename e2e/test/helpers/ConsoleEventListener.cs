@@ -19,7 +19,7 @@ namespace System.Diagnostics.Tracing
         // Link to EventListener sourcecode: https://github.com/dotnet/runtime/blob/6696065ab0f517f5a9e5f55c559df0010a816dbe/src/libraries/System.Private.CoreLib/src/System/Diagnostics/Tracing/EventSource.cs#L4009-L4018
         private static readonly string[] s_eventFilter = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices", "Azure-Core", "Azure-Identity" };
 
-        private readonly object _lock = new object();
+        private readonly object _consoleLock = new();
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
@@ -28,25 +28,25 @@ namespace System.Diagnostics.Tracing
                 base.OnEventSourceCreated(eventSource);
                 EnableEvents(
                     eventSource,
-                    EventLevel.LogAlways
-                , EventKeywords.All
+                    EventLevel.LogAlways,
+                    EventKeywords.All
                 );
             }
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            lock (_lock)
+            string eventIdent;
+
+            eventIdent = eventData.EventName;
+            string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)} [{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+            Debug.WriteLine(text);
+
+            lock (_consoleLock)
             {
-                string eventIdent;
-
-                eventIdent = eventData.EventName;
-                string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)} [{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
-
                 ConsoleColor origForeground = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine(text);
-                Debug.WriteLine(text);
                 Console.ForegroundColor = origForeground;
             }
         }
