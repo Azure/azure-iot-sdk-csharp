@@ -143,10 +143,6 @@ jobs:
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
-          # Extra/removed/deleted
-          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-
       - task: CopyFiles@2
         displayName: 'Copy files to the artifacts folder'
         inputs:
@@ -294,10 +290,6 @@ jobs:
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-
-          # Extra/removed/deleted
-          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
 
       - task: CopyFiles@2
         displayName: 'Copy TRX files to the artifacts folder'

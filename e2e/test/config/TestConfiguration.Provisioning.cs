@@ -20,8 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string IdScope => GetValue("DPS_IDSCOPE");
 
             // To generate use Powershell: [System.Convert]::ToBase64String( (Get-Content .\certificate.pfx -Encoding Byte) )
-            public static X509Certificate2 GetIndividualEnrollmentCertificate()
-                => GetBase64EncodedCertificate("DPS_INDIVIDUALX509_PFX_CERTIFICATE", CertificatePassword);
 
             public static X509Certificate2 GetGroupEnrollmentCertificate()
                 => GetBase64EncodedCertificate("DPS_X509_GROUP_ENROLLMENT_DEVICE_PFX_CERTIFICATE", CertificatePassword);

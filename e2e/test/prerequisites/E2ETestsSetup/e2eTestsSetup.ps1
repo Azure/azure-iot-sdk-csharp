@@ -107,7 +107,6 @@ Function CleanUp-Certs()
     Write-Host "`nCleaning up old certs and files that may cause conflicts."
     $certsToDelete1 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
     $certsToDelete2 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$dpsX509GroupEnrollmentDeviceCertCommonName") }
-    $certsToDelete3 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$deviceCertCommonName") }
 
     $certsToDelete = $certsToDelete1 + $certsToDelete2 + $certsToDelete3
     
@@ -223,11 +222,6 @@ $dpsX509GroupEnrollmentDeviceCertCommonName = "xdevice1";
 $dpsX509GroupEnrollmentDevicePfxPath = "$PSScriptRoot/DpsGroupEnrollmentDevice.pfx";
 $dpsGroupX509CertChainPath = "$PSScriptRoot/DpsGroupCertChain.p7b";
 
-# Extra/removed/deleted
-$deviceCertCommonName = "iothubx509device1";
-$individualDeviceCertPath = "$PSScriptRoot/Device.cer";
-$individualDevicePfxPath = "$PSScriptRoot/Device.pfx";
-
 ############################################################################################################################
 # Cleanup old certs and files that can cause a conflict
 ############################################################################################################################
@@ -334,24 +328,6 @@ $certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -F
 
 Export-PFXCertificate -cert $dpsX509GroupEnrollmentDeviceCert -filePath $dpsX509GroupEnrollmentDevicePfxPath -password $certPassword | Out-Null
 $dpsX509GroupEnrollmentDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $dpsX509GroupEnrollmentDevicePfxPath -AsByteStream));
-
-
-# Extra/removed/deleted
-
-# Certificate for enrollment of a device using individual enrollment.
-$individualDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$deviceCertCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2)
-
-Export-Certificate -cert $individualDeviceCert -FilePath $individualDeviceCertPath -Type CERT | Out-Null
-Export-PFXCertificate -cert $individualDeviceCert -filePath $individualDevicePfxPath -password $certPassword | Out-Null
-$dpsIndividualX509PfxCertificate = [Convert]::ToBase64String((Get-Content $individualDevicePfxPath -AsByteStream));
-
-$dpsX509PfxCertificatePassword = $GroupCertificatePassword;
 
 ########################################################################################################
 # Install latest version of az cli
@@ -624,24 +600,6 @@ if ($groupEnrollmentExists)
 Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
 
-$individualEnrollmentId = "iothubx509device1"
-$individualDeviceId = "provisionedx509device1"
-$individualEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$individualDeviceId'].deviceId" --output tsv
-if ($individualEnrollmentExists)
-{
-    Write-Host "`nDeleting existing individual enrollment $individualEnrollmentId for device $individualDeviceId."
-    az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $individualEnrollmentId
-}
-Write-Host "`nAdding individual enrollment $individualEnrollmentId for device $individualDeviceId."
-az iot dps enrollment create `
-    -g $ResourceGroup `
-    --dps-name $dpsName `
-    --enrollment-id $individualEnrollmentId `
-    --device-id $individualDeviceId `
-    --attestation-type x509 `
-    --certificate-path $individualDeviceCertPath `
-    --output none
-
 if ($EnableIotHubSecuritySolution)
 {
     Write-Host "`nCreating a self-signed certificate for LA and placing it in $ResourceGroup."
@@ -754,7 +712,7 @@ $keyvaultKvps = @{
     "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
     "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
     "DPS-X509-GROUP-ENROLLMENT-DEVICE-PFX-CERTIFICATE" = $dpsX509GroupEnrollmentDevicePfxCertificate;
-    "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $dpsX509PfxCertificatePassword;
+    "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
     "DPS-GROUPX509-CERTIFICATE-CHAIN" = $dpsGroupX509CertificateChain;
 
     # Environment variables for Azure resources used for E2E tests (common)
@@ -779,11 +737,6 @@ $keyvaultKvps = @{
     "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" = "invalidcertgde1.westus.cloudapp.azure.com";
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
     "PROVISIONING-CONNECTION-STRING-INVALIDCERT" = "HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=";
-
-    # Extra/removed/deleted
-    "IOTHUB-PROXY-SERVER-ADDRESS" = $proxyServerAddress;
-    "IOTHUB-PFX-X509-THUMBPRINT" = $iotHubThumbprint;
-    "DPS-INDIVIDUALX509-PFX-CERTIFICATE" = $dpsIndividualX509PfxCertificate;
 
     # These environment variables are only used in Java
     "IOT-DPS-CONNECTION-STRING" = $dpsConnectionString; # DPS Connection string Environment variable for Java
