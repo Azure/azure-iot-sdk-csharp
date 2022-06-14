@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
-                true);
+                false);
         }
 
         public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
-                true,
+                false,
                 cancellationToken);
         }
 
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
-                true);
+                false);
         }
 
         public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
-                true,
+                false,
                 cancellationToken);
         }
 
