@@ -750,6 +750,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
     $keyvaultKvps.Add("DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY", $symmetricKeySampleEnrollmentPrimaryKey)
 }
 
+# Environment variables used by Log Analytics Workspace for Azure Security Center
 if ($EnableIotHubSecuritySolution)
 {
     $keyvaultKvps.Add("LA-WORKSPACE-ID", $workspaceId)
