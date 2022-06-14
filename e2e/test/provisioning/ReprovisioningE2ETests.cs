@@ -717,12 +717,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
         {
-            return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.crt");
+            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.crt"));
         }
 
         private X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
         {
-            return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.pfx", TestConfiguration.Provisioning.CertificatePassword);
+            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.pfx"), TestConfiguration.Provisioning.CertificatePassword);
         }
 
         [ClassCleanup]
