@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Gets or sets the X.509 certificate associated with this device.
-        /// The private key should be available in the <see cref="X509Certificate2"/> object, or should be loaded into
-        /// the system where the <see cref="DeviceClient"/> will be used. />
+        /// The private key should be available in the <see cref="X509Certificate2"/> object,
+        /// or should be available in the certificate store of the system where the client will be authenticated from.
         /// </summary>
         public X509Certificate2 Certificate { get; set; }
 

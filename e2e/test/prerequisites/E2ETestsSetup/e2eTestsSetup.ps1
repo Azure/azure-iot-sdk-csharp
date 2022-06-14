@@ -211,6 +211,7 @@ $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
 $rootCertPath = "$PSScriptRoot/Root.cer";
 $intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer";
 $intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
+$intermediateCert2PfxPath = "$PSScriptRoot/intermediateCert2.pfx"
 $verificationCertPath = "$PSScriptRoot/verification.cer";
 
 $iotHubX509DeviceCertCommonName = "iothubx509device1";
@@ -273,6 +274,12 @@ $x509ChainIntermediate1CertBase64 = [Convert]::ToBase64String((Get-Content $inte
 Export-Certificate -cert $intermediateCert2 -FilePath $intermediateCert2CertPath -Type CERT | Out-Null
 $x509ChainIntermediate2CertBase64 = [Convert]::ToBase64String((Get-Content $intermediateCert2CertPath -AsByteStream));
 
+$certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
+
+# Export the intermediate2 certificate as a pfx file. This certificate will be used to sign and generate the device certificates that are used in DPS group enrollment E2E tests.
+Export-PFXCertificate -cert $intermediateCert2 -filePath $intermediateCert2PfxPath -password $certPassword | Out-Null
+$x509ChainIntermediate2PfxBase64 = [Convert]::ToBase64String((Get-Content $intermediateCert2PfxPath -AsByteStream));
+
 # Generate the certificates used by only IoT Hub E2E tests.
 
 # Generate an X509 self-signed certificate. This certificate will be used by test device identities that test X509 self-signed certificate device authentication.
@@ -320,8 +327,6 @@ $dpsX509GroupEnrollmentDeviceCert = New-SelfSignedCertificate `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
-
-$certPassword = ConvertTo-SecureString $GroupCertificatePassword -AsPlainText -Force
 
 Export-PFXCertificate -cert $dpsX509GroupEnrollmentDeviceCert -filePath $dpsX509GroupEnrollmentDevicePfxPath -password $certPassword | Out-Null
 $dpsX509GroupEnrollmentDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $dpsX509GroupEnrollmentDevicePfxPath -AsByteStream));
@@ -715,6 +720,7 @@ $keyvaultKvps = @{
     "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;
     "X509-CHAIN-INTERMEDIATE1-CERTIFICATE" = $x509ChainIntermediate1CertBase64;
     "X509-CHAIN-INTERMEDIATE2-CERTIFICATE" = $x509ChainIntermediate2CertBase64;
+    "X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE" = $x509ChainIntermediate2PfxBase64;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
     "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
     "E2E-TEST-AAD-APP-CLIENT-ID" = $e2eTestAadAppId;

@@ -20,15 +20,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("InvalidServiceCertificate")]
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
-        private static DirectoryInfo s_dpsClientCertificateFolder;
-        private static DirectoryInfo s_selfSignedCertificatesFolder;
+        private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
+
+        private static DirectoryInfo s_x509CertificatesFolder;
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            s_dpsClientCertificateFolder = Directory.CreateDirectory("DpsClientCertificates");
-            s_selfSignedCertificatesFolder = s_dpsClientCertificateFolder.CreateSubdirectory("SelfSignedCertificates");
+            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningCertificateValidationE2ETest)}-{Guid.NewGuid()}");
         }
 
         [LoggedTestMethod]
@@ -113,9 +113,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
             string certificateSubject = $"E2E_{nameof(ProvisioningCertificateValidationE2ETest)}-{Guid.NewGuid()}";
-            X509Certificate2Generator.GenerateSelfSignedCertificates(certificateSubject, s_selfSignedCertificatesFolder, Logger);
+            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_certificatePassword, s_x509CertificatesFolder, Logger);
 
-            using X509Certificate2 cert = CreateX509CertificateWithPublicPrivateKey(certificateSubject);
+            using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_certificatePassword, s_x509CertificatesFolder);
             using var security = new SecurityProviderX509Certificate(cert);
             var provisioningDeviceClient = ProvisioningDeviceClient.Create(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
@@ -126,18 +126,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await provisioningDeviceClient.RegisterAsync().ConfigureAwait(false);
         }
 
-        private X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
-        {
-            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.pfx"));
-        }
-
         [ClassCleanup]
         public static void CleanupCertificates()
         {
             // Delete all the test client certificates created
             try
             {
-                s_dpsClientCertificateFolder.Delete(true);
+                s_x509CertificatesFolder.Delete(true);
             }
             catch (Exception)
             {
