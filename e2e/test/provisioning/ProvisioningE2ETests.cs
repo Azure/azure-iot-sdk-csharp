@@ -384,51 +384,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         #endregion CustomAllocationDefinition tests
 
         [LoggedTestMethod]
-        public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_TimeSpanTimeoutRespected()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return; // expected exception was thrown, so exit the test
-            }
-
-            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
-        }
-
-        [LoggedTestMethod]
-        public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_TimeSpanTimeoutRespected()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return; // expected exception was thrown, so exit the test
-            }
-
-            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
-        }
-
-        [LoggedTestMethod]
-        public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_TimeSpanTimeoutRespected()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return; // expected exception was thrown, so exit the test
-            }
-
-            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
-        }
-
-        [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Http_Tpm_InvalidRegistrationId_RegisterFail()
         {
@@ -582,16 +537,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Client.TransportType transportType,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
-            TimeSpan timeout)
-        {
-            //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, false, null, AllocationPolicy.Hashed, null, null, null, timeout, s_proxyServerAddress).ConfigureAwait(false);
-        }
-
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            Client.TransportType transportType,
-            AttestationMechanismType attestationType,
-            EnrollmentType? enrollmentType,
             bool setCustomProxy,
             string proxyServerAddress = null)
         {
@@ -606,7 +551,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null,
                     null,
                     null,
-                    TimeSpan.MaxValue,
                     proxyServerAddress)
                 .ConfigureAwait(false);
         }
@@ -631,7 +575,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null,
                     iothubs,
                     capabilities,
-                    TimeSpan.MaxValue,
                     proxyServerAddress)
                 .ConfigureAwait(false);
         }
@@ -646,7 +589,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iothubs,
             Devices.Provisioning.Service.DeviceCapabilities deviceCapabilities,
-            TimeSpan timeout,
             string proxyServerAddress = null)
         {
             string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
@@ -691,9 +633,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     try
                     {
-                        result = timeout != TimeSpan.MaxValue
-                            ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
-                            : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                        result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                         break;
                     }
                     // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
