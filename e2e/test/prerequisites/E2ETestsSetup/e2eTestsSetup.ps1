@@ -689,6 +689,10 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
     $dpsEndpoint = "global-canary.azure-devices-provisioning.net"
 }
 
+# This variable will be overwritten in the yaml file depending on the OS setup of the test environment.
+# This variable is set here to help run local E2E tests using docker-based proxy setup.
+$proxyServerAddress = "127.0.0.1:8888"
+
 $keyvaultKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;
@@ -719,10 +723,7 @@ $keyvaultKvps = @{
 
     # Environment variables for the DevOps pipeline
     "PIPELINE-ENVIRONMENT" = "prod";
-
-    # This variable will be overwritten in the yaml file depending on the OS of the test environment.
-    # This variable is set here to help run local E2E tests using docker-based proxy setup.
-    "PROXY_SERVER_ADDRESS" = "127.0.0.1:8888";
+    "PROXY-SERVER-ADDRESS" = $proxyServerAddress;
 
     # Environment variables for invalid certificate tests
     # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
@@ -789,6 +790,14 @@ if (-not (docker images -q aziotbld/testproxy))
     Write-Host "Setting up docker container for proxy."
     docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
 }
+
+############################################################################################################################
+# Notify user that openssl is required for running E2E tests
+# openssl is currently unavailable as an official release via Chocolatey, so it is advised to perform a manual install from a secured source.
+############################################################################################################################
+
+Write-Host "Ensure that openssl is available on your system and is set to PATH variable."
+Write-Host "If you have Git installed, openssl can be found at `"<Git_install_directory>\Git\usr\bin\openssl.exe`""
 
 ############################################################################################################################
 # Clean up certs and files created by the script
