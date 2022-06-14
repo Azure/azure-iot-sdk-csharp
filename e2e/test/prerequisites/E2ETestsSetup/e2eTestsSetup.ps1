@@ -108,7 +108,7 @@ Function CleanUp-Certs()
     $certsToDelete1 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
     $certsToDelete2 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$dpsX509GroupEnrollmentDeviceCertCommonName") }
 
-    $certsToDelete = $certsToDelete1 + $certsToDelete2 + $certsToDelete3
+    $certsToDelete = $certsToDelete1 + $certsToDelete2
     
     $title = "Cleaning up certs."
     $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject}
