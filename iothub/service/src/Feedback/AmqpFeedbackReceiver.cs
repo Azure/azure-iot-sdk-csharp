@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
-                false);
+                false); // Feedback messages are sent by the service one at a time, so batching the acks is pointless
         }
 
         public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
-                false,
+                false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
-                false);
+                false); // Feedback messages are sent by the service one at a time, so batching the acks is pointless
         }
 
         public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
-                false,
+                false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
