@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
 
-            public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
+            public static string ProxyServerAddress => GetValue("PROXY_SERVER_ADDRESS");
 
             /// <summary>
             /// A proxy server that should not exist (on local host)
