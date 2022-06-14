@@ -725,6 +725,10 @@ $keyvaultKvps = @{
     "PIPELINE-ENVIRONMENT" = "prod";
     "PROXY-SERVER-ADDRESS" = $proxyServerAddress;
 
+    # This variable will be overwritten in the yaml file depending on the OS of the test environment.
+    # This variable is set here to help run local E2E tests using docker-based proxy setup.
+    "PROXY_SERVER_ADDRESS"" = "127.0.0.1:8888";
+
     # Environment variables for invalid certificate tests
     # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
