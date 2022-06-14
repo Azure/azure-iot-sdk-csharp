@@ -300,9 +300,6 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
     -NotAfter (Get-Date).AddYears(2) `
     -Signer $intermediateCert2
 
-# Extra/removed/deleted <start>
-$iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
-# Extra/removed/deleted <end>
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
 
@@ -432,11 +429,6 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 #########################################################################################################
 # Get propreties to setup the config file for Environment variables
 #########################################################################################################
-
-# Extra/removed/deleted <start>
-$iotHubThumbprint = "CADB8E398FA9C7DD382E2ED092258BB3D916652C"
-$proxyServerAddress = "127.0.0.1:8888"
-# Extra/removed/deleted <end>
 
 Write-Host "`nGetting generated names and secrets from ARM template output."
 $iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
