@@ -22,13 +22,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         private const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
-        public async Task MqttTransportHandler()
+        public async Task MqttTransportHandler_OpenAsyncCallsConnectAsync()
         {
             CancellationToken cancellationToken = new CancellationToken();
             var options = new MqttClientOptions();
 
             var mockMqttClient = new Mock<IMqttClient>();
-            //mockMqttClient.Setup(p => p.ConnectAsync(It.IsAny<MqttClientOptions>(), cancellationToken));
 
             var mqttTransportHandler = createTransportHandler(mockMqttClient.Object);
 
@@ -48,7 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 
             // make the mqtt client used by the handler mocked so no network calls are actually made
             transportHandler.mqttClient = mockMqttClient;
-            //transportHandler.mqttClientOptions = options;
 
             return transportHandler;
         }

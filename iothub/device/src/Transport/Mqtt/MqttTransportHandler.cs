@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             receiveEdgeModuleInputEventsTopic = string.Format(CultureInfo.InvariantCulture, ReceiveEdgeModuleInputEventsTopic, deviceId, moduleId);
             receiveEdgeModuleInputEventsTopicPrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEdgeModuleInputEventsTopicPrefix, deviceId, moduleId);
 
-            var mqttFactory = new MqttFactory();
+            var mqttFactory = new MqttFactory(new MqttLogger());
 
             mqttClient = mqttFactory.CreateMqttClient();
             mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
