@@ -426,12 +426,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
-                            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(registrationId, s_certificatePassword, s_x509CertificatesFolder, Logger);
+                            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(registrationId, s_x509CertificatesFolder, Logger);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
                             // It is disposed when the caller to this method is disposed, at the end of the test method.
-                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_certificatePassword, s_x509CertificatesFolder);
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                             using (X509Certificate2 publicCertificate = X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder))
@@ -459,7 +459,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                             X509Certificate2Helper.GenerateIntermediateCertificateSignedCertificateFiles(
                                 registrationId,
-                                s_certificatePassword,
                                 s_intermediateCertificateSubject,
                                 s_x509CertificatesFolder,
                                 Logger);
@@ -467,7 +466,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
                             // It is disposed when the caller to this method is disposed, at the end of the test method.
-                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_certificatePassword, s_x509CertificatesFolder);
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                             collection = TestConfiguration.Provisioning.GetGroupEnrollmentChain();

@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string GetGroupEnrollmentIntermediatePfxCertificateBase64()
             {
                 const string intermediateCert = "X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE";
-                using X509Certificate2 cert = GetBase64EncodedCertificate(intermediateCert);
+                using X509Certificate2 cert = GetBase64EncodedCertificate(intermediateCert, CertificatePassword);
                 cert.NotAfter.Should().NotBeBefore(DateTime.Now, $"The X509 cert from {intermediateCert} has expired.");
                 return GetValue(intermediateCert);
             }

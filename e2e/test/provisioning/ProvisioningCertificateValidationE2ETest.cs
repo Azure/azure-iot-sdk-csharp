@@ -20,8 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("InvalidServiceCertificate")]
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
-        private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
-
         private static DirectoryInfo s_x509CertificatesFolder;
 
         [ClassInitialize]
@@ -113,9 +111,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
             string certificateSubject = $"E2E_{nameof(ProvisioningCertificateValidationE2ETest)}-{Guid.NewGuid()}";
-            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_certificatePassword, s_x509CertificatesFolder, Logger);
+            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_x509CertificatesFolder, Logger);
 
-            using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_certificatePassword, s_x509CertificatesFolder);
+            using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);
             using var security = new SecurityProviderX509Certificate(cert);
             var provisioningDeviceClient = ProvisioningDeviceClient.Create(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
