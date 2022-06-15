@@ -1147,7 +1147,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                             collection = new X509Certificate2Collection
                             {
-                                TestConfiguration.CommonCertificates.GetRootCACertificate(),
+                                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
                                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
                                 X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder)

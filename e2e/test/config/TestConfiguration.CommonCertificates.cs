@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static partial class CommonCertificates
         {
-            public static X509Certificate2 GetRootCACertificate()
+            public static X509Certificate2 GetRootCaCertificate()
             {
                 const string hubCert = "X509_CHAIN_ROOT_CA_CERTIFICATE";
                 X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);

@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             var chainCerts = new X509Certificate2Collection
             {
-                TestConfiguration.CommonCertificates.GetRootCACertificate(),
+                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             var chainCerts = new X509Certificate2Collection
             {
-                TestConfiguration.CommonCertificates.GetRootCACertificate(),
+                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
