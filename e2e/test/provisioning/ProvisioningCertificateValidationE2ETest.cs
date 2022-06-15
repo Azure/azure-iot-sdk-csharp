@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
         {
-            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.pfx"), TestConfiguration.Provisioning.CertificatePassword);
+            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.pfx"));
         }
 
         [ClassCleanup]
