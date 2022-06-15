@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
-                true,
+                false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
-                true,
+                false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
