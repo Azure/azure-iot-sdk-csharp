@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Security.Cryptography.X509Certificates;
+using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -20,11 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 GetValue("DPS_GLOBALDEVICEENDPOINT", "global.azure-devices-provisioning.net");
 
             public static string IdScope => GetValue("DPS_IDSCOPE");
-
-            // To generate use Powershell: [System.Convert]::ToBase64String( (Get-Content .\certificate.pfx -Encoding Byte) )
-
-            public static X509Certificate2 GetGroupEnrollmentCertificate()
-                => GetBase64EncodedCertificate("DPS_X509_GROUP_ENROLLMENT_DEVICE_PFX_CERTIFICATE", CertificatePassword);
 
             // This certificate is a part of the chain whose root has been verified by the Provisioning service.
             // The certificates used by the group enrollment tests are signed by this intermediate certificate.

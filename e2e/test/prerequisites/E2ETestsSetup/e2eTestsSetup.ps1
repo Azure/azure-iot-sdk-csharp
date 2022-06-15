@@ -105,11 +105,8 @@ Function Check-AzureCliVersion()
 Function CleanUp-Certs()
 {
     Write-Host "`nCleaning up old certs and files that may cause conflicts."
-    $certsToDelete1 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
-    $certsToDelete2 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$dpsX509GroupEnrollmentDeviceCertCommonName") }
+    $certsToDelete = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
 
-    $certsToDelete = $certsToDelete1 + $certsToDelete2
-    
     $title = "Cleaning up certs."
     $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject}
     $certsToDeleteSubjectNames = $certsToDeleteSubjectNames -join "`n"
@@ -219,10 +216,6 @@ $iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "iothubx509chaindevice1";
 $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 
-$dpsX509GroupEnrollmentDeviceCertCommonName = "xdevice1";
-$dpsX509GroupEnrollmentDevicePfxPath = "$PSScriptRoot/DpsGroupEnrollmentDevice.pfx";
-$dpsGroupX509CertChainPath = "$PSScriptRoot/DpsGroupCertChain.p7b";
-
 ############################################################################################################################
 # Cleanup old certs and files that can cause a conflict
 ############################################################################################################################
@@ -309,27 +302,6 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
-
-# Generate the certificates used by only DPS E2E tests.
-
-# Create the certificate chain from Root to Intermediate2. This chain will be combined with the cert signed by IntermediateCert2 to test group enrollment.
-# Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
-Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.contains("CN=$subjectPrefix") } | Export-Certificate -FilePath $dpsGroupX509CertChainPath -Type p7b | Out-Null
-$dpsGroupX509CertificateChain = [Convert]::ToBase64String((Get-Content $dpsGroupX509CertChainPath -AsByteStream));
-
-# Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that are provisioned by a DPS group enrollment created a bit further down this script.
-# Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
-$dpsX509GroupEnrollmentDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$dpsX509GroupEnrollmentDeviceCertCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2) `
-    -Signer $intermediateCert2
-
-Export-PFXCertificate -cert $dpsX509GroupEnrollmentDeviceCert -filePath $dpsX509GroupEnrollmentDevicePfxPath -password $certPassword | Out-Null
-$dpsX509GroupEnrollmentDevicePfxCertificate = [Convert]::ToBase64String((Get-Content $dpsX509GroupEnrollmentDevicePfxPath -AsByteStream));
 
 ########################################################################################################
 # Install latest version of az cli
@@ -597,6 +569,10 @@ if ($groupEnrollmentExists)
 Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
 
+##################################################################################################################################
+#Enable Azure Security Solutions, if specified
+##################################################################################################################################
+
 if ($EnableIotHubSecuritySolution)
 {
     Write-Host "`nCreating a self-signed certificate for LA and placing it in $ResourceGroup."
@@ -712,9 +688,7 @@ $keyvaultKvps = @{
     "DPS-GLOBALDEVICEENDPOINT" = $dpsEndpoint;
     "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
     "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
-    "DPS-X509-GROUP-ENROLLMENT-DEVICE-PFX-CERTIFICATE" = $dpsX509GroupEnrollmentDevicePfxCertificate;
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
-    "DPS-GROUPX509-CERTIFICATE-CHAIN" = $dpsGroupX509CertificateChain;
 
     # Environment variables for Azure resources used for E2E tests (common)
     "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;
