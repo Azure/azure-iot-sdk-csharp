@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             // Extract the public certificate and private key information from the intermediate certificate pfx file.
             // These keys will be used to sign the test leaf device certificates.
-            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfx(
+            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
                 TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
                 s_certificatePassword,
                 s_x509CertificatesFolder);
@@ -469,7 +469,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                            collection = TestConfiguration.Provisioning.GetGroupEnrollmentChain();
+                            collection = new X509Certificate2Collection
+                            {
+                                TestConfiguration.CommonCertificates.GetRootCACertificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
+                                X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder)
+                            };
                             break;
 
                         default:

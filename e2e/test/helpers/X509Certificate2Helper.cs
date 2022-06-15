@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             pfxGenCmdProcess.ExitCode.Should().Be(0, $"\"{pfxGen}\" exited with error {pfxGenCmdProcess.StandardError.ReadToEnd()}.");
         }
 
-        internal static string ExtractPublicCertificateAndPrivateKeyFromPfx(string pfxCertificateBase64, string certificatePassword, DirectoryInfo destinationCertificateFolder)
+        internal static string ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(string pfxCertificateBase64, string certificatePassword, DirectoryInfo destinationCertificateFolder)
         {
             byte[] buff = Convert.FromBase64String(pfxCertificateBase64);
 
