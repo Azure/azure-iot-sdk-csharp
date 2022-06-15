@@ -24,12 +24,16 @@ namespace Microsoft.Azure.Devices.Client
 
         private bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan retryInterval)
         {
+            bool shouldRetry = false;
+
             try
             {
                 if (Logging.IsEnabled)
                     Logging.Enter(this, retryCount, lastException, $"{nameof(RetryStrategyAdapter)}.{nameof(ShouldRetry)}");
 
-                return _retryStrategy.ShouldRetry(retryCount, lastException, out retryInterval);
+                shouldRetry = _retryStrategy.ShouldRetry(retryCount, lastException, out retryInterval);
+                Logging.Info(this, $"ShouldRetry = {shouldRetry}, after {retryInterval}");
+                return shouldRetry;
             }
             finally
             {
