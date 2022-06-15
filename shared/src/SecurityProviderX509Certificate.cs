@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// or should be available in the certificate store of the system where the client will be authenticated from.
         /// </param>
         /// <param name="certificateChain">
-        /// The certificate chain leading to the root certificate uploaded to the Provisioning service.
+        /// The certificate chain leading to the root certificate uploaded to the device provisioning service.
         /// </param>
         public SecurityProviderX509Certificate(
             X509Certificate2 clientCertificate,
