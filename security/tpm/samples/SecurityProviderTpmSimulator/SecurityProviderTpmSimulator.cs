@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
             if (files.Length == 0)
             {
-                throw new InvalidOperationException($"TPM Simulator not found : {SimulatorExeName}");
+                throw new InvalidOperationException($"TPM Simulator not found: {SimulatorExeName}");
             }
 
             using var simulatorProcess = new Process

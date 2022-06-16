@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportRegisterMessage
     {
-        private ProductInfo _productInfo = new ProductInfo();
+        private readonly ProductInfo _productInfo = new ProductInfo();
 
         /// <summary>
         /// The Global Device Endpoint for this message.

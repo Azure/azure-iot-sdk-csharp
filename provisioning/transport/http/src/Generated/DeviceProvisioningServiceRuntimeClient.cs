@@ -13,34 +13,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// <summary>
     /// API for using the IotHub Device Provisioning Service Runtime Features
     /// </summary>
-    internal partial class DeviceProvisioningServiceRuntimeClient : 
-        ServiceClient<DeviceProvisioningServiceRuntimeClient>, IDeviceProvisioningServiceRuntimeClient
+    internal partial class DeviceProvisioningServiceRuntimeClient
+        : ServiceClient<DeviceProvisioningServiceRuntimeClient>, IDeviceProvisioningServiceRuntimeClient
     {
-        /// <summary>
-        /// The base URI of the service.
-        /// </summary>
-        public Uri BaseUri { get; set; }
-
-        /// <summary>
-        /// Gets or sets json serialization settings.
-        /// </summary>
-        public JsonSerializerSettings SerializationSettings { get; private set; }
-
-        /// <summary>
-        /// Gets or sets json deserialization settings.
-        /// </summary>
-        public JsonSerializerSettings DeserializationSettings { get; private set; }
-
-        /// <summary>
-        /// Subscription credentials which uniquely identify client subscription.
-        /// </summary>
-        public ServiceClientCredentials Credentials { get; private set; }
-
-        /// <summary>
-        /// Gets the IRuntimeRegistration.
-        /// </summary>
-        public virtual IRuntimeRegistration RuntimeRegistration { get; private set; }
-
         /// <summary>
         /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
         /// </summary>
@@ -62,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Optional. The delegating handlers to add to the http client pipeline.
         /// </param>
         protected DeviceProvisioningServiceRuntimeClient(
-            HttpClientHandler rootHandler, 
+            HttpClientHandler rootHandler,
             params DelegatingHandler[] handlers) : base(rootHandler, handlers)
         {
             Initialize();
@@ -101,8 +76,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         protected DeviceProvisioningServiceRuntimeClient(
-            Uri baseUri, 
-            HttpClientHandler rootHandler, 
+            Uri baseUri,
+            HttpClientHandler rootHandler,
             params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
@@ -121,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         public DeviceProvisioningServiceRuntimeClient(
-            ServiceClientCredentials credentials, 
+            ServiceClientCredentials credentials,
             params DelegatingHandler[] handlers) : this(handlers)
         {
             Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
@@ -144,8 +119,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         public DeviceProvisioningServiceRuntimeClient(
-            ServiceClientCredentials credentials, 
-            HttpClientHandler rootHandler, 
+            ServiceClientCredentials credentials,
+            HttpClientHandler rootHandler,
             params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
@@ -168,8 +143,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         public DeviceProvisioningServiceRuntimeClient(
-            Uri baseUri, 
-            ServiceClientCredentials credentials, 
+            Uri baseUri,
+            ServiceClientCredentials credentials,
             params DelegatingHandler[] handlers) : this(handlers)
         {
             BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
@@ -196,20 +171,46 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         public DeviceProvisioningServiceRuntimeClient(
-            Uri baseUri, 
-            ServiceClientCredentials credentials, 
-            HttpClientHandler rootHandler, 
+            Uri baseUri,
+            ServiceClientCredentials credentials,
+            HttpClientHandler rootHandler,
             params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
             Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
             Credentials.InitializeServiceClient(this);
         }
+
+        /// <summary>
+        /// The base URI of the service.
+        /// </summary>
+        public Uri BaseUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets json serialization settings.
+        /// </summary>
+        public JsonSerializerSettings SerializationSettings { get; private set; }
+
+        /// <summary>
+        /// Gets or sets json deserialization settings.
+        /// </summary>
+        public JsonSerializerSettings DeserializationSettings { get; private set; }
+
+        /// <summary>
+        /// Subscription credentials which uniquely identify client subscription.
+        /// </summary>
+        public ServiceClientCredentials Credentials { get; private set; }
+
+        /// <summary>
+        /// Gets the IRuntimeRegistration.
+        /// </summary>
+        public virtual IRuntimeRegistration RuntimeRegistration { get; private set; }
 
         /// <summary>
         /// An optional partial-method to perform custom initialization.
         ///</summary>
         partial void CustomInitialize();
+
         /// <summary>
         /// Initializes client properties.
         /// </summary>
@@ -224,9 +225,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 NullValueHandling = NullValueHandling.Ignore,
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 ContractResolver = new ReadOnlyJsonContractResolver(),
-                Converters = new  List<JsonConverter>
+                Converters = new List<JsonConverter>
                     {
-                        new Iso8601TimeSpanConverter()
+                        new Iso8601TimeSpanConverter(),
                     }
             };
             DeserializationSettings = new JsonSerializerSettings
@@ -238,7 +239,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ContractResolver = new ReadOnlyJsonContractResolver(),
                 Converters = new List<JsonConverter>
                     {
-                        new Iso8601TimeSpanConverter()
+                        new Iso8601TimeSpanConverter(),
                     }
             };
             CustomInitialize();

@@ -35,16 +35,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private void ReceivingAmqpLinkClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, nameof(ReceivingAmqpLinkClosed));
-            }
 
             Closed?.Invoke(this, e);
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, nameof(ReceivingAmqpLinkClosed));
-            }
         }
 
         internal Task CloseAsync(CancellationToken cancellationToken)
@@ -67,9 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         internal async Task<Message> ReceiveAmqpMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, nameof(ReceiveAmqpMessageAsync));
-            }
 
             try
             {
@@ -102,18 +96,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, nameof(ReceiveAmqpMessageAsync));
-                }
             }
         }
 
         internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
-            }
 
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
             Outcome disposeOutcome =
@@ -124,9 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
-            }
 
             return new AmqpIotOutcome(disposeOutcome);
         }
@@ -158,7 +146,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Justification = "The callback that is invoked is responsible for disposing the message.")]
         private void OnDeviceMessageReceived(AmqpMessage amqpMessage)
         {
-            Logging.Enter(this, amqpMessage, nameof(OnDeviceMessageReceived));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, amqpMessage, nameof(OnDeviceMessageReceived));
 
             try
             {
@@ -172,7 +161,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             finally
             {
-                Logging.Exit(this, amqpMessage, nameof(OnDeviceMessageReceived));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, amqpMessage, nameof(OnDeviceMessageReceived));
             }
         }
 
@@ -193,9 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private void OnEventsReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, amqpMessage, nameof(OnEventsReceived));
-            }
 
             try
             {
@@ -206,9 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, amqpMessage, nameof(OnMethodReceived));
-                }
             }
         }
 
@@ -229,9 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private void OnMethodReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, amqpMessage, nameof(OnMethodReceived));
-            }
 
             try
             {
@@ -244,9 +228,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, amqpMessage, nameof(OnMethodReceived));
-                }
             }
         }
 
@@ -268,9 +250,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private void OnTwinChangesReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, amqpMessage, nameof(OnTwinChangesReceived));
-            }
 
             try
             {
@@ -288,10 +268,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         string error = null;
-                        using (var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8))
-                        {
-                            error = reader.ReadToEnd();
-                        };
+                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
+                        error = reader.ReadToEnd();
 
                         // Retry for Http status code request timeout, Too many requests and server errors
                         var exception = new IotHubException(error, status >= 500 || status == 429 || status == 408);
@@ -319,17 +297,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         // This can be used to coorelate success response with updating reported properties
                         // However currently we do not have it as request response style implementation
-                        Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
+                        if (Logging.IsEnabled)
+                            Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         // This is an acknowledgement received from service for subscribing to desired property updates
-                        Logging.Info("Subscribed for twin successfully", nameof(OnTwinChangesReceived));
+                        if (Logging.IsEnabled)
+                            Logging.Info("Subscribed for twin successfully", nameof(OnTwinChangesReceived));
                     }
                     else
                     {
                         // This shouldn't happen
-                        Logging.Info("Received a correlation Id for Twin operation that does not match Get, Patch or Put request", nameof(OnTwinChangesReceived));
+                        if (Logging.IsEnabled)
+                            Logging.Info("Received a correlation Id for Twin operation that does not match Get, Patch or Put request", nameof(OnTwinChangesReceived));
                     }
                     _onTwinMessageReceived.Invoke(twin, correlationId, twinProperties, null);
                 }
@@ -337,9 +318,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, amqpMessage, nameof(OnTwinChangesReceived));
-                }
             }
         }
 
@@ -347,12 +326,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal static int GetStatus(AmqpMessage response)
         {
-            if (response != null)
+            if (response != null
+                && response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
             {
-                if (response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
-                {
-                    return status;
-                }
+                return status;
             }
 
             return -1;

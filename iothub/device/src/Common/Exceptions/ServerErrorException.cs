@@ -6,11 +6,12 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the IoT Hub returned an internal service error.
+    /// The exception that is thrown when the IoT hub returned an internal service error.
     /// </summary>
     /// <remarks>
-    /// This exception typically means the IoT Hub service has encountered an unexpected error and is usually transient.
-    /// Please review the <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>
+    /// This exception typically means the IoT hub service has encountered an unexpected error and is usually transient.
+    /// Please review the
+    /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-500xxx-internal-errors">500xxx Internal errors</see>
     /// guide for more information. The best course of action is to retry your operation after some time. By default,
     /// the SDK will utilize the <see cref="ExponentialBackoff"/> retry strategy.
     /// </remarks>
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public sealed class ServerErrorException : IotHubException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerErrorException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         public ServerErrorException()
             : base(isTransient: true)
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerErrorException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="message">The error message.</param>
         public ServerErrorException(string message)
@@ -35,10 +36,10 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerErrorException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="message">The error message.</param>
-        /// <param name="innerException">The <see cref="Exception"/> instance that caused the current exception.</param>
+        /// <param name="innerException">The exception instance that caused the current exception.</param>
         public ServerErrorException(string message, Exception innerException)
             : base(message, innerException, isTransient: true)
         {

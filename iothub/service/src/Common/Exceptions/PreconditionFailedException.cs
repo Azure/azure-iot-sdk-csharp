@@ -7,13 +7,13 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when a precondition set by IoT Hub is not fulfilled.
+    /// The exception that is thrown when a precondition set by IoT hub is not fulfilled.
     /// </summary>
     [Serializable]
     public sealed class PreconditionFailedException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="PreconditionFailedException"/> with a specified error message and marks it as non-transient.
+        /// Creates an instance of this class with a specified error message and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public PreconditionFailedException(string message)
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="PreconditionFailedException"/> with the supplied error message and tracking Id, and marks it as non-transient.
+        /// Creates an instance of this class with the supplied error message and tracking Id, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="PreconditionFailedException"/> with a specified error message and
+        /// Creates an instance of this class with a specified error message and
         /// a reference to the inner exception that caused this exception, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>

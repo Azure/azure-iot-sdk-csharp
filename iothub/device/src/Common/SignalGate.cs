@@ -12,41 +12,27 @@ namespace Microsoft.Azure.Devices.Client
     internal class SignalGate
     {
         [Fx.Tag.SynchronizationObject(Blocking = false, Kind = Fx.Tag.SynchronizationKind.InterlockedNoSpin)]
-        private int state;
+        private int _state;
 
-        public SignalGate()
-        {
-        }
+        internal bool IsLocked => _state == GateState.Locked;
 
-        internal bool IsLocked
-        {
-            get
-            {
-                return this.state == GateState.Locked;
-            }
-        }
-
-        internal bool IsSignalled
-        {
-            get
-            {
-                return this.state == GateState.Signalled;
-            }
-        }
+        internal bool IsSignalled => _state == GateState.Signalled;
 
         // Returns true if this brings the gate to the Signalled state.
         // Transitions - Locked -> SignalPending | Completed before it was unlocked
         //               Unlocked -> Signaled
         public bool Signal()
         {
-            int lastState = this.state;
+            int lastState = _state;
+
             if (lastState == GateState.Locked)
             {
-                lastState = Interlocked.CompareExchange(ref this.state, GateState.SignalPending, GateState.Locked);
+                lastState = Interlocked.CompareExchange(ref _state, GateState.SignalPending, GateState.Locked);
             }
+
             if (lastState == GateState.Unlocked)
             {
-                this.state = GateState.Signalled;
+                _state = GateState.Signalled;
                 return true;
             }
 
@@ -54,6 +40,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 ThrowInvalidSignalGateState();
             }
+
             return false;
         }
 
@@ -63,14 +50,16 @@ namespace Microsoft.Azure.Devices.Client
         //               Locked -> Unlocked
         public bool Unlock()
         {
-            int lastState = this.state;
+            int lastState = _state;
+
             if (lastState == GateState.Locked)
             {
-                lastState = Interlocked.CompareExchange(ref this.state, GateState.Unlocked, GateState.Locked);
+                lastState = Interlocked.CompareExchange(ref _state, GateState.Unlocked, GateState.Locked);
             }
+
             if (lastState == GateState.SignalPending)
             {
-                this.state = GateState.Signalled;
+                _state = GateState.Signalled;
                 return true;
             }
 
@@ -78,6 +67,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 ThrowInvalidSignalGateState();
             }
+
             return false;
         }
 
@@ -102,14 +92,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         private T Result { get; set; }
 
-        public SignalGateT()
-            : base()
-        {
-        }
-
         public bool Signal(T result)
         {
-            this.Result = result;
+            Result = result;
             return Signal();
         }
 
@@ -117,11 +102,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Unlock())
             {
-                result = this.Result;
+                result = Result;
                 return true;
             }
 
-            result = default(T);
+            result = default;
             return false;
         }
     }

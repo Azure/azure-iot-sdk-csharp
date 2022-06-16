@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class SDKUtils
+    internal class SdkUtils
     {
         private const string ApiVersionProvisioning = "2021-11-01-preview";
         public const string ApiVersionQueryString = CustomHeaderConstants.ApiVersion + "=" + ApiVersionProvisioning;

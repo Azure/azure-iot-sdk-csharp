@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Net;
 
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {
@@ -64,29 +64,29 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             string signature;
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.SignatureFieldName));
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.SignatureFieldName}");
             }
 
-            string expiry;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out expiry))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.ExpiryFieldName, out string expiry))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.ExpiryFieldName));
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.ExpiryFieldName}");
             }
 
-            // KeyName (skn) is optional .
-            string keyName;
-            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out keyName);
+            // KeyName (skn) is optional
+            parsedFields.TryGetValue(SharedAccessSignatureConstants.KeyNameFieldName, out string keyName);
 
-            string encodedAudience;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out encodedAudience))
+            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.AudienceFieldName, out string encodedAudience))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.AudienceFieldName));
+                throw new FormatException($"Missing field: {SharedAccessSignatureConstants.AudienceFieldName}");
             }
 
             return new SharedAccessSignature(
                 shareAccessSignatureName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
-                expiry, keyName, signature, encodedAudience);
+                expiry,
+                keyName,
+                signature,
+                encodedAudience);
         }
 
         public static bool IsSharedAccessSignature(string rawSignature)
@@ -97,8 +97,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             }
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawSignature);
-            string signature;
-            bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature);
+            bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out _);
 
             return isSharedAccessSignature;
         }
@@ -117,7 +116,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token is expired.");
+                throw new UnauthorizedAccessException("The specified SAS token has expired.");
             }
 
             if (sasAuthorizationRule.PrimaryKey != null)
@@ -163,22 +162,23 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ComputeSignature(byte[] key)
         {
-            var fields = new List<string>();
-            fields.Add(_encodedAudience);
-            fields.Add(_expiry);
-
-            using (var hmac = new HMACSHA256(key))
+            var fields = new List<string>
             {
-                string value = string.Join("\n", fields);
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
-            }
+                _encodedAudience,
+                _expiry,
+            };
+
+            using var hmac = new HMACSHA256(key);
+            string value = string.Join("\n", fields);
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 
-            if (!string.Equals(lines[0].Trim(), SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.Ordinal) || lines.Length != 2)
+            if (!string.Equals(lines[0].Trim(), SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.Ordinal)
+                || lines.Length != 2)
             {
                 throw new FormatException("Malformed signature");
             }

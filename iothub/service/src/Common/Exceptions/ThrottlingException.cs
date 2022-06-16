@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the rate of incoming requests exceeds the throttling limit set by IoT Hub.
+    /// The exception that is thrown when the rate of incoming requests exceeds the throttling limit set by IoT hub.
     /// </summary>
     [Serializable]
     public class ThrottlingException : IotHubException

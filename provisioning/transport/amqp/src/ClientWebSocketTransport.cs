@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +8,7 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 
 namespace Microsoft.Azure.Amqp.Transport
 {

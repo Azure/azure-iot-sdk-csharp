@@ -15,14 +15,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public class IotHubSuspendedException : IotHubException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="IotHubSuspendedException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         public IotHubSuspendedException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IotHubSuspendedException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="iotHubName">IoT hub name that could not be found.</param>
         public IotHubSuspendedException(string iotHubName)
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IotHubSuspendedException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="iotHubName">IoT hub name that could not be found.</param>
         /// <param name="trackingId">Tracking identifier for telemetry purposes.</param>
@@ -41,7 +41,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IotHubSuspendedException"/> class with the message string set to the message parameter and a reference to the inner exception that is the cause of this exception.
+        /// Initializes a new instance of the class with the message string set to the message parameter
+        /// and a reference to the inner exception that is the cause of this exception.
         /// </summary>
         /// <param name="message">A description of the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception</param>
@@ -51,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubSuspendedException"/> with the <see cref="SerializationInfo"/>
+        /// Creates an instance of with the <see cref="SerializationInfo"/>
         /// and <see cref="StreamingContext"/> associated with the exception.
         /// </summary>
         /// <param name="info">The serialized data about the exception being thrown.</param>

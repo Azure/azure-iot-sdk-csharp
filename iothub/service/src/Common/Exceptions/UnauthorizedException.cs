@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     public sealed class UnauthorizedException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="UnauthorizedException"/> with a specified error message and marks it as non-transient.
+        /// Creates an instance of this class with a specified error message and marks it as non-transient.
         /// </summary>
         /// <param name="message"></param>
         public UnauthorizedException(string message)
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="UnauthorizedException"/> with a specified <see cref="ErrorCode"/>, error message
+        /// Creates an instance of this class with a specified <see cref="ErrorCode"/>, error message
         /// and marks it as non-transient.
         /// </summary>
         /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="UnauthorizedException"/> with a specified error message and
+        /// Creates an instance of this class with a specified error message and
         /// a reference to the inner exception that caused this exception, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>

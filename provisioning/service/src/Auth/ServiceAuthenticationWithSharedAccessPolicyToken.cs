@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {
-    using System;
-
     /// <summary>
     /// Authentication method that uses a shared access policy token. 
     /// </summary>
     internal sealed class ServiceAuthenticationWithSharedAccessPolicyToken : IAuthenticationMethod
     {
-        string policyName;
-        string token;
+        private string _policyName;
+        private string _token;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
@@ -20,20 +20,20 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         /// <param name="token">Token associated with the shared access policy.</param>
         public ServiceAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
         {
-            this.SetPolicyName(policyName);
-            this.SetToken(token);
+            SetPolicyName(policyName);
+            SetToken(token);
         }
 
         public string PolicyName
         {
-            get { return this.policyName; }
-            set { this.SetPolicyName(value); }
+            get => _policyName;
+            set => SetPolicyName(value);
         }
 
         public string Token
         {
-            get { return this.token; }
-            set { this.SetToken(value); }
+            get => _token;
+            set => SetToken(value);
         }
 
         public ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder)
@@ -43,8 +43,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(provisioningConnectionStringBuilder));
             }
 
-            provisioningConnectionStringBuilder.SharedAccessKeyName = this.PolicyName;
-            provisioningConnectionStringBuilder.SharedAccessSignature = this.Token;
+            provisioningConnectionStringBuilder.SharedAccessKeyName = PolicyName;
+            provisioningConnectionStringBuilder.SharedAccessSignature = Token;
             provisioningConnectionStringBuilder.SharedAccessKey = null;
 
             return provisioningConnectionStringBuilder;
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(policyName));
             }
 
-            this.policyName = policyName;
+            _policyName = policyName;
         }
 
         private void SetToken(string token)
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentException("Token must be of type SharedAccessSignature");
             }
 
-            this.token = token;
+            _token = token;
         }
     }
 }

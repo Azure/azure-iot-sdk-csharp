@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Common;
-
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
@@ -39,13 +37,13 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the primary key.
         /// </summary>
         /// <returns>primary key</returns>
-        public string GetPrimaryKey() { return _primaryKey; }
+        public string GetPrimaryKey() => _primaryKey;
 
         /// <summary>
         /// Gets the secondary key.
         /// </summary>
         /// <returns>secondary key</returns>
-        public string GetSecondaryKey() { return _secondaryKey; }
+        public string GetSecondaryKey() => _secondaryKey;
 
         /// <summary>
         /// Releases all resources.

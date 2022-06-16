@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// The base URI of the service.
         /// </summary>
-        System.Uri BaseUri { get; set; }
+        Uri BaseUri { get; set; }
 
         /// <summary>
         /// Gets or sets json serialization settings.
@@ -28,8 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         JsonSerializerSettings DeserializationSettings { get; }
 
         /// <summary>
-        /// Subscription credentials which uniquely identify client
-        /// subscription.
+        /// Subscription credentials which uniquely identify client subscription.
         /// </summary>
         ServiceClientCredentials Credentials { get; }
 

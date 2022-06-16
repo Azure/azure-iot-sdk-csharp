@@ -30,13 +30,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <param name="baseAddress">the <code>Uri</code> HTTP endpoint in the service.</param>
-        /// <param name="authenticationHeaderProvider">the <see cref="IAuthorizationHeaderProvider"/> that will provide the
-        ///     authorization token for the HTTP communication.</param>
-        /// <param name="httpTransportSettings"> Specifies HTTP Transport Settings for the request</param>
         public ContractApiHttp(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
@@ -76,9 +69,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="httpMethod">the <see cref="HttpMethod"/> with the HTTP verb.</param>
         /// <param name="requestUri">the rest API <see cref="Uri"/> with for the requested service.</param>
-        /// <param name="customHeaders">the optional <code>Dictionary</code> with additional header fields. It can be <code>null</code>.</param>
-        /// <param name="body">the <code>string</code> with the message body. It can be <code>null</code> or empty.</param>
-        /// <param name="ifMatch">the optional <code>string</code> with the match condition, normally an eTag. It can be <code>null</code>.</param>
+        /// <param name="customHeaders">the optional <c>Dictionary</c> with additional header fields. It can be <c>null</c>.</param>
+        /// <param name="body">the <c>string</c> with the message body. It can be <c>null</c> or empty.</param>
+        /// <param name="ifMatch">the optional <c>string</c> with the match condition, normally an eTag. It can be <c>null</c>.</param>
         /// <param name="cancellationToken">the task cancellation Token.</param>
         /// <returns>The <see cref="ContractApiResponse"/> with the HTTP response.</returns>
         /// <exception cref="ProvisioningServiceClientException">if the cancellation was requested.</exception>

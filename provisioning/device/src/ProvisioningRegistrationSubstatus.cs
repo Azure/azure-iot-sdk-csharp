@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public enum ProvisioningRegistrationSubstatusType
     {
         /// <summary>
-        /// Device has been assigned to an IoT hub for the first time
+        /// Device has been assigned to an IoT hub for the first time.
         /// </summary>
         InitialAssignment = 1,
 

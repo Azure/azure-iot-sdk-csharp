@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+            string userAgent = $"{name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
             if (!string.IsNullOrWhiteSpace(Extra))
             {

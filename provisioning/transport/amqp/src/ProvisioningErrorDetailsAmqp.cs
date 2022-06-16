@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -26,14 +26,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     var serviceRecommendedDelay = TimeSpan.FromSeconds(secondsToWait);
 
-                    if (serviceRecommendedDelay.TotalSeconds < defaultInterval.TotalSeconds)
-                    {
-                        return defaultInterval;
-                    }
-                    else
-                    {
-                        return serviceRecommendedDelay;
-                    }
+                    return serviceRecommendedDelay.TotalSeconds < defaultInterval.TotalSeconds
+                        ? defaultInterval
+                        : serviceRecommendedDelay;
                 }
             }
 

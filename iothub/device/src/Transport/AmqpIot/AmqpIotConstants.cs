@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     {
         Get,
         Patch,
-        Put
+        Put,
     }
 
     internal static class AmqpIotConstants

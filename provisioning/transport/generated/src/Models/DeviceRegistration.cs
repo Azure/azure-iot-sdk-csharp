@@ -16,9 +16,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
+#pragma warning disable CA1812 //False positive on this issue. Complains about no one calling the constructor, but it is called in several places
         public DeviceRegistration()
         {
         }
+#pragma warning restore CA1812
 
         /// <summary>
         /// Gets or set the custom content payload.
