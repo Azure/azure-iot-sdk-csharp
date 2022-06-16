@@ -13,16 +13,16 @@ namespace Microsoft.Azure.Devices.Samples
 
         [Option(
             'p',
-            "PrimaryThumbprint",
+            "X509SelfSignedCertificatePrimaryThumbprint",
             Required = true,
-            HelpText = "Primary IoT hub PFX X509 thumbprint.")]
+            HelpText = "Primary X509 thumbprint of the self-signed certificate used for device authentication.")]
         public string PrimaryThumbprint { get; set; }
 
         [Option(
             's',
-            "SecondaryThumbprint",
+            "X509SelfSignedCertificateSecondaryThumbprint",
             Required = false,
-            HelpText = "Secondary IoT hub PFX X509 thumbprint.")]
+            HelpText = "Secondary X509 thumbprint of the self-signed certificate used for device authentication.")]
         public string SecondaryThumbprint { get; set; }
 
         [Option(

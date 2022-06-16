@@ -8,3 +8,6 @@ ModuleNotFoundTestSasl_
 RegistryManager_
 EdgeDeploymentSample_
 RegistryManagerSample_
+tpm-
+symmetrickey-
+x509-
