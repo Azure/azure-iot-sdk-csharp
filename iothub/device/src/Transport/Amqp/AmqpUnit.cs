@@ -427,6 +427,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.");
             }
 
+            // This event handler is in place for network drop cases and will try to close the session that this
+            // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
+            _messageReceivingLink.ClearClosedHandler();
+
             try
             {
                 await _messageReceivingLink.CloseAsync(cancellationToken).ConfigureAwait(false);
@@ -647,6 +651,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are closed.");
             }
 
+            // These event handlers are in place for network drop cases and will try to close the session that this
+            // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
+            _twinSendingLink.ClearClosedHandler();
+            _twinReceivingLink.ClearClosedHandler();
+
             try
             {
                 ICollection<Task> tasks = new List<Task>(2);
@@ -691,6 +700,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are closed.");
             }
+
+            // These event handlers are in place for network drop cases and will try to close the session that this
+            // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
+            _methodSendingLink.ClearClosedHandler();
+            _methodReceivingLink.ClearClosedHandler();
 
             try
             {

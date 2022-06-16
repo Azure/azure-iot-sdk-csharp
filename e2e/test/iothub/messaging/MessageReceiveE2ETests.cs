@@ -436,6 +436,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
         }
 
+        [LoggedTestMethod]
+        public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
+        {
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_AmqpWs()
+        {
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Mqtt()
+        {
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod]
+        public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_MqttWs()
+        {
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
         public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
         {
             string payload = Guid.NewGuid().ToString();
@@ -979,6 +1003,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.CloseAsync().ConfigureAwait(false);
             deviceClient.Dispose();
             testDeviceCallbackHandler.Dispose();
+        }
+
+        // This test ensures that the SDK does not have this bug again
+        // https://github.com/Azure/azure-iot-sdk-csharp/issues/2218
+        private async Task UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType type, Client.TransportType transportType)
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportType);
+            bool lostConnection = false;
+            deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+            {
+                if (status == ConnectionStatus.Disconnected || status == ConnectionStatus.Disconnected_Retrying)
+                {
+                    lostConnection = true;
+                }
+            });
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
+
+            // Subscribe to receive C2D messages over the callback.
+            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+
+            // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
+            // should close the connection as a whole, though.
+            await deviceClient.SetReceiveMessageHandlerAsync(null, null);
+
+            await Task.Delay(1000);
+
+            Assert.IsFalse(lostConnection);
+
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
     }
 }
