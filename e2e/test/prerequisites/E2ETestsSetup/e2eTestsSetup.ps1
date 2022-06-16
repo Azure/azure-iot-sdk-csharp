@@ -288,6 +288,7 @@ $iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificate `
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
 Export-PFXCertificate -cert $iotHubX509SelfSignedDeviceCert -filePath $iotHubX509DevicePfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509DevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509DevicePfxPath -AsByteStream));
+$iothubX509DevicePfxThumbprint = $iotHubX509SelfSignedDeviceCert.Thumbprint
 
 # Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that test X509 CA-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
@@ -729,6 +730,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
     $keyvaultKvps.Add("IOTHUB-MODULE-CONN-STRING", $iotHubSasBasedModuleConnectionString)
     $keyvaultKvps.Add("PNP-TC-DEVICE-CONN-STRING", $temperatureControllerSampleDeviceConnectionString)
     $keyvaultKvps.Add("PNP-THERMOSTAT-DEVICE-CONN-STRING", $thermostatSampleDeviceConnectionString)
+    $keyvaultKvps.Add("IOTHUB-X509-DEVICE-PFX-THUMBPRINT", $iothubX509DevicePfxThumbprint)
     $keyvaultKvps.Add("IOTHUB-SAS-KEY", $iothubownerSasPrimaryKey)
     $keyvaultKvps.Add("IOTHUB-SAS-KEY-NAME", $iothubownerSasPolicy)
     $keyvaultKvps.Add("DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID", $symmetricKeySampleEnrollmentRegistrationId)
