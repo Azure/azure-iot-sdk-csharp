@@ -348,10 +348,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
             IndividualEnrollment createdEnrollment = null;
-            if (iotHubsToProvisionTo == null)
-            {
-                iotHubsToProvisionTo = new List<string>(0);
-            }
 
             switch (attestationType)
             {
@@ -365,11 +361,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             AllocationPolicy = allocationPolicy,
                             ReprovisionPolicy = reprovisionPolicy,
                             CustomAllocationDefinition = customAllocationDefinition,
+                            IotHubs = iotHubsToProvisionTo,
                         };
-                        foreach (string hub in iotHubsToProvisionTo)
-                        {
-                            individualEnrollment.IotHubs.Add(hub);
-                        }
 
                         IndividualEnrollment temporaryCreatedEnrollment = null;
                         await RetryOperationHelper
@@ -434,11 +427,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 AllocationPolicy = allocationPolicy,
                 ReprovisionPolicy = reprovisionPolicy,
                 CustomAllocationDefinition = customAllocationDefinition,
+                IotHubs = iotHubsToProvisionTo,
             };
-            foreach (string hub in iotHubsToProvisionTo)
-            {
-                individualEnrollment.IotHubs.Add(hub);
-            }
 
             await RetryOperationHelper
                 .RetryOperationsAsync(
@@ -473,10 +463,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             MsTestLogger logger)
         {
             Attestation attestation;
-            if (iothubs == null)
-            {
-                iothubs = new List<string>(0);
-            }
 
             switch (attestationType)
             {
@@ -499,11 +485,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 ReprovisionPolicy = reprovisionPolicy,
                 AllocationPolicy = allocationPolicy,
                 CustomAllocationDefinition = customAllocationDefinition,
+                IotHubs = iothubs,
             };
-            foreach (string hub in iothubs)
-            {
-                enrollmentGroup.IotHubs.Add(hub);
-            }
 
             EnrollmentGroup createdEnrollmentGroup = null;
             await RetryOperationHelper

@@ -762,13 +762,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (retrievedEnrollment == null)
                 {
-                    throw new ArgumentException($"The individual enrollment entry with registration Id {security.GetRegistrationID()} could not be retrieved, exiting test.");
+                    throw new ArgumentException($"The individual enrollment entry with registration Id {security.GetRegistrationID()} could not be retrieved; exiting test.");
                 }
 
-                foreach (string hub in iotHubsToReprovisionTo)
-                {
-                    retrievedEnrollment.IotHubs.Add(hub);
-                }
+                retrievedEnrollment.IotHubs = iotHubsToReprovisionTo;
 
                 IndividualEnrollment updatedEnrollment = null;
 
@@ -787,7 +784,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (updatedEnrollment == null)
                 {
-                    throw new ArgumentException($"The individual enrollment entry with registration Id {security.GetRegistrationID()} could not be updated, exiting test.");
+                    throw new ArgumentException($"The individual enrollment entry with registration Id {security.GetRegistrationID()} could not be updated; exiting test.");
                 }
             }
             else
@@ -806,13 +803,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (retrievedEnrollmentGroup == null)
                 {
-                    throw new ArgumentException($"The enrollment group entry with group Id {groupId} could not be retrieved, exiting test.");
+                    throw new ArgumentException($"The enrollment group entry with group Id {groupId} could not be retrieved; exiting test.");
                 }
 
-                foreach (string hub in iotHubsToReprovisionTo)
-                {
-                    retrievedEnrollmentGroup.IotHubs.Add(hub);
-                }
+                retrievedEnrollmentGroup.IotHubs = iotHubsToReprovisionTo;
+
                 EnrollmentGroup updatedEnrollmentGroup = null;
 
                 await RetryOperationHelper
@@ -828,7 +823,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (updatedEnrollmentGroup == null)
                 {
-                    throw new ArgumentException($"The enrollment group entry with group Id {groupId} could not be updated, exiting test.");
+                    throw new ArgumentException($"The enrollment group entry with group Id {groupId} could not be updated; exiting test.");
                 }
             }
         }

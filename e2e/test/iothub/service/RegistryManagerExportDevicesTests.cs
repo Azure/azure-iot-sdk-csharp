@@ -113,11 +113,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                             Priority = 2,
                             Labels = { { "labelName", "labelValue" } },
                             TargetCondition = "*",
-                            Content =
+                            Content = new ConfigurationContent
                             {
                                 DeviceContent = { { "properties.desired.x", 4L } },
                             },
-                            Metrics =
+                            Metrics = new ConfigurationMetrics
                             {
                                 Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 4" } }
                             },
