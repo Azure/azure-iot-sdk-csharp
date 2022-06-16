@@ -429,7 +429,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             // This event handler is in place for network drop cases and will try to close the session that this
             // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
-            _messageReceivingLink.ClearClosedHandler();
+            _messageReceivingLink.ClearClosedEventHandler();
 
             try
             {
@@ -653,8 +653,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             // These event handlers are in place for network drop cases and will try to close the session that this
             // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
-            _twinSendingLink.ClearClosedHandler();
-            _twinReceivingLink.ClearClosedHandler();
+            _twinSendingLink.ClearClosedEventHandler();
+            _twinReceivingLink.ClearClosedEventHandler();
 
             try
             {
@@ -703,8 +703,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             // These event handlers are in place for network drop cases and will try to close the session that this
             // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
-            _methodSendingLink.ClearClosedHandler();
-            _methodReceivingLink.ClearClosedHandler();
+            _methodSendingLink.ClearClosedEventHandler();
+            _methodReceivingLink.ClearClosedEventHandler();
 
             try
             {
