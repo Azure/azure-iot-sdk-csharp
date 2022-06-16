@@ -1029,7 +1029,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
             // should close the connection as a whole, though.
-            await deviceClient.SetReceiveMessageHandlerAsync(null, null);
+            await deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
 
             await Task.Delay(1000);
 
