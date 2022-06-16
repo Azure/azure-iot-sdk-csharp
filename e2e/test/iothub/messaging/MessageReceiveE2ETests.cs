@@ -1031,9 +1031,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // should close the connection as a whole, though.
             await deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
 
-            await Task.Delay(1000);
+            await Task.Delay(1000).ConfigureAwait(false);
 
-            Assert.IsFalse(lostConnection);
+            lostConnection.Should().BeFalse();
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }

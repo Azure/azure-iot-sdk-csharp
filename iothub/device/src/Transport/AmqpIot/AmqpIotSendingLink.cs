@@ -29,15 +29,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _sendingAmqpLink.Closed += SendingAmqpLinkClosed;
         }
 
-        /// <summary>
-        /// Removes all events that would have run in the Closed event. This value cannot be set to null
-        /// outside of this class due to how .NET events work.
-        /// </summary>
-        public void ClearClosedEventHandler()
-        {
-            Closed = null;
-        }
-
         private void SendingAmqpLinkClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
