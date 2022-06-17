@@ -38,14 +38,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private AmqpIotReceivingLink _eventReceivingLink;
         private readonly SemaphoreSlim _eventReceivingLinkSemaphore = new SemaphoreSlim(1, 1);
+        private EventHandler _eventReceiverLinkDisconnected;
 
         private AmqpIotSendingLink _methodSendingLink;
         private AmqpIotReceivingLink _methodReceivingLink;
         private readonly SemaphoreSlim _methodLinkSemaphore = new SemaphoreSlim(1, 1);
+        private EventHandler _methodSenderLinkDisconnected;
+        private EventHandler _methodReceiverLinkDisconnected;
 
         private AmqpIotSendingLink _twinSendingLink;
         private AmqpIotReceivingLink _twinReceivingLink;
         private readonly SemaphoreSlim _twinLinksSemaphore = new SemaphoreSlim(1, 1);
+        private EventHandler _twinSenderLinkDisconnected;
+        private EventHandler _twinReceiverLinkDisconnected;
 
         private AmqpIotSession _amqpIotSession;
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
@@ -259,10 +264,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                     _messageReceivingLink = await amqpIotSession.OpenMessageReceiverLinkAsync(_deviceIdentity, cancellationToken).ConfigureAwait(false);
 
-                    _messageReceivingLink.Closed += (obj, arg) =>
+                    if (_eventReceiverLinkDisconnected == null)
                     {
-                        amqpIotSession.SafeClose();
-                    };
+                        _eventReceiverLinkDisconnected = (obj, arg) =>
+                        {
+                            amqpIotSession.SafeClose();
+                        };
+                    }
+
+                    _messageReceivingLink.Closed += _eventReceiverLinkDisconnected;
+
                     if (Logging.IsEnabled)
                         Logging.Associate(this, this, _messageReceivingLink, nameof(EnsureMessageReceivingLinkIsOpenAsync));
                 }
@@ -427,6 +438,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.");
             }
 
+            // This event handler is in place for network drop cases and will try to close the session that this
+            // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
+            if (_eventReceiverLinkDisconnected != null)
+            {
+                _messageReceivingLink.Closed -= _eventReceiverLinkDisconnected;
+            }
+
             try
             {
                 await _messageReceivingLink.CloseAsync(cancellationToken).ConfigureAwait(false);
@@ -515,10 +533,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     _eventReceivingLink = await amqpIotSession
                         .OpenEventsReceiverLinkAsync(_deviceIdentity, cancellationToken)
                         .ConfigureAwait(false);
-                    _eventReceivingLink.Closed += (obj, arg) =>
+
+                    if (_eventReceiverLinkDisconnected == null)
                     {
-                        amqpIotSession.SafeClose();
-                    };
+                        _eventReceiverLinkDisconnected = (obj, arg) =>
+                        {
+                            amqpIotSession.SafeClose();
+                        };
+                    }
+
+                    _messageReceivingLink.Closed += _eventReceiverLinkDisconnected;
                     _eventReceivingLink.RegisterEventListener(OnEventsReceived);
                     if (Logging.IsEnabled)
                         Logging.Associate(this, this, _eventReceivingLink, nameof(EnableEventReceiveAsync));
@@ -620,10 +644,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _methodReceivingLink = await amqpIotSession
                     .OpenMethodsReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
-                _methodReceivingLink.Closed += (obj, arg) =>
+
+                if (_methodReceiverLinkDisconnected == null)
                 {
-                    amqpIotSession.SafeClose();
-                };
+                    _methodReceiverLinkDisconnected = (obj, arg) =>
+                    {
+                        amqpIotSession.SafeClose();
+                    };
+                }
+
+                _methodReceivingLink.Closed += _methodReceiverLinkDisconnected;
+
                 _methodReceivingLink.RegisterMethodListener(OnMethodReceived);
                 if (Logging.IsEnabled)
                     Logging.Associate(this, _methodReceivingLink, nameof(_methodReceivingLink));
@@ -645,6 +676,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             catch (OperationCanceledException)
             {
                 throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are closed.");
+            }
+
+            // These event handlers are in place for network drop cases and will try to close the session that this
+            // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
+            if (_twinReceiverLinkDisconnected != null)
+            {
+                _twinReceivingLink.Closed -= _twinReceiverLinkDisconnected;
+            }
+
+            if (_twinSenderLinkDisconnected != null)
+            {
+                _twinSendingLink.Closed -= _twinSenderLinkDisconnected;
             }
 
             try
@@ -692,6 +735,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 throw new TimeoutException("Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are closed.");
             }
 
+            // These event handlers are in place for network drop cases and will try to close the session that this
+            // link belongs to, but that isn't necessary when the client is deliberately closing just the link.
+            if (_methodReceiverLinkDisconnected != null)
+            {
+                _methodReceivingLink.Closed -= _methodReceiverLinkDisconnected;
+            }
+
+            if (_methodSenderLinkDisconnected != null)
+            {
+                _methodSendingLink.Closed -= _methodSenderLinkDisconnected;
+            }
+
             try
             {
                 ICollection<Task> tasks = new List<Task>(2);
@@ -730,10 +785,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _methodSendingLink = await amqpIotSession
                     .OpenMethodsSenderLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
-                _methodSendingLink.Closed += (obj, arg) =>
+
+                if (_methodSenderLinkDisconnected == null)
                 {
-                    amqpIotSession.SafeClose();
-                };
+                    _methodSenderLinkDisconnected = (obj, arg) =>
+                    {
+                        amqpIotSession.SafeClose();
+                    };
+                }
+
+                _methodSendingLink.Closed += _methodSenderLinkDisconnected;
+
                 if (Logging.IsEnabled)
                     Logging.Associate(this, _methodSendingLink, nameof(_methodSendingLink));
             }
@@ -826,10 +888,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _twinReceivingLink = await amqpIotSession
                     .OpenTwinReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
-                _twinReceivingLink.Closed += (obj, arg) =>
+
+                if (_twinReceiverLinkDisconnected == null)
                 {
-                    amqpIotSession.SafeClose();
-                };
+                    _twinReceiverLinkDisconnected = (obj, arg) =>
+                    {
+                        amqpIotSession.SafeClose();
+                    };
+                }
+
+                _twinReceivingLink.Closed += _twinReceiverLinkDisconnected;
+
                 _twinReceivingLink.RegisterTwinListener(OnDesiredPropertyReceived);
                 if (Logging.IsEnabled)
                     Logging.Associate(this, _twinReceivingLink, nameof(_twinReceivingLink));
@@ -845,10 +914,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _twinSendingLink = await amqpIotSession
                     .OpenTwinSenderLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
-                _twinSendingLink.Closed += (obj, arg) =>
+
+                if (_twinSenderLinkDisconnected == null)
                 {
-                    amqpIotSession.SafeClose();
-                };
+                    _twinSenderLinkDisconnected = (obj, arg) =>
+                    {
+                        amqpIotSession.SafeClose();
+                    };
+                }
+
+                _twinSendingLink.Closed += _twinSenderLinkDisconnected;
+
                 if (Logging.IsEnabled)
                     Logging.Associate(this, _twinSendingLink, nameof(_twinSendingLink));
             }
