@@ -327,6 +327,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
             {
+                Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
+            }
+            else
+            {
+                Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
                 await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
             }
 
