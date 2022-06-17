@@ -487,52 +487,6 @@ $dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/provid
 az role assignment create --role $dpsContributorId --assignee $e2eTestAadAppId --scope $dpsScope
 
 #################################################################################################################################################
-# Link your DPS instance to your certificate authority which can accept client certificate signing requests and issue certificates.
-#################################################################################################################################################
-
-# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
-# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
-
-# Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
-# The powershell command below will need to be replaced by Azure CLI once the support is available.
-
-if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNullOrEmpty($CertificateAuthorityApiKey))
-{
-    Write-Host "`nCertificate Authority details not provided for DPS client certificate issuance. Skipping this step."
-}
-else
-{
-    $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
-    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
-
-    $dpsKeyName = "provisioningserviceowner"
-
-    $serviceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
-
-    Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
-
-    $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
-
-    $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-    $uriQueryCollection.Add("api-version", "2021-11-01-preview")
-
-    $uriRequest.Query = $uriQueryCollection.ToString()
-
-    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    $headers.Add("Authorization", $serviceApiSasToken)
-    $headers.Add("Content-Type", "application/json")
-
-    $body = @{
-        certificateAuthorityType = 'DigiCertCertificateAuthority'
-        profileName = $CertificateAuthorityProfileId
-        apiKey = $CertificateAuthorityApiKey
-    }
-    $jsonBody = $body | ConvertTo-Json
-
-    Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
-}
-
-#################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
 #################################################################################################################################################
 
@@ -646,6 +600,52 @@ if ($groupEnrollmentExists)
 }
 Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
+
+#################################################################################################################################################
+# Link your DPS instance to your certificate authority which can accept client certificate signing requests and issue certificates.
+#################################################################################################################################################
+
+# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
+# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
+
+# Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
+# The powershell command below will need to be replaced by Azure CLI once the support is available.
+
+if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+{
+    Write-Host "`nCertificate Authority details not provided for DPS client certificate issuance. Skipping this step."
+}
+else
+{
+    $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
+    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
+
+    $dpsKeyName = "provisioningserviceowner"
+
+    $serviceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
+
+    Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
+
+    $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
+
+    $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+    $uriQueryCollection.Add("api-version", "2021-11-01-preview")
+
+    $uriRequest.Query = $uriQueryCollection.ToString()
+
+    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+    $headers.Add("Authorization", $serviceApiSasToken)
+    $headers.Add("Content-Type", "application/json")
+
+    $body = @{
+        certificateAuthorityType = 'DigiCertCertificateAuthority'
+        profileName = $CertificateAuthorityProfileId
+        apiKey = $CertificateAuthorityApiKey
+    }
+    $jsonBody = $body | ConvertTo-Json
+
+    Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+}
 
 ##################################################################################################################################
 #Enable Azure Security Solutions, if specified
@@ -767,6 +767,8 @@ $keyvaultKvps = @{
     "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
     "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
+    "DPS-X509-GROUP-ENROLLMENT-NAME" = $groupEnrollmentId;
+    "CA-NAME" = $dpsCaName;
 
     # Environment variables for Azure resources used for E2E tests (common)
     "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;
@@ -778,7 +780,6 @@ $keyvaultKvps = @{
     "E2E-TEST-AAD-APP-CLIENT-ID" = $e2eTestAadAppId;
     "E2E-TEST-AAD-APP-CLIENT-SECRET" = $e2eTestAadAppPassword;
     "E2E-IKEY" = $instrumentationKey;
-    "CA-NAME" = $dpsCaName;
 
     # Environment variables for the DevOps pipeline
     "PIPELINE-ENVIRONMENT" = "prod";

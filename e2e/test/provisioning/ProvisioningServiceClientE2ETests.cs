@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly string s_devicePrefix = $"E2E_{nameof(ProvisioningServiceClientE2ETests)}_";
 
-        private static readonly string s_clientCertificatesCAName = TestConfiguration.Provisioning.CAName;
+        private static readonly string s_clientCertificatesCAName = TestConfiguration.Provisioning.CaName;
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
@@ -338,8 +338,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iotHubsToProvisionTo,
             DeviceCapabilities capabilities,
-            bool connectToHubUsingOperationalCertificate = false,
-            MsTestLogger logger)
+            MsTestLogger logger,
+            bool connectToHubUsingOperationalCertificate = false)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
@@ -403,17 +403,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
                     attestation = new SymmetricKeyAttestation(primaryKey, secondaryKey);
+                    break;
 
-                    individualEnrollment = new IndividualEnrollment(registrationId, attestation)
-                    {
-                        Capabilities = capabilities,
-                        AllocationPolicy = allocationPolicy,
-                        ReprovisionPolicy = reprovisionPolicy,
-                        CustomAllocationDefinition = customAllocationDefinition,
-                        IotHubs = iotHubsToProvisionTo,
-                        ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
-                    };
-                    return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
 
                 case AttestationMechanismType.X509:
                     attestation = X509Attestation.CreateFromClientCertificates(authenticationCertificate);
@@ -461,7 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iothubs,
             DeviceCapabilities capabilities,
-            MsTestLogger logger.
+            MsTestLogger logger,
             bool connectToHubUsingOperationalCertificate = false)
         {
             Attestation attestation;

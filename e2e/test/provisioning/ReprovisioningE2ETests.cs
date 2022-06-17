@@ -397,7 +397,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
-            string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
 
             switch (attestationType)
             {

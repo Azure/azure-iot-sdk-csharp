@@ -40,34 +40,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string leafCertificateKeyFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.key");
             string leafCertificateCsrFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.csr");
             string leafCertificateCerFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.cer");
-            string leafCertificatePfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.pfx");
 
-            // Generate the private key for the certificate
-            logger.Trace($"Generating the private key for the certificate with subject {leafCertificateSubject} using ...\n");
-            string keyGen = $"genpkey" +
-                $" -out \"{leafCertificateKeyFile}\"" +
-                $" -algorithm RSA" +
-                $" -pkeyopt rsa_keygen_bits:2048";
-
-            logger.Trace($"openssl {keyGen}\n");
-            using Process keyGenCmdProcess = CreateErrorObservantProcess("openssl", keyGen);
-            keyGenCmdProcess.Start();
-            keyGenCmdProcess.WaitForExit();
-            keyGenCmdProcess.ExitCode.Should().Be(0, $"\"{keyGen}\" exited with error {keyGenCmdProcess.StandardError.ReadToEnd()}.");
-
-            // Generate the certificate signing request for the certificate
-            logger.Trace($"Generating the certificate signing request for the certificate with subject {leafCertificateSubject} using ...\n");
-            string csrGen = $"req" +
-                $" -new" +
-                $" -subj /CN={leafCertificateSubject}" +
-                $" -key \"{leafCertificateKeyFile}\"" +
-                $" -out \"{leafCertificateCsrFile}\"";
-
-            logger.Trace($"openssl {csrGen}\n");
-            using Process csrGenCmdProcess = CreateErrorObservantProcess("openssl", csrGen);
-            csrGenCmdProcess.Start();
-            csrGenCmdProcess.WaitForExit();
-            csrGenCmdProcess.ExitCode.Should().Be(0, $"\"{csrGen}\" exited with error {csrGenCmdProcess.StandardError.ReadToEnd()}.");
+            GenerateCertificateSigningRequestFiles(leafCertificateSubject, destinationCertificateFolder, logger);
 
             string signGen;
 
@@ -104,13 +78,55 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             signGenCmdProcess.WaitForExit();
             signGenCmdProcess.ExitCode.Should().Be(0, $"\"{signGen}\" exited with error {signGenCmdProcess.StandardError.ReadToEnd()}.");
 
+            GeneratePfxFromPublicCertificateAndPrivateKey(leafCertificateSubject, destinationCertificateFolder, logger);
+        }
+
+        internal static void GenerateCertificateSigningRequestFiles(string subject, DirectoryInfo destinationCertificateFolder, MsTestLogger logger)
+        {
+            string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.key");
+            string csrFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.csr");
+
+            // Generate the private key for the certificate
+            logger.Trace($"Generating the private key for the certificate with subject {subject} using ...\n");
+            string keyGen = $"genpkey" +
+                $" -out \"{keyFile}\"" +
+                $" -algorithm RSA" +
+                $" -pkeyopt rsa_keygen_bits:2048";
+
+            logger.Trace($"openssl {keyGen}\n");
+            using Process keyGenCmdProcess = CreateErrorObservantProcess("openssl", keyGen);
+            keyGenCmdProcess.Start();
+            keyGenCmdProcess.WaitForExit();
+            keyGenCmdProcess.ExitCode.Should().Be(0, $"\"{keyGen}\" exited with error {keyGenCmdProcess.StandardError.ReadToEnd()}.");
+
+            // Generate the certificate signing request for the certificate
+            logger.Trace($"Generating the certificate signing request for the certificate with subject {subject} using ...\n");
+            string csrGen = $"req" +
+                $" -new" +
+                $" -subj /CN={subject}" +
+                $" -key \"{keyFile}\"" +
+                $" -out \"{csrFile}\"";
+
+            logger.Trace($"openssl {csrGen}\n");
+            using Process csrGenCmdProcess = CreateErrorObservantProcess("openssl", csrGen);
+            csrGenCmdProcess.Start();
+            csrGenCmdProcess.WaitForExit();
+            csrGenCmdProcess.ExitCode.Should().Be(0, $"\"{csrGen}\" exited with error {csrGenCmdProcess.StandardError.ReadToEnd()}.");
+        }
+
+        internal static void GeneratePfxFromPublicCertificateAndPrivateKey(string subject, DirectoryInfo destinationCertificateFolder, MsTestLogger logger)
+        {
+            string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.key");
+            string cerFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.cer");
+            string pfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.pfx");
+
             // Generate the pfx file containing both public certificate and private key information
-            logger.Trace($"Generating {leafCertificateSubject}.pfx file using ...\n");
+            logger.Trace($"Generating {subject}.pfx file using ...\n");
             string pfxGen = $"pkcs12" +
                 $" -export" +
-                $" -in \"{leafCertificateCerFile}\"" +
-                $" -inkey \"{leafCertificateKeyFile}\"" +
-                $" -out \"{leafCertificatePfxFile}\"" +
+                $" -in \"{cerFile}\"" +
+                $" -inkey \"{keyFile}\"" +
+                $" -out \"{pfxFile}\"" +
                 $" -passout pass:";
 
             logger.Trace($"openssl {pfxGen}\n");
@@ -136,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             File.WriteAllBytes(pfxFile, buff);
 
-            Console.WriteLine($"Extracting the private key from intermediate certificate with subject {pfxCertificate.Subject} file using ...\n");
+            Console.WriteLine($"Extracting the private key from certificate with subject {pfxCertificate.Subject} file using ...\n");
             string extractKey = $"pkcs12" +
                 $" -in \"{pfxFile}\"" +
                 $" -nocerts" +
@@ -150,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             extractKeyCmdProcess.WaitForExit();
             extractKeyCmdProcess.ExitCode.Should().Be(0, $"\"{extractKey}\" exited with error {extractKeyCmdProcess.StandardError.ReadToEnd()}.");
 
-            Console.WriteLine($"Extracting the public certificate from intermediate certificate with subject {pfxCertificate.Subject} file using ...\n");
+            Console.WriteLine($"Extracting the public certificate from certificate with subject {pfxCertificate.Subject} file using ...\n");
             string extractCertificate = $"pkcs12" +
                 $" -in \"{pfxFile}\"" +
                 $" -nokeys" +

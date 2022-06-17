@@ -306,6 +306,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "clientCertificateIssuancePolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ClientCertificateIssuancePolicy ClientCertificateIssuancePolicy { get; set; }
 
+        /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
         /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>

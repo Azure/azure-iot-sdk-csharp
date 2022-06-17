@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            string userAgent = $"{name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+            string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
             if (!string.IsNullOrWhiteSpace(Extra))
             {
