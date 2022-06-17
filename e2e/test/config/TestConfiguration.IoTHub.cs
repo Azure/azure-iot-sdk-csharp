@@ -72,30 +72,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 return cert;
             }
 
-            public static X509Certificate2 GetRootCACertificate()
-            {
-                const string hubCert = "X509_CHAIN_ROOT_CA_CERTIFICATE";
-                X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
-                return cert;
-            }
-
-            public static X509Certificate2 GetIntermediate1Certificate()
-            {
-                const string hubCert = "X509_CHAIN_INTERMEDIATE1_CERTIFICATE";
-                X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
-                return cert;
-            }
-
-            public static X509Certificate2 GetIntermediate2Certificate()
-            {
-                const string hubCert = "X509_CHAIN_INTERMEDIATE2_CERTIFICATE";
-                X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
-                return cert;
-            }
-
             public static string ConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_CONN_STRING_INVALIDCERT", string.Empty);
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
