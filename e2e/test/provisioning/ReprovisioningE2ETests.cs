@@ -744,7 +744,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         // operation should increment the version to 2.
                         twin.Properties.Reported.Count.Should().Be(1);
                         twin.Properties.Reported.Version.Should().Be(2);
-                        result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.InitialAssignment);
+                        result.Substatus.Should().Be(ProvisioningRegistrationSubstatusType.ReprovisionedToInitialAssignment);
                     }
                 }
 
