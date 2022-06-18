@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 catch (Exception ex) when (retryableExceptions.Any(e => e.IsInstanceOfType(ex)))
                 {
                     shouldRetry = retryPolicy.ShouldRetry(++counter, ex, out retryInterval);
-                    logger.Trace($"Attempt {counter}: operation did not complete: {ex}");
+                    logger.Trace($"Attempt {counter}: operation did not succeed: {ex}");
 
                     if (!shouldRetry)
                     {
