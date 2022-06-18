@@ -37,14 +37,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 catch (Exception ex) when (retryableExceptions.Any(e => e.IsInstanceOfType(ex)))
                 {
                     shouldRetry = retryPolicy.ShouldRetry(++counter, ex, out retryInterval);
-                    logger.Trace($"Attempt {counter}: request got throttled: {ex}");
+                    logger.Trace($"Attempt {counter}: operation did not complete: {ex}");
+
+                    if (!shouldRetry)
+                    {
+                        logger.Trace($"Encountered an exception that will not be retried - attempt: {counter}; exception: {ex}");
+                        throw;
+                    }
                 }
 
-                if (shouldRetry)
-                {
-                    logger.Trace($"Will retry operation in {retryInterval}.");
-                    await Task.Delay(retryInterval).ConfigureAwait(false);
-                }
+                logger.Trace($"Will retry operation in {retryInterval}.");
+                await Task.Delay(retryInterval).ConfigureAwait(false);
             }
             while (shouldRetry);
         }
