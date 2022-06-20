@@ -1141,7 +1141,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             string registrationId = security.GetRegistrationID();
 
                             X509Certificate2Helper.GenerateCertificateSigningRequestFiles(registrationId, s_caIssuedX509CertificatesFolder, Logger);
-                            string certificateSigningRequest = File.ReadAllText($"{s_caIssuedX509CertificatesFolder}\\{registrationId}.csr");
+                            string csrFile = Path.Combine(s_caIssuedX509CertificatesFolder.FullName, $"{registrationId}.csr");
+                            string certificateSigningRequest = File.ReadAllText(csrFile);
 
                             result = timeout != TimeSpan.MaxValue
                                 ? await provClient.RegisterAsync(
@@ -1178,7 +1179,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         string registrationId = result.RegistrationId;
 
                         // Write the issued certificate to disk
-                        File.WriteAllText($"{s_caIssuedX509CertificatesFolder}\\{registrationId}.cer", result.IssuedClientCertificate);
+                        string cerFile = Path.Combine(s_caIssuedX509CertificatesFolder.FullName, $"{registrationId}.cer");
+                        File.WriteAllText(cerFile, result.IssuedClientCertificate);
 
                         X509Certificate2Helper.GeneratePfxFromPublicCertificateAndPrivateKey(registrationId, s_caIssuedX509CertificatesFolder, Logger);
                         operationalCertificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_caIssuedX509CertificatesFolder);
