@@ -15,13 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
         }
 
-        public static EventSourceTestLogger Log
-        {
-            get
-            {
-                return s_log;
-            }
-        }
+        public static EventSourceTestLogger Log => s_log;
 
         [Event(1, Keywords = Keywords.Default, Level = EventLevel.Informational)]
         public void TestMessage(string message)

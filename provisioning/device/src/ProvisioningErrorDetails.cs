@@ -36,10 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Additional information.
         /// </summary>
         [JsonProperty(PropertyName = "info", NullValueHandling = NullValueHandling.Ignore)]
-#pragma warning disable CA2227 // Collection properties should be read only
-        public Dictionary<string, string> Info { get; set; }
-
-#pragma warning restore CA2227 // Collection properties should be read only
+        public Dictionary<string, string> Info { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Time stamp (in UTC).
@@ -47,10 +44,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string TimestampUtc { get; set; }
 
         /// <summary>
-        /// Create the error message with the saved error code, tracking id and timestamp
+        /// Create the error message with the saved error code, tracking Id, and timestamp.
         /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
+        /// <param name="message">A formatted error message.</param>
         public string CreateMessage(string message)
         {
             var sb = new StringBuilder();

@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Shared;
+using System.ComponentModel;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -208,13 +209,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="ArgumentException">if the provided string does not fit the enrollmentGroup Id requirements</exception>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
-        public string EnrollmentGroupId { get; private set; }
+        public string EnrollmentGroupId { get; internal set; }
 
         /// <summary>
         /// Current registration state.
         /// </summary>
         [JsonProperty(PropertyName = "registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DeviceRegistrationState RegistrationState { get; private set; }
+        public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
         /// Attestation Mechanism
@@ -245,7 +246,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-                else if (!(value is X509Attestation) && !(value is SymmetricKeyAttestation))
+                else if (value is not X509Attestation && value is not SymmetricKeyAttestation)
                 {
                     throw new ArgumentException("Attestation for enrollmentGroup shall be X509 or symmetric key");
                 }
@@ -285,13 +286,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedDateTimeUtc { get; private set; }
+        public DateTime? CreatedDateTimeUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedDateTimeUtc { get; private set; }
+        public DateTime? LastUpdatedDateTimeUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag
@@ -317,20 +318,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public AllocationPolicy? AllocationPolicy { get; set; }
 
-#pragma warning disable CA2227 // Collection properties should be read only. Will not change public API
-
         /// <summary>
         /// The list of names of IoT hubs the device(s) in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
         /// </summary>
         [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public ICollection<string> IotHubs { get; set; }
-
-#pragma warning restore CA2227 // Collection properties should be read only
+        public IList<string> IotHubs { get; set; } = new List<string>();
 
         /// <summary>
         /// Custom allocation definition.
         /// </summary>
         [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
+
+        /// <summary>
+        /// For use in serialization.
+        /// </summary>
+        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool ShouldSerializeIotHubs()
+        {
+            return IotHubs != null && IotHubs.Any();
+        }
     }
 }
