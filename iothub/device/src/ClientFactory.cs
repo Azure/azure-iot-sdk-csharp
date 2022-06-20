@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
@@ -141,7 +141,9 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     catch (Exception ex)
                     {
-                        if (Logging.IsEnabled) Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+                        if (Logging.IsEnabled)
+                            Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+
                         throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
                     }
                 }
@@ -155,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -172,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a InternalClient from individual parameters
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
         /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
@@ -238,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create a InternalClient using Amqp transport from the specified connection string
         /// </summary>
-        /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
+        /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
@@ -273,7 +275,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create InternalClient from the specified connection string using the specified transport type
         /// </summary>
-        /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
+        /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportType">The transportType used (Http1, Amqp or Mqtt), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
@@ -477,7 +479,8 @@ namespace Microsoft.Azure.Devices.Client
                         break;
 
                     default:
-                        throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportSetting.GetTransportType()));
+                        throw new InvalidOperationException(
+                            $"Unsupported Transport Type {transportSetting.GetTransportType()}");
                 }
             }
 
@@ -618,11 +621,13 @@ namespace Microsoft.Azure.Devices.Client
                     };
 
                 default:
-                    throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportType));
+                    throw new InvalidOperationException($"Unsupported Transport {transportType}");
             }
         }
 
-        private static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
+        private static ITransportSettings[] PopulateCertificateInTransportSettings(
+            IotHubConnectionStringBuilder connectionStringBuilder, 
+            ITransportSettings[] transportSettings)
         {
             foreach (ITransportSettings transportSetting in transportSettings)
             {
@@ -643,7 +648,7 @@ namespace Microsoft.Azure.Devices.Client
                         break;
 
                     default:
-                        throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportSetting.GetTransportType()));
+                        throw new InvalidOperationException($"Unsupported Transport {transportSetting.GetTransportType()}");
                 }
             }
 

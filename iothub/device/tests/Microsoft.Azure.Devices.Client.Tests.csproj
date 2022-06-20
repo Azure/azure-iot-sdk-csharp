@@ -11,7 +11,7 @@
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
 
     <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>Authentication/HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Include="HsmAuthentication\**" />
+    <Compile Include="Authentication\HsmAuthentication\**" />
     <Compile Remove="ClientWebSocketTransportTests.cs" />
     <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
@@ -38,7 +38,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
     <PackageReference Include="NSubstitute" Version="3.1.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.15">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

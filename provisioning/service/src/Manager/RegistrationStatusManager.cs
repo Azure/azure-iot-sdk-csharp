@@ -24,21 +24,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string id,
             CancellationToken cancellationToken)
         {
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_002: [The GetAsync shall sent the Get HTTP request to get the deviceRegistrationState information.] */
-            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
-                HttpMethod.Get,
-                GetDeviceRegistrationStatusUri(id),
-                null,
-                null,
-                null,
-                cancellationToken).ConfigureAwait(false);
+            ContractApiResponse contractApiResponse = await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Get,
+                    GetDeviceRegistrationStatusUri(id),
+                    null,
+                    null,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (contractApiResponse.Body == null)
             {
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_003: [The GetAsync shall return a DeviceRegistrationState object created from the body of the HTTP response.] */
             return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
         }
 
@@ -47,20 +47,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             DeviceRegistrationState deviceRegistrationState,
             CancellationToken cancellationToken)
         {
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_004: [The DeleteAsync shall throw ArgumentException if the provided deviceRegistrationState is null.] */
             if (deviceRegistrationState == null)
             {
                 throw new ArgumentNullException(nameof(deviceRegistrationState));
             }
 
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_005: [The DeleteAsync shall sent the Delete HTTP request to remove the deviceRegistrationState.] */
-            await contractApiHttp.RequestAsync(
-                HttpMethod.Delete,
-                GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId),
-                null,
-                null,
-                deviceRegistrationState.ETag,
-                cancellationToken).ConfigureAwait(false);
+            await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId),
+                    null,
+                    null,
+                    deviceRegistrationState.ETag,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         internal static async Task DeleteAsync(
@@ -69,14 +69,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             string eTag = null)
         {
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_007: [The DeleteAsync shall sent the Delete HTTP request to remove the deviceRegistrationState.] */
-            await contractApiHttp.RequestAsync(
-                HttpMethod.Delete,
-                GetDeviceRegistrationStatusUri(id),
-                null,
-                null,
-                eTag,
-                cancellationToken).ConfigureAwait(false);
+            await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetDeviceRegistrationStatusUri(id),
+                    null,
+                    null,
+                    eTag,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1068",
@@ -89,7 +90,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string enrollmentGroupId,
             int pageSize = 0)
         {
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_008: [The CreateQuery shall throw ArgumentException if the provided querySpecification is null.] */
             if (querySpecification == null)
             {
                 throw new ArgumentNullException(nameof(querySpecification));
@@ -100,21 +100,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
 
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_010: [The CreateQuery shall return a new Query for DeviceRegistrationState.] */
             return new Query(
-                provisioningConnectionString, 
+                provisioningConnectionString,
                 GetGetDeviceRegistrationStatus(enrollmentGroupId),
                 querySpecification,
                 httpTransportSettings,
-                pageSize, 
+                pageSize,
                 cancellationToken);
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)
         {
             id = WebUtility.UrlEncode(id);
-            return new Uri(DeviceRegistrationStatusUriFormat.FormatInvariant(
-                ServiceName, id, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(
+                DeviceRegistrationStatusUriFormat.FormatInvariant(ServiceName, id, SdkUtils.ApiVersionQueryString),
+                UriKind.Relative);
         }
 
         private static string GetGetDeviceRegistrationStatus(string id)

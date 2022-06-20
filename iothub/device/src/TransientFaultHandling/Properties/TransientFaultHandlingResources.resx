@@ -129,10 +129,4 @@
   <data name="StringCannotBeEmpty" xml:space="preserve">
     <value>StringCannotBeEmpty</value>
   </data>
-  <data name="TaskCannotBeNull" xml:space="preserve">
-    <value>TaskCannotBeNull</value>
-  </data>
-  <data name="TaskMustBeScheduled" xml:space="preserve">
-    <value>TaskMustBeScheduled</value>
-  </data>
 </root>

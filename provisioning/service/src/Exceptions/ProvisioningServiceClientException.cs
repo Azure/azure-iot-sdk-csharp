@@ -9,23 +9,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Super class for the Device Provisioning Service exceptions on the Service Client.
     /// </summary>
     /// <remarks>
-    /// <code>
+    /// <c>
     /// ProvisioningServiceClientException
     ///    |        \__IsTransient [identify if retry is a valid scenario]
     ///    |
     ///    +-->ProvisioningServiceClientTransportException [any transport layer exception]
     ///         |
     ///         +-->ProvisioningServiceClientHttpException [any exception reported in the HTTP response]
-    /// </code>
+    /// </c>
     /// </remarks>
     public class ProvisioningServiceClientException : Exception
     {
-
-        /// <summary>
-        /// True if the error is transient.
-        /// </summary>
-        public bool IsTransient { get; private set; }
-
         /// <summary>
         /// Initializes the <see cref="ProvisioningServiceClientException"/> exception type.
         /// </summary>
@@ -83,5 +77,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             IsTransient = isTransient;
         }
+
+        /// <summary>
+        /// True if the error is transient.
+        /// </summary>
+        public bool IsTransient { get; private set; }
     }
 }

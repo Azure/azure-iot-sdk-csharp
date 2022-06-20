@@ -14,9 +14,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
     internal class HttpRequestResponseSerializer
     {
-        private const char SP = ' ';
-        private const char CR = '\r';
-        private const char LF = '\n';
+        private const char Space = ' ';
+        private const char CarriageReturn = '\r';
+        private const char LineFeed = '\n';
         private const char ProtocolVersionSeparator = '/';
         private const string Protocol = "HTTP";
         private const char HeaderSeparator = ':';
@@ -38,15 +38,15 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             var builder = new StringBuilder();
             // request-line   = method SP request-target SP HTTP-version CRLF
             builder.Append(request.Method);
-            builder.Append(SP);
+            builder.Append(Space);
             builder.Append(request.RequestUri.IsAbsoluteUri
                 ? request.RequestUri.PathAndQuery
                 : Uri.EscapeUriString(request.RequestUri.ToString()));
-            builder.Append(SP);
+            builder.Append(Space);
             builder.Append($"{Protocol}{ProtocolVersionSeparator}");
             builder.Append(new Version(1, 1).ToString(2));
-            builder.Append(CR);
-            builder.Append(LF);
+            builder.Append(CarriageReturn);
+            builder.Append(LineFeed);
 
             // Headers
             builder.Append(request.Headers);
@@ -63,8 +63,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             }
 
             // Headers end
-            builder.Append(CR);
-            builder.Append(LF);
+            builder.Append(CarriageReturn);
+            builder.Append(LineFeed);
 
             return Encoding.ASCII.GetBytes(builder.ToString());
         }
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                 throw new HttpRequestException("Response is empty.");
             }
 
-            string[] statusLineParts = statusLine.Split(new[] { SP }, 3);
+            string[] statusLineParts = statusLine.Split(new[] { Space }, 3);
             if (statusLineParts.Length < 3)
             {
                 throw new HttpRequestException("Status line is not valid.");

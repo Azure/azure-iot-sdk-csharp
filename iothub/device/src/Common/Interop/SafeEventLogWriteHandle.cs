@@ -27,8 +27,7 @@ namespace Microsoft.Azure.Devices.Client
             int error = Marshal.GetLastWin32Error();
             if (retval.IsInvalid)
             {
-                Debug.Print("SafeEventLogWriteHandle::RegisterEventSource[" + uncServerName + ", " + sourceName + "] Failed. Last Error: " +
-                    error.ToString(CultureInfo.InvariantCulture));
+                Debug.Print($"SafeEventLogWriteHandle::RegisterEventSource[{uncServerName}, {sourceName}] failed. Last error: {error}");
             }
 
             return retval;
@@ -41,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         [SecurityCritical]
         protected override bool ReleaseHandle()
         {
-            return DeregisterEventSource(this.handle);
+            return DeregisterEventSource(handle);
         }
     }
 }

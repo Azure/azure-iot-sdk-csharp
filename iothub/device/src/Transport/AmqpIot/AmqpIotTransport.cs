@@ -97,6 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
+
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(InitializeAsync));
 
@@ -206,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 }
 
                 // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
                 if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback;
@@ -232,12 +233,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 return true;
             }
 
-            if (_disableServerCertificateValidation && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            if (_disableServerCertificateValidation
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
             {
                 return true;
             }
 
-            if (!_amqpTransportSettings.CertificateRevocationCheck && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors && CausedByRevocationCheckError(chain))
+            if (!_amqpTransportSettings.CertificateRevocationCheck
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors
+                && CausedByRevocationCheckError(chain))
             {
                 return true;
             }

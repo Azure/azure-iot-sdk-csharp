@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using System;
 using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -27,10 +27,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public abstract AmqpSettings CreateAmqpSettings(string idScope);
 
         public abstract Task OpenConnectionAsync(
-            AmqpClientConnection connection, 
-            bool useWebSocket, 
-            IWebProxy proxy, 
-            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            AmqpClientConnection connection,
+            bool useWebSocket,
+            IWebProxy proxy,
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback,
             CancellationToken cancellationToken);
 
         public abstract void SaveCredentials(RegistrationOperationStatus status);

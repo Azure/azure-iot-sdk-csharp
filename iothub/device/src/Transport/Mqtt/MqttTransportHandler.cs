@@ -32,7 +32,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private Action<Message> _twinResponseEvent;
 
         internal MqttTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         internal MqttTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<IPAddress[], int, Task<IChannel>> channelFactory)
@@ -188,15 +188,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                ClientOptions options = context.Get<ClientOptions>();
+                ClientOptions options = context.ClientOptions;
                 switch (settings.GetTransportType())
                 {
                     case TransportType.Mqtt_Tcp_Only:
-                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
+                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
                         break;
 
                     case TransportType.Mqtt_WebSocket_Only:
-                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
+                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
                         break;
 
                     default:
@@ -452,33 +452,47 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                if (TryStop())
+                if (Logging.IsEnabled)
                 {
-                    CleanUpAsync().GetAwaiter().GetResult();
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
 
-                _disconnectAwaitersCancellationSource?.Dispose();
-                _disconnectAwaitersCancellationSource = null;
-
-                _receivingSemaphore?.Dispose();
-                _receivingSemaphore = null;
-
-                _deviceReceiveMessageSemaphore?.Dispose();
-                _deviceReceiveMessageSemaphore = null;
-
-                if (_channel is IDisposable disposableChannel)
+                if (!_disposed)
                 {
-                    disposableChannel.Dispose();
-                    _channel = null;
+                    base.Dispose(disposing);
+                    if (disposing)
+                    {
+                        if (TryStop())
+                        {
+                            CleanUpAsync().GetAwaiter().GetResult();
+                        }
+
+                        _disconnectAwaitersCancellationSource?.Dispose();
+                        _disconnectAwaitersCancellationSource = null;
+
+                        _receivingSemaphore?.Dispose();
+                        _receivingSemaphore = null;
+
+                        _deviceReceiveMessageSemaphore?.Dispose();
+                        _deviceReceiveMessageSemaphore = null;
+
+                        if (_channel is IDisposable disposableChannel)
+                        {
+                            disposableChannel.Dispose();
+                            _channel = null;
+                        }
+                    }
+
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
             }
         }
@@ -1140,7 +1154,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (status >= 300)
                             {
-                                throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                // The Hub team is refactoring the retriable status codes without breaking changes to the existing ones.
+                                // It can be expected that we may bring more retriable codes here in the future.
+                                // Retry for Http status code 429 (too many requests)
+                                if (status == 429)
+                                {
+                                    throw new IotHubThrottledException($"Request {rid} was throttled by the server");
+                                }
+                                else
+                                {
+                                    throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                }
                             }
                             else
                             {
@@ -1309,7 +1333,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
                 if (settings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;

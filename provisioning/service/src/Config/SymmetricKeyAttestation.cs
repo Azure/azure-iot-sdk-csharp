@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Attestation using a symmetric key
+    /// Attestation using a symmetric key.
     /// </summary>
     public sealed class SymmetricKeyAttestation : Attestation
     {
@@ -27,34 +26,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets the primary key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "primaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string PrimaryKey
-        {
-            get
-            {
-                return _primaryKey;
-            }
-            private set
-            {
-                _primaryKey = value;
-            }
-        }
-        private string _primaryKey;
+        public string PrimaryKey { get; private set; }
 
         /// <summary>
         /// Gets the secondary key used for attestation.
         /// </summary>
         [JsonProperty(PropertyName = "secondaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string SecondaryKey
-        {
-            get
-            {
-                return _secondaryKey;
-            }
-            private set
-            {
-                _secondaryKey = value;
-            }
-        }
-        private string _secondaryKey;
+        public string SecondaryKey { get; private set; }
     }
 }

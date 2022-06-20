@@ -8,12 +8,12 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.Azure.Devices.Common.WebApi;
 
 #if NET451
 using Microsoft.Owin;
 #endif
 
-using Microsoft.Azure.Devices.Common.WebApi;
 
 namespace Microsoft.Azure.Devices.Common
 {
@@ -59,8 +59,8 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             return value[length - 1] == suffix
-                    ? value
-                    : value + suffix;
+                ? value
+                : value + suffix;
         }
 
         /// <summary>

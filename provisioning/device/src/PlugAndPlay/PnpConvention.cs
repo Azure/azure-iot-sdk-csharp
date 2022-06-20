@@ -17,11 +17,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlay
         /// For more information on device provisioning service and plug and play compatibility,
         /// and PnP device certification, see <see href="https://docs.microsoft.com/azure/iot-pnp/howto-certify-device"/>.
         /// The DPS payload should be in the format:
-        /// <code>
+        /// <c>
         /// {
         ///   "modelId": "dtmi:com:example:modelName;1"
         /// }
-        /// </code>
+        /// </c>
         /// For information on DTDL, see <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"/>
         /// </remarks>
         /// <param name="modelId">The Id of the model the device adheres to for properties, telemetry, and commands.</param>

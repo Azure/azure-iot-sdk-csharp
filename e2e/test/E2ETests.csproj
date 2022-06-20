@@ -16,7 +16,7 @@
 
   <!-- Legacy .NET 4.5.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Remove="config\Configuration.Provisioning.cs" />
+    <Compile Remove="config\TestConfiguration.Provisioning.cs" />
     <Compile Remove="provisioning\ProvisioningE2ETests.cs" />
     <Compile Remove="provisioning\ProvisioningServiceClientE2ETests.cs" />
     <Compile Remove="provisioning\ProvisioningCertificateValidationE2ETest.cs" />
@@ -28,6 +28,7 @@
     <Compile Remove="iothub\service\DigitalTwinClientE2ETests.cs" />
     <Compile Remove="helpers\digitaltwins\models\ThermostatTwin.cs" />
     <Compile Remove="helpers\digitaltwins\models\TemperatureControllerTwin.cs" />
+    <Compile Remove="helpers\ProvisioningServiceRetryPolicy.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->

@@ -1,0 +1,209 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using FluentAssertions;
+
+namespace Microsoft.Azure.Devices.E2ETests.Helpers
+{
+    /// <summary>
+    /// An X509Certificate2 helper class for generating self-signed and CA-signed certificates.
+    /// This class uses openssl for certificate generation since <see cref="X509Certificate2"/> class currently doesn't have certificate generation APIs.
+    /// </summary>
+    internal static class X509Certificate2Helper
+    {
+        internal static void GenerateSelfSignedCertificateFiles(string subject, DirectoryInfo destinationCertificateFolder, MsTestLogger logger)
+        {
+            GenerateSignedCertificateFiles(subject, null, destinationCertificateFolder, logger);
+        }
+
+        internal static void GenerateIntermediateCertificateSignedCertificateFiles(
+            string leafCertificateSubject,
+            string intermediateCertificateSubject,
+            DirectoryInfo destinationCertificateFolder,
+            MsTestLogger logger)
+        {
+            GenerateSignedCertificateFiles(leafCertificateSubject, intermediateCertificateSubject, destinationCertificateFolder, logger);
+        }
+
+        private static void GenerateSignedCertificateFiles(
+            string leafCertificateSubject,
+            string signingIntermediateCertificateSubject,
+            DirectoryInfo destinationCertificateFolder,
+            MsTestLogger logger)
+        {
+            string signingCertificateKeyFile = Path.Combine(destinationCertificateFolder.FullName, $"{signingIntermediateCertificateSubject}.key");
+            string signingCertificateCerFile = Path.Combine(destinationCertificateFolder.FullName, $"{signingIntermediateCertificateSubject}.cer");
+            string leafCertificateKeyFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.key");
+            string leafCertificateCsrFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.csr");
+            string leafCertificateCerFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.cer");
+
+            GenerateCertificateSigningRequestFiles(leafCertificateSubject, destinationCertificateFolder, logger);
+
+            string signGen;
+
+            // This is a request to generate a self-signed certificate.
+            if (string.IsNullOrWhiteSpace(signingIntermediateCertificateSubject))
+            {
+                // Self-sign the certificate signing request generating a file containing the public certificate information
+                logger.Trace($"Self-sign the certificate with subject {leafCertificateSubject} using ...\n");
+                signGen = $"x509" +
+                    $" -req" +
+                    $" -days 7" +
+                    $" -in \"{leafCertificateCsrFile}\"" +
+                    $" -signkey \"{leafCertificateKeyFile}\"" +
+                    $" -out \"{leafCertificateCerFile}\"";
+            }
+            // This is a request to generate a certificate signed by a verified intermediate certificate
+            else
+            {
+                // Use the public certificate and private keys from the intermediate certificate to sign the leaf device certificate.
+                logger.Trace($"Sign the certificate with subject {leafCertificateSubject} using the keys from intermediate certificate with subject {signingIntermediateCertificateSubject} ...\n");
+                signGen = $"x509" +
+                    $" -req" +
+                    $" -days 7" +
+                    $" -in \"{leafCertificateCsrFile}\"" +
+                    $" -CA \"{signingCertificateCerFile}\"" +
+                    $" -CAkey \"{signingCertificateKeyFile}\"" +
+                    $" -CAcreateserial" +
+                    $" -out \"{leafCertificateCerFile}\"";
+            }
+
+            logger.Trace($"openssl {signGen}\n");
+            using Process signGenCmdProcess = CreateErrorObservantProcess("openssl", signGen);
+            signGenCmdProcess.Start();
+            signGenCmdProcess.WaitForExit();
+            signGenCmdProcess.ExitCode.Should().Be(0, $"\"{signGen}\" exited with error {signGenCmdProcess.StandardError.ReadToEnd()}.");
+
+            GeneratePfxFromPublicCertificateAndPrivateKey(leafCertificateSubject, destinationCertificateFolder, logger);
+        }
+
+        internal static void GenerateCertificateSigningRequestFiles(string subject, DirectoryInfo destinationCertificateFolder, MsTestLogger logger)
+        {
+            string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.key");
+            string csrFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.csr");
+
+            // Generate the private key for the certificate
+            logger.Trace($"Generating the private key for the certificate with subject {subject} using ...\n");
+            string keyGen = $"genpkey" +
+                $" -out \"{keyFile}\"" +
+                $" -algorithm RSA" +
+                $" -pkeyopt rsa_keygen_bits:2048";
+
+            logger.Trace($"openssl {keyGen}\n");
+            using Process keyGenCmdProcess = CreateErrorObservantProcess("openssl", keyGen);
+            keyGenCmdProcess.Start();
+            keyGenCmdProcess.WaitForExit();
+            keyGenCmdProcess.ExitCode.Should().Be(0, $"\"{keyGen}\" exited with error {keyGenCmdProcess.StandardError.ReadToEnd()}.");
+
+            // Generate the certificate signing request for the certificate
+            logger.Trace($"Generating the certificate signing request for the certificate with subject {subject} using ...\n");
+            string csrGen = $"req" +
+                $" -new" +
+                $" -subj /CN={subject}" +
+                $" -key \"{keyFile}\"" +
+                $" -out \"{csrFile}\"";
+
+            logger.Trace($"openssl {csrGen}\n");
+            using Process csrGenCmdProcess = CreateErrorObservantProcess("openssl", csrGen);
+            csrGenCmdProcess.Start();
+            csrGenCmdProcess.WaitForExit();
+            csrGenCmdProcess.ExitCode.Should().Be(0, $"\"{csrGen}\" exited with error {csrGenCmdProcess.StandardError.ReadToEnd()}.");
+        }
+
+        internal static void GeneratePfxFromPublicCertificateAndPrivateKey(string subject, DirectoryInfo destinationCertificateFolder, MsTestLogger logger)
+        {
+            string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.key");
+            string cerFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.cer");
+            string pfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{subject}.pfx");
+
+            // Generate the pfx file containing both public certificate and private key information
+            logger.Trace($"Generating {subject}.pfx file using ...\n");
+            string pfxGen = $"pkcs12" +
+                $" -export" +
+                $" -in \"{cerFile}\"" +
+                $" -inkey \"{keyFile}\"" +
+                $" -out \"{pfxFile}\"" +
+                $" -passout pass:";
+
+            logger.Trace($"openssl {pfxGen}\n");
+            using Process pfxGenCmdProcess = CreateErrorObservantProcess("openssl", pfxGen);
+            pfxGenCmdProcess.Start();
+            pfxGenCmdProcess.WaitForExit();
+            pfxGenCmdProcess.ExitCode.Should().Be(0, $"\"{pfxGen}\" exited with error {pfxGenCmdProcess.StandardError.ReadToEnd()}.");
+        }
+
+        internal static string ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(string pfxCertificateBase64, string certificatePassword, DirectoryInfo destinationCertificateFolder)
+        {
+            byte[] buff = Convert.FromBase64String(pfxCertificateBase64);
+
+#if NET451
+            var pfxCertificate = new X509Certificate2(buff, certificatePassword);
+#else
+            using var pfxCertificate = new X509Certificate2(buff, certificatePassword);
+#endif
+
+            string pfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.pfx");
+            string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.key");
+            string cerFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.cer");
+
+            File.WriteAllBytes(pfxFile, buff);
+
+            Console.WriteLine($"Extracting the private key from certificate with subject {pfxCertificate.Subject} file using ...\n");
+            string extractKey = $"pkcs12" +
+                $" -in \"{pfxFile}\"" +
+                $" -nocerts" +
+                $" -out \"{keyFile}\"" +
+                $" -nodes" +
+                $" -passin pass:{certificatePassword}";
+
+            Console.WriteLine($"openssl {extractKey}\n");
+            using Process extractKeyCmdProcess = CreateErrorObservantProcess("openssl", extractKey);
+            extractKeyCmdProcess.Start();
+            extractKeyCmdProcess.WaitForExit();
+            extractKeyCmdProcess.ExitCode.Should().Be(0, $"\"{extractKey}\" exited with error {extractKeyCmdProcess.StandardError.ReadToEnd()}.");
+
+            Console.WriteLine($"Extracting the public certificate from certificate with subject {pfxCertificate.Subject} file using ...\n");
+            string extractCertificate = $"pkcs12" +
+                $" -in \"{pfxFile}\"" +
+                $" -nokeys" +
+                $" -out \"{cerFile}\"" +
+                $" -passin pass:{certificatePassword}";
+
+            Console.WriteLine($"openssl {extractCertificate}\n");
+            using Process extractCertificateCmdProcess = CreateErrorObservantProcess("openssl", extractCertificate);
+            extractCertificateCmdProcess.Start();
+            extractCertificateCmdProcess.WaitForExit();
+            extractCertificateCmdProcess.ExitCode.Should().Be(0, $"\"{extractCertificate}\" exited with error {extractCertificateCmdProcess.StandardError.ReadToEnd()}.");
+
+            return pfxCertificate.Subject.ToString();
+        }
+
+        internal static X509Certificate2 CreateX509Certificate2FromPfxFile(string subjectName, DirectoryInfo certificateFolder)
+        {
+            return new X509Certificate2(Path.Combine(certificateFolder.FullName, $"{subjectName}.pfx"));
+        }
+
+        internal static X509Certificate2 CreateX509Certificate2FromCerFile(string subjectName, DirectoryInfo certificateFolder)
+        {
+            return new X509Certificate2(Path.Combine(certificateFolder.FullName, $"{subjectName}.cer"));
+        }
+
+        private static Process CreateErrorObservantProcess(string processName, string arguments)
+        {
+            var processStartInfo = new ProcessStartInfo(processName, arguments)
+            {
+                RedirectStandardError = true,
+                UseShellExecute = false
+            };
+
+            return new Process
+            {
+                StartInfo = processStartInfo
+            };
+        }
+    }
+}

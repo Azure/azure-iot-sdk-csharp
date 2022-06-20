@@ -14,10 +14,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class Utils
     {
-        static Utils()
-        {
-        }
-
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
@@ -54,44 +50,26 @@ namespace Microsoft.Azure.Devices.Client
 
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
         {
-            switch (value)
+            return value switch
             {
-                case "none":
-                    return DeliveryAcknowledgement.None;
-
-                case "negative":
-                    return DeliveryAcknowledgement.NegativeOnly;
-
-                case "positive":
-                    return DeliveryAcknowledgement.PositiveOnly;
-
-                case "full":
-                    return DeliveryAcknowledgement.Full;
-
-                default:
-                    throw new NotSupportedException("Unknown value: '" + value + "'");
-            }
+                "none" => DeliveryAcknowledgement.None,
+                "negative" => DeliveryAcknowledgement.NegativeOnly,
+                "positive" => DeliveryAcknowledgement.PositiveOnly,
+                "full" => DeliveryAcknowledgement.Full,
+                _ => throw new NotSupportedException($"Unknown value: '{value}'"),
+            };
         }
 
         public static string ConvertDeliveryAckTypeToString(DeliveryAcknowledgement value)
         {
-            switch (value)
+            return value switch
             {
-                case DeliveryAcknowledgement.None:
-                    return "none";
-
-                case DeliveryAcknowledgement.NegativeOnly:
-                    return "negative";
-
-                case DeliveryAcknowledgement.PositiveOnly:
-                    return "positive";
-
-                case DeliveryAcknowledgement.Full:
-                    return "full";
-
-                default:
-                    throw new NotSupportedException("Unknown value: '" + value + "'");
-            }
+                DeliveryAcknowledgement.None => "none",
+                DeliveryAcknowledgement.NegativeOnly => "negative",
+                DeliveryAcknowledgement.PositiveOnly => "positive",
+                DeliveryAcknowledgement.Full => "full",
+                _ => throw new NotSupportedException($"Unknown value: '{value}'"),
+            };
         }
 
         public static void ValidateDataIsEmptyOrJson(byte[] data)

@@ -3,14 +3,11 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    /*   
-     * NOTE: when adding new items to this enum, make sure to update   
-     * accordingly the following functions in Utils:
-     *      Utils.ConvertDeliveryAckTypeFromString()   
-     *      Utils.ConvertDeliveryAckTypeToString()  
-     */  
-    
-        /// <summary>
+    // NOTE: when adding new items to this enum, make sure to update accordingly the following functions in Utils:
+    // Utils.ConvertDeliveryAckTypeFromString()
+    // Utils.ConvertDeliveryAckTypeToString()
+
+    /// <summary>
     /// Specifies the different acknowledgement levels for message delivery.
     /// </summary>
     public enum DeliveryAcknowledgement
@@ -33,6 +30,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// An acknowledgement is sent on delivery success or failure.
         /// </summary>
-        Full
+        Full,
     }
 }
