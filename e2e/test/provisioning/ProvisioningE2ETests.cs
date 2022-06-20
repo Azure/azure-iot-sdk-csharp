@@ -1219,10 +1219,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 operationalCertificate?.Dispose();
 
-                if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
+                if (security is SecurityProviderX509 x509Security)
                 {
-                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                    publicPrivateCertificate?.Dispose();
+                    X509Certificate2 deviceCertificate = x509Security.GetAuthenticationCertificate();
+                    deviceCertificate?.Dispose();
                 }
 
                 if (auth != null && auth is IDisposable disposableAuth)
@@ -1341,10 +1341,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
                 }
 
-                if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
+                if (security is SecurityProviderX509 x509Security)
                 {
-                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                    publicPrivateCertificate?.Dispose();
+                    X509Certificate2 deviceCertificate = x509Security.GetAuthenticationCertificate();
+                    deviceCertificate?.Dispose();
                 }
             }
         }
