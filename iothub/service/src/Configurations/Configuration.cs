@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices
         /// The unique identifier of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "id", Required = Required.Always)]
-        public string Id { get; private set; }
+        public string Id { get; internal set; }
 
         /// <summary>
         /// The schema version of the configuration.
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
         /// Gets the content type for configuration
         /// </summary>
         [JsonProperty(PropertyName = "contentType")]
-        public string ContentType { get; private set; }
+        public string ContentType { get; internal set; }
 
         /// <summary>
         /// The query used to define the targeted devices or modules.
@@ -84,13 +84,13 @@ namespace Microsoft.Azure.Devices
         /// The creation date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "createdTimeUtc")]
-        public DateTime CreatedTimeUtc { get; private set; }
+        public DateTime CreatedTimeUtc { get; internal set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedTimeUtc")]
-        public DateTime LastUpdatedTimeUtc { get; private set; }
+        public DateTime LastUpdatedTimeUtc { get; internal set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.

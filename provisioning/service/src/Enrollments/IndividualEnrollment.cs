@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId { get; private set; }
+        public string RegistrationId { get; internal set; }
 
         /// <summary>
         /// Desired IoT hub device Id (optional).
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Current registration state.
         /// </summary>
         [JsonProperty(PropertyName = "registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DeviceRegistrationState RegistrationState { get; private set; }
+        public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
         /// Attestation mechanism.
@@ -253,13 +253,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? CreatedDateTimeUtc { get; private set; }
+        public DateTime? CreatedDateTimeUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime? LastUpdatedDateTimeUtc { get; private set; }
+        public DateTime? LastUpdatedDateTimeUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag
