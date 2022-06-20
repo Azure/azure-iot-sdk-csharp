@@ -16,8 +16,13 @@ namespace Microsoft.Azure.Devices.Shared
         /// <summary>
         /// Initializes a new instance of the SecurityProviderX509Certificate class.
         /// </summary>
-        /// <param name="clientCertificate">The client certificate used for authentication.</param>
-        /// <param name="certificateChain">The certificate chain leading to the root certificate uploaded to the Provisioning service.</param>
+        /// <param name="clientCertificate">
+        /// The client certificate used for authentication. The private key should be available in the <see cref="X509Certificate2"/> object,
+        /// or should be available in the certificate store of the system where the client will be authenticated from.
+        /// </param>
+        /// <param name="certificateChain">
+        /// The certificate chain leading to the root certificate uploaded to the device provisioning service.
+        /// </param>
         public SecurityProviderX509Certificate(
             X509Certificate2 clientCertificate,
             X509Certificate2Collection certificateChain = null)

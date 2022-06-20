@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null, Logger);
+            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroupAsync(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null, Logger);
 
             AttestationMechanism attestationMechanism = await provisioningServiceClient.GetEnrollmentGroupAttestationAsync(enrollmentGroup.EnrollmentGroupId);
 
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             string groupId = s_devicePrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
-            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(
+            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroupAsync(
                 provisioningServiceClient,
                 attestationType,
                 groupId,
@@ -451,7 +451,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             return createdEnrollment;
         }
 
-        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(
+        public static async Task<EnrollmentGroup> CreateEnrollmentGroupAsync(
             ProvisioningServiceClient provisioningServiceClient,
             AttestationMechanismType attestationType,
             string groupId,

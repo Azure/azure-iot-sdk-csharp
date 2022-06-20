@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
-        private static readonly X509Certificate2 s_groupEnrollmentCertificate = TestConfiguration.Provisioning.GetGroupEnrollmentCertificate();
+        private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
         private readonly string _idPrefix = $"E2E-{nameof(ReprovisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
@@ -40,15 +40,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
-        private static DirectoryInfo s_dpsClientCertificateFolder;
-        private static DirectoryInfo s_selfSignedCertificatesFolder;
+        private static DirectoryInfo s_x509CertificatesFolder;
+        private static string s_intermediateCertificateSubject;
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            s_dpsClientCertificateFolder = Directory.CreateDirectory("DpsClientCertificates");
-            s_selfSignedCertificatesFolder = s_dpsClientCertificateFolder.CreateSubdirectory("SelfSignedCertificates");
+            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningE2ETests)}-{Guid.NewGuid()}");
+
+            // Extract the public certificate and private key information from the intermediate certificate pfx file.
+            // These keys will be used to sign the test leaf device certificates.
+            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
+                TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
+                s_certificatePassword,
+                s_x509CertificatesFolder);
         }
 
         [LoggedTestMethod]
@@ -416,7 +422,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         /// <summary>
-        /// The expected behaviour is that, with ReprovisionPolicy set to never update hub, the a device is not reprovisioned, even when other settings would suggest it should
+        /// The expected behavior is that, with ReprovisionPolicy set to never update hub, the a device is not reprovisioned, even when other settings would suggest it should
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
             Client.TransportType transportProtocol,
@@ -497,20 +503,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-            await ConfirmRegisteredDeviceWorks(result, auth, transportProtocol, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
+            await ConfirmRegisteredDeviceWorksAsync(result, auth, transportProtocol, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
 
             //Check reprovisioning
-            await UpdateEnrollmentToForceReprovision(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, security, groupId).ConfigureAwait(false);
+            await UpdateEnrollmentToForceReprovisionAsync(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, security, groupId).ConfigureAwait(false);
             result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-            ReprovisioningE2ETests.ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
-            await ConfirmDeviceWorksAfterReprovisioning(result, auth, transportProtocol, reprovisionPolicy, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
+            ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
+            await ConfirmDeviceWorksAfterReprovisioningAsync(result, auth, transportProtocol, reprovisionPolicy, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
 
-            if (attestationType != AttestationMechanismType.X509) //x509 enrollments are hardcoded, should never be deleted
+            if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
             {
+                Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
+            }
+            else
+            {
+                Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
                 await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
             }
 
-            if (auth is IDisposable disposableAuth)
+            if (security is SecurityProviderX509 x509Security)
+            {
+                X509Certificate2 deviceCertificate = x509Security.GetAuthenticationCertificate();
+                deviceCertificate?.Dispose();
+            }
+
+            if (auth != null && auth is IDisposable disposableAuth)
             {
                 disposableAuth?.Dispose();
             }
@@ -520,7 +537,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// Attempt to create device client instance from provided arguments, ensure that it can open a
         /// connection, ensure that it can send telemetry, and (optionally) send a reported property update
         /// </summary>
-        private async Task ConfirmRegisteredDeviceWorks(
+        private async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
             Client.TransportType transportProtocol,
@@ -598,14 +615,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
-                            X509Certificate2Generator.GenerateSelfSignedCertificates(registrationId, s_selfSignedCertificatesFolder, Logger);
+                            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(registrationId, s_x509CertificatesFolder, Logger);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                            // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
-                            X509Certificate2 publicPrivateCertificate = ReprovisioningE2ETests.CreateX509CertificateWithPublicPrivateKey(registrationId);
+                            // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
+                            // It is disposed when the caller to this method is disposed, at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                            using (X509Certificate2 publicCertificate = ReprovisioningE2ETests.CreateX509CertificateWithPublicKey(registrationId))
+                            using (X509Certificate2 publicCertificate = X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder))
                             {
                                 IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
                                     provisioningServiceClient,
@@ -622,11 +640,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
                             }
 
-                            return new SecurityProviderX509Certificate(publicPrivateCertificate);
+                            break;
 
                         case EnrollmentType.Group:
-                            certificate = s_groupEnrollmentCertificate;
-                            collection = TestConfiguration.Provisioning.GetGroupEnrollmentChain();
+                            // The X509 enrollment group has been hardcoded for the purpose of E2E tests and the root certificate has been verified on DPS.
+                            // Each device identity provisioning through the above enrollment group is created on-demand.
+
+                            X509Certificate2Helper.GenerateIntermediateCertificateSignedCertificateFiles(
+                                registrationId,
+                                s_intermediateCertificateSubject,
+                                s_x509CertificatesFolder,
+                                Logger);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                            // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
+                            // It is disposed when the caller to this method is disposed, at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                            collection = new X509Certificate2Collection
+                            {
+                                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
+                                X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder)
+                            };
                             break;
 
                         default:
@@ -639,7 +677,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Group:
-                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(
+                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroupAsync(
                                     provisioningServiceClient,
                                     AttestationMechanismType.SymmetricKey,
                                     groupId,
@@ -650,7 +688,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     capabilities,
                                     Logger)
                                 .ConfigureAwait(false);
-                            Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
+                            symmetricKeyEnrollmentGroup.Attestation.Should().BeOfType(typeof(SymmetricKeyAttestation));
                             var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
                             string registrationIdSymmetricKey = _idPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
@@ -663,18 +701,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                         case EnrollmentType.Individual:
                             IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
-                                provisioningServiceClient,
-                                registrationId,
-                                AttestationMechanismType.SymmetricKey,
-                                null,
-                                reprovisionPolicy,
-                                allocationPolicy,
-                                customAllocationDefinition,
-                                iothubs,
-                                capabilities,
-                                Logger).ConfigureAwait(false);
+                                    provisioningServiceClient,
+                                    registrationId,
+                                    AttestationMechanismType.SymmetricKey,
+                                    null,
+                                    reprovisionPolicy,
+                                    allocationPolicy,
+                                    customAllocationDefinition,
+                                    iothubs,
+                                    capabilities,
+                                    Logger)
+                                .ConfigureAwait(false);
 
-                            Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
+                            symmetricKeyEnrollment.Attestation.Should().BeOfType(typeof(SymmetricKeyAttestation));
                             symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
 
                             registrationIdSymmetricKey = symmetricKeyEnrollment.RegistrationId;
@@ -737,7 +776,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <summary>
         /// Update the enrollment under test such that it forces it to re-provision to the hubs within <paramref name="iotHubsToReprovisionTo"/>
         /// </summary>
-        private async Task UpdateEnrollmentToForceReprovision(
+        private async Task UpdateEnrollmentToForceReprovisionAsync(
             EnrollmentType? enrollmentType,
             ProvisioningServiceClient provisioningServiceClient,
             IList<string> iotHubsToReprovisionTo,
@@ -855,7 +894,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        private async Task ConfirmDeviceWorksAfterReprovisioning(
+        private async Task ConfirmDeviceWorksAfterReprovisioningAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
             Client.TransportType transportProtocol,
@@ -918,25 +957,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await iotClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private static X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
-        {
-            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.crt"));
-        }
-
-        private static X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
-        {
-            return new X509Certificate2(Path.Combine(s_selfSignedCertificatesFolder.FullName, $"{registrationId}.pfx"));
-        }
-
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-            s_groupEnrollmentCertificate?.Dispose();
-
             // Delete all the test client certificates created
             try
             {
-                s_dpsClientCertificateFolder.Delete(true);
+                s_x509CertificatesFolder.Delete(true);
             }
             catch (Exception)
             {

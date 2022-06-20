@@ -151,9 +151,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             var chainCerts = new X509Certificate2Collection
             {
-                TestConfiguration.IoTHub.GetRootCACertificate(),
-                TestConfiguration.IoTHub.GetIntermediate1Certificate(),
-                TestConfiguration.IoTHub.GetIntermediate2Certificate()
+                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
                 TestConfiguration.IoTHub.X509ChainDeviceName,
@@ -178,9 +178,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             var chainCerts = new X509Certificate2Collection
             {
-                TestConfiguration.IoTHub.GetRootCACertificate(),
-                TestConfiguration.IoTHub.GetIntermediate1Certificate(),
-                TestConfiguration.IoTHub.GetIntermediate2Certificate()
+                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
                 TestConfiguration.IoTHub.X509ChainDeviceName,
