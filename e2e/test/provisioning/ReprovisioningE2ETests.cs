@@ -282,7 +282,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string proxyServerAddress = null)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
-            string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+
+            string groupId = null;
+            if (enrollmentType == EnrollmentType.Group)
+            {
+                if (attestationType == AttestationMechanismType.X509)
+                {
+                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
+                }
+                else
+                {
+                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+                }
+            }
 
             bool transportProtocolSupportsTwinOperations = transportProtocol != Client.TransportType.Http1;
 
@@ -332,7 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             else
             {
                 Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
-                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId, Logger).ConfigureAwait(false);
             }
 
             if (security is SecurityProviderX509 x509Security)
@@ -488,7 +500,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Group:
-                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(
+                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroupAsync(
                                     provisioningServiceClient,
                                     AttestationMechanismType.SymmetricKey,
                                     groupId,
