@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
     /// This code is provides as a sample to enable provisioning on hardware without an actual hardware TPM device and
     /// provides no real security.
     /// </summary>
-    public class SecurityProviderTpmSimulator : SecurityProviderTpm
+    public class AuthenticationProviderTpmSimulator : AuthenticationProviderTpm
     {
         private const string SimulatorAddress = "127.0.0.1";
         private const string SimulatorExeName = "Simulator.exe";
@@ -24,9 +24,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         private const int TcpTpmDeviceTimeoutSeconds = 30;
 
         private TcpTpmDevice _tpmDevice;
-        private SecurityProviderTpmHsm _innerClient;
+        private AuthenticationProviderTpmHsm _innerClient;
 
-        public SecurityProviderTpmSimulator(string registrationId) : base(registrationId)
+        public AuthenticationProviderTpmSimulator(string registrationId) : base(registrationId)
         {
             _tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
             _tpmDevice.Connect();
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 tpm2.Startup(Su.Clear);
             }
 
-            _innerClient = new SecurityProviderTpmHsm(GetRegistrationID(), _tpmDevice);
+            _innerClient = new AuthenticationProviderTpmHsm(GetRegistrationID(), _tpmDevice);
         }
 
         public override void ActivateIdentityKey(byte[] encryptedKey)

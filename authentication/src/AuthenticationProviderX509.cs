@@ -3,12 +3,12 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Authentication
 {
     /// <summary>
-    /// The device security provider interface for X.509-based hardware security modules.
+    /// The device authentication provider interface for X.509-based hardware security modules.
     /// </summary>
-    public abstract class SecurityProviderX509 : SecurityProvider
+    public abstract class AuthenticationProviderX509 : AuthenticationProvider
     {
         /// <summary>
         /// Returns the registration Id.

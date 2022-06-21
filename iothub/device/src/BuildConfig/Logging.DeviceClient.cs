@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Azure.Devices.Client;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     // ddbee999-a79e-5050-ea3c-6d1a8a7bafdd
     [EventSource(Name = "Microsoft-Azure-Devices-Device-Client")]

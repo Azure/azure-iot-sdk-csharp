@@ -3,18 +3,18 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Authentication
 {
     /// <summary>
-    /// The Device Security Client for X509 authentication using a certificate object.
+    /// The device authentication for using an X509 certificate object.
     /// </summary>
-    public class SecurityProviderX509Certificate : SecurityProviderX509
+    public class AuthenticationProviderX509Certificate : AuthenticationProviderX509
     {
         private readonly X509Certificate2 _clientCertificate;
         private readonly X509Certificate2Collection _certificateChain;
 
         /// <summary>
-        /// Initializes a new instance of the SecurityProviderX509Certificate class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="clientCertificate">
         /// The client certificate used for authentication. The private key should be available in the <see cref="X509Certificate2"/> object,
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="certificateChain">
         /// The certificate chain leading to the root certificate uploaded to the device provisioning service.
         /// </param>
-        public SecurityProviderX509Certificate(
+        public AuthenticationProviderX509Certificate(
             X509Certificate2 clientCertificate,
             X509Certificate2Collection certificateChain = null)
         {
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Releases the unmanaged resources used by the SecurityProviderX509Certificate and optionally disposes of the managed resources.
+        /// Releases the unmanaged resources used by this class and optionally disposes of the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected override void Dispose(bool disposing) { }

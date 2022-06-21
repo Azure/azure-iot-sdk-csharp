@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     /// <summary>
-    /// Represents a Provisioning registration message.
+    /// Represents a provisioning registration message.
     /// </summary>
     public class ProvisioningTransportRegisterMessage
     {
         private readonly ProductInfo _productInfo = new ProductInfo();
 
         /// <summary>
-        /// The Global Device Endpoint for this message.
+        /// The global device endpoint for this message.
         /// </summary>
         public string GlobalDeviceEndpoint { get; private set; }
 
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public string IdScope { get; private set; }
 
         /// <summary>
-        /// The SecurityProvider used to authenticate the client.
+        /// The authentication provider used to authenticate the client.
         /// </summary>
-        public SecurityProvider Security { get; private set; }
+        public AuthenticationProvider Authentication { get; private set; }
 
         /// <summary>
         /// The custom content.
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public string Payload { get; private set; }
 
         /// <summary>
-        /// The Product Information sent to the Provisioning Service. The application can specify extra information.
+        /// The product information sent to the Provisioning service. The application can specify extra information.
         /// </summary>
         public string ProductInfo
         {
@@ -42,37 +42,37 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportRegisterMessage class.
+        /// Creates a new instance of this class.
         /// </summary>
-        /// <param name="globalDeviceEndpoint">The Global Device Endpoint for this message.</param>
+        /// <param name="globalDeviceEndpoint">The global device endpoint for this message.</param>
         /// <param name="idScope">The IDScope for this message.</param>
-        /// <param name="security">The SecurityProvider used to authenticate the client.</param>
+        /// <param name="authentication">The authentication provider used to authenticate the client.</param>
         public ProvisioningTransportRegisterMessage(
             string globalDeviceEndpoint,
             string idScope,
-            SecurityProvider security)
+            AuthenticationProvider authentication)
         {
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
-            Security = security;
+            Authentication = authentication;
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportRegisterMessage class.
+        /// Creates a new instance of this class.
         /// </summary>
-        /// <param name="globalDeviceEndpoint">The Global Device Endpoint for this message.</param>
+        /// <param name="globalDeviceEndpoint">The global device endpoint for this message.</param>
         /// <param name="idScope">The IDScope for this message.</param>
-        /// <param name="security">The SecurityProvider used to authenticate the client.</param>
-        /// <param name="payload">The custom Json content.</param>
+        /// <param name="authentication">The authentication provider used to authenticate the client.</param>
+        /// <param name="payload">The custom JSON content.</param>
         public ProvisioningTransportRegisterMessage(
             string globalDeviceEndpoint,
             string idScope,
-            SecurityProvider security,
+            AuthenticationProvider authentication,
             string payload)
         {
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
-            Security = security;
+            Authentication = authentication;
             if (!string.IsNullOrEmpty(payload))
             {
                 Payload = payload;

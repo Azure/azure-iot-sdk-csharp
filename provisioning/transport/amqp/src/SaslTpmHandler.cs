@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -18,28 +18,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private readonly byte[] _endorsementKey;
 
         private readonly string _idScope;
-        private readonly SecurityProviderTpm _security;
+        private readonly AuthenticationProviderTpm _authentication;
         private readonly byte[] _storageRootKey;
         private byte[] _nonceBuffer = Array.Empty<byte>();
         private byte _nextSequenceNumber;
-        private string _hostName => $"{_idScope}/registrations/{_security.GetRegistrationID()}";
+        private string _hostName => $"{_idScope}/registrations/{_authentication.GetRegistrationID()}";
 
         public SaslTpmHandler(
             byte[] endorsementKey,
             byte[] storageRootKey,
             string idScope,
-            SecurityProviderTpm security)
+            AuthenticationProviderTpm authentication)
         {
             Debug.Assert(endorsementKey != null);
             Debug.Assert(storageRootKey != null);
             Debug.Assert(!string.IsNullOrWhiteSpace(idScope));
-            Debug.Assert(security != null);
+            Debug.Assert(authentication != null);
 
             Mechanism = MechanismName;
             _endorsementKey = endorsementKey;
             _storageRootKey = storageRootKey;
             _idScope = idScope;
-            _security = security;
+            _authentication = authentication;
         }
 
         protected bool Equals(SaslTpmHandler other)
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Equals(_endorsementKey, other._endorsementKey) &&
                 Equals(_storageRootKey, other._storageRootKey) &&
                 string.CompareOrdinal(_idScope, other._idScope) == 0 &&
-                Equals(_security, other._security);
+                Equals(_authentication, other._authentication);
         }
 
         public override bool Equals(object obj)
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 #else
                 hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode() : 0);
 #endif
-                hashCode = (hashCode * 397) ^ (_security != null ? _security.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (_authentication != null ? _authentication.GetHashCode() : 0);
 
                 return hashCode;
             }
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override SaslHandler Clone()
         {
-            return new SaslTpmHandler(_endorsementKey, _storageRootKey, _idScope, _security);
+            return new SaslTpmHandler(_endorsementKey, _storageRootKey, _idScope, _authentication);
         }
 
         public override void OnChallenge(SaslChallenge challenge)
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private void SendLastResponse()
         {
             string sas = ProvisioningSasBuilder.ExtractServiceAuthKey(
-                _security,
+                _authentication,
                 _hostName,
                 _nonceBuffer);
 
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var initContent = new StringBuilder();
             initContent.Append(_idScope);
             initContent.Append('\0');
-            initContent.Append(_security.GetRegistrationID());
+            initContent.Append(_authentication.GetRegistrationID());
             initContent.Append('\0');
 
             byte[] initContentInBytes = Encoding.UTF8.GetBytes(initContent.ToString());

@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Authentication
 {
     /// <summary>
-    /// The Device Security Provider interface for TPM Hardware Security Modules.
+    /// The device authentication provider interface for TPM hardware security modules.
     /// </summary>
-    public abstract class SecurityProviderTpm : SecurityProvider
+    public abstract class AuthenticationProviderTpm : AuthenticationProvider
     {
         private readonly string _registrationId;
 
         /// <summary>
-        /// Initializes a new instance of the SecurityProviderTpm class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="registrationId">The Provisioning service Registration Id for this device.</param>
-        public SecurityProviderTpm(string registrationId)
+        public AuthenticationProviderTpm(string registrationId)
         {
             _registrationId = registrationId;
         }

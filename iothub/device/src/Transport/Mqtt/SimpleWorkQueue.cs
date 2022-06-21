@@ -11,7 +11,7 @@ using DotNetty.Transport.Channels;
 #if NET5_0_OR_GREATER
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
-using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
+using TaskCompletionSource = Microsoft.Azure.Devices.TaskCompletionSource;
 #endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt

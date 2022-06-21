@@ -316,7 +316,7 @@ try
 
     if ($package)
     {
-        BuildPackage shared\src "Shared Assembly"
+        BuildPackage authentication\src "Device Authentication Providers"
         BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
         BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
         BuildPackage security\tpm\src "SecurityProvider for TPM"

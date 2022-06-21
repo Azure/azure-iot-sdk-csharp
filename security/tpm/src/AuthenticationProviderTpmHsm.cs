@@ -3,15 +3,15 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Security
 {
     /// <summary>
-    /// The Provisioning Security Client implementation for TPM.
+    /// The Provisioning Authentication Client implementation for TPM.
     /// </summary>
-    public class SecurityProviderTpmHsm : SecurityProviderTpm
+    public class AuthenticationProviderTpmHsm : AuthenticationProviderTpm
     {
         private bool _disposed;
 
@@ -32,18 +32,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         private byte[] _activationSecret;
 
         /// <summary>
-        /// Initializes a new instance of the SecurityProviderTpmHsm class using the system TPM.
+        /// Initializes a new instance of this class using the system TPM.
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
         /// if your TPM hardware does not support the relevant API call.
         /// </remarks>
         /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
-        public SecurityProviderTpmHsm(string registrationId)
+        public AuthenticationProviderTpmHsm(string registrationId)
             : this(registrationId, CreateDefaultTpm2Device()) { }
 
         /// <summary>
-        /// Initializes a new instance of the SecurityProviderTpmHsm class using the specified TPM module.
+        /// Initializes a new instance of this class using the specified TPM module.
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </remarks>
         /// <param name="registrationId">The Device Provisioning Service Registration Id.</param>
         /// <param name="tpm">The TPM device.</param>
-        public SecurityProviderTpmHsm(string registrationId, Tpm2Device tpm)
+        public AuthenticationProviderTpmHsm(string registrationId, Tpm2Device tpm)
             : base(registrationId)
         {
             _tpmDevice = tpm ?? throw new ArgumentNullException(nameof(tpm));
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         }
 
         /// <summary>
-        /// Releases the unmanaged resources used by the SecurityProviderTpmHsm and optionally disposes of the managed resources.
+        /// Releases the unmanaged resources used by this class and optionally disposes of the managed resources.
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>

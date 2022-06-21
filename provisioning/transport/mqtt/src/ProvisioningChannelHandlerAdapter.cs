@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt.Packets;
 using DotNetty.Transport.Channels;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -158,11 +158,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private Task ConnectAsync(IChannelHandlerContext context)
         {
-            string registrationId = _message.Security.GetRegistrationID();
+            string registrationId = _message.Authentication.GetRegistrationID();
             string userAgent = _message.ProductInfo;
 
             string password = null;
-            if (_message.Security is SecurityProviderSymmetricKey key1)
+            if (_message.Authentication is AuthenticationProviderSymmetricKey key1)
             {
                 string key = key1.GetPrimaryKey();
                 password = ProvisioningSasBuilder.BuildSasSignature(Registration, key, string.Concat(_message.IdScope, '/', "registrations", '/', registrationId), TimeSpan.FromDays(1));

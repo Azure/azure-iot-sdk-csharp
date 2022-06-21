@@ -8,18 +8,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyTpm : AmqpAuthStrategy
     {
-        private readonly SecurityProviderTpm _security;
+        private readonly AuthenticationProviderTpm _authentication;
 
-        public AmqpAuthStrategyTpm(SecurityProviderTpm security)
+        public AmqpAuthStrategyTpm(AuthenticationProviderTpm authentication)
         {
-            _security = security;
+            _authentication = authentication;
         }
 
         public override AmqpSettings CreateAmqpSettings(string idScope)
@@ -30,9 +30,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             saslProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(saslProvider);
 
-            byte[] ekBuffer = _security.GetEndorsementKey();
-            byte[] srkBuffer = _security.GetStorageRootKey();
-            var tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _security);
+            byte[] ekBuffer = _authentication.GetEndorsementKey();
+            byte[] srkBuffer = _authentication.GetStorageRootKey();
+            var tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _authentication);
             saslProvider.AddHandler(tpmHandler);
 
             return settings;
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this,$"Authentication key not found. OperationId=${operation?.OperationId}");
+                    Logging.Error(this, $"Authentication key not found. OperationId=${operation?.OperationId}");
 
                 throw new ProvisioningTransportException("Authentication key not found.", null, false);
             }
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled)
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
-            _security.ActivateIdentityKey(key);
+            _authentication.ActivateIdentityKey(key);
         }
     }
 }

@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iothub", "iothub", "{537FA8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "provisioning", "provisioning", "{3839DB7F-C289-4C1A-9D70-11DF35F139E0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{3AA089A9-A035-439E-BAF6-C3975A334379}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "authentication", "authentication", "{3AA089A9-A035-439E-BAF6-C3975A334379}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "security", "security", "{96531499-C8F4-4F77-88DD-9F9585B5E565}"
 EndProject
@@ -65,7 +65,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Security.Tpm.Tests", "security\tpm\tests\Microsoft.Azure.Devices.Provisioning.Security.Tpm.Tests.csproj", "{5A200FEC-F723-4A85-86DA-3F6E246FE273}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared", "shared\src\Microsoft.Azure.Devices.Shared.csproj", "{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Authentication", "authentication\src\Microsoft.Azure.Devices.Authentication.csproj", "{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E2ETests", "e2e\test\E2ETests.csproj", "{8E25CDE3-992D-4942-8C38-51A0D8E8EB70}"
 EndProject

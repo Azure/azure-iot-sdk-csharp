@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Extensions added to simplify the usage of <see cref="Stream"/> APIs based on the .NET implementation used.

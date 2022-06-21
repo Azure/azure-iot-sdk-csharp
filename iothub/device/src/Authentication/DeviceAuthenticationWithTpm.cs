@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -15,49 +15,51 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithTpm : DeviceAuthenticationWithTokenRefresh
     {
-        private readonly SecurityProviderTpm _securityProvider;
+        private readonly AuthenticationProviderTpm _authProvider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class with default
+        /// Initializes a new instance of this class with default
         /// time to live of 1 hour and default buffer percentage value of 15.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes,
-        /// use <see cref="DeviceAuthenticationWithTpm(string, SecurityProviderTpm, int, int, bool)"/> constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// associated device client instance is disposed. To reuse the authentication method instance across
+        /// multiple client instance lifetimes,
+        /// use the <see cref="DeviceAuthenticationWithTpm(string, AuthenticationProviderTpm, int, int, bool)"/>
+        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
+        /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
-            SecurityProviderTpm securityProvider)
+            AuthenticationProviderTpm authenticationProvider)
             : base(deviceId)
         {
-            _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
+            _authProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
+        /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
         /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
-            SecurityProviderTpm securityProvider,
+            AuthenticationProviderTpm authenticationProvider,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
-            : this(deviceId, securityProvider, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
+            : this(deviceId, authenticationProvider, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTpm"/> class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="securityProvider">Device Security Provider settings for TPM Hardware Security Modules.</param>
+        /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
         /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
@@ -65,19 +67,19 @@ namespace Microsoft.Azure.Devices.Client
         /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
-            SecurityProviderTpm securityProvider,
+            AuthenticationProviderTpm authenticationProvider,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
             bool disposeWithClient)
             : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, disposeWithClient)
         {
-            _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
+            _authProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
         }
 
         ///<inheritdoc/>
         protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
         {
-            var builder = new TpmSharedAccessSignatureBuilder(_securityProvider)
+            var builder = new TpmSharedAccessSignatureBuilder(_authProvider)
             {
                 TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLiveSeconds),
                 Target = "{0}/devices/{1}".FormatInvariant(
@@ -90,11 +92,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private class TpmSharedAccessSignatureBuilder : SharedAccessSignatureBuilder
         {
-            private readonly SecurityProviderTpm _securityProvider;
+            private readonly AuthenticationProviderTpm _authenticationProvider;
 
-            public TpmSharedAccessSignatureBuilder(SecurityProviderTpm securityProvider)
+            public TpmSharedAccessSignatureBuilder(AuthenticationProviderTpm authenticationProvider)
             {
-                _securityProvider = securityProvider;
+                _authenticationProvider = authenticationProvider;
             }
 
             protected override string Sign(string requestString, string key)
@@ -102,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client
                 Debug.Assert(key == null);
 
                 byte[] encodedBytes = Encoding.UTF8.GetBytes(requestString);
-                byte[] hmac = _securityProvider.Sign(encodedBytes);
+                byte[] hmac = _authenticationProvider.Sign(encodedBytes);
                 return Convert.ToBase64String(hmac);
             }
         }

@@ -15,7 +15,6 @@ using Azure;
 using Azure.Core;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices

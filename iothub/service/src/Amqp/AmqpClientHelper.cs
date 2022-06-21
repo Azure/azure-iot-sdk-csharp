@@ -11,7 +11,6 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices

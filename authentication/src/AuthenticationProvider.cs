@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Authentication
 {
     /// <summary>
-    /// The Security Provider used by ProvisioningDeviceClient for authentication.
+    /// The authentication provider used by Azure IoT device clients.
     /// </summary>
-    public abstract class SecurityProvider : IDisposable
+    public abstract class AuthenticationProvider : IDisposable
     {
         /// <summary>
         /// Gets the Registration Id used during device enrollment.
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Shared
         public abstract string GetRegistrationID();
 
         /// <summary>
-        /// Releases the unmanaged resources used by the SecurityProvider and optionally disposes of the managed resources.
+        /// Releases the unmanaged resources used by this class and optionally disposes of the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected abstract void Dispose(bool disposing);

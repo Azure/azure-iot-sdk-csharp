@@ -352,7 +352,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             switch (attestationType)
             {
                 case AttestationMechanismType.Tpm:
-                    using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
+                    using (var tpmSim = new AuthenticationProviderTpmSimulator(registrationId))
                     {
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek))

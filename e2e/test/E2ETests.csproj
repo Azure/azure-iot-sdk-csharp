@@ -36,21 +36,21 @@
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
     <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
     <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
     <ProjectReference Include="$(RootDir)\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
-    <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs">
+    <Compile Include="$(RootDir)\security\tpm\samples\AuthenticationProviderTpmSimulator\AuthenticationProviderTpmSimulator.cs">
       <LinkBase>provisioning</LinkBase>
     </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Authentication" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
@@ -58,6 +58,6 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
-    <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
+    <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\AuthenticationProviderTpmSimulator.csproj" />
   </ItemGroup>
 </Project>

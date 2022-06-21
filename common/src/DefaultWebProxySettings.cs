@@ -4,7 +4,7 @@
 using System;
 using System.Net;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// WebProxy class for initializing default web proxy

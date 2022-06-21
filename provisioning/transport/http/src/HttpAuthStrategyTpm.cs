@@ -3,24 +3,24 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class HttpAuthStrategyTpm : HttpAuthStrategy
     {
-        private SecurityProviderTpm _security;
+        private AuthenticationProviderTpm _authentication;
 
-        public HttpAuthStrategyTpm(SecurityProviderTpm security)
+        public HttpAuthStrategyTpm(AuthenticationProviderTpm authentication)
         {
-            _security = security;
+            _authentication = authentication;
         }
 
         public override DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler)
         {
             var serviceCredentials = new TpmCredentials();
-            var tpmDelegatingHandler = new TpmDelegatingHandler(_security);
+            var tpmDelegatingHandler = new TpmDelegatingHandler(_authentication);
             var apiVersionDelegatingHandler = new ApiVersionDelegatingHandler();
 
             var dpsClient = new DeviceProvisioningServiceRuntimeClient(
@@ -35,13 +35,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override DeviceRegistration CreateDeviceRegistration()
         {
-            byte[] ekBuffer = _security.GetEndorsementKey();
-            byte[] srkBuffer = _security.GetStorageRootKey();
+            byte[] ekBuffer = _authentication.GetEndorsementKey();
+            byte[] srkBuffer = _authentication.GetStorageRootKey();
 
             string ek = Convert.ToBase64String(ekBuffer);
             string srk = Convert.ToBase64String(srkBuffer);
 
-            return new DeviceRegistration(_security.GetRegistrationID(), new TpmAttestation(ek, srk));
+            return new DeviceRegistration(_authentication.GetRegistrationID(), new TpmAttestation(ek, srk));
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled)
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
-            _security.ActivateIdentityKey(key);
+            _authentication.ActivateIdentityKey(key);
         }
     }
 }

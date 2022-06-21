@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
-    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
     <None Include="DigitalTwin\generateCode.ps1" />
     <None Include="DigitalTwin\readme.md" />
     <None Include="DigitalTwin\DigitalTwin.json" />
@@ -129,10 +129,6 @@
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
-  </ItemGroup>
-
   <!-- net472 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
@@ -146,9 +142,10 @@
     <Compile Include="DigitalTwin\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.22.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
-    <PackageReference Include="Azure.Core" Version="1.22.0" />
   </ItemGroup>
 </Project>

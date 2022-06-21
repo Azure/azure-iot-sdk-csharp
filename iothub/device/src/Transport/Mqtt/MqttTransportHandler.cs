@@ -29,7 +29,6 @@ using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 #if NET5_0_OR_GREATER
@@ -37,7 +36,7 @@ using Newtonsoft.Json;
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 
 #else
-using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
+using TaskCompletionSource = Microsoft.Azure.Devices.TaskCompletionSource;
 #endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
