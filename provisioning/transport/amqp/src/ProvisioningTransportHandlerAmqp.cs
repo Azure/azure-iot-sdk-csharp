@@ -10,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -97,23 +97,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 AmqpAuthStrategy authStrategy;
 
-                if (message.Security is SecurityProviderTpm tpm)
+                if (message.Authentication is AuthenticationProviderTpm tpm)
                 {
                     authStrategy = new AmqpAuthStrategyTpm(tpm);
                 }
-                else if (message.Security is SecurityProviderX509 x509)
+                else if (message.Authentication is AuthenticationProviderX509 x509)
                 {
                     authStrategy = new AmqpAuthStrategyX509(x509);
                 }
-                else if (message.Security is SecurityProviderSymmetricKey key)
+                else if (message.Authentication is AuthenticationProviderSymmetricKey key)
                 {
                     authStrategy = new AmqpAuthStrategySymmetricKey(key);
                 }
                 else
                 {
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)}, " +
-                        $"{nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
+                        $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderTpm)}, " +
+                        $"{nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
                 }
 
                 if (Logging.IsEnabled)
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Port = Port,
                 };
 
-                string registrationId = message.Security.GetRegistrationID();
+                string registrationId = message.Authentication.GetRegistrationID();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);

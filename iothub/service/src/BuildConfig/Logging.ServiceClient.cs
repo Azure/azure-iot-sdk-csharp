@@ -3,7 +3,7 @@
 
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     // 1a3d8d74-0a87-550c-89d7-b5d40ccb459b
     [EventSource(Name = "Microsoft-Azure-Devices-Service-Client")]

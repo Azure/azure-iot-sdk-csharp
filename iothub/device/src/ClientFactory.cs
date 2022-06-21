@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {

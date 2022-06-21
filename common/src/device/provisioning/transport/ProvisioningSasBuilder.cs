@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -16,13 +16,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string KeyName = "registration";
         private static readonly TimeSpan s_timeToLive = TimeSpan.FromDays(1);
 
-        internal static string ExtractServiceAuthKey(SecurityProviderTpm securityProvider, string hostName, byte[] activation)
+        internal static string ExtractServiceAuthKey(AuthenticationProviderTpm authenticationProvider, string hostName, byte[] activation)
         {
-            securityProvider.ActivateIdentityKey(activation);
-            return BuildSasSignature(securityProvider, KeyName, hostName, s_timeToLive);
+            authenticationProvider.ActivateIdentityKey(activation);
+            return BuildSasSignature(authenticationProvider, KeyName, hostName, s_timeToLive);
         }
 
-        private static string BuildSasSignature(SecurityProviderTpm securityProvider, string keyName, string target, TimeSpan timeToLive)
+        private static string BuildSasSignature(AuthenticationProviderTpm authenticationProvider, string keyName, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // dh://myiothub.azure-devices-provisioning.net/a/b/c?myvalue1=a
             // <Value for ExpiresOn>
 
-            byte[] signedBytes = securityProvider.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
+            byte[] signedBytes = authenticationProvider.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
             string signature = Convert.ToBase64String(signedBytes);
 
             // Example returned string:
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Construct a sas signature using HMAC hash
+        /// Construct a SAS signature using HMAC hash.
         /// </summary>
         /// <param name="keyName">The name of the key</param>
         /// <param name="key">The primary/secondary symmetric key to hash</param>

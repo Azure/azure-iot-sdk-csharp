@@ -8,18 +8,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategySymmetricKey : AmqpAuthStrategy
     {
-        private SecurityProviderSymmetricKey _security;
+        private readonly AuthenticationProviderSymmetricKey _authentication;
 
-        public AmqpAuthStrategySymmetricKey(SecurityProviderSymmetricKey security)
+        public AmqpAuthStrategySymmetricKey(AuthenticationProviderSymmetricKey authentication)
         {
-            _security = security;
+            _authentication = authentication;
         }
 
         public override AmqpSettings CreateAmqpSettings(string idScope)
@@ -31,8 +31,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             settings.TransportProviders.Add(saslProvider);
 
             var saslHandler = new SaslPlainHandler();
-            saslHandler.AuthenticationIdentity = $"{idScope}/registrations/{_security.GetRegistrationID()}";
-            string key = _security.GetPrimaryKey();
+            saslHandler.AuthenticationIdentity = $"{idScope}/registrations/{_authentication.GetRegistrationID()}";
+            string key = _authentication.GetPrimaryKey();
             saslHandler.Password = ProvisioningSasBuilder.BuildSasSignature("registration", key, saslHandler.AuthenticationIdentity, TimeSpan.FromDays(1));
             saslProvider.AddHandler(saslHandler);
 

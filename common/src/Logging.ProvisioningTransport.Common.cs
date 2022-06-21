@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     internal sealed partial class Logging : EventSource
     {

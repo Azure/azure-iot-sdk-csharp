@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A helper class to simplify operations with Http messages based on the .NET implementation used.

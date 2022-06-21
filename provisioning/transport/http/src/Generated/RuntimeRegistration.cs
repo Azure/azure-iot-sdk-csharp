@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;

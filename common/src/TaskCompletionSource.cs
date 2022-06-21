@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// An implementation of <c>TaskCompletionSource&lt;bool&gt;</c> that returns a <c>Task</c> when completed.

@@ -7,8 +7,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -75,26 +75,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 HttpAuthStrategy authStrategy;
 
-                switch (message.Security)
+                switch (message.Authentication)
                 {
-                    case SecurityProviderTpm _:
-                        authStrategy = new HttpAuthStrategyTpm((SecurityProviderTpm)message.Security);
+                    case AuthenticationProviderTpm _:
+                        authStrategy = new HttpAuthStrategyTpm((AuthenticationProviderTpm)message.Authentication);
                         break;
 
-                    case SecurityProviderX509 _:
-                        authStrategy = new HttpAuthStrategyX509((SecurityProviderX509)message.Security);
+                    case AuthenticationProviderX509 _:
+                        authStrategy = new HttpAuthStrategyX509((AuthenticationProviderX509)message.Authentication);
                         break;
 
-                    case SecurityProviderSymmetricKey _:
-                        authStrategy = new HttpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
+                    case AuthenticationProviderSymmetricKey _:
+                        authStrategy = new HttpAuthStrategySymmetricKey((AuthenticationProviderSymmetricKey)message.Authentication);
                         break;
 
                     default:
                         if (Logging.IsEnabled)
-                            Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+                            Logging.Error(this, $"Invalid {nameof(AuthenticationProvider)} type.");
 
                         throw new NotSupportedException(
-                            $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)}, {nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
+                            $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderTpm)}, {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
                 }
 
                 Logging.Associate(authStrategy, this);
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     deviceRegistration.Payload = new JRaw(message.Payload);
                 }
-                string registrationId = message.Security.GetRegistrationID();
+                string registrationId = message.Authentication.GetRegistrationID();
 
                 RegistrationOperationStatus operation = await client.RuntimeRegistration
                     .RegisterDeviceAsync(

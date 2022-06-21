@@ -3,7 +3,7 @@
 
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     // 2143dadd-f500-5ff9-12b3-9afacae4d54c
     [EventSource(Name = "Microsoft-Azure-Devices-Provisioning-Transport-Mqtt")]

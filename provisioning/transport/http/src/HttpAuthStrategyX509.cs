@@ -5,24 +5,24 @@ using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class HttpAuthStrategyX509 : HttpAuthStrategy
     {
-        private SecurityProviderX509 _security;
+        private AuthenticationProviderX509 _authentication;
         private X509Certificate2 _certificate;
 
-        public HttpAuthStrategyX509(SecurityProviderX509 security)
+        public HttpAuthStrategyX509(AuthenticationProviderX509 authentication)
         {
-            _security = security;
+            _authentication = authentication;
         }
 
         public override DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler)
         {
-            _certificate = _security.GetAuthenticationCertificate();
+            _certificate = _authentication.GetAuthenticationCertificate();
 
             return new DeviceProvisioningServiceRuntimeClient(
                 uri,
@@ -34,9 +34,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public override DeviceRegistration CreateDeviceRegistration()
         {
             Debug.Assert(_certificate != null);
-            Debug.Assert(_security.GetRegistrationID() == _certificate.GetNameInfo(X509NameType.DnsName, false));
+            Debug.Assert(_authentication.GetRegistrationID() == _certificate.GetNameInfo(X509NameType.DnsName, false));
 
-            return new DeviceRegistration(_security.GetRegistrationID());
+            return new DeviceRegistration(_authentication.GetRegistrationID());
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Authentication;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
@@ -14,11 +14,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     internal class TpmDelegatingHandler : DelegatingHandler
     {
         internal const string ProvisioningHeaderName = "drs-set-sas-token";
-        private readonly SecurityProviderTpm _securityProvider;
+        private readonly AuthenticationProviderTpm _authProvider;
 
-        public TpmDelegatingHandler(SecurityProviderTpm securityProvider)
+        public TpmDelegatingHandler(AuthenticationProviderTpm authenticationProvider)
         {
-            _securityProvider = securityProvider;
+            _authProvider = authenticationProvider;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
                         string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
-                            _securityProvider,
+                            _authProvider,
                             target, 
                             Convert.FromBase64String(challenge.AuthenticationKey));
 

@@ -7,18 +7,18 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyX509 : AmqpAuthStrategy
     {
-        private readonly SecurityProviderX509 _security;
+        private readonly AuthenticationProviderX509 _authentication;
 
-        public AmqpAuthStrategyX509(SecurityProviderX509 security)
+        public AmqpAuthStrategyX509(AuthenticationProviderX509 authentication)
         {
-            _security = security;
+            _authentication = authentication;
         }
 
         public override AmqpSettings CreateAmqpSettings(string idScope)
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             RemoteCertificateValidationCallback remoteCertificateValidationCallback,
             CancellationToken cancellationToken)
         {
-            X509Certificate2 clientCert = _security.GetAuthenticationCertificate();
+            X509Certificate2 clientCert = _authentication.GetAuthenticationCertificate();
             return connection.OpenAsync(useWebSocket, clientCert, proxy, remoteCertificateValidationCallback, cancellationToken);
         }
 

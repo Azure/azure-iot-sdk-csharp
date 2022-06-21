@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using Microsoft.Azure.Devices.Client.Common.Api;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {

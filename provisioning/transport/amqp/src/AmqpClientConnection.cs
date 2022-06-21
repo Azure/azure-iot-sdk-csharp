@@ -12,7 +12,6 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {

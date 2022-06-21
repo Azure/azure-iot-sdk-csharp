@@ -1,24 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Authentication
 {
     /// <summary>
-    /// The Device Security Provider interface for Symmetric Keys.
+    /// The device authentication provider interface for symmetric keys.
     /// </summary>
-    public class SecurityProviderSymmetricKey : SecurityProvider
+    public class AuthenticationProviderSymmetricKey : AuthenticationProvider
     {
         private readonly string _registrationId;
         private readonly string _primaryKey;
         private readonly string _secondaryKey;
 
         /// <summary>
-        /// Initializes a new instance of the SecurityProviderSymmetricKey class.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="registrationId">The Provisioning service Registration Id for this device.</param>
         /// <param name="primaryKey">The primary key for this device.</param>
         /// <param name="secondaryKey">The secondary key for this device.</param>
-        public SecurityProviderSymmetricKey(string registrationId, string primaryKey, string secondaryKey)
+        public AuthenticationProviderSymmetricKey(string registrationId, string primaryKey, string secondaryKey)
         {
             _registrationId = registrationId;
             _primaryKey = primaryKey;

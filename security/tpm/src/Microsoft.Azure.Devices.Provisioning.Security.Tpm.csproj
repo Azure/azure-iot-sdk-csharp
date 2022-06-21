@@ -31,23 +31,23 @@
 
   <PropertyGroup>
     <Version>1.14.1</Version>
-    <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
+    <Title>Microsoft Azure IoT Provisioning Device Authentication TPM Client</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Description>Provisioning Device Security TPM Client for Azure IoT Devices</Description>
+    <Description>Provisioning Device Authentication TPM Client for Azure IoT Devices</Description>
     <PackageIcon>nugetIcon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>
+    <PackageTags>Microsoft Azure IoT Provisioning Device Authentication TPM Client .NET</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
-    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,9 +61,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj">
+    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj">
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
-      <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
+      <Name>Microsoft.Azure.Devices.Authentication</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

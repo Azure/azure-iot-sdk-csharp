@@ -21,9 +21,9 @@ using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -106,9 +106,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-                if (message.Security is SecurityProviderX509 x509Security)
+                if (message.Authentication is AuthenticationProviderX509 x509Auth)
                 {
-                    if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback || FallbackType == TransportFallbackType.TcpOnly)
+                    if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback
+                        || FallbackType == TransportFallbackType.TcpOnly)
                     {
                         // TODO: Fallback not implemented.
                         operation = await ProvisionOverTcpUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
@@ -122,10 +123,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         throw new NotSupportedException($"Not supported {nameof(FallbackType)} value: {FallbackType}");
                     }
                 }
-                else if (message.Security is SecurityProviderSymmetricKey symmetricKeySecurity)
+                else if (message.Authentication is AuthenticationProviderSymmetricKey symmetricKeyAuth)
                 {
-                    if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback ||
-                        FallbackType == TransportFallbackType.TcpOnly)
+                    if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback
+                        || FallbackType == TransportFallbackType.TcpOnly)
                     {
                         // TODO: Fallback not implemented.
                         operation = await ProvisionOverTcpUsingSymmetricKeyAsync(message, cancellationToken).ConfigureAwait(false);
@@ -142,10 +143,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 else
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+                        Logging.Error(this, $"Invalid {nameof(AuthenticationProvider)} type.");
 
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)} or {nameof(SecurityProviderSymmetricKey)}");
+                        $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
                 }
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
@@ -200,10 +201,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(message.Security is SecurityProviderX509);
+            Debug.Assert(message.Authentication is AuthenticationProviderX509);
             cancellationToken.ThrowIfCancellationRequested();
 
-            X509Certificate2 clientCertificate = ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
+            X509Certificate2 clientCertificate = ((AuthenticationProviderX509)message.Authentication).GetAuthenticationCertificate();
 
             var tlsSettings = new ClientTlsSettings(
                 TlsVersions.Instance.Preferred,
@@ -218,7 +219,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(message.Security is SecurityProviderSymmetricKey);
+            Debug.Assert(message.Authentication is AuthenticationProviderSymmetricKey);
             cancellationToken.ThrowIfCancellationRequested();
 
             var tlsSettings = new ClientTlsSettings(
@@ -313,10 +314,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(message.Security is SecurityProviderX509);
+            Debug.Assert(message.Authentication is AuthenticationProviderX509);
             cancellationToken.ThrowIfCancellationRequested();
 
-            X509Certificate2 clientCertificate = ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
+            X509Certificate2 clientCertificate = ((AuthenticationProviderX509)message.Authentication).GetAuthenticationCertificate();
 
             return ProvisionOverWssCommonAsync(message, clientCertificate, cancellationToken);
         }
@@ -325,7 +326,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(message.Security is SecurityProviderSymmetricKey);
+            Debug.Assert(message.Authentication is AuthenticationProviderSymmetricKey);
             cancellationToken.ThrowIfCancellationRequested();
 
             return ProvisionOverWssCommonAsync(message, null, cancellationToken);

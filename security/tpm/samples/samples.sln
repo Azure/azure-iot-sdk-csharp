@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{AF42ED2C-D3C5-4475-979C-C756A7BAEE5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationProviderTpmSimulator", "AuthenticationProviderTpmSimulator\AuthenticationProviderTpmSimulator.csproj", "{AF42ED2C-D3C5-4475-979C-C756A7BAEE5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

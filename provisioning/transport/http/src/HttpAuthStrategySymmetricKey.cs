@@ -3,23 +3,23 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class HttpAuthStrategySymmetricKey : HttpAuthStrategy
     {
-        private SecurityProviderSymmetricKey _security;
+        private AuthenticationProviderSymmetricKey _authentication;
 
-        public HttpAuthStrategySymmetricKey(SecurityProviderSymmetricKey security)
+        public HttpAuthStrategySymmetricKey(AuthenticationProviderSymmetricKey authentication)
         {
-            _security = security;
+            _authentication = authentication;
         }
 
         public override DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler)
         {
-            var serviceCredentials = new SymmetricKeyCredentials(_security.GetPrimaryKey());
+            var serviceCredentials = new SymmetricKeyCredentials(_authentication.GetPrimaryKey());
             var dpsClient = new DeviceProvisioningServiceRuntimeClient(
                 uri,
                 serviceCredentials,
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override DeviceRegistration CreateDeviceRegistration()
         {
-            return new DeviceRegistration(_security.GetRegistrationID());
+            return new DeviceRegistration(_authentication.GetRegistrationID());
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

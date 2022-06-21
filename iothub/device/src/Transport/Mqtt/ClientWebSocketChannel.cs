@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {

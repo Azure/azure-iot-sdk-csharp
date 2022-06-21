@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
