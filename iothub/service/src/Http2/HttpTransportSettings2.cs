@@ -70,7 +70,8 @@ namespace Microsoft.Azure.Devices
         public int ConnectionLeaseTimeoutMilliseconds { get; set; } = ServicePointHelpers.DefaultConnectionLeaseTimeout;
 
         /// <summary>
-        ///
+        /// The HTTP client to use for all HTTP operations. If provided, all other settings will be ignored. If not provided,
+        /// an HTTP client will be created for you based on the other provided settings.
         /// </summary>
         public HttpClient HttpClient { get; set; }
     }

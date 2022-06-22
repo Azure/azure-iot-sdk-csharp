@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Http2;
 using Microsoft.Azure.Devices.Registry;
 using Microsoft.Azure.Devices.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -38,8 +39,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            string responsePayload = JsonConvert.SerializeObject(deviceGoodAuthConfig);
-            HttpContent mockContent = new StringContent(responsePayload);
+            HttpContent mockContent = HttpMessageHelper2.GetPayload(deviceGoodAuthConfig);
             var responseMock = new Mock<HttpResponseMessage>();
             responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
             responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
@@ -72,8 +72,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            string responsePayload = JsonConvert.SerializeObject(deviceGoodAuthConfig);
-            HttpContent mockContent = new StringContent(responsePayload);
+            HttpContent mockContent = HttpMessageHelper2.GetPayload(deviceGoodAuthConfig);
             var responseMock = new Mock<HttpResponseMessage>();
             responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
             responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
@@ -106,8 +105,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            string responsePayload = JsonConvert.SerializeObject(deviceGoodAuthConfig);
-            HttpContent mockContent = new StringContent(responsePayload);
+            HttpContent mockContent = HttpMessageHelper2.GetPayload(deviceGoodAuthConfig);
             var responseMock = new Mock<HttpResponseMessage>();
             responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
             responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
@@ -140,8 +138,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            string responsePayload = JsonConvert.SerializeObject(deviceGoodAuthConfig);
-            HttpContent mockContent = new StringContent(responsePayload);
+            HttpContent mockContent = HttpMessageHelper2.GetPayload(deviceGoodAuthConfig);
             var responseMock = new Mock<HttpResponseMessage>();
             responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
             responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
