@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Registry;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
@@ -28,13 +29,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = testDevice.Id;
             string moduleName = "E2E_" + moduleNamePrefix + Guid.NewGuid();
 
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var rc = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
             logger.Trace($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
             var requestModule = new Module(deviceName, moduleName);
-            Module module = await rm.AddModuleAsync(requestModule).ConfigureAwait(false);
-
-            await rm.CloseAsync().ConfigureAwait(false);
+            Module module = await rc.AddModuleAsync(requestModule).ConfigureAwait(false);
 
             var ret = new TestModule(module);
 

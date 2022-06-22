@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
+using Microsoft.Azure.Devices.Registry;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var rc = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
             s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
@@ -105,14 +106,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await rm.AddDeviceAsync(requestDevice).ConfigureAwait(false);
+                        device = await rc.AddDeviceAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_retryableExceptions,
                     s_logger)
                 .ConfigureAwait(false);
-
-            await rm.CloseAsync().ConfigureAwait(false);
 
             return device == null
                 ? throw new Exception($"Exhausted attempts for creating device {device.Id}, requests got throttled.")
@@ -197,8 +196,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task RemoveDeviceAsync()
         {
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
+            using var rc = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            await rc.RemoveDeviceAsync(Id).ConfigureAwait(false);
         }
 
         public void Dispose()

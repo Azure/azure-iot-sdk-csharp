@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.Registry;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -104,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
+            Client.TransportType protocol, Func<RegistryClient, string, Task> registryManagerOperation)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
@@ -139,9 +140,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangesHandler.
-                using (var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
+                using (var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString))
                 {
-                    await registryManagerOperation(registryManager, deviceId).ConfigureAwait(false);
+                    await registryManagerOperation(registryClient, deviceId).ConfigureAwait(false);
                 }
 
                 Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
@@ -166,7 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            Client.TransportType protocol, Func<RegistryManager, string, Task> registryManagerOperation)
+            Client.TransportType protocol, Func<RegistryClient, string, Task> registryManagerOperation)
         {
             var amqpTransportSettings = new AmqpTransportSettings(protocol);
             var transportSettings = new ITransportSettings[] { amqpTransportSettings };
@@ -198,9 +199,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT hub.
-                using (var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString))
+                using (var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString))
                 {
-                    await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
+                    await registryManagerOperation(registryClient, testModule.DeviceId).ConfigureAwait(false);
                 }
 
                 Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");

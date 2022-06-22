@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
-using System.Net;
 using System.Net.Http;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Http2
 {

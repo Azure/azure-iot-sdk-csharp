@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 using Microsoft.Azure.Devices.Http2;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Registry
 {
@@ -159,16 +158,8 @@ namespace Microsoft.Azure.Devices.Registry
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error parsing
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -200,16 +191,8 @@ namespace Microsoft.Azure.Devices.Registry
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error parsing
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -257,20 +240,11 @@ namespace Microsoft.Azure.Devices.Registry
                 }
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider);
-
                 request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), device.ETag);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error handling
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -324,15 +298,10 @@ namespace Microsoft.Azure.Devices.Registry
                 }
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
-
                 request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), device.ETag);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode != HttpStatusCode.NoContent)
-                {
-                    //TODO error handling
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
             catch (Exception ex)
             {
@@ -364,16 +333,8 @@ namespace Microsoft.Azure.Devices.Registry
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error parsing
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -411,16 +372,8 @@ namespace Microsoft.Azure.Devices.Registry
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error parsing
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -472,16 +425,8 @@ namespace Microsoft.Azure.Devices.Registry
                 request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), module.ETag);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error handling
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -541,16 +486,10 @@ namespace Microsoft.Azure.Devices.Registry
                 }
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
-
                 request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), module.ETag);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode != HttpStatusCode.NoContent)
-                {
-                    //TODO error handling
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
             catch (Exception ex)
             {
@@ -581,18 +520,9 @@ namespace Microsoft.Azure.Devices.Registry
                 }
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
-
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<IEnumerable<Module>>(response, cancellationToken);
-                }
-                else
-                {
-                    // TODO error handling
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<IEnumerable<Module>>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -762,16 +692,8 @@ namespace Microsoft.Azure.Devices.Registry
             {
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<RegistryStatistics>(response, cancellationToken);
-                }
-                else
-                {
-                    // TODO error handling
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<RegistryStatistics>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -887,18 +809,9 @@ namespace Microsoft.Azure.Devices.Registry
                 }
 
                 using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
-
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    return await HttpMessageHelper2.DeserializeResponse<BulkRegistryOperationResult>(response, cancellationToken);
-                }
-                else
-                {
-                    //TODO error handling
-                    throw new Exception();
-                }
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<BulkRegistryOperationResult>(response, cancellationToken);
             }
             catch (Exception ex)
             {

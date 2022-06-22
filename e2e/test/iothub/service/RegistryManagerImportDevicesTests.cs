@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.Registry;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -57,6 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -132,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     try
                     {
-                        device = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
+                        device = await registryClient.GetDeviceAsync(deviceId).ConfigureAwait(false);
                         config = await registryManager.GetConfigurationAsync(configId).ConfigureAwait(false);
                         break;
                     }
@@ -154,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                    await registryClient.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
                     await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
                 }
                 catch (Exception ex)

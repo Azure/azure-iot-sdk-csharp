@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.Registry;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -65,6 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string configsFileName = $"{idPrefix}-configsexport-{StorageContainer.GetRandomSuffix(4)}.txt";
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using RegistryClient registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -78,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                Device edge1 = await registryManager
+                Device edge1 = await registryClient
                     .AddDeviceAsync(
                         new Device(edgeId1)
                         {
@@ -87,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         })
                     .ConfigureAwait(false);
 
-                Device edge2 = await registryManager
+                Device edge2 = await registryClient
                     .AddDeviceAsync(
                         new Device(edgeId2)
                         {
@@ -97,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         })
                     .ConfigureAwait(false);
 
-                Device device = await registryManager
+                Device device = await registryClient
                     .AddDeviceAsync(
                         new Device(deviceId)
                         {
@@ -151,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             finally
             {
-                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, registryManager).ConfigureAwait(false);
+                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, registryManager, registryClient).ConfigureAwait(false);
             }
         }
 
@@ -308,13 +310,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string edgeId2,
             string deviceId,
             string configurationId,
-            RegistryManager registryManager)
+            RegistryManager registryManager,
+            RegistryClient registryClient)
         {
             try
             {
-                await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-                await registryManager.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
-                await registryManager.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
+                await registryClient.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                await registryClient.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
+                await registryClient.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
                 await registryManager.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
             }
             catch (Exception ex)

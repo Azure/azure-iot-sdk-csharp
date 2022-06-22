@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Http2
@@ -42,9 +41,16 @@ namespace Microsoft.Azure.Devices.Http2
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
         }
 
+        internal static async Task ValidateHttpResponseStatus(HttpStatusCode expectedHttpStatusCode, HttpResponseMessage responseMessage)
+        {
+            if (expectedHttpStatusCode != responseMessage.StatusCode)
+            {
+                throw await ExceptionHandlingHelper.GetDefaultErrorMapping()[responseMessage.StatusCode].Invoke(responseMessage);
+            }
+        }
+
         internal static async Task<T> DeserializeResponse<T>(HttpResponseMessage response, CancellationToken cancellationToken)
         {
-            //TODO do the error code parsing here?
             string str = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(str);
         }

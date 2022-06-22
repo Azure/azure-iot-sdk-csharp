@@ -3,7 +3,6 @@
 
 using System.Net;
 using System.Net.Http;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {
