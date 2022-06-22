@@ -401,7 +401,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ICollection<string> iotHubsToProvisionTo,
             DeviceCapabilities capabilities,
             MsTestLogger logger,
-            bool connectToHubUsingOperationalCertificate = false)
+            bool connectToHubUsingOperationalCertificate = false,
+            string trustBundleId = null)
         {
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
@@ -420,6 +421,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             CustomAllocationDefinition = customAllocationDefinition,
                             IotHubs = iotHubsToProvisionTo,
                             ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
+                            TrustBundleId = trustBundleId,
                         };
 
                         IndividualEnrollment temporaryCreatedEnrollment = null;
@@ -484,6 +486,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 CustomAllocationDefinition = customAllocationDefinition,
                 IotHubs = iotHubsToProvisionTo,
                 ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
+                TrustBundleId = trustBundleId,
             };
 
             await RetryOperationHelper
@@ -515,7 +518,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ICollection<string> iothubs,
             DeviceCapabilities capabilities,
             MsTestLogger logger,
-            bool connectToHubUsingOperationalCertificate = false)
+            bool connectToHubUsingOperationalCertificate = false,
+            string trustBundleId = null)
         {
             Attestation attestation;
             switch (attestationType)
@@ -541,6 +545,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 CustomAllocationDefinition = customAllocationDefinition,
                 IotHubs = iothubs,
                 ClientCertificateIssuancePolicy = connectToHubUsingOperationalCertificate ? new ClientCertificateIssuancePolicy { CertificateAuthorityName = s_clientCertificatesCAName } : null,
+                TrustBundleId = trustBundleId,
             };
 
             EnrollmentGroup createdEnrollmentGroup = null;

@@ -344,7 +344,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result?.ErrorMessage,
                 result?.Etag,
                 result?.Payload?.ToString(CultureInfo.InvariantCulture),
-                result?.IssuedClientCertificate);
+                result?.IssuedClientCertificate,
+                result?.TrustBundle);
         }
 
         private void ValidateOutcome(Outcome outcome)

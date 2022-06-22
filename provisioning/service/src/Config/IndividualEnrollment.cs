@@ -307,6 +307,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public ClientCertificateIssuancePolicy ClientCertificateIssuancePolicy { get; set; }
 
         /// <summary>
+        /// The Trust Bundle Id associated with the enrollment. This Trust Bundle Id needs to have been linked to the provisioning service instance as well.
+        /// </summary>
+        [JsonProperty(PropertyName = "trustBundleId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string TrustBundleId { get; set; }
+
+        /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
         /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
