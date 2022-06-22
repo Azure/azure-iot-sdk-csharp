@@ -691,7 +691,10 @@ $trustBundleTestCertificate = New-SelfSignedCertificate `
 
 Export-Certificate -cert $trustBundleTestCertificate -filePath $dpsTrustBundleCertificateCertPath -Type Cert | Out-Null
 certutil -encode $dpsTrustBundleCertificateCertPath $dpsTrustBundleCertificatePemPath | Out-Null
-$trustBundleTestCertificatePemString = ## TODO - convert pem file to one-line string in powershell [awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' cert-name.pem]
+
+## TODO - convert pem file to one-line string in powershell [awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' cert-name.pem]
+<#
+$trustBundleTestCertificatePemString = 
 
 $body = @{
     'certificates' = @(
@@ -703,6 +706,7 @@ $body = @{
 $jsonBody = $body | ConvertTo-Json
 
 Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+#>
 
 ##################################################################################################################################
 #Enable Azure Security Solutions, if specified
