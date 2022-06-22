@@ -4,7 +4,7 @@
     <!--See #1874 for additional details-->
     <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0;net472;netcoreapp2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -125,7 +125,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
   </ItemGroup>
 
