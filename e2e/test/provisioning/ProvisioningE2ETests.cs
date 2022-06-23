@@ -653,82 +653,82 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Mqtt_X509_GrouplEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_MqttWs_X509_GrouplEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Http_Tpm_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.Tpm, null, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Http_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Amqp_Tpm_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.Tpm, null, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time as tpm only accepts one connection at a time
         public async Task DPS_Registration_AmqpWs_Tpm_InvalidIdScope_Register_Fail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.Tpm, null, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_Amqp_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
+            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group).ConfigureAwait(false);
         }
 
         #region InvalidGlobalAddress
@@ -1422,9 +1422,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
             Client.TransportType transportProtocol,
             AttestationMechanismType attestationType,
-            EnrollmentType? enrollmentType,
-            string groupId)
+            EnrollmentType? enrollmentType)
         {
+            string groupId = null;
+            if (enrollmentType == EnrollmentType.Group)
+            {
+                if (attestationType == AttestationMechanismType.X509)
+                {
+                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
+                }
+                else
+                {
+                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+                }
+            }
+
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
                     attestationType,
@@ -1782,9 +1794,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder)
                             };
 
-                            EnrollmentGroup x509EnrollmentGroup = await provisioningServiceClient
-                                    .GetEnrollmentGroupAsync(groupId)
-                                    .ConfigureAwait(false);
+                            EnrollmentGroup x509EnrollmentGroup = null;
+                            await RetryOperationHelper
+                                .RetryOperationsAsync(
+                                    async () =>
+                                    {
+                                        x509EnrollmentGroup = await provisioningServiceClient.GetEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                                    },
+                                    s_provisioningServiceRetryPolicy,
+                                    s_retryableExceptions,
+                                    Logger)
+                                .ConfigureAwait(false);
 
                             if (x509EnrollmentGroup == null)
                             {
@@ -1814,9 +1834,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                             if (updateEnrollment)
                             {
-                                EnrollmentGroup updatedX509EnrollmentGroup = await provisioningServiceClient
-                                        .CreateOrUpdateEnrollmentGroupAsync(x509EnrollmentGroup)
-                                        .ConfigureAwait(false);
+                                EnrollmentGroup updatedX509EnrollmentGroup = null;
+
+                                await RetryOperationHelper
+                                .RetryOperationsAsync(
+                                    async () =>
+                                    {
+                                        updatedX509EnrollmentGroup = await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(x509EnrollmentGroup).ConfigureAwait(false);
+                                    },
+                                    s_provisioningServiceRetryPolicy,
+                                    s_retryableExceptions,
+                                    Logger)
+                                .ConfigureAwait(false);
+
+                                if (updatedX509EnrollmentGroup == null)
+                                {
+                                    throw new ArgumentException($"X509 enrollment group with id {groupId} could not be updated; exiting test.");
+                                }
                             }
 
                             break;
