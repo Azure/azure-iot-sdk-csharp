@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.Registry;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
@@ -25,10 +26,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private readonly string _devicePrefix = $"E2E_{nameof(TokenCredentialAuthenticationTests)}_";
 
         [LoggedTestMethod]
-        public async Task RegistryManager_Http_TokenCredentialAuth_Success()
+        public async Task RegistryClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var registryManager = RegistryManager.Create(
+            using var registryManager = new RegistryClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 

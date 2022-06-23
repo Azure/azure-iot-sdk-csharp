@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         isUserAssignedMsi,
                         devicesFileName,
                         configsFileName,
-                        registryManager,
+                        registryClient,
                         containerUri)
                     .ConfigureAwait(false);
 
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             bool isUserAssignedMsi,
             string devicesFileName,
             string configsFileName,
-            RegistryManager registryManager,
+            RegistryClient registryClient,
             Uri containerUri)
         {
             int tryCount = 0;
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    exportJobResponse = await registryManager.ExportDevicesAsync(exportJobResponse).ConfigureAwait(false);
+                    exportJobResponse = await registryClient.ExportDevicesAsync(exportJobResponse).ConfigureAwait(false);
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                exportJobResponse = await registryManager.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
+                exportJobResponse = await registryClient.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
                 if (!s_incompleteJobs.Contains(exportJobResponse.Status))
                 {

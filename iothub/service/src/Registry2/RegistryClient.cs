@@ -24,10 +24,14 @@ namespace Microsoft.Azure.Devices.Registry
         private HttpTransportSettings2 _settings;
         private HttpClient _httpClient;
 
-        private const string DeviceRequestUriFormat = "/devices/{0}?{1}";
-        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}?{2}";
-        private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules?{1}";
-        private const string StatisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string DeviceRequestUriFormat = "/devices/{0}";
+        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
+        private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
+        private const string StatisticsUriFormat = "/statistics/devices";
+        private const string AdminUriFormat = "/$admin/{0}";
+        private const string JobsGetUriFormat = "/jobs/{0}";
+        private const string JobsListUriFormat = "/jobs";
+        private const string JobsCreateUriFormat = "/jobs/create";
 
         /// <summary>
         /// Creates an instance of RegistryManager, provided for unit testing purposes only.
@@ -680,6 +684,259 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
+        /// Copies registered device data to a set of blobs in a specific container in a storage account.
+        /// </summary>
+        /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount.</param>
+        /// <param name="containerName">Destination blob container name.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        public virtual async Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
+        {
+            Logging.Enter(this, $"Exporting registry", nameof(ExportRegistryAsync));
+            try
+            {
+                var payload = new ExportImportRequest
+                {
+                    ContainerName = containerName,
+                    StorageConnectionString = storageAccountConnectionString,
+                };
+
+                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetAdminUri("exportRegistry"), _credentialProvider, payload);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(ExportRegistryAsync)} threw an exception: {ex}", nameof(ExportRegistryAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Exporting registry", nameof(ExportRegistryAsync));
+            }
+        }
+
+        /// <summary>
+        /// Imports registered device data from a set of blobs in a specific container in a storage account.
+        /// </summary>
+        /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount.</param>
+        /// <param name="containerName">Source blob container name.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        public virtual async Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
+        {
+            Logging.Enter(this, $"Importing registry", nameof(ImportRegistryAsync));
+
+            try
+            {
+                var payload = new ExportImportRequest
+                {
+                    ContainerName = containerName,
+                    StorageConnectionString = storageAccountConnectionString,
+                };
+
+                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetAdminUri("importRegistry"), _credentialProvider, payload);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(ImportRegistryAsync)} threw an exception: {ex}", nameof(ImportRegistryAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Importing registry", nameof(ImportRegistryAsync));
+            }
+        }
+
+#pragma warning disable CA1054 // Uri parameters should not be strings
+
+        /// <summary>
+        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
+        /// </summary>
+        /// <param name="exportBlobContainerUri">Destination blob container URI.</param>
+        /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public virtual Task<JobProperties> ExportDevicesAsync(string exportBlobContainerUri, bool excludeKeys, CancellationToken cancellationToken = default)
+        {
+            return ExportDevicesAsync(
+                JobProperties.CreateForExportJob(
+                    exportBlobContainerUri,
+                    excludeKeys),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
+        /// </summary>
+        /// <param name="exportBlobContainerUri">Destination blob container URI.</param>
+        /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container.</param>
+        /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public virtual Task<JobProperties> ExportDevicesAsync(string exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken = default)
+        {
+            return ExportDevicesAsync(
+                JobProperties.CreateForExportJob(
+                    exportBlobContainerUri,
+                    excludeKeys,
+                    outputBlobName),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
+        /// </summary>
+        /// <param name="jobParameters">Parameters for the job.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public virtual Task<JobProperties> ExportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
+        {
+            if (jobParameters == null)
+            {
+                throw new ArgumentNullException(nameof(jobParameters));
+            }
+
+            Logging.Enter(this, $"Export Job running with {jobParameters}", nameof(ExportDevicesAsync));
+
+            try
+            {
+                jobParameters.Type = JobType.ExportDevices;
+                return CreateJobAsync(jobParameters, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(ExportDevicesAsync)} threw an exception: {ex}", nameof(ExportDevicesAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Export Job running with {jobParameters}", nameof(ExportDevicesAsync));
+            }
+        }
+
+        /// <summary>
+        /// Creates a new bulk job to import device registrations into the IoT hub.
+        /// </summary>
+        /// <param name="importBlobContainerUri">Source blob container URI.</param>
+        /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public virtual Task<JobProperties> ImportDevicesAsync(string importBlobContainerUri, string outputBlobContainerUri, CancellationToken cancellationToken = default)
+        {
+            return ImportDevicesAsync(
+               JobProperties.CreateForImportJob(
+                   importBlobContainerUri,
+                   outputBlobContainerUri),
+               cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a new bulk job to import device registrations into the IoT hub.
+        /// </summary>
+        /// <param name="importBlobContainerUri">Source blob container URI.</param>
+        /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
+        /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public virtual Task<JobProperties> ImportDevicesAsync(string importBlobContainerUri, string outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken = default)
+        {
+            return ImportDevicesAsync(
+               JobProperties.CreateForImportJob(
+                   importBlobContainerUri,
+                   outputBlobContainerUri,
+                   inputBlobName),
+               cancellationToken);
+        }
+
+#pragma warning restore CA1054 // Uri parameters should not be strings
+
+        /// <summary>
+        /// Creates a new bulk job to import device registrations into the IoT hub.
+        /// </summary>
+        /// <param name="jobParameters">Parameters for the job.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
+        /// <returns>JobProperties of the newly created job.</returns>
+        public virtual Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
+        {
+            if (jobParameters == null)
+            {
+                throw new ArgumentNullException(nameof(jobParameters));
+            }
+
+            Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
+            try
+            {
+                jobParameters.Type = JobType.ImportDevices;
+                return CreateJobAsync(jobParameters, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(ExportDevicesAsync)} threw an exception: {ex}", nameof(ImportDevicesAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
+            }
+        }
+
+        /// <summary>
+        /// Gets the job with the specified Id.
+        /// </summary>
+        /// <param name="jobId">Id of the Job object to retrieve.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>JobProperties of the job specified by the provided jobId.</returns>
+        public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
+        {
+            Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+            try
+            {
+                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<JobProperties>(response, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+            }
+        }
+
+        /// <summary>
+        /// List all jobs for the IoT hub.
+        /// </summary>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
+        public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
+        {
+            Logging.Enter(this, $"Getting job", nameof(GetJobsAsync));
+            try
+            {
+                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<IEnumerable<JobProperties>>(response, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Getting job", nameof(GetJobsAsync));
+            }
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="cancellationToken"></param>
@@ -715,30 +972,50 @@ namespace Microsoft.Azure.Devices.Registry
         private static Uri GetRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(DeviceRequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceRequestUriFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
         private static Uri GetModulesRequestUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModulesRequestUriFormat.FormatInvariant(deviceId, moduleId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ModulesRequestUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
         }
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(ModulesOnDeviceRequestUriFormat.FormatInvariant(deviceId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ModulesOnDeviceRequestUriFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
         private static Uri GetStatisticsUri()
         {
-            return new Uri(StatisticsUriFormat, UriKind.Relative);
+            return new Uri(StatisticsUriFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri()
         {
-            return new Uri(DeviceRequestUriFormat.FormatInvariant(string.Empty, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceRequestUriFormat.FormatInvariant(string.Empty), UriKind.Relative);
+        }
+
+        private static Uri GetAdminUri(string operation)
+        {
+            return new Uri(AdminUriFormat.FormatInvariant(operation), UriKind.Relative);
+        }
+
+        private static Uri GetJobUri(string jobId)
+        {
+            return new Uri(JobsGetUriFormat.FormatInvariant(jobId), UriKind.Relative);
+        }
+
+        private static Uri GetListJobsUri()
+        {
+            return new Uri(JobsListUriFormat.FormatInvariant(), UriKind.Relative);
+        }
+
+        private static Uri GetCreateJobsUri()
+        {
+            return new Uri(JobsCreateUriFormat.FormatInvariant(), UriKind.Relative);
         }
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
@@ -822,6 +1099,14 @@ namespace Microsoft.Azure.Devices.Registry
             {
                 Logging.Exit(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
             }
+        }
+
+        private async Task<JobProperties> CreateJobAsync(JobProperties jobProperties, CancellationToken cancellationToken)
+        {
+            using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetCreateJobsUri(), _credentialProvider, jobProperties);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+            return await HttpMessageHelper2.DeserializeResponse<JobProperties>(response, cancellationToken);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Http2
     internal class HttpMessageHelper2
     {
         private const string ApplicationJson = "application/json";
+        private const string ApiVersionQueryString = "?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         /// <summary>
         /// This helper method constructs the minimal HTTP request used by all HTTP service clients. It adds
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Http2
         {
             var message = new HttpRequestMessage();
             message.Method = method;
-            message.RequestUri = requestUri;
+            message.RequestUri = new Uri(requestUri, ApiVersionQueryString);
             message.Headers.Add(HttpRequestHeader.Accept.ToString(), ApplicationJson);
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), authorizationProvider.GetAuthorizationHeader());
             message.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
