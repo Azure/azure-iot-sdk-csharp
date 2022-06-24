@@ -937,6 +937,33 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
+        /// Cancels/Deletes the job with the specified Id.
+        /// </summary>
+        /// <param name="jobId">Id of the job to cancel.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
+        {
+            Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
+            try
+            {
+                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
+                request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), jobId);
+
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
+            }
+            catch (Exception ex)
+            {
+                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                throw;
+            }
+            finally
+            {
+                Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+            }
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="cancellationToken"></param>

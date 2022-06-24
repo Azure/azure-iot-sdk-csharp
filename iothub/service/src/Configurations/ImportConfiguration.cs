@@ -1,10 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices.Registry;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A class for creating and serializing a <see cref="Configuration"/> for a bulk import
-    /// job using <see cref="RegistryManager.CreateJobAsync(JobProperties, System.Threading.CancellationToken)"/>.
+    /// job using <see cref="RegistryClient.CreateJobAsync(JobProperties, System.Threading.CancellationToken)"/>.
     /// </summary>
     public class ImportConfiguration : Configuration
     {

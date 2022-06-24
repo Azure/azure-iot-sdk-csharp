@@ -52,6 +52,11 @@ namespace Microsoft.Azure.Devices.Http2
         /// <returns>The serialized HttpContent.</returns>
         internal static HttpContent GetPayload(object payload)
         {
+            if (payload == null)
+            {
+                return null;
+            }
+
             string str = JsonConvert.SerializeObject(payload);
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
         }

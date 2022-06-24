@@ -261,55 +261,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Cancels/Deletes the job with the specified Id.
-        /// </summary>
-        /// <param name="jobId">Id of the job to cancel.</param>
-        public virtual Task CancelJobAsync(string jobId)
-        {
-            return CancelJobAsync(jobId, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Cancels/Deletes the job with the specified Id.
-        /// </summary>
-        /// <param name="jobId">Id of the job to cancel.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
-        public virtual Task CancelJobAsync(string jobId, CancellationToken cancellationToken)
-        {
-            Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
-            try
-            {
-                EnsureInstanceNotClosed();
-
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-                {
-                    { HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new JobNotFoundException(jobId)) }
-                };
-
-                IETagHolder jobETag = new ETagHolder
-                {
-                    ETag = jobId,
-                };
-
-                return _httpClientHelper.DeleteAsync(
-                    GetJobUri("/{0}".FormatInvariant(jobId)),
-                    jobETag,
-                    errorMappingOverrides,
-                    null,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
-                throw;
-            }
-            finally
-            {
-                Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
-            }
-        }
-
-        /// <summary>
         /// Gets <see cref="Twin"/> from IotHub
         /// </summary>
         /// <param name="deviceId">The device Id.</param>

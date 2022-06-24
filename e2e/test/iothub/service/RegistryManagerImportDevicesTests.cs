@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         storageAuthenticationType,
                         devicesFileName,
                         configsFileName,
-                        registryManager,
+                        registryClient,
                         containerUri,
                         identity)
                     .ConfigureAwait(false);
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             StorageAuthenticationType storageAuthenticationType,
             string devicesFileName,
             string configsFileName,
-            RegistryManager registryManager,
+            RegistryClient registryClient,
             Uri containerUri,
             ManagedIdentity identity)
         {
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    importJobResponse = await registryManager.ImportDevicesAsync(jobProperties).ConfigureAwait(false);
+                    importJobResponse = await registryClient.ImportDevicesAsync(jobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(importJobResponse.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {importJobResponse.FailureReason}");
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                importJobResponse = await registryManager.GetJobAsync(importJobResponse?.JobId).ConfigureAwait(false);
+                importJobResponse = await registryClient.GetJobAsync(importJobResponse?.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {importJobResponse.JobId} is {importJobResponse.Status} with progress {importJobResponse.Progress}%");
                 if (!s_incompleteJobs.Contains(importJobResponse.Status))
                 {
