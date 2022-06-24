@@ -45,6 +45,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string CustomAllocationPolicyWebhook => GetValue("CUSTOM_ALLOCATION_POLICY_WEBHOOK");
 
             public static string CaName => GetValue("CA_NAME");
+
+            public static string TrustBundleId = GetValue("TRUST_BUNDLE_ID");
         }
     }
 }

@@ -74,5 +74,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "issuedClientCertificate")]
         public string IssuedClientCertificate { get; set; }
+
+        /// <summary>
+        /// The trust bundle result returned after a successful device registation.
+        /// This trust bundle is a collection of trusted root or intermediate certificates that have been uploaded to the provisioning service.
+        /// </summary>
+        [JsonProperty(PropertyName = "trustBundle")]
+        public TrustBundle TrustBundle { get; set; }
     }
 }

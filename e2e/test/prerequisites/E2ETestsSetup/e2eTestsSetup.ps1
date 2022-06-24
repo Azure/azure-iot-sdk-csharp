@@ -113,7 +113,10 @@ Function Check-AzureCliVersion()
 Function CleanUp-Certs()
 {
     Write-Host "`nCleaning up old certs and files that may cause conflicts."
-    $certsToDelete = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
+    $certsToDelete1 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
+    $certsToDelete2 = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Subject.Contains("CN=$dpsTrustBundleCertificateCommonName") }
+
+    $certsToDelete = $certsToDelete1 + $certsToDelete2
 
     $title = "Cleaning up certs."
     $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject}
@@ -183,6 +186,7 @@ $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 1
 $managedIdentityName = "$ResourceGroup-user-msi"
 $dpsCaName = "$ResourceGroup-CaName"
+$dpsTrustBundleId = "$ResourceGroup-TrustBundleId"
 
 # OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
@@ -236,16 +240,20 @@ $rootCommonName = "$subjectPrefix Root CA";
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA";
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
 
-$rootCertPath = "$PSScriptRoot/Root.cer";
-$intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer";
-$intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
-$intermediateCert2PfxPath = "$PSScriptRoot/intermediateCert2.pfx"
-$verificationCertPath = "$PSScriptRoot/verification.cer";
+$rootCertPath = "$PSScriptRoot\Root.cer";
+$intermediateCert1CertPath = "$PSScriptRoot\intermediateCert1.cer";
+$intermediateCert2CertPath = "$PSScriptRoot\intermediateCert2.cer";
+$intermediateCert2PfxPath = "$PSScriptRoot\intermediateCert2.pfx"
+$verificationCertPath = "$PSScriptRoot\verification.cer";
 
 $iotHubX509DeviceCertCommonName = "iothubx509device1";
-$iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
+$iotHubX509DevicePfxPath = "$PSScriptRoot\IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "iothubx509chaindevice1";
-$iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
+$iotHubX509ChainDevicPfxPath = "$PSScriptRoot\IotHubX509ChainDevice.pfx";
+
+$dpsTrustBundleCertificateCommonName = "O=Microsoft Azure DPS - Test Account for Azure DPS Private Preview, OU=FOR TEST PURPOSES ONLY, CN=Microsoft Azure DPS - TEST Azure DPS Private Preview - Root CA";
+$dpsTrustBundleCertificateCertPath = "$PSScriptRoot\dpsTrustBundleCertificate.cer";
+$dpsTrustBundleCertificatePemPath = "$PSScriptRoot\dpsTrustBundleCertificate.pem";
 
 ############################################################################################################################
 # Cleanup old certs and files that can cause a conflict
@@ -618,7 +626,7 @@ if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNull
 else
 {
     $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
-    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv 
+    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv
 
     $dpsKeyName = "provisioningserviceowner"
 
@@ -638,14 +646,67 @@ else
     $headers.Add("Content-Type", "application/json")
 
     $body = @{
-        certificateAuthorityType = 'DigiCertCertificateAuthority'
-        profileName = $CertificateAuthorityProfileId
-        apiKey = $CertificateAuthorityApiKey
+        'certificateAuthorityType' = "DigiCertCertificateAuthority"
+        'profileName' = "$CertificateAuthorityProfileId"
+        'apiKey' = "$CertificateAuthorityApiKey"
     }
     $jsonBody = $body | ConvertTo-Json
 
     Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
 }
+
+#################################################################################################################################################
+# Link your DPS instance to your Trust Bundle certificate. The IoT Edge TLS server certificate is chained up to a certificate
+# in the Trust Bundle.
+#################################################################################################################################################
+
+# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
+# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
+
+# Azure CLI support is currently unavailable for linking DPS instance to Trust Bundle.
+# The powershell command below will need to be replaced by Azure CLI once the support is available.
+
+Write-Host "`nLinking DPS host $dpsName to your Test Trust Bundle with friendly name $dpsTrustBundleId."
+
+$uriRequest = [System.UriBuilder]"https://$dpsEndpoint/trustBundles/$dpsTrustBundleId"
+
+$uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+$uriQueryCollection.Add("api-version", "2021-11-01-preview")
+
+$uriRequest.Query = $uriQueryCollection.ToString()
+
+$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+$headers.Add("Authorization", $serviceApiSasToken)
+$headers.Add("Content-Type", "application/json")
+
+# Generate a self-signed test certificate. This certificate will be uploaded to DPS as a Trust Bundle and will be linked to the test enrollments.
+# In production scenarios, this certificate will be replaced by the private root certificate downloaded from CA/PKI.
+$trustBundleTestCertificate = New-SelfSignedCertificate `
+    -DnsName "$dpsTrustBundleCertificateCommonName" `
+    -KeySpec Signature `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2)
+
+Export-Certificate -cert $trustBundleTestCertificate -filePath $dpsTrustBundleCertificateCertPath -Type Cert | Out-Null
+certutil -encode $dpsTrustBundleCertificateCertPath $dpsTrustBundleCertificatePemPath | Out-Null
+
+## TODO - convert pem file to one-line string in powershell [awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' cert-name.pem]
+<#
+$trustBundleTestCertificatePemString = 
+
+$body = @{
+    'certificates' = @(
+        @{
+            'certificate' = "$trustBundleTestCertificatePemString"
+        }
+    )
+}
+$jsonBody = $body | ConvertTo-Json
+
+Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+#>
 
 ##################################################################################################################################
 #Enable Azure Security Solutions, if specified
@@ -769,6 +830,7 @@ $keyvaultKvps = @{
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
     "DPS-X509-GROUP-ENROLLMENT-NAME" = $groupEnrollmentId;
     "CA-NAME" = $dpsCaName;
+    "TRUST-BUNDLE-ID" = $dpsTrustBundleId;
 
     # Environment variables for Azure resources used for E2E tests (common)
     "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;

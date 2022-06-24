@@ -102,6 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                   errorMessage,
                   etag,
                   returnData,
+                  null,
                   null)
         {
         }
@@ -122,7 +123,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string errorMessage,
             string etag,
             string returnData,
-            string issuedClientCertificate)
+            string issuedClientCertificate,
+            TrustBundle trustBundle)
         {
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
@@ -137,6 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             Etag = etag;
             JsonPayload = returnData;
             IssuedClientCertificate = issuedClientCertificate;
+            TrustBundle = trustBundle;
         }
 
         /// <summary>
@@ -205,5 +208,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The IoT device can then use this returned client certificate along with the private key information to authenticate with IoT hub.
         /// </summary>
         public string IssuedClientCertificate { get; set; }
+
+        /// <summary>
+        /// The trust bundle result returned after a successful device registation.
+        /// This trust bundle is a collection of trusted root or intermediate certificates that have been uploaded to the provisioning service.
+        /// </summary>
+        public TrustBundle TrustBundle { get; set; }
     }
 }
