@@ -13,6 +13,15 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly IotHubConnectionString _connectionString;
 
+        public ModuleAuthenticationWithSakRefresh(
+            string deviceId,
+            string moduleId,
+            IotHubConnectionString connectionString)
+            : base(deviceId, moduleId)
+        {
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        }
+
         internal ModuleAuthenticationWithSakRefresh(
             string deviceId,
             string moduleId,
