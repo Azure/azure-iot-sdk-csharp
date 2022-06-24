@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
-        [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
+        [ExpectedException(typeof(HttpRequestException))]
         public async Task registryClient_BadProxy_ThrowsException()
         {
             // arrange
