@@ -67,25 +67,5 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                 _path = string.Empty;
             }
         }
-
-        public override SocketAddress Serialize()
-        {
-            var result = new SocketAddress(AddressFamily.Unix, NativeAddressSize);
-            Debug.Assert(_encodedPath.Length + NativePathOffset <= result.Size, "Expected path to fit in address");
-
-            for (int index = 0; index < _encodedPath.Length; index++)
-            {
-                result[NativePathOffset + index] = _encodedPath[index];
-            }
-            result[NativePathOffset + _encodedPath.Length] = 0; // path must be null-terminated
-
-            return result;
-        }
-
-        public override EndPoint Create(SocketAddress socketAddress) => new UnixDomainSocketEndPoint(socketAddress);
-
-        public override AddressFamily AddressFamily => EndPointAddressFamily;
-
-        public override string ToString() => _path;
     }
 }

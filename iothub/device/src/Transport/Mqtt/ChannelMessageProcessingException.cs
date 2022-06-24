@@ -35,21 +35,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
         }
 
-        internal ChannelMessageProcessingException()
-            : base()
-        {
-        }
-
-        internal ChannelMessageProcessingException(string message)
-            : base(message)
-        {
-        }
-
-        internal ChannelMessageProcessingException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
         /// <summary>
         /// The context associated with the MQTT channel.
         /// </summary>

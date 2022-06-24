@@ -47,11 +47,6 @@ namespace Microsoft.Azure.Devices.Client
             return TraceException<ArgumentNullException>(new ArgumentNullException(paramName), TraceEventType.Error);
         }
 
-        public ArgumentNullException ArgumentNull(string paramName, string message)
-        {
-            return TraceException<ArgumentNullException>(new ArgumentNullException(paramName, message), TraceEventType.Error);
-        }
-
         public ArgumentOutOfRangeException ArgumentOutOfRange(string paramName, object actualValue, string message)
         {
             return TraceException(new ArgumentOutOfRangeException(paramName, actualValue, message), TraceEventType.Error);
@@ -80,14 +75,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return exception;
-        }
-
-        public static string GetDetailsForThrownException(Exception e)
-        {
-            string details = e.GetType().ToString();
-            details += Environment.NewLine + "Exception ToString:" + Environment.NewLine;
-            details += e.ToStringSlim();
-            return details;
         }
     }
 }

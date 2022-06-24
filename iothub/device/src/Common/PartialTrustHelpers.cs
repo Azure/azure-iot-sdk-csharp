@@ -23,50 +23,7 @@ namespace Microsoft.Azure.Devices.Client
 
         [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
         [SecurityCritical]
-        internal static bool IsInFullTrust()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
-        [SecurityCritical]
         internal static bool UnsafeIsInFullTrust()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
-        [SecurityCritical]
-        internal static bool IsTypeAptca(Type type)
-        {
-            throw new NotImplementedException();
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
-        [SecurityCritical]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void DemandForFullTrust()
-        {
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
-        [SecurityCritical]
-        private static bool IsAssemblyAptca(Assembly assembly)
-        {
-            throw new NotImplementedException();
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
-        [SecurityCritical]
-        private static bool IsAssemblySigned(Assembly assembly)
-        {
-            byte[] publicKeyToken = assembly.GetName().GetPublicKeyToken();
-            return publicKeyToken != null & publicKeyToken.Length > 0;
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
-        [SecurityCritical]
-        internal static bool HasEtwPermissions()
         {
             throw new NotImplementedException();
         }

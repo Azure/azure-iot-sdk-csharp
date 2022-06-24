@@ -37,13 +37,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 AuthenticationModel = AuthenticationModel.X509;
             }
         }
-        public IotHubConnectionString IotHubConnectionString { get; }
-        public AmqpTransportSettings AmqpTransportSettings { get; }
-        public ProductInfo ProductInfo { get; }
-        public AuthenticationModel AuthenticationModel { get; }
-        public string Audience { get; }
-        public ClientOptions Options { get; }
 
+        public IotHubConnectionString IotHubConnectionString { get; }
+
+        public AmqpTransportSettings AmqpTransportSettings { get; }
+
+        public ProductInfo ProductInfo { get; }
+
+        public AuthenticationModel AuthenticationModel { get; }
+
+        public string Audience { get; }
+
+        public ClientOptions Options { get; }
 
         private static string CreateAudience(IotHubConnectionString connectionString)
         {

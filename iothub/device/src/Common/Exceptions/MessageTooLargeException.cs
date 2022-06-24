@@ -59,15 +59,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(message, innerException, isTransient: false)
         {
         }
-
-        /// <summary>
-        /// Initializes a new instance of the class with the specified serialization and context information.
-        /// </summary>
-        /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        private MessageTooLargeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

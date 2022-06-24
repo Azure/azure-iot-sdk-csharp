@@ -1103,15 +1103,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return _stateFlags.HasFlag(stateFlagsToCheck);
         }
 
-        private static IByteBuffer GetWillMessageBody(Message message)
-        {
-            Stream bodyStream = message.GetBodyStream();
-            byte[] buffer = new byte[bodyStream.Length];
-            bodyStream.Read(buffer, 0, buffer.Length);
-            IByteBuffer copiedBuffer = Unpooled.CopiedBuffer(buffer);
-            return copiedBuffer;
-        }
-
         private string GetTelemetryTopicName()
         {
             string topicName = string.IsNullOrWhiteSpace(_moduleId)
