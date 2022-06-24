@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <param name="payload">The payload object to serialize.</param>
         /// <returns>The serialized HttpContent.</returns>
-        internal static HttpContent GetPayload(object payload)
+        internal static HttpContent SerializePayload(object payload)
         {
             if (payload == null)
             {
@@ -60,6 +60,11 @@ namespace Microsoft.Azure.Devices.Http2
             return JsonConvert.DeserializeObject<T>(str);
         }
 
+        /// <summary>
+        /// Adds the appropriate If-Match header value to the provided HTTP request.
+        /// </summary>
+        /// <param name="requestMessage">The request to add the If-Match header to.</param>
+        /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         public static void InsertEtag(HttpRequestMessage requestMessage, string eTag)
         {
             if (string.IsNullOrWhiteSpace(eTag))
@@ -67,6 +72,7 @@ namespace Microsoft.Azure.Devices.Http2
                 throw new ArgumentException("The entity does not have its ETag set.");
             }
 
+            // All ETag values other than "*" need to be wrapped in quotes
             if (!ETagForce.Equals(eTag))
             {
                 if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))

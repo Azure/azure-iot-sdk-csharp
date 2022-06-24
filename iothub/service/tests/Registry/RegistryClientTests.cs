@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var deviceToReturn = new Device(DeviceId) { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(deviceToReturn));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(deviceToReturn));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(deviceToReturn));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(deviceToReturn));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(deviceToReturn));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(deviceToReturn));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(null));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(null));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(null));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -462,7 +462,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(null));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -479,7 +479,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(null));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.GetPayload(null));
+            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;

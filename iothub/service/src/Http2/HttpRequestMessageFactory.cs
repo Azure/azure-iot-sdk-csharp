@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Http2
             if (payload != null)
             {
                 message.Headers.Add(HttpRequestHeader.ContentType.ToString(), ApplicationJson);
-                message.Content = HttpMessageHelper2.GetPayload(payload);
+                message.Content = HttpMessageHelper2.SerializePayload(payload);
             }
 
             return message;
