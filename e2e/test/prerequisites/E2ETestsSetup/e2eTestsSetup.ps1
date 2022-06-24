@@ -349,7 +349,7 @@ $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHub
 # Generate the certificates used by only DPS E2E tests.
 
 # Generate a self-signed test certificate. This certificate will be uploaded to DPS as a Trust Bundle and will be linked to the test enrollments.
-# In production scenarios, this certificate shoould be replaced by the private root certificate downloaded from CA/PKI.
+# In production scenarios, this certificate should be replaced by the private root certificate downloaded from CA/PKI.
 $trustBundleTestCertificate = New-SelfSignedCertificate `
     -DnsName "$dpsTrustBundleCertificateCommonName" `
     -KeyUsage CertSign `
