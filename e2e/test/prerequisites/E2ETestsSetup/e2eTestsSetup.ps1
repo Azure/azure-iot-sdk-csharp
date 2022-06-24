@@ -191,6 +191,9 @@ $dpsTrustBundleId = "$ResourceGroup-TrustBundleId"
 # OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
 
+# DPS service API version for preview features
+$dpsServiceApiPreviewVersion = "2021-11-01-preview"
+
 #################################################################################################
 # Make any special modifications required to generate resources for the DevOps test pipeline
 #################################################################################################
@@ -251,7 +254,7 @@ $iotHubX509DevicePfxPath = "$PSScriptRoot\IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "iothubx509chaindevice1";
 $iotHubX509ChainDevicPfxPath = "$PSScriptRoot\IotHubX509ChainDevice.pfx";
 
-$dpsTrustBundleCertificateCommonName = "O=Microsoft Azure DPS - Test Account for Azure DPS Private Preview, OU=FOR TEST PURPOSES ONLY, CN=Microsoft Azure DPS - TEST Azure DPS Private Preview - Root CA";
+$dpsTrustBundleCertificateCommonName = "$subjectPrefix DPS Private Preview - Root CA";
 $dpsTrustBundleCertificateCertPath = "$PSScriptRoot\dpsTrustBundleCertificate.cer";
 $dpsTrustBundleCertificatePemPath = "$PSScriptRoot\dpsTrustBundleCertificate.pem";
 
@@ -342,6 +345,18 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
+
+# Generate the certificates used by only DPS E2E tests.
+
+# Generate a self-signed test certificate. This certificate will be uploaded to DPS as a Trust Bundle and will be linked to the test enrollments.
+# In production scenarios, this certificate shoould be replaced by the private root certificate downloaded from CA/PKI.
+$trustBundleTestCertificate = New-SelfSignedCertificate `
+    -DnsName "$dpsTrustBundleCertificateCommonName" `
+    -KeyUsage CertSign `
+    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(2)
 
 ########################################################################################################
 # Install latest version of az cli
@@ -625,24 +640,26 @@ if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNull
 }
 else
 {
+    Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
+
     $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
     $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv
 
     $dpsKeyName = "provisioningserviceowner"
 
-    $serviceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
+    $dpsServiceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
 
     Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
 
     $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
 
     $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-    $uriQueryCollection.Add("api-version", "2021-11-01-preview")
+    $uriQueryCollection.Add("api-version", $dpsServiceApiPreviewVersion)
 
     $uriRequest.Query = $uriQueryCollection.ToString()
 
     $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    $headers.Add("Authorization", $serviceApiSasToken)
+    $headers.Add("Authorization", $dpsServiceApiSasToken)
     $headers.Add("Content-Type", "application/json")
 
     $body = @{
@@ -666,47 +683,28 @@ else
 # Azure CLI support is currently unavailable for linking DPS instance to Trust Bundle.
 # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
+Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
+
 Write-Host "`nLinking DPS host $dpsName to your Test Trust Bundle with friendly name $dpsTrustBundleId."
 
 $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/trustBundles/$dpsTrustBundleId"
 
 $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-$uriQueryCollection.Add("api-version", "2021-11-01-preview")
+$uriQueryCollection.Add("api-version", $dpsServiceApiPreviewVersion)
 
 $uriRequest.Query = $uriQueryCollection.ToString()
 
 $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("Authorization", $serviceApiSasToken)
+$headers.Add("Authorization", $dpsServiceApiSasToken)
 $headers.Add("Content-Type", "application/json")
-
-# Generate a self-signed test certificate. This certificate will be uploaded to DPS as a Trust Bundle and will be linked to the test enrollments.
-# In production scenarios, this certificate will be replaced by the private root certificate downloaded from CA/PKI.
-$trustBundleTestCertificate = New-SelfSignedCertificate `
-    -DnsName "$dpsTrustBundleCertificateCommonName" `
-    -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2)
 
 Export-Certificate -cert $trustBundleTestCertificate -filePath $dpsTrustBundleCertificateCertPath -Type Cert | Out-Null
 certutil -encode $dpsTrustBundleCertificateCertPath $dpsTrustBundleCertificatePemPath | Out-Null
 
-## TODO - convert pem file to one-line string in powershell [awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' cert-name.pem]
-<#
-$trustBundleTestCertificatePemString = 
-
-$body = @{
-    'certificates' = @(
-        @{
-            'certificate' = "$trustBundleTestCertificatePemString"
-        }
-    )
-}
-$jsonBody = $body | ConvertTo-Json
+$certificateData = Get-Content ($dpsTrustBundleCertificatePemPath) -Raw
+$jsonBody = "{'certificates': [{'certificate': '$certificateData'}]}"
 
 Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
-#>
 
 ##################################################################################################################################
 #Enable Azure Security Solutions, if specified
