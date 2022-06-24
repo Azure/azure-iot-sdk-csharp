@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -23,6 +24,7 @@ namespace Microsoft.Azure.Devices.Registry
         private IotHubConnectionProperties _credentialProvider;
         private HttpTransportSettings2 _settings;
         private HttpClient _httpClient;
+        private HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string DeviceRequestUriFormat = "/devices/{0}";
         private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
@@ -64,6 +66,7 @@ namespace Microsoft.Azure.Devices.Registry
             _settings = transportSettings;
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, _settings);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint);
         }
 
         /// <summary>
@@ -79,10 +82,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
         /// <returns>A RegistryManager instance.</returns>
-        public RegistryClient(
-            string hostName,
-            TokenCredential credential,
-            HttpTransportSettings2 transportSettings = default)
+        public RegistryClient(string hostName, TokenCredential credential, HttpTransportSettings2 transportSettings = default)
         {
             if (string.IsNullOrEmpty(hostName))
             {
@@ -103,6 +103,7 @@ namespace Microsoft.Azure.Devices.Registry
             _hostName = hostName;
             _settings = transportSettings;
             _httpClient = HttpClientFactory.Create(_hostName, _settings);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint);
         }
 
         /// <summary>
@@ -117,10 +118,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="transportSettings">The HTTP transport settings.</param>
         /// <returns>A RegistryManager instance.</returns>
-        public RegistryClient(
-            string hostName,
-            AzureSasCredential credential,
-            HttpTransportSettings2 transportSettings = default)
+        public RegistryClient(string hostName, AzureSasCredential credential, HttpTransportSettings2 transportSettings = default)
         {
             if (string.IsNullOrEmpty(hostName))
             {
@@ -141,6 +139,7 @@ namespace Microsoft.Azure.Devices.Registry
             _hostName = hostName;
             _settings = transportSettings;
             _httpClient = HttpClientFactory.Create(_hostName, _settings);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint);
         }
 
         /// <summary>
@@ -160,7 +159,7 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentNullException(nameof(device));
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
@@ -193,7 +192,7 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentNullException(nameof(deviceId));
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetRequestUri(deviceId), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Device>(response, cancellationToken);
@@ -243,8 +242,8 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider);
-                request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), device.ETag);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider);
+                HttpMessageHelper2.InsertEtag(request, device.ETag);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -275,7 +274,7 @@ namespace Microsoft.Azure.Devices.Registry
             }
 
             var device = new Device(deviceId);
-            device.ETag = "*";
+            device.ETag = HttpMessageHelper2.ETagForce;
             await RemoveDeviceAsync(device, cancellationToken);
         }
 
@@ -301,9 +300,8 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
-                request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), device.ETag);
-
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
+                request.Headers.Add("If-Match", device.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
@@ -335,7 +333,7 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentNullException(nameof(module));
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
@@ -374,7 +372,7 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentException(nameof(moduleId));
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
@@ -424,10 +422,8 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
-
-                request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), module.ETag);
-
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
+                HttpMessageHelper2.InsertEtag(request, module.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Module>(response, cancellationToken);
@@ -463,7 +459,7 @@ namespace Microsoft.Azure.Devices.Registry
             }
 
             var module = new Module(deviceId, moduleId);
-            module.ETag = "*";
+            module.ETag = HttpMessageHelper2.ETagForce;
             await RemoveModuleAsync(module, cancellationToken);
         }
 
@@ -489,9 +485,8 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
-                request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), module.ETag);
-
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
+                HttpMessageHelper2.InsertEtag(request, module.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
@@ -523,7 +518,7 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentException(nameof(deviceId));
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<IEnumerable<Module>>(response, cancellationToken);
@@ -700,7 +695,7 @@ namespace Microsoft.Azure.Devices.Registry
                     StorageConnectionString = storageAccountConnectionString,
                 };
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetAdminUri("exportRegistry"), _credentialProvider, payload);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetAdminUri("exportRegistry"), _credentialProvider, payload);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
@@ -733,7 +728,7 @@ namespace Microsoft.Azure.Devices.Registry
                     StorageConnectionString = storageAccountConnectionString,
                 };
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetAdminUri("importRegistry"), _credentialProvider, payload);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetAdminUri("importRegistry"), _credentialProvider, payload);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
@@ -894,7 +889,7 @@ namespace Microsoft.Azure.Devices.Registry
             Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobsAsync));
             try
             {
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<JobProperties>(response, cancellationToken);
@@ -920,7 +915,7 @@ namespace Microsoft.Azure.Devices.Registry
             Logging.Enter(this, $"Getting job", nameof(GetJobsAsync));
             try
             {
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<IEnumerable<JobProperties>>(response, cancellationToken);
@@ -946,8 +941,8 @@ namespace Microsoft.Azure.Devices.Registry
             Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
             try
             {
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
-                request.Headers.Add(HttpRequestHeader.IfMatch.ToString(), jobId);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
+                HttpMessageHelper2.InsertEtag(request, jobId);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
@@ -974,7 +969,7 @@ namespace Microsoft.Azure.Devices.Registry
 
             try
             {
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Get, GetStatisticsUri(), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<RegistryStatistics>(response, cancellationToken);
@@ -1112,7 +1107,7 @@ namespace Microsoft.Azure.Devices.Registry
                     throw new ArgumentNullException(nameof(devices));
                 }
 
-                using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<BulkRegistryOperationResult>(response, cancellationToken);
@@ -1130,7 +1125,7 @@ namespace Microsoft.Azure.Devices.Registry
 
         private async Task<JobProperties> CreateJobAsync(JobProperties jobProperties, CancellationToken cancellationToken)
         {
-            using HttpRequestMessage request = HttpMessageHelper2.CreateRequest(HttpMethod.Post, GetCreateJobsUri(), _credentialProvider, jobProperties);
+            using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetCreateJobsUri(), _credentialProvider, jobProperties);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
             return await HttpMessageHelper2.DeserializeResponse<JobProperties>(response, cancellationToken);

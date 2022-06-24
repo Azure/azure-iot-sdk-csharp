@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Registry;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -288,10 +289,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // assert
 
                 bulkDeleteResult.IsSuccessful.Should().BeTrue();
-                Device actualDevice1 = await registryClient.GetDeviceAsync(device1.Id).ConfigureAwait(false);
-                actualDevice1.Should().BeNull();
-                Device actualDevice2 = await registryClient.GetDeviceAsync(device1.Id).ConfigureAwait(false);
-                actualDevice2.Should().BeNull();
+
+                try
+                {
+                    Device actualDevice1 = await registryClient.GetDeviceAsync(device1.Id).ConfigureAwait(false);
+                    throw new AssertFailedException("Expected the request to fail with a \"not found\" error");
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // expected exception
+                }
+
+                try
+                {
+                    Device actualDevice2 = await registryClient.GetDeviceAsync(device1.Id).ConfigureAwait(false);
+                    throw new AssertFailedException("Expected the request to fail with a \"not found\" error");
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // expected exception
+                }
             }
             finally
             {
