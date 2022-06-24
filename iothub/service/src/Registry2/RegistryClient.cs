@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Registry
 
             if (transportSettings == null)
             {
-                throw new ArgumentNullException(nameof(transportSettings));
+                transportSettings = new HttpTransportSettings2();
             }
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Registry
 
             if (transportSettings == null)
             {
-                throw new ArgumentNullException(nameof(transportSettings));
+                transportSettings = new HttpTransportSettings2();
             }
 
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Registry
 
             if (transportSettings == null)
             {
-                throw new ArgumentNullException(nameof(transportSettings));
+                transportSettings = new HttpTransportSettings2();
             }
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);

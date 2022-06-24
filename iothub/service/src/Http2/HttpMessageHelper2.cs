@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Http2
         {
             var message = new HttpRequestMessage();
             message.Method = method;
-            message.RequestUri = new Uri(requestUri, ApiVersionQueryString);
+            message.RequestUri = new Uri(requestUri.ToString() + ApiVersionQueryString, UriKind.Relative);
             message.Headers.Add(HttpRequestHeader.Accept.ToString(), ApplicationJson);
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), authorizationProvider.GetAuthorizationHeader());
             message.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());

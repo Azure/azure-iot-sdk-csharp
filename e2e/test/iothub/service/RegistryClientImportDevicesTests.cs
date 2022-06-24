@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class RegistryManagerImportDevicesTests : E2EMsTestBase
+    public class RegistryClientImportDevicesTests : E2EMsTestBase
     {
         // A bug in either Storage or System.Diagnostics causes an exception during container creation
         // so for now, we need to use the older storage nuget.
