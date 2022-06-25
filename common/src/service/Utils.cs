@@ -71,18 +71,6 @@ namespace Microsoft.Azure.Devices.Common
             return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
 
-
-        /// <summary>
-        /// Format string to be displayed.
-        /// </summary>
-        /// <param name="format">A composite format string.</param>
-        /// <param name="args">The object to format.</param>
-        /// <returns>A copy of format in which the format item or items have been replaced by the string representation of arg0.</returns>
-        public static string FormatForUser(this string format, params object[] args)
-        {
-            return string.Format(CultureInfo.CurrentCulture, format, args);
-        }
-
         /// <summary>
         /// Format string to be displayed.
         /// </summary>

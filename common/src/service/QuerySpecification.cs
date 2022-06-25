@@ -12,11 +12,5 @@ namespace Microsoft.Azure.Devices
     {
         [JsonProperty(PropertyName = "query", Required = Required.Always)]
         public string Sql { get; set; }
-
-        [JsonIgnore]
-        public int? PageSize { get; set; }
-
-        [JsonIgnore]
-        public string ContinuationToken { get; set; }
     }
 }
