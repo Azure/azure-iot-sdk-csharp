@@ -35,10 +35,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base(message, innerException)
         {
         }
-
-        private JobQuotaExceededException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

@@ -67,14 +67,6 @@ namespace Microsoft.Azure.Devices.Common
             throw Exception.AsError(new AssertionFailedException(description));
         }
 
-        public static void AssertAndThrowFatal(bool condition, string description)
-        {
-            if (!condition)
-            {
-                AssertAndThrowFatal(description);
-            }
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception AssertAndThrowFatal(string description)
         {
@@ -226,8 +218,11 @@ namespace Microsoft.Azure.Devices.Common
                 public Type ElementType { get; private set; }
 
                 public string Scope { get; set; }
+
                 public string SizeLimit { get; set; }
+
                 public bool StaleElementsRemovedImmediately { get; set; }
+
                 public bool EnqueueThrowsIfFull { get; set; }
             }
 
@@ -245,7 +240,9 @@ namespace Microsoft.Azure.Devices.Common
                 }
 
                 public bool Blocking { get; set; }
+
                 public string Scope { get; set; }
+
                 public SynchronizationKind Kind { get; set; }
             }
 
@@ -261,17 +258,10 @@ namespace Microsoft.Azure.Devices.Common
                 public BlocksUsing BlocksUsing { get; private set; }
 
                 public bool SupportsAsync { get; set; }
-                public bool Spins { get; set; }
-                public string ReleaseMethod { get; set; }
-            }
 
-            [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = false)]
-            [Conditional("CODE_ANALYSIS")]
-            public sealed class BlockingAttribute : Attribute
-            {
-                public string CancelMethod { get; set; }
-                public Type CancelDeclaringType { get; set; }
-                public string Conditional { get; set; }
+                public bool Spins { get; set; }
+
+                public string ReleaseMethod { get; set; }
             }
 
             // Sometime a method will call a conditionally-blocking method in such a way that it is guaranteed
@@ -301,7 +291,9 @@ namespace Microsoft.Azure.Devices.Common
                 }
 
                 public string Critical { get; set; }
+
                 public string Safe { get; set; }
+
                 public string Miscellaneous { get; set; }
             }
         }
