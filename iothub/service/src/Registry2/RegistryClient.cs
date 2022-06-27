@@ -11,12 +11,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices.Registry
 {
     /// <summary>
-    ///
+    /// Client class for all registry related operations such as
+    /// adding/updating/getting/deleting device/module identities
+    /// and getting registry statistics.
     /// </summary>
     public class RegistryClient : IDisposable
     {
@@ -38,17 +41,16 @@ namespace Microsoft.Azure.Devices.Registry
         /// <summary>
         /// Creates an instance of RegistryManager, provided for unit testing purposes only.
         /// </summary>
-        public RegistryClient()
+        protected RegistryClient()
         {
         }
 
         /// <summary>
-        /// Creates an instance of RegistryManager, authenticating using an IoT hub connection string, and specifying
-        /// HTTP transport settings.
+        /// Create an instance of this class that authenticates service requests
+        /// using an IoT hub connection string.
         /// </summary>
         /// <param name="connectionString">The IoT hub connection string.</param>
-        /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>A RegistryManager instance.</returns>
+        /// <param name="transportSettings">The optional HTTP transport settings.</param>
         public RegistryClient(string connectionString, HttpTransportSettings2 transportSettings = default)
         {
             if (string.IsNullOrEmpty(connectionString))
@@ -70,7 +72,8 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        /// Creates RegistryManager, authenticating using an identity in Azure Active Directory (AAD).
+        /// Create an instance of this class that authenticates service requests
+        /// using an identity in Azure Active Directory (AAD).
         /// </summary>
         /// <remarks>
         /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
@@ -78,10 +81,9 @@ namespace Microsoft.Azure.Devices.Registry
         /// For more information on configuring IoT hub with Azure Active Directory, see
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
         /// </remarks>
-        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
-        /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>A RegistryManager instance.</returns>
+        /// <param name="transportSettings">The optional HTTP transport settings.</param>
         public RegistryClient(string hostName, TokenCredential credential, HttpTransportSettings2 transportSettings = default)
         {
             if (string.IsNullOrEmpty(hostName))
@@ -107,17 +109,17 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        /// Creates RegistryManager using a shared access signature provided and refreshed as necessary by the caller.
+        /// Create an instance of this class that authenticates service requests with
+        /// a shared access signature provided and refreshed as necessary by the caller.
         /// </summary>
         /// <remarks>
         /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.
         /// The <see cref="AzureSasCredential"/> object gives the SDK access to the SAS token, while the caller can update it as necessary using the
         /// <see cref="AzureSasCredential.Update(string)"/> method.
         /// </remarks>
-        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
-        /// <param name="transportSettings">The HTTP transport settings.</param>
-        /// <returns>A RegistryManager instance.</returns>
+        /// <param name="transportSettings">The optional HTTP transport settings.</param>
         public RegistryClient(string hostName, AzureSasCredential credential, HttpTransportSettings2 transportSettings = default)
         {
             if (string.IsNullOrEmpty(hostName))
@@ -143,11 +145,11 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        /// Register a new device with the system
+        /// Add a device identity to your IoT hub's registry.
         /// </summary>
-        /// <param name="device">The Device object being registered.</param>
+        /// <param name="device">The device identity to register.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The Device object with the generated keys and ETags.</returns>
+        /// <returns>The registered device with the generated keys and ETags.</returns>
         public virtual async Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
@@ -176,11 +178,11 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Get a device identity by its Id.
         /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="deviceId">The unique identifier of the device identity to retrieve.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The retrieved device identity.</returns>
         public virtual async Task<Device> GetDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Getting device: {deviceId}", nameof(GetDeviceAsync));
@@ -209,23 +211,28 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Replace a device identity's state with the provided device identity's state.
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="device">The device identity's new state.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The newly updated device identity including its new ETag.</returns>
         public virtual async Task<Device> UpdateDeviceAsync(Device device, CancellationToken cancellationToken = default)
         {
             return await UpdateDeviceAsync(device, false, cancellationToken);
         }
 
         /// <summary>
-        ///
+        /// Replace a device identity's state with the provided device identity's state.
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="forceUpdate"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="device">The device identity's new state.</param>
+        /// <param name="forceUpdate">
+        /// If true, this update operation will execute even if the provided device identity has
+        /// an out of date ETag. If false, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetDeviceAsync(string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The newly updated device identity including its new ETag.</returns>
         public virtual async Task<Device> UpdateDeviceAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Updating device: {device?.Id}", nameof(UpdateDeviceAsync));
@@ -261,11 +268,10 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Remove the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="deviceId">The Id of the device identity to be removed.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task RemoveDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(deviceId))
@@ -279,11 +285,16 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Remove the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="device">
+        /// The device identity to remove from your IoT hub's registry. If the provided device's ETag
+        /// is out of date, this operation will throw a <see cref="PreconditionFailedException"/>
+        /// An up-to-date ETag can be retrieved using <see cref="GetDeviceAsync(string, CancellationToken)"/>.
+        /// To force the operation to execute regardless of ETag, set the device identity's ETag to "*" or
+        /// use <see cref="RemoveDeviceAsync(string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task RemoveDeviceAsync(Device device, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Removing device: {device?.Id}", nameof(RemoveDeviceAsync));
@@ -301,7 +312,7 @@ namespace Microsoft.Azure.Devices.Registry
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
-                request.Headers.Add("If-Match", device.ETag);
+                HttpMessageHelper2.InsertEtag(request, device.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
@@ -317,11 +328,11 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Add a module identity to your IoT hub's registry.
         /// </summary>
-        /// <param name="module"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="module">The module identity to register.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The registered module with the generated keys and ETags.</returns>
         public virtual async Task<Module> AddModuleAsync(Module module, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddModuleAsync));
@@ -350,12 +361,12 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Get a module identity by its Id and by the Id of the device it is registered on.
         /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="moduleId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="moduleId">The unique identifier of the module identity to retrieve.</param>
+        /// <param name="deviceId">The unique identifier of the device identity that the module is registered on.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The retrieved module identity.</returns>
         public virtual async Task<Module> GetModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetModuleAsync));
@@ -389,23 +400,28 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Replace a module identity's state with the provided module identity's state.
         /// </summary>
-        /// <param name="module"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="module">The module identity's new state.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The newly updated module identity including its new ETag.</returns>
         public virtual async Task<Module> UpdateModuleAsync(Module module, CancellationToken cancellationToken = default)
         {
             return await UpdateModuleAsync(module, false, cancellationToken);
         }
 
         /// <summary>
-        ///
+        /// Replace a module identity's state with the provided module identity's state.
         /// </summary>
-        /// <param name="module"></param>
-        /// <param name="forceUpdate"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="module">The module identity's new state.</param>
+        /// <param name="forceUpdate">
+        /// If true, this update operation will execute even if the provided device identity has
+        /// an out of date ETag. If false, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// if the provided module identity has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetModuleAsync(string, string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The newly updated device identity including its new ETag.</returns>
         public virtual async Task<Module> UpdateModuleAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateModuleAsync));
@@ -440,12 +456,12 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Remove the module identity with the provided Id from your device with
+        /// the provided Id from IoT hub's registry.
         /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="moduleId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="deviceId">The Id of the device identity that contains the module to be removed.</param>
+        /// <param name="moduleId">The Id of the module identity to be removed.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task RemoveModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(deviceId))
@@ -464,11 +480,16 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Remove the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
-        /// <param name="module"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="module">
+        /// The module identity to remove from your IoT hub's registry. If the provided module's ETag
+        /// is out of date, this operation will throw a <see cref="PreconditionFailedException"/>
+        /// An up-to-date ETag can be retrieved using <see cref="GetModuleAsync(string, string, CancellationToken)"/>.
+        /// To force the operation to execute regardless of ETag, set the module identity's ETag to "*" or
+        /// use <see cref="RemoveModuleAsync(string, string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task RemoveModuleAsync(Module module, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Removing module: {module?.Id} from device: {module?.DeviceId}", nameof(RemoveDeviceAsync));
@@ -502,11 +523,11 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Get all the modules that are registered on a particular device.
         /// </summary>
-        /// <param name="deviceId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="deviceId">The Id of the device to get the modules of.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The modules that are registered on the specified device.</returns>
         public virtual async Task<IEnumerable<Module>> GetModulesOnDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Getting modules on device: {deviceId}", nameof(GetModulesOnDeviceAsync));
@@ -535,11 +556,15 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Add up to 100 device identities to your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// For larger scale operations, consider using <see cref="ImportDevicesAsync(string, string, CancellationToken)"/>
+        /// which allows you to import devices from an Azure Storage container.
+        /// </remarks>
+        /// <param name="devices">The device identities to add to your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> AddDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
@@ -561,23 +586,27 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Forceably update up to 100 device identities in your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> UpdateDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             return await UpdateDevicesAsync(devices, false, cancellationToken);
         }
 
         /// <summary>
-        ///
+        /// Update up to 100 device identities in your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices"></param>
-        /// <param name="forceUpdate"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="forceUpdate">
+        /// If true, device identities will be updated even if they have an out-of-date ETag. If false,
+        /// only the devices that have an up-to-date ETag will be updated. An up-to-date ETag can be retrieved
+        /// using <see cref="GetDeviceAsync(string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> UpdateDevicesAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
@@ -600,23 +629,27 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Forceably remove up to 100 device identities from your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="devices">The device identities to remove from your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> RemoveDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             return await RemoveDevicesAsync(devices, false, cancellationToken);
         }
 
         /// <summary>
-        ///
+        /// Remove up to 100 device identities from your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices"></param>
-        /// <param name="forceRemove"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="devices">The device identities to remove from your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="forceRemove">
+        /// If true, device identities will be removed even if they have an out-of-date ETag. If false,
+        /// only the devices that have an up-to-date ETag will be removed. An up-to-date ETag can be retrieved
+        /// using <see cref="GetDeviceAsync(string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> RemoveDevicesAsync(IEnumerable<Device> devices, bool forceRemove, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
@@ -639,12 +672,16 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Add a device identity to your IoT hub's registry with an initial twin state.
         /// </summary>
-        /// <param name="device"></param>
-        /// <param name="twin"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// This API uses the same underlying service API as the bulk add/update/remove APIs defined in
+        /// this client.
+        /// </remarks>
+        /// <param name="device">The device identity to register.</param>
+        /// <param name="twin">The initial twin state for the device.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The registered device with the generated keys and ETags.</returns>
         public virtual async Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Adding device with twin: {device?.Id}", nameof(AddDeviceWithTwinAsync));
@@ -665,6 +702,7 @@ namespace Microsoft.Azure.Devices.Registry
 
                 exportImportDeviceList.Add(exportImportDevice);
 
+                //TODO why return a bulk operation result here? Can't we abstract that a bit from the user?
                 return await BulkDeviceOperationAsync(exportImportDeviceList, cancellationToken);
             }
             catch (Exception ex)
@@ -683,7 +721,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount.</param>
         /// <param name="containerName">Destination blob container name.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Exporting registry", nameof(ExportRegistryAsync));
@@ -715,7 +753,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount.</param>
         /// <param name="containerName">Source blob container name.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Importing registry", nameof(ImportRegistryAsync));
@@ -750,7 +788,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// </summary>
         /// <param name="exportBlobContainerUri">Destination blob container URI.</param>
         /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ExportDevicesAsync(string exportBlobContainerUri, bool excludeKeys, CancellationToken cancellationToken = default)
         {
@@ -767,7 +805,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// <param name="exportBlobContainerUri">Destination blob container URI.</param>
         /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container.</param>
         /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ExportDevicesAsync(string exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken = default)
         {
@@ -783,7 +821,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ExportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
@@ -816,7 +854,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// </summary>
         /// <param name="importBlobContainerUri">Source blob container URI.</param>
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ImportDevicesAsync(string importBlobContainerUri, string outputBlobContainerUri, CancellationToken cancellationToken = default)
         {
@@ -833,7 +871,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// <param name="importBlobContainerUri">Source blob container URI.</param>
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ImportDevicesAsync(string importBlobContainerUri, string outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken = default)
         {
@@ -851,7 +889,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
         /// <param name="jobParameters">Parameters for the job.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
@@ -879,10 +917,10 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        /// Gets the job with the specified Id.
+        /// Gets the registry job with the specified Id.
         /// </summary>
-        /// <param name="jobId">Id of the Job object to retrieve.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="jobId">Id of the registry job to retrieve.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the job specified by the provided jobId.</returns>
         public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
@@ -906,9 +944,9 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        /// List all jobs for the IoT hub.
+        /// List all registry jobs for the IoT hub.
         /// </summary>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
         public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
         {
@@ -935,7 +973,7 @@ namespace Microsoft.Azure.Devices.Registry
         /// Cancels/Deletes the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the job to cancel.</param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
@@ -959,10 +997,10 @@ namespace Microsoft.Azure.Devices.Registry
         }
 
         /// <summary>
-        ///
+        /// Gets the registry statistics for your IoT hub.
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <returns>The registry statistics for you Iot hub.</returns>
         public virtual async Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
