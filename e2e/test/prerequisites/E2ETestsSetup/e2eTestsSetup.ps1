@@ -68,7 +68,7 @@ Write-Host "InstallPrivatePreviewResources $InstallPrivatePreviewResources"
 if ($InstallPrivatePreviewResources)
 {
     Write-Host "`nYou've opted to generate resources for private preview features. Ensure that you've completed the relevant prerequisites from the service-side,
-     eg. adding your subscription/resource name in the allow-list, else the operation would fail."
+     e.g., adding your subscription/resource name in the allow-list, else the operation would fail."
 }
 
 ###########################################################################
