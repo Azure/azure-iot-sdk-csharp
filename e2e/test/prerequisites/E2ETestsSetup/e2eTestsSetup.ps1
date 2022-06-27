@@ -21,6 +21,11 @@ param(
     [Parameter()]
     [string] $CertificateAuthorityProfileId,
 
+    # Set this if you'd like to generate the resources required to work with private-preview features.
+    # Ensure that you've completed the relevant prerequisites from the service-side before setting this,  e.g., adding your subscription/resource name in the allow-list, else the operation would fail.
+    [Parameter()]
+    [switch] $InstallPrivatePreviewResources,
+
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
     [switch] $InstallDependencies,
@@ -55,9 +60,16 @@ $WarningActionPreference = "Continue"
 ########################################################################################################
 
 Write-Host "`nInstallDependencies $InstallDependencies"
-Write-Host "`GenerateResourcesForTestDevOpsPipeline $GenerateResourcesForTestDevOpsPipeline"
-Write-Host "`GenerateResourcesForSamplesDevOpsPipeline $GenerateResourcesForSamplesDevOpsPipeline"
-Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
+Write-Host "GenerateResourcesForTestDevOpsPipeline $GenerateResourcesForTestDevOpsPipeline"
+Write-Host "GenerateResourcesForSamplesDevOpsPipeline $GenerateResourcesForSamplesDevOpsPipeline"
+Write-Host "EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
+Write-Host "InstallPrivatePreviewResources $InstallPrivatePreviewResources"
+
+if ($InstallPrivatePreviewResources)
+{
+    Write-Host -ForegroundColor DarkYellow "`nYou've opted to generate resources for private preview features. Ensure that you've completed the relevant prerequisites from the service-side,
+     e.g., adding your subscription/resource name in the allow-list, else the operation would fail."
+}
 
 ###########################################################################
 # Connect-AzureSubscription - gets current Azure context or triggers a 
@@ -348,15 +360,18 @@ $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHub
 
 # Generate the certificates used by only DPS E2E tests.
 
-# Generate a self-signed test certificate. This certificate will be uploaded to DPS as a Trust Bundle and will be linked to the test enrollments.
-# In production scenarios, this certificate should be replaced by the private root certificate downloaded from CA/PKI.
-$trustBundleTestCertificate = New-SelfSignedCertificate `
-    -DnsName "$dpsTrustBundleCertificateCommonName" `
-    -KeyUsage CertSign `
-    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
-    -NotAfter (Get-Date).AddYears(2)
+if ($InstallPrivatePreviewResources)
+{
+    # Generate a self-signed test certificate. This certificate will be uploaded to DPS as a Trust Bundle and will be linked to the test enrollments.
+    # In production scenarios, this certificate should be replaced by the private root certificate downloaded from CA/PKI.
+    $trustBundleTestCertificate = New-SelfSignedCertificate `
+        -DnsName "$dpsTrustBundleCertificateCommonName" `
+        -KeyUsage CertSign `
+        -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+        -HashAlgorithm "$certificateHashAlgorithm" `
+        -CertStoreLocation "Cert:\LocalMachine\My" `
+        -NotAfter (Get-Date).AddYears(2)
+}
 
 ########################################################################################################
 # Install latest version of az cli
@@ -628,48 +643,61 @@ az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrol
 # Link your DPS instance to your certificate authority which can accept client certificate signing requests and issue certificates.
 #################################################################################################################################################
 
-# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
-# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
 
-# Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
-# The powershell command below will need to be replaced by Azure CLI once the support is available.
-
-if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+if ($InstallPrivatePreviewResources)
 {
-    Write-Host "`nCertificate Authority details not provided for DPS client certificate issuance. Skipping this step."
-}
-else
-{
-    Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
+    # Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
+    # For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
+    
+    # Azure CLI support is currently unavailable for linking DPS instance to certificate authority.
+    # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
-    $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
-    $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv
-
-    $dpsKeyName = "provisioningserviceowner"
-
-    $dpsServiceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
-
-    Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
-
-    $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
-
-    $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-    $uriQueryCollection.Add("api-version", $dpsServiceApiPreviewVersion)
-
-    $uriRequest.Query = $uriQueryCollection.ToString()
-
-    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    $headers.Add("Authorization", $dpsServiceApiSasToken)
-    $headers.Add("Content-Type", "application/json")
-
-    $body = @{
-        'certificateAuthorityType' = "DigiCertCertificateAuthority"
-        'profileName' = "$CertificateAuthorityProfileId"
-        'apiKey' = "$CertificateAuthorityApiKey"
+    if ([string]::IsNullOrEmpty($CertificateAuthorityProfileId) -or [string]::IsNullOrEmpty($CertificateAuthorityApiKey))
+    {
+        Write-Host "`nCertificate Authority details not provided for DPS client certificate issuance. Skipping this step."
     }
-    $jsonBody = $body | ConvertTo-Json
+    else
+    {
+        Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
 
-    Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+        $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
+        $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv
+
+        $dpsKeyName = "provisioningserviceowner"
+
+        $dpsServiceApiSasToken = Calculate-SasKey $dpsKeyName $dpsPrimaryKey $dpsEndpoint 3600
+
+        Write-Host "`nLinking DPS host $dpsName to your DigiCert certificate authority with friendly name $dpsCaName."
+
+        $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/certificateAuthorities/$dpsCaName"
+
+        $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+        $uriQueryCollection.Add("api-version", $dpsServiceApiPreviewVersion)
+
+        $uriRequest.Query = $uriQueryCollection.ToString()
+
+        $headers = @{
+            "Authorization" = $dpsServiceApiSasToken;
+            "Content-Type" = "application/json";
+        }
+
+        $body = @{
+            'certificateAuthorityType' = "DigiCertCertificateAuthority"
+            'profileName' = "$CertificateAuthorityProfileId"
+            'apiKey' = "$CertificateAuthorityApiKey"
+        }
+        $jsonBody = $body | ConvertTo-Json
+
+        try
+        {
+            Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+        }
+        catch
+        {
+            Write-Host "`nError while linking DPS $dpsName to CA $dpsCaName."
+            Write-Error -Message $_.ErrorDetails.Message
+        }
+    }
 }
 
 #################################################################################################################################################
@@ -677,34 +705,47 @@ else
 # in the Trust Bundle.
 #################################################################################################################################################
 
-# Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
-# For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
 
-# Azure CLI support is currently unavailable for linking DPS instance to Trust Bundle.
-# The powershell command below will need to be replaced by Azure CLI once the support is available.
+if ($InstallPrivatePreviewResources)
+{
+    # Note: This feature is currently in private preview. In order to use this feature you will first need to get your DPS instance added to the allow-list.
+    # For more details, see https://github.com/Azure/CertsForIoT-B#getting-started.
 
-Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
+    # Azure CLI support is currently unavailable for linking DPS instance to Trust Bundle.
+    # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
-Write-Host "`nLinking DPS host $dpsName to your Test Trust Bundle with friendly name $dpsTrustBundleId."
+    Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
 
-$uriRequest = [System.UriBuilder]"https://$dpsEndpoint/trustBundles/$dpsTrustBundleId"
+    Write-Host "`nLinking DPS host $dpsName to your Test Trust Bundle with friendly name $dpsTrustBundleId."
 
-$uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-$uriQueryCollection.Add("api-version", $dpsServiceApiPreviewVersion)
+    $uriRequest = [System.UriBuilder]"https://$dpsEndpoint/trustBundles/$dpsTrustBundleId"
 
-$uriRequest.Query = $uriQueryCollection.ToString()
+    $uriQueryCollection = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+    $uriQueryCollection.Add("api-version", $dpsServiceApiPreviewVersion)
 
-$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("Authorization", $dpsServiceApiSasToken)
-$headers.Add("Content-Type", "application/json")
+    $uriRequest.Query = $uriQueryCollection.ToString()
 
-Export-Certificate -cert $trustBundleTestCertificate -filePath $dpsTrustBundleCertificateCertPath -Type Cert | Out-Null
-certutil -encode $dpsTrustBundleCertificateCertPath $dpsTrustBundleCertificatePemPath | Out-Null
+    $headers = @{
+        "Authorization" = $dpsServiceApiSasToken;
+        "Content-Type" = "application/json";
+    }
 
-$certificateData = Get-Content ($dpsTrustBundleCertificatePemPath) -Raw
-$jsonBody = "{'certificates': [{'certificate': '$certificateData'}]}"
+    Export-Certificate -cert $trustBundleTestCertificate -filePath $dpsTrustBundleCertificateCertPath -Type Cert | Out-Null
+    certutil -encode $dpsTrustBundleCertificateCertPath $dpsTrustBundleCertificatePemPath | Out-Null
 
-Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+    $certificateData = Get-Content ($dpsTrustBundleCertificatePemPath) -Raw
+    $jsonBody = "{'certificates': [{'certificate': '$certificateData'}]}"
+
+    try
+    {
+        Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+    }
+    catch
+    {
+        Write-Host "`nError while linking DPS $dpsName to Trust Bundle $dpsTrustBundleId."
+        Write-Error -Message $_.ErrorDetails.Message
+    }
+}
 
 ##################################################################################################################################
 #Enable Azure Security Solutions, if specified
