@@ -19,13 +19,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates a new instance of <see cref="Module"/>
         /// </summary>
-        public Module()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="Module"/>
-        /// </summary>
         /// <param name="deviceId">Device identifier</param>
         /// <param name="moduleId">Module identifier</param>
         public Module(string deviceId, string moduleId)

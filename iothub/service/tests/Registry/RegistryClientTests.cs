@@ -45,20 +45,20 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             const string DeviceId = "123";
             var deviceToReturn = new Device(DeviceId) { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(deviceToReturn));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             var device = await RegistryClient.GetDeviceAsync(DeviceId).ConfigureAwait(false);
-            Assert.AreSame(deviceToReturn, device);
+            Assert.AreEqual(deviceToReturn.Id, device.Id);
             mockHttpClient.VerifyAll();
-            mockHttpResponse.VerifyAll();
         }
 
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         [TestMethod]
         public async Task GetDeviceAsyncWithNullDeviceIdTest()
         {
@@ -75,41 +75,17 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(deviceToReturn));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             var returnedDevice = await RegistryClient.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
-            Assert.AreSame(deviceToReturn, returnedDevice);
+            Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
             mockHttpClient.VerifyAll();
-            mockHttpResponse.VerifyAll();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task RegisterDeviceAsyncWithInvalidDeviceIdTest()
-        {
-            var deviceToReturn = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
-            Assert.Fail("RegisterDevice API did not throw exception when bad deviceid was used.");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task RegisterDeviceAsyncWithETagSetTest()
-        {
-            var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
-            Assert.Fail("RegisterDevice API did not throw exception when ETag was set.");
         }
 
         [TestMethod]
@@ -121,31 +97,6 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device parameter was null.");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task RegisterDeviceAsyncWithDeviceIdNullTest()
-        {
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.AddDeviceAsync(new Device()).ConfigureAwait(false);
-            Assert.Fail("RegisterDevice API did not throw exception when the device's id was not set.");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task RegisterDevicesAsyncWithInvalidDeviceIdTest()
-        {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
-            // '/' is not a valid character in DeviceId
-            var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
-            Assert.Fail("RegisterDevices API did not throw exception when bad deviceid was used.");
         }
 
         [TestMethod]
@@ -186,34 +137,21 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task RegisterDevicesAsyncWithDeviceIdNullTest()
-        {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
-            var badDevice = new Device();
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
-            Assert.Fail("RegisterDevices API did not throw exception when deviceId was null.");
-        }
-
-        [TestMethod]
         public async Task UpdateDeviceAsyncTest()
         {
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(deviceToReturn));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             var returnedDevice = await RegistryClient.UpdateDeviceAsync(deviceToReturn).ConfigureAwait(false);
-            Assert.AreSame(deviceToReturn, returnedDevice);
+            Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
             mockHttpClient.VerifyAll();
-            mockHttpResponse.VerifyAll();
         }
 
         private Device PrepareTestDevice(int batteryLevel, string firmwareVersion)
@@ -231,29 +169,6 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device parameter was null.");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task UpdateDeviceWithDeviceIdNullTest()
-        {
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.UpdateDeviceAsync(new Device() { ETag = "*" }).ConfigureAwait(false);
-            Assert.Fail("UpdateDevice api did not throw exception when the device's id was null.");
-        }
-
-        [ExpectedException(typeof(ArgumentException))]
-        [TestMethod]
-        public async Task UpdateDeviceWithInvalidDeviceIdTest()
-        {
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            // '/' is not a valid char in DeviceId
-            await RegistryClient.UpdateDeviceAsync(new Device("/baddevice") { ETag = "*" }).ConfigureAwait(false);
-            Assert.Fail("UpdateDevice api did not throw exception when the deviceid was invalid.");
         }
 
         [TestMethod]
@@ -307,28 +222,16 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task UpdateDevicesAsyncWithDeviceIdNullTest()
-        {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
-            var badDevice = new Device();
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
-            Assert.Fail("UpdateDevices API did not throw exception when deviceId was null.");
-        }
-
-        [TestMethod]
         public async Task UpdateDevicesAsyncForceUpdateTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = null;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
@@ -342,10 +245,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = null;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
@@ -358,28 +262,15 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = null;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task DeleteDeviceAsyncTest()
-        {
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var mockETag = new ETagHolder() { ETag = "*" };
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpClient = new Mock<HttpClient>();
-            settings.HttpClient = mockHttpClient.Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDeviceAsync(new Device()).ConfigureAwait(false);
-            restOpMock.VerifyAll();
         }
 
         [ExpectedException(typeof(ArgumentException))]
@@ -444,28 +335,16 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task DeleteDevicesAsyncWithDeviceIdNullTest()
-        {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
-            var badDevice = new Device();
-            HttpTransportSettings2 settings = new HttpTransportSettings2();
-            settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
-            Assert.Fail("DeleteDevices API did not throw exception when deviceId was null.");
-        }
-
-        [TestMethod]
         public async Task DeleteDevicesAsyncForceDeleteTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = null;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
@@ -479,10 +358,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var badDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = null;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
@@ -495,10 +375,11 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
-            var mockHttpResponse = new Mock<HttpResponseMessage>();
-            mockHttpResponse.Setup(response => response.Content).Returns(HttpMessageHelper2.SerializePayload(null));
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = null;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);

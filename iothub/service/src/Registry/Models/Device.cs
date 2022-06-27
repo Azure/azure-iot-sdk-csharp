@@ -16,13 +16,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates a new instance of <see cref="Device"/>
         /// </summary>
-        public Device()
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="Device"/>
-        /// </summary>
         /// <param name="id">Device Id</param>
         public Device(string id)
         {

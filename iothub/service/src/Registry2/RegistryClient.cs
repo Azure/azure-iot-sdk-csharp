@@ -1093,6 +1093,11 @@ namespace Microsoft.Azure.Devices.Registry
             var exportImportDeviceList = new List<ExportImportDevice>(devices.Count());
             foreach (Device device in devices)
             {
+                if (device == null)
+                {
+                    throw new ArgumentNullException("One or more devices was null");
+                }
+
                 switch (importMode)
                 {
                     case ImportMode.Create:
