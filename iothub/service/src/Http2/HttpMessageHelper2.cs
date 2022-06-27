@@ -38,7 +38,6 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <param name="expectedHttpStatusCode">The HTTP status code that indicates that the operation was a success and no exception should be thrown.</param>
         /// <param name="responseMessage">The HTTP response that contains the actual status code as well as the payload that contains error details if an error occurred.</param>
-        /// <returns>Task.</returns>
         internal static async Task ValidateHttpResponseStatus(HttpStatusCode expectedHttpStatusCode, HttpResponseMessage responseMessage)
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)

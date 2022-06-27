@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class DeviceAuthenticationTests
     {
         private const string IotHubName = "acme";
+        private const string validMockConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
         public async Task DeviceAuthenticationGoodAuthConfigTest1()
@@ -40,18 +41,17 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
-
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -73,18 +73,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -106,18 +106,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -139,18 +139,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -173,18 +173,18 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             string responsePayload = JsonConvert.SerializeObject(deviceGoodAuthConfig);
             HttpContent mockContent = new StringContent(responsePayload);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
@@ -206,18 +206,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -239,18 +239,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -277,18 +277,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -315,18 +315,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -353,18 +353,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -391,18 +391,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -429,18 +429,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -463,18 +463,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -497,18 +497,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -531,18 +531,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -565,18 +565,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -599,18 +599,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -633,18 +633,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -667,18 +667,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -701,18 +701,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -735,18 +735,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
 
@@ -769,18 +769,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
@@ -799,18 +799,18 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
 
             HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
-            var responseMock = new Mock<HttpResponseMessage>();
-            responseMock.Setup(responseMock => responseMock.StatusCode).Returns(HttpStatusCode.OK);
-            responseMock.Setup(responseMock => responseMock.Content).Returns(mockContent);
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.Content = mockContent;
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
 
             var restOpMock = new Mock<HttpClient>();
             restOpMock.Setup(
                 restOp =>
                     restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(responseMock.Object);
+                .ReturnsAsync(mockHttpResponse);
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = restOpMock.Object;
-            var registryClient = new RegistryClient(IotHubName, settings);
+            var registryClient = new RegistryClient(validMockConnectionString, settings);
             await registryClient.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
     }
