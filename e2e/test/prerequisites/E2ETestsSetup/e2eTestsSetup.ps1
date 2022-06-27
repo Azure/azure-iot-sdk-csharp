@@ -67,7 +67,7 @@ Write-Host "InstallPrivatePreviewResources $InstallPrivatePreviewResources"
 
 if ($InstallPrivatePreviewResources)
 {
-    Write-Host "`nYou've opted to generate resources for private preview features. Ensure that you've completed the relevant prerequisites from the service-side,
+    Write-Host -ForegroundColor DarkYellow "`nYou've opted to generate resources for private preview features. Ensure that you've completed the relevant prerequisites from the service-side,
      e.g., adding your subscription/resource name in the allow-list, else the operation would fail."
 }
 
@@ -688,7 +688,15 @@ if ($InstallPrivatePreviewResources)
         }
         $jsonBody = $body | ConvertTo-Json
 
-        Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+        try
+        {
+            Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+        }
+        catch
+        {
+            Write-Host "`nError while linking DPS $dpsName to CA $dpsCaName."
+            Write-Error -Message $_.ErrorDetails.Message
+        }
     }
 }
 
@@ -728,7 +736,15 @@ if ($InstallPrivatePreviewResources)
     $certificateData = Get-Content ($dpsTrustBundleCertificatePemPath) -Raw
     $jsonBody = "{'certificates': [{'certificate': '$certificateData'}]}"
 
-    Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+    try
+    {
+        Invoke-RestMethod -Uri $uriRequest.Uri -Method "PUT" -Headers $headers -Body $jsonBody
+    }
+    catch
+    {
+        Write-Host "`nError while linking DPS $dpsName to Trust Bundle $dpsTrustBundleId."
+        Write-Error -Message $_.ErrorDetails.Message
+    }
 }
 
 ##################################################################################################################################
