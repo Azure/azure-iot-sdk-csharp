@@ -21,9 +21,10 @@ namespace Microsoft.Azure.Devices.Tests.Registry
     public class RegistryClientTests
     {
         private const string IotHubName = "acme";
+        private const string validMockConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void ConstructorWithInvalidConnectionStringTest()
         {
             new RegistryClient(string.Empty);
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             var device = await RegistryClient.GetDeviceAsync(DeviceId).ConfigureAwait(false);
             Assert.AreSame(deviceToReturn, device);
             mockHttpClient.VerifyAll();
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var restOpMock = new Mock<IHttpClientHelper>();
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.GetDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("Calling GetDeviceAsync with null device id did not throw an exception.");
         }
@@ -80,7 +81,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             var returnedDevice = await RegistryClient.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreSame(deviceToReturn, returnedDevice);
             mockHttpClient.VerifyAll();
@@ -94,7 +95,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var deviceToReturn = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when bad deviceid was used.");
         }
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when ETag was set.");
         }
@@ -117,7 +118,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device parameter was null.");
         }
@@ -128,7 +129,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDeviceAsync(new Device()).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device's id was not set.");
         }
@@ -142,7 +143,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when bad deviceid was used.");
         }
@@ -155,7 +156,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when ETag was used.");
         }
@@ -168,7 +169,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             Device badDevice = null;
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device was used.");
         }
@@ -179,7 +180,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDevicesAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device list was used.");
         }
@@ -192,7 +193,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device();
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.AddDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when deviceId was null.");
         }
@@ -208,7 +209,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             var returnedDevice = await RegistryClient.UpdateDeviceAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreSame(deviceToReturn, returnedDevice);
             mockHttpClient.VerifyAll();
@@ -227,7 +228,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDeviceAsync(null).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device parameter was null.");
         }
@@ -238,7 +239,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDeviceAsync(new Device() { ETag = "*" }).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device's id was null.");
         }
@@ -249,7 +250,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             // '/' is not a valid char in DeviceId
             await RegistryClient.UpdateDeviceAsync(new Device("/baddevice") { ETag = "*" }).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the deviceid was invalid.");
@@ -263,7 +264,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when bad deviceid was used.");
         }
@@ -276,7 +277,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when ETag was null.");
         }
@@ -289,7 +290,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             Device badDevice = null;
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when Null device was used.");
         }
@@ -300,7 +301,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when Null device list was used.");
         }
@@ -313,7 +314,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device();
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("UpdateDevices API did not throw exception when deviceId was null.");
         }
@@ -330,7 +331,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -347,7 +348,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -363,7 +364,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.UpdateDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -376,7 +377,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             var mockHttpClient = new Mock<HttpClient>();
             settings.HttpClient = mockHttpClient.Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDeviceAsync(new Device()).ConfigureAwait(false);
             restOpMock.VerifyAll();
         }
@@ -387,7 +388,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDeviceAsync(string.Empty).ConfigureAwait(false);
             Assert.Fail("Delete API did not throw exception when the device id was null.");
         }
@@ -400,7 +401,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device("/baddevice") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when bad deviceid was used.");
         }
@@ -413,7 +414,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when ETag was null.");
         }
@@ -426,7 +427,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             Device badDevice = null;
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device was used.");
         }
@@ -437,7 +438,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         {
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device list was used.");
         }
@@ -450,7 +451,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var badDevice = new Device();
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when deviceId was null.");
         }
@@ -467,7 +468,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -484,7 +485,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -500,7 +501,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse.Object);
             settings.HttpClient = mockHttpClient.Object;
 
-            var RegistryClient = new RegistryClient(IotHubName, settings);
+            var RegistryClient = new RegistryClient(validMockConnectionString, settings);
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -513,7 +514,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123");
             var badTwin = new Twin("/badTwin");
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
         }
@@ -525,7 +526,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin("234");
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
         }
@@ -537,7 +538,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123") { ETag = "234" };
             Twin badTwin = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
         }
@@ -547,7 +548,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task UpdateTwinsAsyncWithNullTwinListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>()).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin list was used.");
         }
@@ -559,7 +560,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
         }
@@ -579,7 +580,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -599,7 +600,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -618,7 +619,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -628,7 +629,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
 
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             RegistryClient.Dispose();
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
         }
@@ -639,7 +640,7 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
 
-            var RegistryClient = new RegistryClient(IotHubName, restOpMock.Object);
+            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
             await RegistryClient.CloseAsync().ConfigureAwait(false);
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
         }
