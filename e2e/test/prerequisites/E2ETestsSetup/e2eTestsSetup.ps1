@@ -716,9 +716,10 @@ if ($InstallPrivatePreviewResources)
 
     $uriRequest.Query = $uriQueryCollection.ToString()
 
-    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    $headers.Add("Authorization", $dpsServiceApiSasToken)
-    $headers.Add("Content-Type", "application/json")
+    $headers = @{
+        "Authorization" = $dpsServiceApiSasToken;
+        "Content-Type" = "application/json";
+    }
 
     Export-Certificate -cert $trustBundleTestCertificate -filePath $dpsTrustBundleCertificateCertPath -Type Cert | Out-Null
     certutil -encode $dpsTrustBundleCertificateCertPath $dpsTrustBundleCertificatePemPath | Out-Null
