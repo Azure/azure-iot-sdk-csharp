@@ -22,7 +22,7 @@ param(
     [string] $CertificateAuthorityProfileId,
 
     # Set this if you'd like to generate the resources required to work with private-preview features.
-    # Ensure that you've completed the relevant prerequisites from the service-side before setting this, eg. adding your subscription/resource name in the allow-list, else the operation would fail.
+    # Ensure that you've completed the relevant prerequisites from the service-side before setting this,  e.g., adding your subscription/resource name in the allow-list, else the operation would fail.
     [Parameter()]
     [switch] $InstallPrivatePreviewResources,
 
