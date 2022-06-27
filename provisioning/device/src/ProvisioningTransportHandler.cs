@@ -6,9 +6,8 @@ using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Represents the interface for a Provisioning Transport Handler.

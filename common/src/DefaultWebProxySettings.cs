@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal sealed class DefaultWebProxySettings : IWebProxy
     {
-        private static readonly DefaultWebProxySettings s_defaultWebproxy = new DefaultWebProxySettings();
+        private static readonly DefaultWebProxySettings s_defaultWebproxy = new();
 
         public static DefaultWebProxySettings Instance { get; } = s_defaultWebproxy;
 

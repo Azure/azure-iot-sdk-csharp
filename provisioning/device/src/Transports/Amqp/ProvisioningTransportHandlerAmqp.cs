@@ -14,7 +14,7 @@ using Microsoft.Azure.Devices.Authentication;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Represents the AMQP protocol implementation for the Provisioning Transport Handler.
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             FallbackType = transportFallbackType;
             bool useWebSocket = FallbackType == TransportFallbackType.WebSocketOnly;
-            Port = useWebSocket ? WebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
+            Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
             Proxy = DefaultWebProxySettings.Instance;
         }
 
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 var builder = new UriBuilder
                 {
-                    Scheme = useWebSocket ? WebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
+                    Scheme = useWebSocket ? AmqpWebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
                     Host = message.GlobalDeviceEndpoint,
                     Port = Port,
                 };

@@ -1,62 +1,44 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     /// <summary>
-    /// The result of a registration operation.
+    /// Device registration result.
     /// </summary>
-    public class DeviceRegistrationResult
+    [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
+    internal partial class DeviceRegistrationResult
     {
-        /// <summary>
-        /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
-        /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
-        /// </summary>
-        public DeviceRegistrationResult(
-            string registrationId,
-            DateTime? createdDateTimeUtc,
-            string assignedHub,
-            string deviceId,
-            ProvisioningRegistrationStatusType status,
-            string generationId,
-            DateTime? lastUpdatedDateTimeUtc,
-            int errorCode,
-            string errorMessage,
-            string etag)
-            : this(
-                  registrationId,
-                  createdDateTimeUtc,
-                  assignedHub,
-                  deviceId,
-                  status,
-                  ProvisioningRegistrationSubstatusType.InitialAssignment,
-                  generationId,
-                  lastUpdatedDateTimeUtc,
-                  errorCode,
-                  errorMessage,
-                  etag)
+        public DeviceRegistrationResult()
         {
+            CustomInit();
         }
 
-        /// <summary>
-        /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
-        /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
-        /// </summary>
-        public DeviceRegistrationResult(
-        string registrationId,
-        DateTime? createdDateTimeUtc,
-        string assignedHub,
-        string deviceId,
-        ProvisioningRegistrationStatusType status,
-        ProvisioningRegistrationSubstatusType substatus,
-        string generationId,
-        DateTime? lastUpdatedDateTimeUtc,
-        int errorCode,
-        string errorMessage,
-        string etag)
+        internal DeviceRegistrationResult(
+            TpmRegistrationResult tpm = default,
+            X509RegistrationResult x509 = default,
+            SymmetricKeyRegistrationResult symmetricKey = default,
+            string registrationId = default,
+            DateTime? createdDateTimeUtc = default,
+            string assignedHub = default,
+            string deviceId = default,
+            string status = default,
+            string substatus = default,
+            string generationId = default,
+            DateTime? lastUpdatedDateTimeUtc = default,
+            int? errorCode = default,
+            string errorMessage = default,
+            string etag = default,
+            JRaw payload = default)
         {
+            Tpm = tpm;
+            X509 = x509;
+            SymmetricKey = symmetricKey;
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
             AssignedHub = assignedHub;
@@ -68,97 +50,92 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ErrorCode = errorCode;
             ErrorMessage = errorMessage;
             Etag = etag;
+            Payload = payload;
+            CustomInit();
         }
 
         /// <summary>
-        ///. Constructor to allow return data
+        /// An initialization method that performs custom operations like setting defaults
         /// </summary>
-        public DeviceRegistrationResult(
-        string registrationId,
-        DateTime? createdDateTimeUtc,
-        string assignedHub,
-        string deviceId,
-        ProvisioningRegistrationStatusType status,
-        ProvisioningRegistrationSubstatusType substatus,
-        string generationId,
-        DateTime? lastUpdatedDateTimeUtc,
-        int errorCode,
-        string errorMessage,
-        string etag,
-        string returnData)
-        {
-            RegistrationId = registrationId;
-            CreatedDateTimeUtc = createdDateTimeUtc;
-            AssignedHub = assignedHub;
-            DeviceId = deviceId;
-            Status = status;
-            Substatus = substatus;
-            GenerationId = generationId;
-            LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
-            ErrorCode = errorCode;
-            ErrorMessage = errorMessage;
-            Etag = etag;
-            JsonPayload = returnData;
-        }
+        partial void CustomInit();
 
         /// <summary>
-        /// The registration id.
         /// </summary>
-        public string RegistrationId { get; protected set; }
+        [JsonProperty(PropertyName = "tpm")]
+        public TpmRegistrationResult Tpm { get; set; }
 
         /// <summary>
-        /// The time when the device originally registered with the service.
         /// </summary>
-        public DateTime? CreatedDateTimeUtc { get; protected set; }
+        [JsonProperty(PropertyName = "x509")]
+        public X509RegistrationResult X509 { get; set; }
 
         /// <summary>
-        /// The assigned Azure IoT hub.
         /// </summary>
-        public string AssignedHub { get; protected set; }
+        [JsonProperty(PropertyName = "symmetricKey")]
+        public SymmetricKeyRegistrationResult SymmetricKey { get; set; }
+
 
         /// <summary>
-        /// The Device Id.
         /// </summary>
-        public string DeviceId { get; protected set; }
+        [JsonProperty(PropertyName = "registrationId")]
+        public string RegistrationId { get; set; }
 
         /// <summary>
-        /// The status of the operation.
         /// </summary>
-        public ProvisioningRegistrationStatusType Status { get; protected set; }
+        [JsonProperty(PropertyName = "createdDateTimeUtc")]
+        public DateTime? CreatedDateTimeUtc { get; set; }
 
         /// <summary>
-        /// The substatus of the operation.
         /// </summary>
-        public ProvisioningRegistrationSubstatusType Substatus { get; protected set; }
+        [JsonProperty(PropertyName = "assignedHub")]
+        public string AssignedHub { get; set; }
 
         /// <summary>
-        /// The generation Id.
         /// </summary>
-        public string GenerationId { get; protected set; }
+        [JsonProperty(PropertyName = "deviceId")]
+        public string DeviceId { get; set; }
 
         /// <summary>
-        /// The time when the device last refreshed the registration.
+        /// Gets or sets possible values include:
+        /// 'unassigned', 'assigning', 'assigned', 'failed', 'disabled'
         /// </summary>
-        public DateTime? LastUpdatedDateTimeUtc { get; protected set; }
+        [JsonProperty(PropertyName = "status")]
+        public string Status { get; set; }
 
         /// <summary>
-        /// Error code.
+        /// Possible values include: 'initialAssignment', 'deviceDataMigrated', 'deviceDataReset'
         /// </summary>
-        public int? ErrorCode { get; protected set; }
+        [JsonProperty(PropertyName = "substatus")]
+        public string Substatus { get; set; }
 
         /// <summary>
-        /// Error message.
         /// </summary>
-        public string ErrorMessage { get; protected set; }
+        [JsonProperty(PropertyName = "generationId")]
+        public string GenerationId { get; set; }
 
         /// <summary>
-        /// The Etag.
         /// </summary>
-        public string Etag { get; protected set; }
+        [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc")]
+        public DateTime? LastUpdatedDateTimeUtc { get; set; }
 
         /// <summary>
-        /// The custom data returned from the webhook to the device.
         /// </summary>
-        public string JsonPayload { get; private set; }
+        [JsonProperty(PropertyName = "errorCode")]
+        public int? ErrorCode { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "errorMessage")]
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "etag")]
+        public string Etag { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "payload")]
+        public JRaw Payload { get; set; }
     }
 }
