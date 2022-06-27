@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Http2
     {
         private const string ApplicationJson = "application/json";
 
-        public const string ETagForce = "*";
+        public const string ETagForce = "\"*\"";
 
         /// <summary>
         /// Helper method for serializing payload objects.
@@ -72,7 +72,8 @@ namespace Microsoft.Azure.Devices.Http2
                 throw new ArgumentException("The entity does not have its ETag set.");
             }
 
-            // All ETag values other than "*" need to be wrapped in quotes
+            // All ETag values need to be wrapped in escaped quotes, but the "forced" value
+            // is hardcoded with quotes so it can be skipped here
             if (!ETagForce.Equals(eTag))
             {
                 if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
