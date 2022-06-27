@@ -120,15 +120,6 @@
   <data name="FailedToSerializeUnsupportedType" xml:space="preserve">
     <value>Serialization operation failed due to unsupported type {0}.</value>
   </data>
-  <data name="HostNameIsNull" xml:space="preserve">
-    <value>The HostName is null.</value>
-  </data>
-  <data name="InvalidPassword" xml:space="preserve">
-    <value>The password is not valid.</value>
-  </data>
-  <data name="InvalidUser" xml:space="preserve">
-    <value>The User is not valid.</value>
-  </data>
   <data name="MessageBodyConsumed" xml:space="preserve">
     <value>The message body cannot be read multiple times. To reuse it store the value after reading.</value>
   </data>

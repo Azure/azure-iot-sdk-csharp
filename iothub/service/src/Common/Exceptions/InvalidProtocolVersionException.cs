@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when IoT Hub receives an invalid protocol version number.
+    /// The exception that is thrown when IoT hub receives an invalid protocol version number.
     /// Note: This exception is currently not thrown by the client library.
     /// </summary>
     [Serializable]
@@ -32,7 +33,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2229:Implement serialization constructors",
+        [SuppressMessage("Usage", "CA2229:Implement serialization constructors",
             Justification = "Cannot modify public API surface since it will be a breaking change")]
         public InvalidProtocolVersionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// The protocol version number sent to IoT Hub.
+        /// The protocol version number sent to IoT hub.
         /// </summary>
         public string RequestedVersion { get; private set; }
     }

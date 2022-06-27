@@ -31,10 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
             {
                 Logging.Associate(this, deviceIdentity, nameof(DeviceIdentity));
-            }
-
-            if (Logging.IsEnabled)
-            {
                 Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
         }
@@ -42,9 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task InitLoopAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, nameof(InitLoopAsync));
-            }
 
             DateTime refreshOn = await _amqpIotCbsLink
                 .SendTokenAsync(
@@ -62,24 +56,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, nameof(InitLoopAsync));
-            }
         }
 
         public void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, refreshOn, nameof(StartLoop));
-            }
 
             _refreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, refreshOn, nameof(StartLoop));
-            }
         }
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
@@ -90,9 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)}");
-                }
 
                 if (waitTime > TimeSpan.Zero)
                 {
@@ -117,15 +103,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         if (Logging.IsEnabled)
                         {
-                            Logging.Info(this, refreshesOn, $"Refresh token failed {ex}");
+                            Logging.Error(this, refreshesOn, $"Refresh token failed {ex}");
                         }
                     }
                     finally
                     {
                         if (Logging.IsEnabled)
-                        {
                             Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
-                        }
                     }
 
                     waitTime = refreshesOn - DateTime.UtcNow;
@@ -136,9 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void StopLoop()
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Info(this, nameof(StopLoop));
-            }
         }
 
         public void Dispose()
@@ -149,23 +131,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
+                if (Logging.IsEnabled)
+                {
+                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
+                }
 
-            if (Logging.IsEnabled)
+                if (!_disposed)
+                {
+                    if (disposing)
+                    {
+                        StopLoop();
+                        _amqpIotCbsTokenProvider?.Dispose();
+                    }
+
+                    _disposed = true;
+                }
+            }
+            finally
             {
-                Logging.Info(this, disposing, nameof(Dispose));
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
+                }
             }
-
-            if (disposing)
-            {
-                StopLoop();
-                _amqpIotCbsTokenProvider?.Dispose();
-            }
-
-            _disposed = true;
         }
     }
 }

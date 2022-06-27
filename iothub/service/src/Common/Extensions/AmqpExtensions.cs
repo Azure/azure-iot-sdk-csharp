@@ -11,11 +11,6 @@ namespace Microsoft.Azure.Devices.Common.Extensions
     /// </summary>
     internal static class AmqpExtensions
     {
-        /// <summary>
-        /// Get the receiving link
-        /// </summary>
-        /// <param name="faultTolerantReceivingLink"></param>
-        /// <returns></returns>
         internal static async Task<ReceivingAmqpLink> GetReceivingLinkAsync(this FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink)
         {
             if (!faultTolerantReceivingLink.TryGetOpenedObject(out ReceivingAmqpLink receivingLink))

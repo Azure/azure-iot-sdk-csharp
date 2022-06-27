@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// For instance, the following is a valid TwinState, represented as
-    ///     <code>initialTwin</code> in the rest API.
-    /// <code>
+    ///     <c>initialTwin</c> in the rest API.
+    /// <c>
     /// {
     ///     "initialTwin": {
     ///         "tags":{
@@ -63,67 +63,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         }
     ///     }
     /// }
-    /// </code>
+    /// </c>
     /// </example>
     public class TwinState
     {
-        /// <summary>
-        /// Getter and setter the <see cref="TwinState"/> tags.
-        /// </summary>
-        [JsonProperty(PropertyName = "tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public TwinCollection Tags { get; set; }
-
         [JsonProperty(PropertyName = "properties", DefaultValueHandling = DefaultValueHandling.Ignore)]
         private TwinProperties _properties;
 
         /// <summary>
-        /// Getter and setter the <see cref="TwinState"/> properties.
-        /// </summary>
-        [JsonIgnore]
-        public TwinCollection DesiredProperties
-        {
-            get
-            {
-                /* SRS_TWIN_STATE_21_002: [If the _properties is null, the get.DesiredProperties shall return null.] */
-                if (_properties == null)
-                {
-                    return null;
-                }
-
-                /* SRS_TWIN_STATE_21_003: [The get.DesiredProperties shall return the content of _properties.Desired.] */
-                return _properties.Desired;
-            }
-
-            set
-            {
-                /* SRS_TWIN_STATE_21_004: [If the value is null, the set.DesiredProperties shall set _properties as null.] */
-                if (value == null)
-                {
-                    _properties = null;
-                }
-                else
-                {
-                    /* SRS_TWIN_STATE_21_005: [The set.DesiredProperties shall convert the provided value in a 
-                                                TwinPropertyes.Desired and store it as _properties.] */
-                    _properties = new TwinProperties()
-                    {
-                        Desired = value,
-                        Reported = null,
-                    };
-                }
-            }
-        }
-
-        /// <summary>
-        /// CONSTRUCTOR
+        /// Creates an instance of TwinState.
         /// </summary>
         /// <remarks>
         /// This constructor creates an instance of the TwinState with the provided <see cref="TwinCollection"/>
-        ///     tags and desired properties.
+        /// tags and desired properties.
         /// </remarks>
         /// <example>
         /// When serialized, this class will looks like the following example:
-        /// <code>
+        /// <c>
         /// {
         ///     "initialTwin": {
         ///         "tags":{
@@ -141,13 +97,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///         }
         ///     }
         /// }
-        /// </code>
+        /// </c>
         /// </example>
-        /// <param name="tags">the <see cref="TwinCollection"/> with the initial tags state. It can be <code>null</code>.</param>
-        /// <param name="desiredProperties">the <see cref="TwinCollection"/> with the initial desired properties. It can be <code>null</code>.</param>
+        /// <param name="tags">the <see cref="TwinCollection"/> with the initial tags state. It can be <c>null</c>.</param>
+        /// <param name="desiredProperties">the <see cref="TwinCollection"/> with the initial desired properties. It can be <c>null</c>.</param>
         public TwinState(TwinCollection tags, TwinCollection desiredProperties)
         {
-            /* SRS_TWIN_STATE_21_001: [The constructor shall store the provided tags and desiredProperties.] */
             Tags = tags;
             DesiredProperties = desiredProperties;
         }
@@ -156,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private TwinState(TwinCollection tags, TwinProperties properties)
         {
             Tags = tags;
-            if(properties == null)
+            if (properties == null)
             {
                 DesiredProperties = null;
             }
@@ -167,9 +122,40 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
+        /// Getter and setter the <see cref="TwinState"/> tags.
+        /// </summary>
+        [JsonProperty(PropertyName = "tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public TwinCollection Tags { get; set; }
+
+        /// <summary>
+        /// Getter and setter the <see cref="TwinState"/> properties.
+        /// </summary>
+        [JsonIgnore]
+        public TwinCollection DesiredProperties
+        {
+            get => _properties?.Desired;
+
+            set
+            {
+                if (value == null)
+                {
+                    _properties = null;
+                }
+                else
+                {
+                    _properties = new TwinProperties
+                    {
+                        Desired = value,
+                        Reported = null,
+                    };
+                }
+            }
+        }
+
+        /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <code>string</code> with the content of this class in a pretty print format.</returns>
+        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);

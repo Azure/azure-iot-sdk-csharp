@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -20,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     ///  The following JSON is an example of the result from a bulk operation.
-    /// <code>
+    /// <c>
     /// {
     ///     "isSuccessful":true,
     ///     "errors": [
@@ -36,14 +34,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///         }
     ///     ]
     /// }
-    /// </code>
+    /// </c>
     /// </example>
     public class BulkEnrollmentOperationResult
     {
-        /* SRS_BULK_ENROLLMENT_OPERATION_RESULT_21_001: [The BulkEnrollmentOperationResult shall throws JsonSerializationException if the 
-                                            provided registrationId is null, empty, or invalid.] */
-        /* SRS_BULK_ENROLLMENT_OPERATION_RESULT_21_002: [The BulkEnrollmentOperationResult shall store the provided information.] */
-
         /// <summary>
         /// If false, not all operations in the bulk enrollment succeeded.
         /// </summary>
@@ -62,10 +56,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
-        /// <returns>The <code>string</code> with the content of this class in a pretty print format.</returns>
+        /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }

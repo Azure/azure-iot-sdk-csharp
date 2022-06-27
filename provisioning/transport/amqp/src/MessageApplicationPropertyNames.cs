@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal static class MessageApplicationPropertyNames
     {
-        const string Prefix = "iotdps-";
+        public const string Prefix = "iotdps-";
         public const string OperationType = Prefix + "operation-type";
         public const string OperationId = Prefix + "operation-id";
         public const string Status = Prefix + "status";

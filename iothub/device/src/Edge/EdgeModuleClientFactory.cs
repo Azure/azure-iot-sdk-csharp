@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private readonly ClientOptions _options;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EdgeModuleClientFactory"/> class with transport settings.
+        /// Initializes a new instance of the class with transport settings.
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         }
 
         /// <summary>
-        /// Creates a ModuleClient instance based on environment.
+        /// Creates an instance based on environment.
         /// </summary>
         public Task<ModuleClient> CreateAsync()
         {

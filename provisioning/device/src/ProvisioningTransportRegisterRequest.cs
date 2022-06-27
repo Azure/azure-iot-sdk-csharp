@@ -2,9 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -13,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportRegisterMessage
     {
-        private ProductInfo _productInfo = new ProductInfo();
+        private readonly ProductInfo _productInfo = new ProductInfo();
 
         /// <summary>
         /// The Global Device Endpoint for this message.

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     public sealed class TooManyModulesOnDeviceException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="TooManyModulesOnDeviceException"/> with a specified error message and marks it as non-transient.
+        /// Creates an instance of this class with a specified error message and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public TooManyModulesOnDeviceException(string message)
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="TooManyModulesOnDeviceException"/> with the supplied error message and tracking Id, and marks it as non-transient.
+        /// Creates an instance of this class with the supplied error message and tracking Id, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="TooManyModulesOnDeviceException"/> with a specified error message and
+        /// Creates an instance of this class with a specified error message and
         /// a reference to the inner exception that caused this exception, and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>

@@ -12,37 +12,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This exception identify that the provisioning service respond the HTTP request with a error status code.
-    /// <code>
+    /// <c>
     /// ProvisioningServiceClientHttpException [any exception reported in the HTTP response]
     ///     \ \ \ \__StatusCode [the returned HTTP status code]
     ///      \ \ \___ErrorMessage [the root cause of the error]
     ///       \ \____Body [the HTTP message body with details about the error]
     ///        \_____Filds [the HTTP head fields that may provide more details about the error]
     ///    
-    /// </code>
+    /// </c>
     /// </remarks>
     public class ProvisioningServiceClientHttpException : ProvisioningServiceClientTransportException
     {
-        /// <summary>
-        /// The HTTP status code.
-        /// </summary>
-        public HttpStatusCode StatusCode { get; private set; }
-
-        /// <summary>
-        /// The HTTP body.
-        /// </summary>
-        public string Body { get; private set; }
-
-        /// <summary>
-        /// The HTTP headers.
-        /// </summary>
-        public IDictionary<string, string> Fields { get; private set; }
-
-        /// <summary>
-        /// The error message.
-        /// </summary>
-        public string ErrorMessage { get; private set; }
-
         /// <summary>
         /// Initializes the <see cref="ProvisioningServiceClientHttpException"/> class.
         /// </summary>
@@ -78,5 +58,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Fields = response.Fields;
             ErrorMessage = response.ErrorMessage;
         }
+
+        /// <summary>
+        /// The HTTP status code.
+        /// </summary>
+        public HttpStatusCode StatusCode { get; private set; }
+
+        /// <summary>
+        /// The HTTP body.
+        /// </summary>
+        public string Body { get; private set; }
+
+        /// <summary>
+        /// The HTTP headers.
+        /// </summary>
+        public IDictionary<string, string> Fields { get; private set; }
+
+        /// <summary>
+        /// The error message.
+        /// </summary>
+        public string ErrorMessage { get; private set; }
     }
 }

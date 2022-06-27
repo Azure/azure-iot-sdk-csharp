@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -18,11 +18,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly string _idScope;
         private readonly ProvisioningTransportHandler _transport;
         private readonly SecurityProvider _security;
-
-        /// <summary>
-        /// Stores product information that will be appended to the user agent string that is sent to IoT Hub.
-        /// </summary>
-        public string ProductInfo { get; set; }
 
         /// <summary>
         /// Creates an instance of the Device Provisioning Client.
@@ -62,7 +57,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Stores product information that will be appended to the user agent string that is sent to IoT hub.
+        /// </summary>
+        public string ProductInfo { get; set; }
+
+        /// <summary>
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <remarks>
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
         /// The optional additional data that is passed through to the custom allocation policy webhook if 
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <remarks>
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
         /// The optional additional data that is passed through to the custom allocation policy webhook if 

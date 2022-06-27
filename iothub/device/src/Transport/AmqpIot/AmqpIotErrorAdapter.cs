@@ -195,9 +195,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             string message = error.Description;
 
             string trackingId = null;
-            if (error.Info != null && error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId))
+            if (error.Info != null
+                && error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId))
             {
-                message = "{0}{1}{2}".FormatInvariant(message, Environment.NewLine, "Tracking Id:" + trackingId);
+                message = $"{message}\r\nTracking Id:{trackingId}";
             }
 
             if (error.Condition.Equals(TimeoutError))
@@ -263,11 +264,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 retException = new IotHubException(message);
             }
 
-            if (trackingId != null && retException is IotHubException)
+            if (trackingId != null
+                && retException is IotHubException hubEx)
             {
-                var iotHubException = (IotHubException)retException;
-                iotHubException.TrackingId = trackingId;
+                hubEx.TrackingId = trackingId;
             }
+
             return retException;
         }
     }

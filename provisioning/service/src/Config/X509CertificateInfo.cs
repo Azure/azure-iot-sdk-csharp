@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
 using System;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// This info contains a set of parameters, The following JSON is an example of the X509 certificate info.
-    /// <code>
+    /// <c>
     /// {
     ///     "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
     ///     "sha1Thumbprint": "0000000000000000000000000000000000",
@@ -25,34 +25,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     "serialNumber": "000000000000000000",
     ///     "version": 3
     /// }
-    /// </code>
+    /// </c>
     /// </example>
-     public class X509CertificateInfo
+    public class X509CertificateInfo
     {
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <remarks>
-        /// Creates a new instance of the <see cref="X509CertificateInfo"/> using the provided set of info in the JSON.
-        /// This method will validate each parameter and the object consistence.
-        /// </remarks>
-        /// 
-        /// <param name="subjectName">the distinguished name from the certificate.</param>
-        /// <param name="sha1Thumbprint">the SHA-1 hash value of the certificate as a hexadecimal string.</param>
-        /// <param name="sha256Thumbprint">the SHA-256 hash value of the certificate as a hexadecimal string.</param>
-        /// <param name="issuerName">the issuer distinguished name.</param>
-        /// <param name="notBeforeUtc">the date on which the certificate becomes valid.</param>
-        /// <param name="notAfterUtc">the date on which the certificate is no longer valid.</param>
-        /// <param name="serialNumber">the serial number.</param>
-        /// <param name="version">the x509 format version</param>
-        /// <exception cref="ProvisioningServiceClientException">if one of the provided info is invalid.</exception>
         [JsonConstructor]
         private X509CertificateInfo(
-            string subjectName, string sha1Thumbprint, string sha256Thumbprint, 
-            string issuerName, DateTime? notBeforeUtc, DateTime? notAfterUtc, string serialNumber, int? version)
+            string subjectName,
+            string sha1Thumbprint,
+            string sha256Thumbprint,
+            string issuerName,
+            DateTime? notBeforeUtc,
+            DateTime? notAfterUtc,
+            string serialNumber,
+            int? version)
         {
-            /* SRS_X509_CERTIFICATE_INFO_21_001: [The X509CertificateInfo shall provide means to deserialization.] */
-            if ((notBeforeUtc == null) || (notAfterUtc == null) || (version == null))
+            if (notBeforeUtc == null
+                || notAfterUtc == null
+                || version == null)
             {
                 throw new ProvisioningServiceClientException("DateTime cannot be null");
             }

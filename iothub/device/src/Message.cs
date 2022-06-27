@@ -44,7 +44,8 @@ namespace Microsoft.Azure.Devices.Client
         /// This constructor is only used on the Gateway HTTP path and AMQP SendEventAsync() so that we can clean up the stream.
         /// </summary>
         /// <param name="stream">A stream which will be used as body stream.</param>
-        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the client library, or by the calling application.</param>
+        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the
+        /// client library, or by the calling application.</param>
         internal Message(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
             : base(stream, streamDisposalResponsibility)
         {

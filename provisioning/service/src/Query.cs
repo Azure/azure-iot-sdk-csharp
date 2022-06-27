@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private const string PageSizeHeaderKey = "x-ms-max-item-count";
         private const string QueryUriFormat = "{0}/query?{1}";
 
-
         private readonly string _querySpecificationJson;
         private IContractApiHttp _contractApiHttp;
         private readonly Uri _queryPath;
@@ -73,7 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private bool _hasNext;
 
         internal Query(
-            ServiceConnectionString serviceConnectionString, 
+            ServiceConnectionString serviceConnectionString,
             string serviceName,
             QuerySpecification querySpecification,
             HttpTransportSettings httpTransportSettings,
@@ -164,34 +163,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Getter for has next
+        /// Getter for has next.
         /// </summary>
         /// <remarks>
         /// Contains <c>true</c> if the query is not finished in the Device Provisioning Service, and another
-        ///     iteration with <see cref="NextAsync()"/> may return more items. Call <see cref="NextAsync()"/> after 
-        ///     a <c>true</c> <c>HasNext</c> will result in a <see cref="QueryResult"/> that can or 
-        ///     cannot contains elements. But call <see cref="NextAsync()"/> after a <c>false</c> <c>HasNext</c> 
-        ///     will result in a exception.
+        /// iteration with <see cref="NextAsync()"/> may return more items. Call <see cref="NextAsync()"/> after
+        /// a <c>true</c> <c>HasNext</c> will result in a <see cref="QueryResult"/> that can or
+        /// cannot contains elements. But call <see cref="NextAsync()"/> after a <c>false</c> <c>HasNext</c>
+        /// will result in a exception.
         /// </remarks>
         public bool HasNext()
-        { 
+        {
             return _hasNext;
         }
 
         /// <summary>
-        /// Getter and setter for PageSize.
+        /// The number of items in the current page.
         /// </summary>
         public int PageSize { get; set; }
 
         /// <summary>
-        /// Getter and setter for the ContinuationToken.
+        /// The token to retrieve the next page.
         /// </summary>
         public string ContinuationToken { get; set; }
 
         /// <summary>
         /// Return the next page of result for the query using a new continuationToken.
         /// </summary>
-        /// <param name="continuationToken">the <c>String</c> with the previous continuationToken. It cannot be <c>null</c> or empty.</param>
+        /// <param name="continuationToken">the <c>string</c> with the previous continuationToken. It cannot be <c>null</c> or empty.</param>
         /// <returns>The <see cref="QueryResult"/> with the next page of items for the query.</returns>
         /// <exception cref="IndexOutOfRangeException">if the query does no have more pages to return.</exception>
         public async Task<QueryResult> NextAsync(string continuationToken)
@@ -229,19 +228,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 headerParameters.Add(ContinuationTokenHeaderKey, ContinuationToken);
             }
 
-            ContractApiResponse httpResponse = await _contractApiHttp.RequestAsync(
-                HttpMethod.Post,
-                _queryPath,
-                headerParameters,
-                _querySpecificationJson,
-                null,
-                _cancellationToken).ConfigureAwait(false);
+            ContractApiResponse httpResponse = await _contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Post,
+                    _queryPath,
+                    headerParameters,
+                    _querySpecificationJson,
+                    null,
+                    _cancellationToken)
+                .ConfigureAwait(false);
 
             httpResponse.Fields.TryGetValue(ItemTypeHeaderKey, out string type);
             httpResponse.Fields.TryGetValue(ContinuationTokenHeaderKey, out string continuationToken);
             ContinuationToken = continuationToken;
 
-            _hasNext = (ContinuationToken != null);
+            _hasNext = ContinuationToken != null;
 
             var result = new QueryResult(type, httpResponse.Body, ContinuationToken);
 
@@ -266,7 +267,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if (disposing)
             {
                 if (_contractApiHttp != null)
-                { 
+                {
                     _contractApiHttp.Dispose();
                     _contractApiHttp = null;
                 }
@@ -275,7 +276,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static Uri GetQueryUri(string path)
         {
-            return new Uri(QueryUriFormat.FormatInvariant(path, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(QueryUriFormat.FormatInvariant(path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }

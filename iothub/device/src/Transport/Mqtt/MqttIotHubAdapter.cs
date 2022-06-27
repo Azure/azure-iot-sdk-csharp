@@ -22,7 +22,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
 using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
@@ -429,7 +429,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                await context.Channel.EventLoop.ScheduleAsync(s_checkConnAckTimeoutCallback, context, _mqttTransportSettings.ConnectArrivalTimeout).ConfigureAwait(true);
+                await context.Channel.EventLoop
+                    .ScheduleAsync(s_checkConnAckTimeoutCallback, context, _mqttTransportSettings.ConnectArrivalTimeout)
+                    .ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -1044,7 +1046,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (IsInState(StateFlags.NotConnected) || IsInState(StateFlags.Connecting))
                 {
-                    // closure has happened before IoT Hub connection was established or it was initiated due to disconnect
+                    // closure has happened before IoT hub connection was established or it was initiated due to disconnect
                     return;
                 }
 

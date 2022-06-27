@@ -32,7 +32,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private Action<Message> _twinResponseEvent;
 
         internal MqttTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         internal MqttTransportHandler(
-            IPipelineContext context,
+            PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<IPAddress[], int, Task<IChannel>> channelFactory)
@@ -193,15 +193,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                ClientOptions options = context.Get<ClientOptions>();
+                ClientOptions options = context.ClientOptions;
                 switch (settings.GetTransportType())
                 {
                     case TransportType.Mqtt_Tcp_Only:
-                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
+                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
                         break;
 
                     case TransportType.Mqtt_WebSocket_Only:
-                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>(), options);
+                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
                         break;
 
                     default:
@@ -457,33 +457,47 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void Dispose(bool disposing)
         {
-            if (_disposed)
+            try
             {
-                return;
-            }
-
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                if (TryStop())
+                if (Logging.IsEnabled)
                 {
-                    CleanUpAsync().GetAwaiter().GetResult();
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
 
-                _disconnectAwaitersCancellationSource?.Dispose();
-                _disconnectAwaitersCancellationSource = null;
-
-                _receivingSemaphore?.Dispose();
-                _receivingSemaphore = null;
-
-                _deviceReceiveMessageSemaphore?.Dispose();
-                _deviceReceiveMessageSemaphore = null;
-
-                if (_channel is IDisposable disposableChannel)
+                if (!_disposed)
                 {
-                    disposableChannel.Dispose();
-                    _channel = null;
+                    base.Dispose(disposing);
+                    if (disposing)
+                    {
+                        if (TryStop())
+                        {
+                            CleanUpAsync().GetAwaiter().GetResult();
+                        }
+
+                        _disconnectAwaitersCancellationSource?.Dispose();
+                        _disconnectAwaitersCancellationSource = null;
+
+                        _receivingSemaphore?.Dispose();
+                        _receivingSemaphore = null;
+
+                        _deviceReceiveMessageSemaphore?.Dispose();
+                        _deviceReceiveMessageSemaphore = null;
+
+                        if (_channel is IDisposable disposableChannel)
+                        {
+                            disposableChannel.Dispose();
+                            _channel = null;
+                        }
+                    }
+
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                {
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
                 }
             }
         }
@@ -501,7 +515,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     OnTransportClosedGracefully();
 
-                    await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
+                    await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync, cancellationToken).ConfigureAwait(true);
                 }
                 else if (State == TransportState.Error)
                 {
@@ -711,7 +725,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new InvalidOperationException();
                 }
 
-                await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync).ConfigureAwait(true);
+                await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -1133,7 +1147,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (status >= 300)
                             {
-                                throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                // The Hub team is refactoring the retriable status codes without breaking changes to the existing ones.
+                                // It can be expected that we may bring more retriable codes here in the future.
+                                // Retry for Http status code 429 (too many requests)
+                                if (status == 429)
+                                {
+                                    throw new IotHubThrottledException($"Request {rid} was throttled by the server");
+                                }
+                                else
+                                {
+                                    throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                }
                             }
                             else
                             {
@@ -1258,13 +1282,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, ClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
+            IotHubConnectionString iotHubConnectionString,
+            MqttTransportSettings settings,
+            ProductInfo productInfo,
+            ClientOptions options)
         {
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{iotHubConnectionString.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
@@ -1275,7 +1303,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         // Configure proxy server
                         websocket.Options.Proxy = _webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting ClientWebSocket.Options.Proxy");
+                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set ClientWebSocket.Options.Proxy to {_webProxy}");
                     }
                 }
                 catch (PlatformNotSupportedException)
@@ -1285,13 +1313,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Error(this, $"{nameof(CreateWebSocketChannelFactory)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
+                if (settings.WebSocketKeepAlive.HasValue)
+                {
+                    websocket.Options.KeepAliveInterval = settings.WebSocketKeepAlive.Value;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set websocket keep-alive to {settings.WebSocketKeepAlive}");
+                }
+
                 if (settings.ClientCertificate != null)
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
 
                 // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
                 if (settings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;
@@ -1340,7 +1375,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await _closeRetryPolicy.ExecuteAsync(CleanUpImplAsync).ConfigureAwait(true);
+                await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {

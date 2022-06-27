@@ -18,10 +18,18 @@ using PnpDigitalTwin = Microsoft.Azure.Devices.Generated.DigitalTwin;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The Digital Twins Service Client contains methods to retrieve and update digital twin information, and invoke commands on a digital twin device.
+    /// This client contains methods to retrieve and update digital twin information, and invoke commands
+    /// on a digital twin device.
     /// </summary>
     /// <remarks>
-    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>
+    /// For more information, see <see href="https://github.com/Azure/azure-iot-sdk-csharp#iot-hub-service-sdk"/>.
+    /// <para>
+    /// This client creates lifetime long instances of <see cref="HttpClient"/> that are tied to the URI of the
+    /// IoT hub specified, configure any proxy settings, and connection lease timeout.
+    /// For that reason, the instances are not static and an application using this client
+    /// should create and save it for all use. Repeated creation may cause
+    /// <see href="https://docs.microsoft.com/azure/architecture/antipatterns/improper-instantiation/">socket exhaustion</see>.
+    /// </para>
     /// </remarks>
     public class DigitalTwinClient : IDisposable
     {
@@ -143,7 +151,7 @@ namespace Microsoft.Azure.Devices
         /// Updates a digital twin.
         /// </summary>
         /// <remarks>
-        /// For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/en-us/azure/iot-pnp/howto-manage-digital-twin"/>.
+        /// For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </remarks>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>

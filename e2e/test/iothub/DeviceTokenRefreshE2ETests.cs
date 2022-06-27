@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
-            // The IoT Hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
+            // The IoT hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
             // After connecting with such an expired token, the service has an allowance of 5 more minutes before dropping the TCP connection.
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt, IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
         }

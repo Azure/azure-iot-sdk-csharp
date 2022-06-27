@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
 using System.Security.Cryptography.X509Certificates;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of the result of this class.
-    /// <code>
+    /// <c>
     ///  {
     ///      "certificate": "-----BEGIN CERTIFICATE-----\n" +
     ///                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n" +
@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n" +
     ///                     "-----END CERTIFICATE-----\n";
     ///  }
-    /// </code>
+    /// </c>
     ///
     /// After send an X509 certificate to the provisioning service, it will return the <see cref="X509CertificateInfo"/>.
     /// User can get this info from this class,
     ///
     /// The following JSON is an example what info the provisioning service will return for X509.
-    /// <code>
+    /// <c>
     ///  {
     ///      "info": {
     ///           "subjectName": "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US",
@@ -50,70 +50,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///           "version": 3
     ///      }
     ///  }
-    /// </code>
+    /// </c>
     /// </example>
     public class X509CertificateWithInfo
     {
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <remarks>
-        /// This constructor will creates a new instance of the <see cref="X509CertificateWithInfo"/> using the 
-        /// provided <see cref="X509Certificate2"/>.
-        /// </remarks>
-        /// <param name="certificate"> the <code>X509Certificate2"</code> with the provisioning certificate. It cannot be <code>null</code>.</param>
-        /// <exception cref="ArgumentException">if the provided certificate is <code>null</code>.</exception>
         internal X509CertificateWithInfo(X509Certificate2 certificate)
         {
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_001: [The public constructor shall throws ArgumentException if the provided 
-                                            certificate is null or CryptographicException if it is invalid.] */
             ValidateCertificate(certificate);
 
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_002: [The public constructor shall store the provided certificate as Base64 string.] */
             Certificate = Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
-
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_003: [The public constructor shall set the Info to null.] */
             Info = null;
         }
 
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <remarks>
-        /// This constructor will creates a new instance of the <see cref="X509CertificateWithInfo"/> using the 
-        /// provided Base64 string.
-        /// </remarks>
-        /// <param name="certificate">the <code>string</code> with the provisioning certificate. It cannot be <code>null</code> or invalid.</param>
-        /// <exception cref="ArgumentException">if the provided certificate is <code>null</code>.</exception>
         internal X509CertificateWithInfo(string certificate)
         {
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_001: [The public constructor shall throws ArgumentException if the provided 
-                                            certificate is null or InvalidOperationException if it is invalid.] */
             ValidateCertificate(certificate);
 
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_002: [The public constructor shall store the provided certificate as Base64 string.] */
             Certificate = certificate;
-
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_003: [The public constructor shall set the Info to null.] */
             Info = null;
         }
 
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <remarks>
-        /// Creates a new instance of the <see cref="X509CertificateWithInfo"/> using the provided set of info in the JSON.
-        /// This method will validate each parameter and the object consistence.
-        /// </remarks>
-        /// 
-        /// <param name="certificate">the <see cref="X509Certificate2"/> with the provisioning certificate. It can be <code>null</code>.</param>
-        /// <param name="info">the X509 certificate properties returned form the provisioning service.</param>
         [JsonConstructor]
         private X509CertificateWithInfo(string certificate, X509CertificateInfo info)
         {
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_004: [The constructor for JSON shall store the provided Info.] */
             Info = info;
-            /* SRS_X509_CERTIFICATE_WITH_INFO_21_005: [The constructor for JSON shall store the provided Certificate.] */
             Certificate = certificate;
         }
 
@@ -131,7 +91,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static void ValidateCertificate(X509Certificate2 certificate)
         {
-            if((certificate ?? throw new ArgumentException("Certificate cannot be null.")).HasPrivateKey)
+            if (certificate == null)
+            {
+                throw new ArgumentException("Certificate cannot be null.");
+            }
+
+            if (certificate.HasPrivateKey)
             {
                 throw new InvalidOperationException("Certificate should not contain a private key.");
             }
