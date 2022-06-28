@@ -569,7 +569,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         };
                     }
 
-                    _messageReceivingLink.Closed += _eventReceiverLinkDisconnected;
+                    _eventReceivingLink.Closed += _eventReceiverLinkDisconnected;
                     _eventReceivingLink.RegisterEventListener(OnEventsReceived);
 
                     if (Logging.IsEnabled)
