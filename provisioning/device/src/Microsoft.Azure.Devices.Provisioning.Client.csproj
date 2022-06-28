@@ -42,6 +42,7 @@
 
   <PropertyGroup>
     <Common>$(RootDir)\common\src</Common>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
   </PropertyGroup>
 
   <ItemGroup>

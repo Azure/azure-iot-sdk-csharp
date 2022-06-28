@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Microsoft.Azure.Devices.Provisioning.Transport.Amqp.UnitTests
+namespace Microsoft.Azure.Devices.Provisioning.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]

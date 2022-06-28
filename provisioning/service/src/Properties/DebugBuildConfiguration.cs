@@ -3,6 +3,6 @@
 
 using System.Runtime.CompilerServices;
 
-#if (DEBUG)
+#if DEBUG
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Provisioning.Service.Tests")]
 #endif

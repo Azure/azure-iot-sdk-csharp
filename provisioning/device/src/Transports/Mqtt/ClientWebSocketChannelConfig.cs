@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal class ClientWebSocketChannelConfig : IChannelConfiguration
     {
