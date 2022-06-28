@@ -17,11 +17,14 @@ namespace Microsoft.Azure.Devices.Http2
             }
 
             Uri httpsEndpoint = new UriBuilder(HttpsEndpointPrefix, hostName).Uri;
-#pragma warning disable CA2000 // Dispose objects before losing scope
 
 #if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
+
+#pragma warning disable CA2000 // Dispose objects before losing scope.
+            // This handler is used within the returned HttpClient, so it cannot be disposed within this scope.
             // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
             var httpMessageHandler = new SocketsHttpHandler();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 #else
             var httpMessageHandler = new HttpClientHandler();
@@ -38,7 +41,6 @@ namespace Microsoft.Azure.Devices.Http2
             ServicePointHelpers.SetLimits(httpMessageHandler, httpsEndpoint, settings.ConnectionLeaseTimeoutMilliseconds);
 
             return new HttpClient(httpMessageHandler);
-#pragma warning restore CA2000 // Dispose objects before losing scope
         }
     }
 }
