@@ -161,24 +161,6 @@ namespace Microsoft.Azure.Devices.Common.Security
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
         }
 
-        /// <summary>
-        /// Compute the signature string using the SAS fields.
-        /// </summary>
-        /// <param name="key">Key used for computing the signature.</param>
-        /// <returns>The string representation of the signature.</returns>
-        public string ComputeSignature(byte[] key)
-        {
-            var fields = new List<string>
-            {
-                _encodedAudience,
-                _expiry,
-            };
-
-            using var hmac = new HMACSHA256(key);
-            string value = string.Join("\n", fields);
-            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
-        }
-
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
