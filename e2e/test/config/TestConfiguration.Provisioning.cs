@@ -38,8 +38,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 return new ClientSecretCredential(
                     GetValue("MSFT_TENANT_ID"),
-                    GetValue("IOTHUB_CLIENT_ID"),
-                    GetValue("IOTHUB_CLIENT_SECRET"));
+                    GetValue("E2E_TEST_AAD_APP_CLIENT_ID"),
+                    GetValue("E2E_TEST_AAD_APP_CLIENT_SECRET"));
             }
 
 #endif
