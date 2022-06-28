@@ -59,6 +59,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
+        private DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            MaximumQueueDepth = info.GetInt32("MaximumQueueDepth");
+        }
+
         internal int MaximumQueueDepth { get; private set; }
 
         /// <inheritdoc />
