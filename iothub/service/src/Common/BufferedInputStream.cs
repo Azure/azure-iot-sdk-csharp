@@ -9,53 +9,44 @@ namespace Microsoft.Azure.Devices.Common
 {
     internal class BufferedInputStream : Stream, ICloneable
     {
-        private BufferManagerByteArray data;
-        private MemoryStream innerStream;
-        private bool disposed;
+        private readonly BufferManagerByteArray _data;
+        private readonly MemoryStream _innerStream;
+        private bool _isDisposed;
 
         public BufferedInputStream(byte[] bytes, int bufferSize, InternalBufferManager bufferManager)
         {
-            this.data = new BufferManagerByteArray(bytes, bufferManager);
-            this.innerStream = new MemoryStream(bytes, 0, bufferSize);
+            _data = new BufferManagerByteArray(bytes, bufferManager);
+            _innerStream = new MemoryStream(bytes, 0, bufferSize);
         }
 
         private BufferedInputStream(BufferManagerByteArray data, int bufferSize)
         {
-            this.data = data;
-            this.data.AddReference();
-            this.innerStream = new MemoryStream(data.Bytes, 0, bufferSize);
+            _data = data;
+            _data.AddReference();
+            _innerStream = new MemoryStream(data.Bytes, 0, bufferSize);
         }
 
         public byte[] Buffer
         {
             get
             {
-                this.ThrowIfDisposed();
-                return this.data.Bytes;
+                ThrowIfDisposed();
+                return _data.Bytes;
             }
         }
 
-        public override bool CanRead
-        {
-            get { return true; }
-        }
+        public override bool CanRead => true;
 
-        public override bool CanSeek
-        {
-            get { return true; }
-        }
+        public override bool CanSeek => true;
 
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
+        public override bool CanWrite => false;
 
         public override long Length
         {
             get
             {
-                this.ThrowIfDisposed();
-                return this.innerStream.Length;
+                ThrowIfDisposed();
+                return _innerStream.Length;
             }
         }
 
@@ -63,21 +54,21 @@ namespace Microsoft.Azure.Devices.Common
         {
             get
             {
-                this.ThrowIfDisposed();
-                return this.innerStream.Position;
+                ThrowIfDisposed();
+                return _innerStream.Position;
             }
 
             set
             {
-                this.ThrowIfDisposed();
-                this.innerStream.Position = value;
+                ThrowIfDisposed();
+                _innerStream.Position = value;
             }
         }
 
         public object Clone()
         {
-            this.ThrowIfDisposed();
-            return new BufferedInputStream(this.data, (int)this.innerStream.Length);
+            ThrowIfDisposed();
+            return new BufferedInputStream(_data, (int)_innerStream.Length);
         }
 
         public override void Flush()
@@ -87,14 +78,14 @@ namespace Microsoft.Azure.Devices.Common
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            this.ThrowIfDisposed();
-            return this.innerStream.Read(buffer, offset, count);
+            ThrowIfDisposed();
+            return _innerStream.Read(buffer, offset, count);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            this.ThrowIfDisposed();
-            return this.innerStream.Seek(offset, origin);
+            ThrowIfDisposed();
+            return _innerStream.Seek(offset, origin);
         }
 
         public override void SetLength(long value)
@@ -111,15 +102,15 @@ namespace Microsoft.Azure.Devices.Common
         {
             try
             {
-                if (!this.disposed && disposing)
+                if (!_isDisposed && disposing)
                 {
                     if (disposing)
                     {
-                        this.innerStream.Dispose();
+                        _innerStream.Dispose();
                     }
 
-                    this.data.RemoveReference();
-                    this.disposed = true;
+                    _data.RemoveReference();
+                    _isDisposed = true;
                 }
             }
             finally
@@ -130,7 +121,7 @@ namespace Microsoft.Azure.Devices.Common
 
         private void ThrowIfDisposed()
         {
-            if (this.disposed)
+            if (_isDisposed)
             {
                 throw FxTrace.Exception.AsError(new ObjectDisposedException("BufferedInputStream"));
             }
@@ -142,27 +133,19 @@ namespace Microsoft.Azure.Devices.Common
 
             public BufferManagerByteArray(byte[] bytes, InternalBufferManager bufferManager)
             {
-                this.Bytes = bytes;
-                this.BufferManager = bufferManager;
-                this.references = 1;
+                Bytes = bytes;
+                BufferManager = bufferManager;
+                references = 1;
             }
 
-            public byte[] Bytes
-            {
-                get;
-                private set;
-            }
+            public byte[] Bytes { get; private set; }
 
-            private InternalBufferManager BufferManager
-            {
-                get;
-                set;
-            }
+            private InternalBufferManager BufferManager { get;set; }
 
             public void AddReference()
             {
 #pragma warning disable 0420
-                if (Interlocked.Increment(ref this.references) == 1)
+                if (Interlocked.Increment(ref references) == 1)
 #pragma warning restore 0420
                 {
                     throw FxTrace.Exception.AsError(new InvalidOperationException(Resources.BufferAlreadyReclaimed));
@@ -171,14 +154,14 @@ namespace Microsoft.Azure.Devices.Common
 
             public void RemoveReference()
             {
-                if (this.references > 0)
+                if (references > 0)
                 {
 #pragma warning disable 0420
-                    if (Interlocked.Decrement(ref this.references) == 0)
+                    if (Interlocked.Decrement(ref references) == 0)
 #pragma warning restore 0420
                     {
-                        this.BufferManager.ReturnBuffer(this.Bytes);
-                        this.Bytes = null;
+                        BufferManager.ReturnBuffer(Bytes);
+                        Bytes = null;
                     }
                 }
             }

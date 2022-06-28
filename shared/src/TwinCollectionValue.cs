@@ -36,22 +36,13 @@ namespace Microsoft.Azure.Devices.Shared
         {
             get
             {
-                if (propertyName == TwinCollection.MetadataName)
+                return propertyName switch
                 {
-                    return GetMetadata();
-                }
-
-                if (propertyName == TwinCollection.LastUpdatedName)
-                {
-                    return GetLastUpdated();
-                }
-
-                if (propertyName == TwinCollection.LastUpdatedVersionName)
-                {
-                    return GetLastUpdatedVersion();
-                }
-
-                throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'.");
+                    TwinCollection.MetadataName => GetMetadata(),
+                    TwinCollection.LastUpdatedName => GetLastUpdated(),
+                    TwinCollection.LastUpdatedVersionName => GetLastUpdatedVersion(),
+                    _ => throw new RuntimeBinderException($"{nameof(TwinCollectionValue)} does not contain a definition for '{propertyName}'."),
+                };
             }
         }
 

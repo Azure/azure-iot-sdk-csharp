@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -73,21 +73,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in X509Certificate2 object.
         /// </remarks>
-        /// <param name="primary">the <code>X509Certificate2</code> with the primary certificate. It cannot be <code>null</code>.</param>
+        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code>.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_003: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the ClientCertificates.] */
             return new X509Attestation(
                 new X509Certificates(
                     primary ?? throw new ArgumentException("primary certificate cannot be null."),
-                    null), 
+                    null),
                 null, null);
         }
 
@@ -97,18 +92,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in X509Certificate2 objects.
         /// </remarks>
-        /// <param name="primary">the <code>X509Certificate2</code> with the primary certificate. It cannot be <code>null</code>.</param>
-        /// <param name="secondary">the <code>X509Certificate2</code> with the secondary certificate. It can be <code>null</code> (ignored).</param>
+        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
+        /// <param name="secondary">the <c>X509Certificate2</c> with the secondary certificate. It can be <c>null</c> (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code>.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_003: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the ClientCertificates.] */
             return new X509Attestation(
                 new X509Certificates(
                     primary ?? throw new ArgumentException("primary certificate cannot be null."),
@@ -122,21 +112,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in a Base64 string.
         /// </remarks>
-        /// <param name="primary">the <code>string</code> with the primary certificate. It cannot be <code>null</code> or empty.</param>
+        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code> or empty.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(string primary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
-            if(string.IsNullOrWhiteSpace(primary))
+            if (string.IsNullOrWhiteSpace(primary))
             {
                 throw new ArgumentException("primary certificate cannot be null or empty.");
             }
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_003: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the ClientCertificates.] */
+
             return new X509Attestation(
                 new X509Certificates(primary, null),
                 null, null);
@@ -148,22 +134,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in a Base64 string.
         /// </remarks>
-        /// <param name="primary">the <code>string</code> with the primary certificate. It cannot be <code>null</code> or empty.</param>
-        /// <param name="secondary">the <code>string</code> with the secondary certificate. It can be <code>null</code> or empty (ignored).</param>
+        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
+        /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code> or empty.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromClientCertificates(string primary, string secondary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
             if (string.IsNullOrWhiteSpace(primary))
             {
                 throw new ArgumentException("primary certificate cannot be null or empty.");
             }
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the 
-                                            provided primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_003: [The factory shall create a new instance of the X509Attestation with the 
-                                            created X509Certificates as the ClientCertificates.] */
+
             return new X509Attestation(
                 new X509Certificates(primary, secondary),
                 null, null);
@@ -175,17 +157,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in X509Certificate2 objects.
         /// </remarks>
-        /// <param name="primary">the <code>X509Certificate2</code> with the primary certificate. It cannot be <code>null</code>.</param>
+        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code>.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(X509Certificate2 primary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the RootCertificates.] */
             return new X509Attestation(
                 null,
                 new X509Certificates(
@@ -200,18 +177,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in X509Certificate2 objects.
         /// </remarks>
-        /// <param name="primary">the <code>X509Certificate2</code> with the primary certificate. It cannot be <code>null</code>.</param>
-        /// <param name="secondary">the <code>X509Certificate2</code> with the secondary certificate. It can be <code>null</code> (ignored).</param>
+        /// <param name="primary">the <c>X509Certificate2</c> with the primary certificate. It cannot be <c>null</c>.</param>
+        /// <param name="secondary">the <c>X509Certificate2</c> with the secondary certificate. It can be <c>null</c> (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code>.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c>.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(X509Certificate2 primary, X509Certificate2 secondary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the RootCertificates.] */
             return new X509Attestation(
                 null,
                 new X509Certificates(
@@ -226,21 +198,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary certificate in Base64 string.
         /// </remarks>
-        /// <param name="primary">the <code>string</code> with the primary certificate. It cannot be <code>null</code> or empty.</param>
+        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code> or empty.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(string primary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
             if (string.IsNullOrWhiteSpace(primary))
             {
                 throw new ArgumentException("primary certificate cannot be null or empty.");
             }
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the RootCertificates.] */
+
             return new X509Attestation(
                 null,
                 new X509Certificates(primary, null),
@@ -253,22 +221,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary certificates in Base64 string.
         /// </remarks>
-        /// <param name="primary">the <code>string</code> with the primary certificate. It cannot be <code>null</code> or empty.</param>
-        /// <param name="secondary">the <code>string</code> with the secondary certificate. It can be <code>null</code> or empty (ignored).</param>
+        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
+        /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
-        /// <exception cref="ArgumentException">if the primary certificate is <code>null</code> or empty.</exception>
+        /// <exception cref="ArgumentException">if the primary certificate is <c>null</c> or empty.</exception>
         /// <exception cref="CryptographicException">if the one of the provided certificate is invalid.</exception>
         public static X509Attestation CreateFromRootCertificates(string primary, string secondary)
         {
-            /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
             if (string.IsNullOrWhiteSpace(primary))
             {
                 throw new ArgumentException("primary certificate cannot be null or empty.");
             }
-            /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary certificates.] */
-            /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the RootCertificates.] */
+
             return new X509Attestation(
                 null,
                 new X509Certificates(primary, secondary),
@@ -281,20 +245,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary CA reference.
         /// </remarks>
-        /// <param name="primary">the <code>string</code> with the primary certificate. It cannot be <code>null</code> or empty.</param>
+        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentException">if the provide primary certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary)
         {
-            /* SRS_X509_ATTESTATION_21_005: [The factory shall throws ArgumentException if the primary CA reference is null or empty.] */
             if (string.IsNullOrWhiteSpace(primary))
             {
                 throw new ArgumentException("primary certificate cannot be null or empty.");
             }
-            /* SRS_X509_ATTESTATION_21_006: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary CA reference.] */
-            /* SRS_X509_ATTESTATION_21_007: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the caReference.] */
+
             return new X509Attestation(
                 null, null,
                 new X509CAReferences(primary, null));
@@ -306,21 +266,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Creates a new instance of the X509Attestation with the primary and secondary CA reference.
         /// </remarks>
-        /// <param name="primary">the <code>string</code> with the primary certificate. It cannot be <code>null</code> or empty.</param>
-        /// <param name="secondary">the <code>string</code> with the secondary certificate. It can be <code>null</code> or empty (ignored).</param>
+        /// <param name="primary">the <c>string</c> with the primary certificate. It cannot be <c>null</c> or empty.</param>
+        /// <param name="secondary">the <c>string</c> with the secondary certificate. It can be <c>null</c> or empty (ignored).</param>
         /// <returns>The new instance of the X509Attestation.</returns>
         /// <exception cref="ArgumentException">if the provide primary certificate is invalid.</exception>
         public static X509Attestation CreateFromCAReferences(string primary, string secondary)
         {
-            /* SRS_X509_ATTESTATION_21_005: [The factory shall throws ArgumentException if the primary CA reference is null or empty.] */
             if (string.IsNullOrWhiteSpace(primary))
             {
                 throw new ArgumentException("primary certificate cannot be null or empty.");
             }
-            /* SRS_X509_ATTESTATION_21_006: [The factory shall create a new instance of the X509Certificates with the provided 
-                                            primary and secondary CA reference.] */
-            /* SRS_X509_ATTESTATION_21_007: [The factory shall create a new instance of the X509Attestation with the created 
-                                            X509Certificates as the caReference.] */
+
             return new X509Attestation(
                 null, null,
                 new X509CAReferences(primary, secondary));
@@ -333,28 +289,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This method is a getter for the information returned from the provisioning service for the provided
         ///     primary certificate.
         /// </remarks>
-        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <code>null</code>.</returns>
+        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <c>null</c>.</returns>
         public X509CertificateInfo GetPrimaryX509CertificateInfo()
         {
-            /* SRS_X509_ATTESTATION_21_008: [If the ClientCertificates is not null, the GetPrimaryX509CertificateInfo shall 
-                                            return the info in the Primary key of the ClientCertificates.] */
             if (ClientCertificates != null)
             {
                 return ClientCertificates.Primary.Info;
             }
-            /* SRS_X509_ATTESTATION_21_009: [If the RootCertificates is not null, the GetPrimaryX509CertificateInfo shall 
-                                            return the info in the Primary key of the RootCertificates.] */
+
             if (RootCertificates != null)
             {
                 return RootCertificates.Primary.Info;
             }
-            /* SRS_X509_ATTESTATION_21_010: [If the CAReferences is not null, the GetPrimaryX509CertificateInfo shall return null.] */
+
             if (CAReferences != null)
             {
                 return null;
             }
-            /* SRS_X509_ATTESTATION_21_011: [If ClientCertificates, RootCertificates, and CAReferences are null, the 
-                                            GetPrimaryX509CertificateInfo shall throw ArgumentException.] */
+
             throw new ArgumentException("There is no valid certificate information.");
         }
 
@@ -363,68 +315,44 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <remarks>
         /// This method is a getter for the information returned from the provisioning service for the provided
-        ///     secondary certificate.
+        /// secondary certificate.
         /// </remarks>
-        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <code>null</code>.</returns>
+        /// <returns>The <see cref="X509CertificateInfo"/> with the returned certificate information. it can be <c>null</c>.</returns>
         public X509CertificateInfo GetSecondaryX509CertificateInfo()
         {
             X509CertificateWithInfo secondaryCertificate = null;
-            /* SRS_X509_ATTESTATION_21_012: [If the ClientCertificates is not null, and it contains Secondary key, the 
-                                            GetSecondaryX509CertificateInfo shall return the info in the Secondary key 
-                                            of the ClientCertificates.] */
+
             if (ClientCertificates != null)
             {
                 secondaryCertificate = ClientCertificates.Secondary;
             }
-            /* SRS_X509_ATTESTATION_21_013: [If the RootCertificates is not null, and it contains Secondary key, the 
-                                            GetSecondaryX509CertificateInfo shall return the info in the Secondary key 
-                                            of the RootCertificates.] */
             else if (RootCertificates != null)
             {
                 secondaryCertificate = RootCertificates.Secondary;
             }
 
-            if (secondaryCertificate != null)
-            {
-                return secondaryCertificate.Info;
-            }
-            return null;
+            return secondaryCertificate?.Info;
         }
 
-        /// <summary>
-        /// Private constructor
-        /// </summary>
-        /// <remarks>
-        /// Creates a new instance of the X509Attestation using one of the 3 certificates types. 
-        /// <b>Note:</b> This constructor requires one, and only one certificate type.
-        /// </remarks>
-        /// <param name="clientCertificates">the <see cref="X509Certificates"/> with the primary and secondary certificates for 
-        ///     Individual IndividualEnrollment.</param>
-        /// <param name="rootCertificates">the <see cref="X509Certificates"/> with the primary and secondary certificates for 
-        ///     Enrollment Group.</param>
-        /// <param name="caReferences">the <see cref="X509CAReferences"/> with the primary and secondary CA references for 
-        ///     Enrollment Group.</param>
-        /// <exception cref="ProvisioningServiceClientException">if non certificate is provided or more than one certificates are provided.</exception>
         [JsonConstructor]
         private X509Attestation(
             X509Certificates clientCertificates, X509Certificates rootCertificates, X509CAReferences caReferences)
         {
-            /* SRS_X509_ATTESTATION_21_014: [The constructor shall throws ArgumentException if `clientCertificates`, 
-                                            `rootCertificates`, and `caReferences` are null.] */
-            if ((clientCertificates == null) && (rootCertificates == null) && (caReferences == null))
+            if (clientCertificates == null
+                && rootCertificates == null
+                && caReferences == null)
             {
-                throw new ProvisioningServiceClientException("Attestation shall receive one no null Certificate");
-            }
-            /* SRS_X509_ATTESTATION_21_015: [The constructor shall throws ArgumentException if more than one 
-                                            certificate type are not null.] */
-            if (((clientCertificates != null) && ((rootCertificates != null) || (caReferences != null))) || 
-                ((rootCertificates != null) && (caReferences != null)))
-            {
-                throw new ProvisioningServiceClientException("Attestation cannot receive more than one certificate together");
+                throw new ProvisioningServiceClientException("Attestation shall receive one no null certificate.");
             }
 
-            /* SRS_X509_ATTESTATION_21_016: [The constructor shall store the provided `clientCertificates`, 
-                                            `rootCertificates`, and `caReferences`.] */
+            if (clientCertificates != null
+                && (rootCertificates != null
+                    || caReferences != null)
+                || rootCertificates != null
+                && caReferences != null)
+            {
+                throw new ProvisioningServiceClientException("Attestation cannot receive more than one certificate together.");
+            }
 
             try
             {
@@ -437,6 +365,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientException(e);
             }
         }
-
     }
 }

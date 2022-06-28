@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private static readonly Regex s_hostNameRegex = new Regex("(?<=HostName=).*?(?=;)", RegexOptions.Compiled);
 
         /// <summary>
-        /// Extracts the IoT Hub host name from the specified connection string
+        /// Extracts the IoT hub host name from the specified connection string
         /// </summary>
         public static string GetHostName(string iotHubConnectionString)
         {

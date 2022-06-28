@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 throw new ArgumentNullException(nameof(serviceName));
             }
 
-            if (!serviceHostName.StartsWith(string.Format(CultureInfo.InvariantCulture, "{0}.", serviceName), StringComparison.OrdinalIgnoreCase))
+            if (!serviceHostName.StartsWith(serviceName.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException("Service does not correspond to host name");
             }

@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Transport types supported by DeviceClient - AMQP/TCP, HTTP 1.1, MQTT/TCP, AMQP/WS, MQTT/WS
+    /// Transport types supported by the device and module clients - AMQP/TCP, HTTP 1.1, MQTT/TCP, AMQP/WS, MQTT/WS
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Naming",

@@ -25,16 +25,49 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net 5.0:
           FRAMEWORK: net5.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
 
     condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
+      # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: Docker@1
         displayName: "Start TPM Simulator"
         inputs:
@@ -62,41 +95,48 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
-          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+
+          # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
-          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
-          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+
+          # Environment variables for invalid certificate tests
           IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
           IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
           DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
           PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
-          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
-          HUB_CHAIN_DEVICE_PFX_CERTIFICATE: $(HUB-CHAIN-DEVICE-PFX-CERTIFICATE)
-          HUB_CHAIN_ROOT_CA_CERTIFICATE: $(HUB-CHAIN-ROOT-CA-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE1_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE1-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE2_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE2-CERTIFICATE)
-          E2E_IKEY: $(E2E-IKEY)
-          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -121,6 +161,14 @@ jobs:
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
 
+        condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
   ### Linux build 2 ###
@@ -131,6 +179,8 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
           FRAMEWORK: netcoreapp2.1.18
 
@@ -139,6 +189,39 @@ jobs:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
     steps:
+    
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 2.1'
+        inputs:
+          packageType: sdk
+          version: 2.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - task: Docker@1
         displayName: "Start TPM Simulator"
         inputs:
@@ -166,41 +249,48 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
-          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+
+          # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
-          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
-          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+
+          # Environment variables for invalid certificate tests
           IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
           IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
           DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
           PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
-          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
-          HUB_CHAIN_DEVICE_PFX_CERTIFICATE: $(HUB-CHAIN-DEVICE-PFX-CERTIFICATE)
-          HUB_CHAIN_ROOT_CA_CERTIFICATE: $(HUB-CHAIN-ROOT-CA-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE1_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE1-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE2_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE2-CERTIFICATE)
-          E2E_IKEY: $(E2E-IKEY)
-          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -226,6 +316,14 @@ jobs:
           testResultsFiles: "**/*.trx"
 
         condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
   ### Windows build 1 ###
   - job: WINDOWS1
@@ -235,21 +333,36 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net 6.0:
+          FRAMEWORK: net6.0
         .Net 5.0:
           FRAMEWORK: net5.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+          packageType: sdk
+          version: 6.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 5.0'
+        inputs:
+          packageType: sdk
+          version: 5.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-          sn -Vr *,31bf3856ad364e35
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+          sn.exe -Vr *,31bf3856ad364e35
 
         displayName: "Disable strong name validation"
 
@@ -264,41 +377,48 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
-          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+
+          # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
-          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
-          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+
+          # Environment variables for invalid certificate tests
           IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
           IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
           DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
           PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
-          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
-          HUB_CHAIN_DEVICE_PFX_CERTIFICATE: $(HUB-CHAIN-DEVICE-PFX-CERTIFICATE)
-          HUB_CHAIN_ROOT_CA_CERTIFICATE: $(HUB-CHAIN-ROOT-CA-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE1_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE1-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE2_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE2-CERTIFICATE)
-          E2E_IKEY: $(E2E-IKEY)
-          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
@@ -334,6 +454,14 @@ jobs:
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
 
+        condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
         condition: always()
 
   ### Windows build 2 ###
@@ -344,19 +472,47 @@ jobs:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
       maxParallel: 100
       matrix:
+        .Net Core 3.1:
+          FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.18:
           FRAMEWORK: netcoreapp2.1.18
         .Net Framework 4.7.2:
           FRAMEWORK: net472
+        .Net Framework 4.5.1:
+          FRAMEWORK: net451
 
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
+
+      - task: CmdLine@2
+        displayName: 'Install .NET Core 2.1'
+        inputs:
+          script: 'choco install dotnetcore-2.1-sdk'
+
+      - task: CmdLine@2
+        displayName: 'Install .NET 4.7.2'
+        inputs:
+          script: 'choco install netfx-4.7.2-devpack'
+
+      - task: CmdLine@2
+        displayName: 'Install .NET 4.5.1'
+        inputs:
+          script: 'choco install dotnet4.5.1'
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core SDK 3.1'
+        inputs:
+          packageType: sdk
+          version: 3.1.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
+
       - script: |
-          call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-          sn -Vr *,31bf3856ad364e35
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+          sn.exe -Vr *,31bf3856ad364e35
 
         displayName: "Disable strong name validation"
 
@@ -371,41 +527,48 @@ jobs:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
         env:
+          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
-          IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
-          IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+
+          # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS-IDSCOPE)
-          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
-          DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
-          DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
-          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
-          DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
-          DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
-          DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+
+          # Environment variables for invalid certificate tests
           IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
           IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
           DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
           PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-          FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-          CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
-          IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
-          MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
           LA_AAD_APP_ID: $(LA-AAD-APP-ID)
           LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
           LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
-          HUB_CHAIN_DEVICE_PFX_CERTIFICATE: $(HUB-CHAIN-DEVICE-PFX-CERTIFICATE)
-          HUB_CHAIN_ROOT_CA_CERTIFICATE: $(HUB-CHAIN-ROOT-CA-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE1_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE1-CERTIFICATE)
-          HUB_CHAIN_INTERMEDIATE2_CERTIFICATE: $(HUB-CHAIN-INTERMEDIATE2-CERTIFICATE)
-          E2E_IKEY: $(E2E-IKEY)
-          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
-          FRAMEWORK: $(FRAMEWORK)
-          IOTHUB_CLIENT_ID: $(IOTHUB-CLIENT-ID)
-          IOTHUB_CLIENT_SECRET: $(IOTHUB-CLIENT-SECRET)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
 
       - task: CopyFiles@2
         displayName: "Copy TRX files to the artifacts folder"
@@ -443,14 +606,22 @@ jobs:
 
         condition: always()
 
-  ### WINDOWS Analyzers ###
-  - job: Analyzers
-    displayName: Analyzers
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
+
+  ### .Net SDL Analyzers ###
+  - job: DOTNet_SDL_Analyzers
+    displayName: .Net SDL Analyzers
     timeoutInMinutes: 60
 
     condition: succeeded()
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
       - script: |
           rem Run dotnet first experience.
@@ -490,7 +661,7 @@ jobs:
           UsesHSM: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
-        displayName: "Run BinSkim "
+        displayName: "Run BinSkim"
         inputs:
           arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll --recurse --verbose'
 
@@ -498,7 +669,7 @@ jobs:
         enabled: false
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
-        displayName: "Run CodeMetrics "
+        displayName: "Run CodeMetrics"
         inputs:
           Files: '$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
 
@@ -525,6 +696,14 @@ jobs:
         displayName: "Create Security Analysis Report"
         inputs:
           AllTools: true
+          
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
         displayName: "TSA upload"

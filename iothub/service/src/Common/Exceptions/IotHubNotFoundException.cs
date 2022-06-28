@@ -7,26 +7,24 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when a request is made against an IoT Hub that does not exist.
+    /// The exception that is thrown when a request is made against an IoT hub that does not exist.
     /// </summary>
     [Serializable]
     public class IotHubNotFoundException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="IotHubSuspendedException"/> with a name of the IoT Hub
-        /// and marks it as non-transient.
+        /// Creates an instance of this class with a name of the IoT hub and marks it as non-transient.
         /// </summary>
-        /// <param name="iotHubName">The name of the IoT Hub.</param>
+        /// <param name="iotHubName">The name of the IoT hub.</param>
         public IotHubNotFoundException(string iotHubName)
             : base($"IoT hub not found: {iotHubName}.")
         {
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubNotFoundException"/> with a name of the IoT Hub
-        /// and tracking Id, and marks it as non-transient.
+        /// Creates an instance of this class with a name of the IoT hub and tracking Id, and marks it as non-transient.
         /// </summary>
-        /// <param name="iotHubName">The name of the IoT Hub.</param>
+        /// <param name="iotHubName">The name of the IoT hub.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public IotHubNotFoundException(string iotHubName, string trackingId)
             : base($"IoT hub not found: {iotHubName}.", trackingId)

@@ -1,19 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Sasl;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net.Security;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Sasl;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -44,10 +40,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         public override Task OpenConnectionAsync(
-            AmqpClientConnection connection, 
-            bool useWebSocket, 
-            IWebProxy proxy, 
-            RemoteCertificateValidationCallback remoteCertificateValidationCallback, 
+            AmqpClientConnection connection,
+            bool useWebSocket,
+            IWebProxy proxy,
+            RemoteCertificateValidationCallback remoteCertificateValidationCallback,
             CancellationToken cancellationToken)
         {
             return connection.OpenAsync(useWebSocket, null, proxy, remoteCertificateValidationCallback, cancellationToken);

@@ -41,10 +41,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         Task<HttpOperationResponse<RegistrationOperationStatus>> OperationStatusLookupWithHttpMessagesAsync(
-            string registrationId, 
-            string operationId, 
-            string idScope, 
-            Dictionary<string, List<string>> customHeaders = null, 
+            string registrationId,
+            string operationId,
+            string idScope,
+            Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -74,10 +74,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         Task<HttpOperationResponse<Models.DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
-            Dictionary<string, List<string>> customHeaders = null, 
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
+            Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
@@ -111,11 +111,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// Thrown when a required parameter is null
         /// </exception>
         Task<HttpOperationResponse<RegistrationOperationStatus>> RegisterDeviceWithHttpMessagesAsync(
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
-            bool? forceRegistration = default(bool?), 
-            Dictionary<string, List<string>> customHeaders = null, 
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
+            bool? forceRegistration = default(bool?),
+            Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken));
     }
 }

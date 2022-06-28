@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
     <!--See #1874 for additional details-->
@@ -66,7 +66,7 @@
       <Link>Common\Exceptions\AssertionFailedException.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\AuthenticationMethodFactory.cs">
-      <Link>AuthenticationMethodFactory.cs</Link>
+      <Link>Authentication\AuthenticationMethodFactory.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\CommonConstants.cs">
       <Link>Common\CommonConstants.cs</Link>
@@ -96,22 +96,22 @@
       <Link>Common\FxCop.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\HttpClientHelper.cs">
-      <Link>HttpClientHelper.cs</Link>
+      <Link>Http\HttpClientHelper.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\IAuthorizationHeaderProvider.cs">
-      <Link>IAuthorizationHeaderProvider.cs</Link>
+      <Link>Authentication\IAuthorizationHeaderProvider.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\IHttpClientHelper.cs">
-      <Link>IHttpClientHelper.cs</Link>
+      <Link>Http\IHttpClientHelper.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\IotHubConnectionString.cs">
-      <Link>IotHubConnectionString.cs</Link>
+      <Link>Authentication\IotHubConnectionString.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\QuerySpecification.cs">
-      <Link>QuerySpecification.cs</Link>
+      <Link>Query\QuerySpecification.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\StringValidationHelper.cs">
       <Link>Common\StringValidationHelper.cs</Link>
@@ -123,8 +123,8 @@
       <Link>Common\Utils.cs</Link>
     </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
-    <Compile Include="$(Common)\HttpMessageHelper.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" />
+    <Compile Include="$(Common)\HttpMessageHelper.cs" Link="Http\HttpMessageHelper.cs" />
+    <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Http\HttpContentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -132,8 +132,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
   </ItemGroup>
 
   <ItemGroup>

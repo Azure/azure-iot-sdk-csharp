@@ -35,22 +35,24 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 #pragma warning restore CA1064 // Exceptions should be public
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a default error message.
+        /// Initializes a new instance of this class with a default error message.
         /// </summary>
-        public RetryLimitExceededException() : this(Resources.RetryLimitExceeded)
+        public RetryLimitExceededException()
+            : this(Resources.RetryLimitExceeded)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a specified error message.
+        /// Initializes a new instance of this class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public RetryLimitExceededException(string message) : base(message)
+        public RetryLimitExceededException(string message)
+            : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a reference to the inner exception
+        /// Initializes a new instance of this class with a reference to the inner exception
         /// that is the cause of this exception.
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
@@ -60,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RetryLimitExceededException" /> class with a specified error message and inner exception.
+        /// Initializes a new instance of this class with a specified error message and inner exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>

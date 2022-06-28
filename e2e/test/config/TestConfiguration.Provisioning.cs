@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.E2ETests.Provisioning;
 using Azure.Identity;
 
 #endif
+using FluentAssertions;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -37,8 +38,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 return new ClientSecretCredential(
                     GetValue("MSFT_TENANT_ID"),
-                    GetValue("IOTHUB_CLIENT_ID"),
-                    GetValue("IOTHUB_CLIENT_SECRET"));
+                    GetValue("E2E_TEST_AAD_APP_CLIENT_ID"),
+                    GetValue("E2E_TEST_AAD_APP_CLIENT_SECRET"));
             }
 
 #endif
@@ -58,15 +59,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string IdScope => GetValue("DPS_IDSCOPE");
 
-            // To generate use Powershell: [System.Convert]::ToBase64String( (Get-Content .\certificate.pfx -Encoding Byte) )
-            public static X509Certificate2 GetIndividualEnrollmentCertificate()
-                => GetBase64EncodedCertificate("DPS_INDIVIDUALX509_PFX_CERTIFICATE", CertificatePassword);
+            public static string X509GroupEnrollmentName => GetValue("DPS_X509_GROUP_ENROLLMENT_NAME");
 
-            public static X509Certificate2 GetGroupEnrollmentCertificate()
-                => GetBase64EncodedCertificate("DPS_GROUPX509_PFX_CERTIFICATE", CertificatePassword);
-
-            public static X509Certificate2Collection GetGroupEnrollmentChain()
-                => GetBase64EncodedCertificateCollection("DPS_GROUPX509_CERTIFICATE_CHAIN");
+            // This certificate is a part of the chain whose root has been verified by the Provisioning service.
+            // The certificates used by the group enrollment tests are signed by this intermediate certificate.
+            // Chain: Root->Intermediate1->Intermediate2
+            // Certificate: Intermediate2->deviceCert
+            public static string GetGroupEnrollmentIntermediatePfxCertificateBase64()
+            {
+                const string intermediateCert = "X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE";
+                using X509Certificate2 cert = GetBase64EncodedCertificate(intermediateCert, CertificatePassword);
+                cert.NotAfter.Should().NotBeBefore(DateTime.Now, $"The X509 cert from {intermediateCert} has expired.");
+                return GetValue(intermediateCert);
+            }
 
             public static string ConnectionStringInvalidServiceCertificate => GetValue("PROVISIONING_CONNECTION_STRING_INVALIDCERT", string.Empty);
 

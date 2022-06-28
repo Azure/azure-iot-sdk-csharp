@@ -368,7 +368,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
-                // For Mqtt - the device needs to have subscribed to the devicebound topic, in order for IoT Hub to deliver messages to the device.
+                // For Mqtt - the device needs to have subscribed to the devicebound topic, in order for IoT hub to deliver messages to the device.
                 // For this reason we will make a "fake" ReceiveAsync() call, which will result in the device subscribing to the c2d topic.
                 // Note: We need this "fake" ReceiveAsync() call even though we (SDK default) CONNECT with a CleanSession flag set to 0.
                 // This is because this test device is newly created, and it has never subscribed to IoT hub c2d topic. 

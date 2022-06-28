@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#pragma warning disable CA1812 //False positive on this issue. Complains about no one calling the constructor, but it is called in several places
+
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     /// <summary>
@@ -15,15 +14,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
+#pragma warning disable CA1812 //False positive on this issue. Complains about no one calling the constructor, but it is called in several places
         public DeviceRegistration()
         {
             CustomInit();
         }
+#pragma warning restore CA1812
 
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
-        public DeviceRegistration(JRaw payload = default(JRaw))
+        public DeviceRegistration(JRaw payload = default)
         {
             Payload = payload;
             CustomInit();
@@ -41,4 +42,3 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         public JRaw Payload { get; set; }
     }
 }
-#pragma warning restore CA1812

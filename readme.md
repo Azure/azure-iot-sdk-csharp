@@ -190,7 +190,7 @@ The project offers a Long-Term Support (LTS) releases to allow users that do not
 
 LTS repo tags are to be named lts_*yyyy*-*mm*-*dd*, where *yyyy*, *mm*, and *dd* are the year, month, and day when the tag was created. An example of such a tag is *lts_2021-03-18*.
 
-The lifetime of an LTS release is 12 months. During this time, LTS releases may receive bug fixes that fall in these categories:
+The lifetime of an LTS release is 12 months. During this time, LTS releases may receive maintenance bug fixes that fall in these categories:
 
 - security bug fixes
 - critical bug fixes (e.g., unavoidable/unrecoverable crashes, significant memory leaks)
@@ -203,20 +203,11 @@ LTS releases may include additional extended support for security bug fixes as l
 
 This table shows previous LTS releases and end dates.
 
-| Release                                                                                                                        | LTS Start Date | Maintenance End Date | LTS End Date |
-| :----------------------------------------------------------------------------------------------------------------------------: | :------------: | :------------------: | :----------: |
-| [2022-01-18](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18-patch4) <sub>patch 4 of 2021-03-18</sub> | 2022-01-18     | 2022-03-18           | 2024-03-17   |
-| [2021-10-19](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18-patch3) <sub>patch 3 of 2021-03-18</sub> | 2021-10-19     | 2022-03-18           | 2024-03-17   |
-| [2021-8-12](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch2) <sub>patch 2 of 2021-03-18</sub>  | 2021-08-12     | 2022-03-18           | 2024-03-17   |
-| [2021-8-10](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch2) <sub>patch 2 of 2020-08-19</sub>  | 2020-08-10     | 2021-08-19           | 2023-08-19   |
-| [2021-6-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch1) <sub>patch 1 of 2021-03-18        | 2020-06-23     | 2022-03-18           | 2024-03-17   |
-| [2021-3-18](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18)                                          | 2020-03-18     | 2022-03-18           | 2024-03-17   |
-| [2020-9-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch1) <sub>patch 1 of 2020-08-19</sub>  | 2020-09-23     | 2021-08-19           | 2023-08-19   |
-| [2020-8-19](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19)                                          | 2020-08-19     | 2021-08-19           | 2023-08-19   |
-| [2020-4-3](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31_patch1) <sub>patch 1 of 2020-01-31</sub>   | 2020-04-03     | 2021-01-30           | 2023-01-30   |
-| [2020-1-31](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31)                                          | 2020-01-31     | 2021-01-30           | 2023-01-30   |
-
-> Note some releases have extended end dates.
+| Release                                                                                                                        | LTS Start Date | Maintenance End Date |
+| :----------------------------------------------------------------------------------------------------------------------------: | :------------: | :------------------: |
+| [2022-06-07](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch6) <sub>patch 6 of 2021-03-18</sub> | 2021-03-18     | current              |
+| [2020-9-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch1) <sub>patch 1 of 2020-08-19</sub>  | 2020-08-19     | 2021-08-19           |
+| [2020-4-3](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31_patch1) <sub>patch 1 of 2020-01-31</sub>   | 2020-01-31     | 2021-01-30           |
 
 ---
 

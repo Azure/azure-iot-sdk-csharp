@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the IoT Hub is busy.
+    /// The exception that is thrown when the IoT hub is busy.
     /// </summary>
     /// <remarks>
     /// This exception typically means the service is unavailable due to high load or an unexpected error and is usually transient.

@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Endpoints exposed by IOT hub
+    /// Endpoints exposed by IoT hub
     /// </summary>
     public enum EndpointKind
     {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// device telemetry ingress
         /// </summary>
-        Events,                 
+        Events,
 
         /// <summary>
         /// inquiries from device -> cloud
@@ -32,11 +32,10 @@ namespace Microsoft.Azure.Devices
         /// correlated responses from device -> cloud
         /// </summary>
         Response,
-        
+
         /// <summary>
         /// Notification messages for file uploads from devices
         /// </summary>
-        FileNotification           
-
+        FileNotification,
     }
 }

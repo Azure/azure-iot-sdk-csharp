@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    static class SecurityConstants
+    internal static class SecurityConstants
     {
         /// <summary>
         /// The scheme name for Bearer token auth.
@@ -61,34 +61,34 @@ namespace Microsoft.Azure.Devices.Client
         public const string WwwAuthenticateHeader = "WWW-Authenticate";
 
         /// <summary>
-        /// Default SaS Key name.
+        /// Default SAS Key name.
         /// </summary>
-        public const string DefaultSaSKeyName = "owner";
+        public const string DefaultSasKeyName = "owner";
 
         /// <summary>
-        /// Admin SaS Key name.
+        /// Admin SAS key name.
         /// </summary>
-        public const string AdminSaSKeyName = "admin";
+        public const string AdminSasKeyName = "admin";
 
         /// <summary>
-        /// SaS Key length.
+        /// SAS key length.
         /// </summary>
-        public const int SaSKeyLength = 32;
+        public const int SasKeyLength = 32;
 
-        // Shared Access Key Constants
+        // Shared access key constants
 
         /// <summary>
-        /// Shared Access Key
+        /// Shared access key
         /// </summary>
         public const string SharedAccessKey = "SharedAccessKey";
 
         /// <summary>
-        /// Shared Access Key Field Name
+        /// Shared access key field name
         /// </summary>
         public const string SharedAccessKeyFieldName = "sk";
 
         /// <summary>
-        /// Shared Access Key Full Field Name
+        /// Shared access key full field name
         /// </summary>
         public const string SharedAccessKeyFullFieldName = SharedAccessKey + " " + SharedAccessKeyFieldName + "=";
     }

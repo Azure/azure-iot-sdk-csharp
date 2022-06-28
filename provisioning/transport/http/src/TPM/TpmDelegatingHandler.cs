@@ -26,15 +26,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, $"{request.RequestUri}", nameof(SendAsync));
-            }
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
             if(response.StatusCode == HttpStatusCode.Unauthorized)
             {
-#if NET5_0
+#if NET5_0_OR_GREATER
                 if (request.Options.TryGetValue(new HttpRequestOptionsKey<object>(ProvisioningHeaderName), out object result))
 #else
                 if (request.Properties.TryGetValue(ProvisioningHeaderName, out object result))
@@ -54,11 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         setSasToken(sasToken);
 
                         if (Logging.IsEnabled)
-                        {
-                            Logging.Info(
-                            this, 
-                            $"Authorization challenge. Retrying with Token:{sasToken}");
-                        }
+                            Logging.Info(this, $"Authorization challenge. Retrying with Token:{sasToken}");
 
                         response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                     }
@@ -66,9 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, $"{request.RequestUri}", nameof(SendAsync));
-            }
 
             return response;
         }

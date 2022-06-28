@@ -24,27 +24,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             EnrollmentGroup enrollmentGroup,
             CancellationToken cancellationToken)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_001: [The CreateOrUpdateAsync shall throw ArgumentNullException if the provided enrollmentGroup is null.] */
             if (enrollmentGroup == null)
             {
                 throw new ArgumentNullException(nameof(enrollmentGroup));
             }
 
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the enrollmentGroup.] */
-            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
-                HttpMethod.Put,
-                GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
-                null,
-                JsonConvert.SerializeObject(enrollmentGroup),
-                enrollmentGroup.ETag,
-                cancellationToken).ConfigureAwait(false);
+            ContractApiResponse contractApiResponse = await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Put,
+                    GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
+                    null,
+                    JsonConvert.SerializeObject(enrollmentGroup),
+                    enrollmentGroup.ETag,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (contractApiResponse.Body == null)
             {
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_003: [The CreateOrUpdateAsync shall return an enrollmentGroup object created from the body of the HTTP response.] */
             return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
@@ -53,21 +52,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string enrollmentGroupId,
             CancellationToken cancellationToken)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_008: [The GetAsync shall sent the Get HTTP request to get the enrollmentGroup information.] */
-            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
-                HttpMethod.Get,
-                GetEnrollmentUri(enrollmentGroupId),
-                null,
-                null,
-                null,
-                cancellationToken).ConfigureAwait(false);
+            ContractApiResponse contractApiResponse = await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Get,
+                    GetEnrollmentUri(enrollmentGroupId),
+                    null,
+                    null,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (contractApiResponse.Body == null)
             {
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_009: [The GetAsync shall return an EnrollmentGroup object created from the body of the HTTP response.] */
             return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
@@ -76,20 +75,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             EnrollmentGroup enrollmentGroup,
             CancellationToken cancellationToken)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_010: [The DeleteAsync shall throw ArgumentNullException if the provided enrollmentGroup is null.] */
             if (enrollmentGroup == null)
             {
                 throw new ArgumentNullException(nameof(enrollmentGroup));
             }
 
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_011: [The DeleteAsync shall sent the Delete HTTP request to remove the enrollmentGroup.] */
-            await contractApiHttp.RequestAsync(
-                HttpMethod.Delete,
-                GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
-                null,
-                null,
-                enrollmentGroup.ETag,
-                cancellationToken).ConfigureAwait(false);
+            await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
+                    null,
+                    null,
+                    enrollmentGroup.ETag,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         internal static async Task DeleteAsync(
@@ -98,14 +97,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             string eTag = null)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_013: [The DeleteAsync shall sent the Delete HTTP request to remove the EnrollmentGroup.] */
-            await contractApiHttp.RequestAsync(
-                HttpMethod.Delete,
-                GetEnrollmentUri(enrollmentGroupId),
-                null,
-                null,
-                eTag,
-                cancellationToken).ConfigureAwait(false);
+            await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Delete,
+                    GetEnrollmentUri(enrollmentGroupId),
+                    null,
+                    null,
+                    eTag,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         internal static Query CreateQuery(
@@ -116,7 +116,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_014: [The CreateQuery shall throw ArgumentException if the provided querySpecification is null.] */
             if (querySpecification == null)
             {
                 throw new ArgumentNullException(nameof(querySpecification));
@@ -135,21 +134,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
-            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
 
         internal static async Task<AttestationMechanism> GetEnrollmentAttestationAsync(
-                    IContractApiHttp contractApiHttp,
-                    string enrollmentGroupId,
-                    CancellationToken cancellationToken)
+            IContractApiHttp contractApiHttp,
+            string enrollmentGroupId,
+            CancellationToken cancellationToken)
         {
-            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
-                HttpMethod.Post,
-                GetEnrollmentAttestationUri(enrollmentGroupId),
-                null,
-                null,
-                null,
-                cancellationToken).ConfigureAwait(false);
+            ContractApiResponse contractApiResponse = await contractApiHttp
+                .RequestAsync(
+                    HttpMethod.Post,
+                    GetEnrollmentAttestationUri(enrollmentGroupId),
+                    null,
+                    null,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (contractApiResponse.Body == null)
             {
@@ -162,7 +163,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
-            return new Uri(EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(
+                EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
+                UriKind.Relative);
         }
     }
 }

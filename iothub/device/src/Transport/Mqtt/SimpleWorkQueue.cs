@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using DotNetty.Common.Utilities;
 using DotNetty.Transport.Channels;
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
 #else
 using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
