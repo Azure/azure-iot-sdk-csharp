@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Registry;
+using Microsoft.Azure.Devices;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers

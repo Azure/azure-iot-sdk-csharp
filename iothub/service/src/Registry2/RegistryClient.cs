@@ -14,7 +14,7 @@ using Azure.Core;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Http2;
 
-namespace Microsoft.Azure.Devices.Registry
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Client class for all registry related operations such as

@@ -14,7 +14,7 @@ using Microsoft.Rest;
 using Azure;
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
-using Microsoft.Azure.Devices.Registry;
+using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {

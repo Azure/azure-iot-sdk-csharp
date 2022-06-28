@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
-using Microsoft.Azure.Devices.Registry;
+using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {

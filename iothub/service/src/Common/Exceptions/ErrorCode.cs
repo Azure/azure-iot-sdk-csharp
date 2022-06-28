@@ -3,7 +3,7 @@
 
 using System;
 using System.ComponentModel;
-using Microsoft.Azure.Devices.Registry;
+using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
