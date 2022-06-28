@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         /// <summary>
-        /// Under a semaphore, fetch the reference to an amqp session that is open and active, and has a reference to an opened telemetry sending link.
+        /// Under a semaphore, fetch the reference to an AMQP session that is open and active, and has a reference to an opened telemetry sending link.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
