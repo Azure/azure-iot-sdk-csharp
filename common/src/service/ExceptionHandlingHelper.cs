@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices
                     {
                         foreach (string messageField in messageFields)
                         {
-#if NET472 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                             if (messageField.IndexOf(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
 #else
                             if (messageField.Contains(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase))
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices
                             {
                                 const char errorCodeDelimiter = ':';
 
-#if NET472 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                                 if (messageField.IndexOf(errorCodeDelimiter) >= 0)
 #else
                                 if (messageField.Contains(errorCodeDelimiter))
