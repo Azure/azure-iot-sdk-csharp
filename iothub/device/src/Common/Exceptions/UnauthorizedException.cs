@@ -42,10 +42,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(message, innerException, isTransient: false)
         {
         }
-
-        private UnauthorizedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

@@ -30,26 +30,6 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     internal static class Guard
     {
         /// <summary>
-        /// Checks a string argument to ensure that it isn't null or empty.
-        /// </summary>
-        /// <param name="argumentValue">The argument value to check.</param>
-        /// <param name="argumentName">The name of the argument.</param>
-        /// <returns>The return value should be ignored. It is intended to be used only when validating arguments during instance creation (for example, when calling the base constructor).</returns>
-        public static bool ArgumentNotNullOrEmptyString(string argumentValue, string argumentName)
-        {
-            ArgumentNotNull(argumentValue, argumentName);
-            return argumentValue.Length == 0
-                ? throw new ArgumentException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.StringCannotBeEmpty,
-                    new object[]
-                    {
-                        argumentName
-                    }))
-                : true;
-        }
-
-        /// <summary>
         /// Checks an argument to ensure that it isn't null.
         /// </summary>
         /// <param name="argumentValue">The argument value to check.</param>

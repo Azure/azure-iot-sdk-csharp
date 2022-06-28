@@ -251,11 +251,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
         }
 
-        internal IDeviceIdentity GetDeviceIdentityOfAuthenticationProvider()
-        {
-            return _deviceIdentity;
-        }
-
         internal bool IsEmpty()
         {
             return !_amqpUnits.Any();

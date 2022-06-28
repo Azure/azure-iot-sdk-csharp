@@ -17,11 +17,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         public const string DisablePrepareForRethrow = "DisablePrepareForRethrow";
 
-        private static AsyncCallback s_asyncCompletionWrapperCallback;
         private readonly AsyncCallback _callback;
         private bool _endCalled;
         private Exception _exception;
-        private AsyncCompletion _nextAsyncCompletion;
 
         [Fx.Tag.SynchronizationObject]
         private ManualResetEvent _manualResetEvent;
@@ -68,15 +66,10 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool CompletedSynchronously { get; private set; }
 
-        public bool HasCallback => _callback != null;
-
         public bool IsCompleted { get; private set; }
 
         // used in conjunction with PrepareAsyncCompletion to allow for finally blocks
         protected Action<AsyncResult, Exception> OnCompleting { get; set; }
-
-        // Override this property to provide the ActivityId when completing with exception
-        protected internal virtual EventTraceActivity Activity => null;
 
         protected object ThisLock => _thisLock;
 
@@ -175,111 +168,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private static void AsyncCompletionWrapperCallback(IAsyncResult result)
-        {
-            if (result == null)
-            {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidNullAsyncResult));
-            }
-            if (result.CompletedSynchronously)
-            {
-                return;
-            }
-
-            var thisPtr = (AsyncResult)result.AsyncState;
-
-            AsyncCompletion callback = thisPtr.GetNextCompletion();
-            if (callback == null)
-            {
-                ThrowInvalidAsyncResult(result);
-            }
-
-            bool completeSelf = false;
-            Exception completionException = null;
-            try
-            {
-                completeSelf = callback(result);
-            }
-            catch (Exception e)
-            {
-                completeSelf = true;
-                completionException = e;
-            }
-
-            if (completeSelf)
-            {
-                thisPtr.Complete(false, completionException);
-            }
-        }
-
-        protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion callback)
-        {
-            _nextAsyncCompletion = callback;
-            if (s_asyncCompletionWrapperCallback == null)
-            {
-                s_asyncCompletionWrapperCallback = new AsyncCallback(AsyncCompletionWrapperCallback);
-            }
-            return s_asyncCompletionWrapperCallback;
-        }
-
-        protected bool CheckSyncContinue(IAsyncResult result)
-        {
-            return TryContinueHelper(result, out AsyncCompletion dummy);
-        }
-
-        protected bool SyncContinue(IAsyncResult result)
-        {
-            return TryContinueHelper(result, out AsyncCompletion callback)
-                ? callback(result)
-                : false;
-        }
-
-        private bool TryContinueHelper(IAsyncResult result, out AsyncCompletion callback)
-        {
-            if (result == null)
-            {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.InvalidNullAsyncResult));
-            }
-
-            callback = null;
-
-            if (!result.CompletedSynchronously)
-            {
-                return false;
-            }
-
-            callback = GetNextCompletion();
-            if (callback == null)
-            {
-                ThrowInvalidAsyncResult("Only call Check/SyncContinue once per async operation (once per PrepareAsyncCompletion).");
-            }
-            return true;
-        }
-
-        private AsyncCompletion GetNextCompletion()
-        {
-            AsyncCompletion result = _nextAsyncCompletion;
-            _nextAsyncCompletion = null;
-            return result;
-        }
-
-        protected static void ThrowInvalidAsyncResult(IAsyncResult result)
-        {
-            throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.GetString(CommonResources.InvalidAsyncResultImplementation, result.GetType())));
-        }
-
-        protected static void ThrowInvalidAsyncResult(string debugText)
-        {
-            string message = CommonResources.InvalidAsyncResultImplementationGeneric;
-            if (debugText != null)
-            {
-#if DEBUG
-                message += " " + debugText;
-#endif
-            }
-            throw Fx.Exception.AsError(new InvalidOperationException(message));
-        }
-
         [Fx.Tag.Blocking(Conditional = "!asyncResult.isCompleted")]
         protected static TAsyncResult End<TAsyncResult>(IAsyncResult result)
             where TAsyncResult : AsyncResult
@@ -326,14 +214,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return asyncResult;
-        }
-
-        private enum TransactionSignalState
-        {
-            Ready = 0,
-            Prepared,
-            Completed,
-            Abandoned,
         }
 
         // can be utilized by subclasses to write core completion code for both the sync and async paths
