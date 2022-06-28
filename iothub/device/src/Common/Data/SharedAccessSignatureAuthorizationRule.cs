@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client
 
             int hashKeyName, hashPrimaryKey, hashSecondaryKey, hashRights;
 
-#if NETSTANDARD2_0 || NET472
+#if NETSTANDARD2_0
             hashKeyName = rule.KeyName == null
                 ? 0
                 : rule.KeyName.GetHashCode();

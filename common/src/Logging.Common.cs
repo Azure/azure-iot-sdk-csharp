@@ -305,24 +305,6 @@ namespace Microsoft.Azure.Devices
             Debug.Fail(Format(formattableString), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
 
-        /// <summary>Logs a fatal error and raises an assert.</summary>
-        /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
-        /// <param name="message">The message to be logged.</param>
-        /// <param name="memberName">The calling member.</param>
-        [NonEvent]
-        public static void Fail(object thisOrContextObject, object message, [CallerMemberName] string memberName = null)
-        {
-            // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
-            // that should never happen in production, and thus we don't care about extra costs.
-
-            if (IsEnabled)
-            {
-                Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
-            }
-
-            Debug.Fail(Format(message).ToString(), $"{IdOf(thisOrContextObject)}.{memberName}");
-        }
-
         [Event(CriticalFailureEventId, Level = EventLevel.Critical, Keywords = Keywords.Debug)]
         private void CriticalFailure(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(CriticalFailureEventId, thisOrContextObject, memberName ?? MissingMember, message);
