@@ -4,7 +4,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {

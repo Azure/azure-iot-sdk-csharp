@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal class HttpAuthStrategySymmetricKey : HttpAuthStrategy
     {
-        private AuthenticationProviderSymmetricKey _authentication;
+        private readonly AuthenticationProviderSymmetricKey _authentication;
 
         public HttpAuthStrategySymmetricKey(AuthenticationProviderSymmetricKey authentication)
         {
@@ -30,14 +30,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return dpsClient;
         }
 
-        public override DeviceRegistration CreateDeviceRegistration()
+        public override DeviceRegistrationHttp CreateDeviceRegistration()
         {
-            return new DeviceRegistration(_authentication.GetRegistrationID());
+            return new DeviceRegistrationHttp(registrationId: _authentication.GetRegistrationID());
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)
         {
-
+            // no-op
         }
     }
 }

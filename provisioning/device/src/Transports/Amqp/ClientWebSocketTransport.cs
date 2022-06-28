@@ -8,6 +8,8 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {

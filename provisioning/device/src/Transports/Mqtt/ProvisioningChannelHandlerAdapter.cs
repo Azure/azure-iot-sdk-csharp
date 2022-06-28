@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             IByteBuffer packagePayload = Unpooled.Empty;
             if (_message.Payload != null && _message.Payload.Length > 0)
             {
-                var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
+                var deviceRegistration = new DeviceRegistration(new JRaw(_message.Payload));
                 using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
                 long streamLength = customContentStream.Length;
                 int length = (int)streamLength;

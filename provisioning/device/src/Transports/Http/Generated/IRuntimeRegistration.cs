@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Rest;
 using System.Collections.Generic;
 using System.Threading;
@@ -73,7 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<Models.DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
+        Task<HttpOperationResponse<DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
             string registrationId,
             string idScope,
             DeviceRegistration deviceRegistration = default(DeviceRegistration),

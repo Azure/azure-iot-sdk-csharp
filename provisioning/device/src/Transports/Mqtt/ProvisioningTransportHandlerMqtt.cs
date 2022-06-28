@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
                 }
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+                return operation.RegistrationState;
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
@@ -173,26 +173,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             base.Dispose(disposing);
-        }
-
-        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
-        {
-            Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
-            Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
-
-            return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
-                status,
-                substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode == null ? 0 : (int)result.ErrorCode,
-                result.ErrorMessage,
-                result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(

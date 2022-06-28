@@ -8,30 +8,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Attestation via TPM.
     /// </summary>
-    internal partial class TpmAttestation
+    internal class TpmAttestation
     {
         /// <summary>
         /// Initializes a new instance of the TpmAttestation class.
         /// </summary>
-        public TpmAttestation()
-        {
-          CustomInit();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the TpmAttestation class.
-        /// </summary>
-        public TpmAttestation(string endorsementKey = default(string), string storageRootKey = default(string))
+        public TpmAttestation(string endorsementKey = default, string storageRootKey = default)
         {
             EndorsementKey = endorsementKey;
             StorageRootKey = storageRootKey;
-            CustomInit();
         }
-
-        /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
 
         /// <summary>
         /// </summary>

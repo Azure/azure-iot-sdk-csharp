@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.UnitTests
+namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class ProvisioningErrorDetailsMqttTests
     {
-        private const double ThrottledDelay = 32;
+        private const int ThrottledDelay = 32;
         private static readonly string s_validTopicNameThrottled = $"$dps/registrations/res/429/?$rid=9&Retry-After={ThrottledDelay}";
 
-        private const double AcceptedDelay = 23;
+        private const int AcceptedDelay = 23;
         private static readonly string s_validTopicNameAccepted = $"$dps/registrations/res/202/?$rid=9&Retry-After={AcceptedDelay}";
 
         private static readonly TimeSpan s_defaultInterval = TimeSpan.FromSeconds(2);

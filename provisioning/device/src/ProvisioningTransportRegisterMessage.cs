@@ -53,22 +53,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// The global device endpoint for this message.
         /// </summary>
-        public string GlobalDeviceEndpoint { get; private set; }
+        public string GlobalDeviceEndpoint { get; }
 
         /// <summary>
         /// The IDScope for this message.
         /// </summary>
-        public string IdScope { get; private set; }
+        public string IdScope { get; }
 
         /// <summary>
         /// The authentication provider used to authenticate the client.
         /// </summary>
-        public AuthenticationProvider Authentication { get; private set; }
+        public AuthenticationProvider Authentication { get; }
 
         /// <summary>
         /// The custom content.
         /// </summary>
-        public string Payload { get; private set; }
+        public string Payload { get; }
 
         /// <summary>
         /// The product information sent to the Provisioning service. The application can specify extra information.

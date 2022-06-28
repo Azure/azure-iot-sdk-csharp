@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 
-                DeviceRegistration deviceRegistration = authStrategy.CreateDeviceRegistration();
+                DeviceRegistrationHttp deviceRegistration = authStrategy.CreateDeviceRegistration();
                 if (message.Payload != null
                     && message.Payload.Length > 0)
                 {
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     authStrategy.SaveCredentials(operation);
                 }
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+                return operation.RegistrationState;
             }
             catch (HttpOperationException ex)
             {
@@ -283,26 +283,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
             }
-        }
-
-        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
-        {
-            Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
-            Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
-
-            return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
-                status,
-                substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode ?? 0,
-                result.ErrorMessage,
-                result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

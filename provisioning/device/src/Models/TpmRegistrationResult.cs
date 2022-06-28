@@ -2,42 +2,26 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// TPM registration result.
     /// </summary>
-    [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
-    internal partial class TpmRegistrationResult
+    internal class TpmRegistrationResult
     {
         /// <summary>
-        /// Initializes a new instance of the TpmRegistrationResult class.
-        /// </summary>
-        public TpmRegistrationResult()
-        {
-          CustomInit();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the TpmRegistrationResult class.
+        /// Initializes a new instance of this class.
         /// </summary>
         public TpmRegistrationResult(string authenticationKey = default)
         {
             AuthenticationKey = authenticationKey;
-            CustomInit();
         }
 
         /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
-
-        /// <summary>
+        /// The TPM authentication key.
         /// </summary>
         [JsonProperty(PropertyName = "authenticationKey")]
-        public string AuthenticationKey { get; set; }
-
+        public string AuthenticationKey { get; }
     }
 }

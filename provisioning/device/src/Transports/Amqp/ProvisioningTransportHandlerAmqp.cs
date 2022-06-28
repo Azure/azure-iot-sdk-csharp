@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -146,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 string correlationId = Guid.NewGuid().ToString();
                 DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
-                    ? new DeviceRegistration { Payload = new JRaw(message.Payload) }
+                    ? new DeviceRegistration(new JRaw(message.Payload))
                     : null;
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);
@@ -189,7 +188,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 await connection.CloseAsync(bundleCancellationToken).ConfigureAwait(false);
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+                return operation.RegistrationState;
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
@@ -309,27 +308,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
 
             return status;
-        }
-
-        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
-            Models.DeviceRegistrationResult result)
-        {
-            Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
-            Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
-
-            return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
-                status,
-                substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode ?? 0,
-                result.ErrorMessage,
-                result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
 
         private void ValidateOutcome(Outcome outcome)

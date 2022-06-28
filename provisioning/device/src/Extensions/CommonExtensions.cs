@@ -4,7 +4,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal static class CommonExtensions
     {
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
         // The "(?:[^""\\])" indicates that the output (within quotes) is captured, and available as replacement in the Regex.Replace call below.
         // The "[^""\\]" matches any character except a double quote or escape character \.
         // The second option "\s+" matches all other space characters.
-        private static readonly Regex s_trimWhiteSpace = new Regex(@"(""(?:[^""\\]|\\.)*"")|\s+", RegexOptions.Compiled);
+        private static readonly Regex s_trimWhiteSpace = new(@"(""(?:[^""\\]|\\.)*"")|\s+", RegexOptions.Compiled);
 
         /// <summary>
         /// Helper to remove extra white space from the supplied string.

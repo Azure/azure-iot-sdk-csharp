@@ -30,12 +30,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 new ApiVersionDelegatingHandler());
         }
 
-        public override DeviceRegistration CreateDeviceRegistration()
+        public override DeviceRegistrationHttp CreateDeviceRegistration()
         {
             Debug.Assert(_certificate != null);
             Debug.Assert(_authentication.GetRegistrationID() == _certificate.GetNameInfo(X509NameType.DnsName, false));
 
-            return new DeviceRegistration(_authentication.GetRegistrationID());
+            return new DeviceRegistrationHttp(registrationId: _authentication.GetRegistrationID());
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

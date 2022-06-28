@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return dpsClient;
         }
 
-        public override DeviceRegistration CreateDeviceRegistration()
+        public override DeviceRegistrationHttp CreateDeviceRegistration()
         {
             byte[] ekBuffer = _authentication.GetEndorsementKey();
             byte[] srkBuffer = _authentication.GetStorageRootKey();
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string ek = Convert.ToBase64String(ekBuffer);
             string srk = Convert.ToBase64String(srkBuffer);
 
-            return new DeviceRegistration(_authentication.GetRegistrationID(), new TpmAttestation(ek, srk));
+            return new DeviceRegistrationHttp(null, _authentication.GetRegistrationID(), new TpmAttestation(ek, srk));
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)

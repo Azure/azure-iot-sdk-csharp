@@ -9,19 +9,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Registration operation status.
     /// </summary>
-    internal partial class RegistrationOperationStatus
+    internal class RegistrationOperationStatus
     {
         public const string OperationStatusAssigned = "assigned";
         public const string OperationStatusAssigning = "assigning";
         public const string OperationStatusUnassigned = "unassigned";
-
-        /// <summary>
-        /// Initializes a new instance of the RegistrationOperationStatus class.
-        /// </summary>
-        public RegistrationOperationStatus()
-        {
-            CustomInit();
-        }
 
         /// <summary>
         /// Initializes a new instance of the RegistrationOperationStatus
@@ -40,13 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             OperationId = operationId;
             Status = status;
             RegistrationState = registrationState;
-            CustomInit();
         }
-
-        /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
 
         /// <summary>
         /// Gets or sets operation Id.

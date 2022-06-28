@@ -4,7 +4,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Extension methods for RuntimeRegistration.
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Provisioning
         /// <param name='deviceRegistration'>
         /// Device registration
         /// </param>
-        public static Models.DeviceRegistrationResult DeviceRegistrationStatusLookup(
+        public static DeviceRegistrationResult DeviceRegistrationStatusLookup(
             this IRuntimeRegistration operations,
             string registrationId,
             string idScope,
@@ -109,14 +109,14 @@ namespace Microsoft.Azure.Devices.Provisioning
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        public static async Task<Models.DeviceRegistrationResult> DeviceRegistrationStatusLookupAsync(
+        public static async Task<DeviceRegistrationResult> DeviceRegistrationStatusLookupAsync(
             this IRuntimeRegistration operations,
             string registrationId,
             string idScope,
             DeviceRegistration deviceRegistration = default(DeviceRegistration),
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (Rest.HttpOperationResponse<Models.DeviceRegistrationResult> _result = await operations.DeviceRegistrationStatusLookupWithHttpMessagesAsync(
+            using (Rest.HttpOperationResponse<DeviceRegistrationResult> _result = await operations.DeviceRegistrationStatusLookupWithHttpMessagesAsync(
                                                     registrationId,
                                                     idScope,
                                                     deviceRegistration,

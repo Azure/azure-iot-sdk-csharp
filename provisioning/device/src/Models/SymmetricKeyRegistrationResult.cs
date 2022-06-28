@@ -6,19 +6,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Symmetric Key registration result.
     /// </summary>
-    internal partial class SymmetricKeyRegistrationResult
+    internal class SymmetricKeyRegistrationResult
     {
-        /// <summary>
-        /// Initializes a new instance of the TpmRegistrationResult class.
-        /// </summary>
-        public SymmetricKeyRegistrationResult()
-        {
-            CustomInit();
-        } 
-
-        /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
+        // this class has no implementation. does the service not send a payload?
     }
 }

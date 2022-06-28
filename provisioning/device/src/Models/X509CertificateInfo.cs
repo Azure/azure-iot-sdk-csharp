@@ -3,23 +3,14 @@
 
 using Newtonsoft.Json;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// X509 certificate info.
     /// </summary>
-    internal partial class X509CertificateInfo
+    internal class X509CertificateInfo
     {
-        /// <summary>
-        /// Initializes a new instance of the X509CertificateInfo class.
-        /// </summary>
-        public X509CertificateInfo()
-        {
-            CustomInit();
-        }
-
         /// <summary>
         /// Initializes a new instance of the X509CertificateInfo class.
         /// </summary>
@@ -41,61 +32,54 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             NotAfterUtc = notAfterUtc;
             SerialNumber = serialNumber;
             Version = version;
-            CustomInit();
         }
-
-        /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
 
         /// <summary>
         /// The certificate subject name.
         /// </summary>
         [JsonProperty(PropertyName = "subjectName")]
-        public string SubjectName { get; set; }
+        public string SubjectName { get; }
 
         /// <summary>
         /// The certificate SHA1 thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "sha1Thumbprint")]
-        public string Sha1Thumbprint { get; set; }
+        public string Sha1Thumbprint { get; }
 
         /// <summary>
         /// The certificate SHA256 thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "sha256Thumbprint")]
-        public string Sha256Thumbprint { get; set; }
+        public string Sha256Thumbprint { get; }
 
         /// <summary>
         /// The certificate issuer name.
         /// </summary>
         [JsonProperty(PropertyName = "issuerName")]
-        public string IssuerName { get; set; }
+        public string IssuerName { get; }
 
         /// <summary>
         /// The certificate invalidity before date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notBeforeUtc")]
-        public DateTime? NotBeforeUtc { get; set; }
+        public DateTime? NotBeforeUtc { get; }
 
         /// <summary>
         /// The certificate invalidity after date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notAfterUtc")]
-        public DateTime? NotAfterUtc { get; set; }
+        public DateTime? NotAfterUtc { get; }
 
         /// <summary>
         /// The certificate serial number.
         /// </summary>
         [JsonProperty(PropertyName = "serialNumber")]
-        public string SerialNumber { get; set; }
+        public string SerialNumber { get; }
 
         /// <summary>
         /// The certficiate version.
         /// </summary>
         [JsonProperty(PropertyName = "version")]
-        public int? Version { get; set; }
-
+        public int? Version { get; }
     }
 }

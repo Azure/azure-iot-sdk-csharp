@@ -15,7 +15,6 @@ using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1216,19 +1215,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (PayloadJsonData != null)
                 {
-                    Assert.IsNotNull(result.JsonPayload);
-                    Assert.AreEqual(PayloadJsonData, result.JsonPayload);
+                    Assert.IsNotNull(result.Payload);
+                    Assert.AreEqual(PayloadJsonData, result.Payload.ToString());
                 }
                 else
                 {
 #pragma warning disable CS0162 // Unreachable code detected
-                    Assert.IsNull(result.JsonPayload);
+                    Assert.IsNull(result.Payload);
 #pragma warning restore CS0162 // Unreachable code detected
                 }
             }
             else
             {
-                Assert.IsNull(result.JsonPayload);
+                Assert.IsNull(result.Payload);
             }
         }
 

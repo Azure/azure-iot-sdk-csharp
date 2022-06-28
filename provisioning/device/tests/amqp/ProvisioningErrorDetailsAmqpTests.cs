@@ -7,7 +7,7 @@ using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.UnitTests
+namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]

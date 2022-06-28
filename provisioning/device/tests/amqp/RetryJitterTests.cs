@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.UnitTests
+namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.UnitTests
         [TestMethod]
         public void RetryJitterGeneratedDelayNoLargerThanFiveSeconds()
         {
-            //current maximum jitter delay is 5 seconds, may change in the future
+            // current maximum jitter delay is 5 seconds, may change in the future
             int expectedMinimumDelay = 0;
             var DefaultDelay = TimeSpan.FromSeconds(expectedMinimumDelay);
             TimeSpan GeneratedDelay = RetryJitter.GenerateDelayWithJitterForRetry(DefaultDelay);

@@ -14,29 +14,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
-        public DeviceRegistration(JRaw payload = default, string registrationId = default, TpmAttestation tpm = default)
+        public DeviceRegistration(JRaw payload = default)
         {
             Payload = payload;
-            RegistrationId = registrationId;
-            Tpm = tpm;
         }
 
         /// <summary>
         /// Gets or set the custom content payload.
         /// </summary>
         [JsonProperty(PropertyName = "payload")]
-        public JRaw Payload { get; set; }
-
-        /// <summary>
-        /// The device registration Id.
-        /// </summary>
-        [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId { get; set; }
-
-        /// <summary>
-        /// Attestation via TPM, if any.
-        /// </summary>
-        [JsonProperty(PropertyName = "tpm")]
-        public TpmAttestation Tpm { get; set; }
+        public JRaw Payload { get; internal set; }
     }
 }

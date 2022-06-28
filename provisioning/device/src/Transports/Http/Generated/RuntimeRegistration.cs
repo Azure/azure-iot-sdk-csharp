@@ -10,7 +10,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;
@@ -270,7 +269,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Models.DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
+        public async Task<HttpOperationResponse<DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
             string registrationId,
             string idScope,
             DeviceRegistration deviceRegistration = default(DeviceRegistration),
@@ -387,7 +386,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<Models.DeviceRegistrationResult>
+            var _result = new HttpOperationResponse<DeviceRegistrationResult>
             {
                 Request = _httpRequest,
                 Response = _httpResponse
@@ -398,7 +397,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    _result.Body = SafeJsonConvert.DeserializeObject<Models.DeviceRegistrationResult>(_responseContent, Client.DeserializationSettings);
+                    _result.Body = SafeJsonConvert.DeserializeObject<DeviceRegistrationResult>(_responseContent, Client.DeserializationSettings);
                 }
                 catch (JsonException ex)
                 {
