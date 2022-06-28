@@ -386,8 +386,6 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
-        //TODO move these tests to TwinClientTests once TwinClient has been created
-        /*
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwinsAsyncWithInvalidDeviceIdTest()
@@ -395,8 +393,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123");
             var badTwin = new Twin("/badTwin");
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
         }
 
@@ -407,8 +405,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin("234");
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
         }
 
@@ -419,8 +417,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123") { ETag = "234" };
             Twin badTwin = null;
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
         }
 
@@ -429,8 +427,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
         public async Task UpdateTwinsAsyncWithNullTwinListTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>()).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>()).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin list was used.");
         }
 
@@ -441,8 +439,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin();
             var restOpMock = new Mock<IHttpClientHelper>();
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
         }
 
@@ -461,8 +459,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -481,8 +479,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -500,8 +498,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
 
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -510,8 +508,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
 
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            RegistryClient.Dispose();
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            registryManager.Dispose();
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
         }
 
@@ -521,8 +519,8 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
 
-            var RegistryClient = new RegistryClient(validMockConnectionString, restOpMock.Object);
-            await RegistryClient.CloseAsync().ConfigureAwait(false);
+            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
+            await registryManager.CloseAsync().ConfigureAwait(false);
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
         }
 
@@ -533,6 +531,5 @@ namespace Microsoft.Azure.Devices.Tests.Registry
             twin.ParentScopes.Should().NotBeNull("To prevent NREs because a property was unexecptedly null, it should have a default list instance assigned.");
             twin.ParentScopes.Should().BeEmpty("The default list instance should be empty.");
         }
-        */
     }
 }
