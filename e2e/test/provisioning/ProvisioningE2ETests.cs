@@ -38,17 +38,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
 
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
+
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 
         private static DirectoryInfo s_x509CertificatesFolder;
         private static string s_intermediateCertificateSubject;
-
-        public enum EnrollmentType
-        {
-            Individual,
-            Group,
-        }
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
@@ -597,7 +594,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Devices.Provisioning.Service.DeviceCapabilities deviceCapabilities,
             string proxyServerAddress = null)
         {
-            string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = null;
+            if (enrollmentType == EnrollmentType.Group)
+            {
+                if (attestationType == AttestationMechanismType.X509)
+                {
+                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
+                }
+                else
+                {
+                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+                }
+            }
+
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
             using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
@@ -671,7 +680,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 else
                 {
                     Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
                 if (authMethod is AuthenticationProviderX509 x509Auth)
@@ -793,7 +802,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 else
                 {
                     Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
                 if (auth is AuthenticationProviderX509 x509Auth)
@@ -874,7 +883,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 else
                 {
                     Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
                 if (auth is AuthenticationProviderX509 x509Auth)
@@ -929,7 +938,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 else
                 {
                     Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
                 if (auth is AuthenticationProviderX509 x509Auth)
@@ -1226,17 +1235,43 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static async Task DeleteCreatedEnrollmentAsync(
             EnrollmentType? enrollmentType,
             AuthenticationProvider authProvider,
-            string groupId = "")
+            string groupId,
+            MsTestLogger logger)
         {
             using ProvisioningServiceClient dpsClient = CreateProvisioningService();
 
-            if (enrollmentType == EnrollmentType.Individual)
+            try
             {
-                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationID()).ConfigureAwait(false);
+                if (enrollmentType == EnrollmentType.Individual)
+                {
+                    await RetryOperationHelper
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationID()).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            logger)
+                        .ConfigureAwait(false);
+                }
+                else if (enrollmentType == EnrollmentType.Group)
+                {
+                    await RetryOperationHelper
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            logger)
+                        .ConfigureAwait(false);
+                }
             }
-            else if (enrollmentType == EnrollmentType.Group)
+            catch (Exception ex)
             {
-                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                Console.WriteLine($"Cleanup of enrollment failed due to {ex}.");
             }
         }
 

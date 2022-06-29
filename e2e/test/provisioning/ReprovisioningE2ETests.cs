@@ -468,7 +468,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string proxyServerAddress = null)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(s_proxyServerAddress);
-            string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+
+            string groupId = null;
+            if (enrollmentType == EnrollmentType.Group)
+            {
+                if (attestationType == AttestationMechanismType.X509)
+                {
+                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
+                }
+                else
+                {
+                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+                }
+            }
 
             bool transportProtocolSupportsTwinOperations = transportProtocol != Client.TransportType.Http1;
 
@@ -505,7 +517,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportProtocol, transportProtocolSupportsTwinOperations).ConfigureAwait(false);
 
-            //Check reprovisioning
+            // Check reprovisioning
             await UpdateEnrollmentToForceReprovisionAsync(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, auth, groupId).ConfigureAwait(false);
             result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
             ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
@@ -518,7 +530,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             else
             {
                 Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
-                await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId).ConfigureAwait(false);
+                await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
             }
 
             if (auth is AuthenticationProviderX509 x509Auth)

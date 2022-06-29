@@ -20,6 +20,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string IdScope => GetValue("DPS_IDSCOPE");
 
+            public static string X509GroupEnrollmentName => GetValue("DPS_X509_GROUP_ENROLLMENT_NAME");
+
             // This certificate is a part of the chain whose root has been verified by the Provisioning service.
             // The certificates used by the group enrollment tests are signed by this intermediate certificate.
             // Chain: Root->Intermediate1->Intermediate2
