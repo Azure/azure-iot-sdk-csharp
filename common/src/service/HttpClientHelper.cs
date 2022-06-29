@@ -870,8 +870,7 @@ namespace Microsoft.Azure.Devices
 
         internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
-#if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
-            // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
+#if NET5_0_OR_GREATER
             var httpMessageHandler = new SocketsHttpHandler();
             httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 #else
