@@ -74,7 +74,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         [JsonProperty(PropertyName = "symmetricKey")]
         public SymmetricKeyRegistrationResult SymmetricKey { get; set; }
 
-
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]

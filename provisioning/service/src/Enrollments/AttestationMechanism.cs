@@ -48,42 +48,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        [JsonConstructor]
-        private AttestationMechanism(AttestationMechanismType type, TpmAttestation tpm, X509Attestation x509, SymmetricKeyAttestation symmetricKey)
-        {
-            switch (type)
-            {
-                case AttestationMechanismType.Tpm:
-                    if (tpm == null)
-                    {
-                        throw new ProvisioningServiceClientException("Invalid TPM attestation mechanism.");
-                    }
-
-                    Tpm = tpm;
-                    break;
-
-                case AttestationMechanismType.X509:
-                    if (x509 == null)
-                    {
-                        throw new ProvisioningServiceClientException("Invalid X509 attestation mechanism.");
-                    }
-
-                    X509 = x509;
-                    break;
-
-                case AttestationMechanismType.None:
-                    break;
-
-                case AttestationMechanismType.SymmetricKey:
-                    // In some cases symmetric keys are nulled out by the service
-                    SymmetricKey = symmetricKey ?? new SymmetricKeyAttestation(string.Empty, string.Empty);
-                    break;
-
-                default:
-                    throw new ProvisioningServiceClientException("Unknown attestation mechanism.");
-            }
-        }
-
         /// <summary>
         ///  Attestation Type.
         /// </summary>

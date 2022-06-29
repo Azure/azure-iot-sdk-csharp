@@ -106,20 +106,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             DesiredProperties = desiredProperties;
         }
 
-        [JsonConstructor]
-        private TwinState(TwinCollection tags, TwinProperties properties)
-        {
-            Tags = tags;
-            if (properties == null)
-            {
-                DesiredProperties = null;
-            }
-            else
-            {
-                DesiredProperties = properties.Desired;
-            }
-        }
-
         /// <summary>
         /// Getter and setter the <see cref="TwinState"/> tags.
         /// </summary>

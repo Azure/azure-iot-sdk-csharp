@@ -88,16 +88,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        public static bool operator ==(SaslTpmHandler left, SaslTpmHandler right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(SaslTpmHandler left, SaslTpmHandler right)
-        {
-            return !Equals(left, right);
-        }
-
         public override SaslHandler Clone()
         {
             return new SaslTpmHandler(_endorsementKey, _storageRootKey, _idScope, _authentication);

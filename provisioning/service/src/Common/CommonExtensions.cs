@@ -35,16 +35,5 @@ namespace Microsoft.Azure.Devices.Common
 
             return map;
         }
-
-        public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
-        {
-            if (value != null)
-            {
-                builder.Append(name);
-                builder.Append(ValuePairSeparator);
-                builder.Append(value);
-                builder.Append(ValuePairDelimiter);
-            }
-        }
     }
 }

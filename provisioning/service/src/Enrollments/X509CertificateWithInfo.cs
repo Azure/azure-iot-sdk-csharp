@@ -70,13 +70,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Info = null;
         }
 
-        [JsonConstructor]
-        private X509CertificateWithInfo(string certificate, X509CertificateInfo info)
-        {
-            Info = info;
-            Certificate = certificate;
-        }
-
         /// <summary>
         /// Certificate
         /// </summary>
