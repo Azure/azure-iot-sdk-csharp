@@ -694,6 +694,7 @@ $keyvaultKvps = @{
     "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
     "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
+    "DPS-X509-GROUP-ENROLLMENT-NAME" = $groupEnrollmentId;
 
     # Environment variables for Azure resources used for E2E tests (common)
     "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;
