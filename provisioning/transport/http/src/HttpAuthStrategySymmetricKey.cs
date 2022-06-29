@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Net.Http;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override void SaveCredentials(RegistrationOperationStatus status)
         {
-            
+
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -103,9 +104,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            int productType = NativeMethods.GetWindowsProductType();
+            int productType = ProductInfo.GetWindowsProductType();
             string productTypeString = (productType != 0) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
-            string deviceId = TelemetryMethods.GetSqmMachineId() ?? string.Empty;
+            string deviceId = ProductInfo.GetSqmMachineId() ?? string.Empty;
 
             string[] agentInfoParts =
             {
@@ -125,12 +126,37 @@ namespace Microsoft.Azure.Devices.Client.Tests
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            int productType = NativeMethods.GetWindowsProductType();
+            int productType = ProductInfo.GetWindowsProductType();
             string productTypeString = (productType != 0) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
 
             return $".NET/{version} ({runtime}; {operatingSystem + productTypeString}; {processorArchitecture})";
         }
 
 #endif
+
+        [TestMethod]
+        public void GetSqmMachineId_ReturnsExpectedValue()
+        {
+            string actualValue = ProductInfo.GetSqmMachineId();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string expectedValue = null;
+
+                // Get SQM ID from Registry if exists
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\SQMClient");
+                if (key != null)
+                {
+                    expectedValue = key.GetValue("MachineId") as string;
+                }
+
+                Assert.AreEqual(expectedValue, actualValue);
+            }
+            else
+            {
+                // GetSqmMachineId() should always return null for all other platforms
+                Assert.IsNull(actualValue);
+            }
+        }
     }
 }

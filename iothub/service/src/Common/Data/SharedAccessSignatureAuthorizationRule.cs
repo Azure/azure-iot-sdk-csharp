@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Common.Data
 {
     /// <summary>
-    /// A shared access signature based authorization rule for authenticating requests against an IoT Hub.
+    /// A shared access signature based authorization rule for authenticating requests against an IoT hub.
     /// </summary>
     internal sealed class SharedAccessSignatureAuthorizationRule : IEquatable<SharedAccessSignatureAuthorizationRule>
     {
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Common.Data
         }
 
         /// <summary>
-        /// The name of the shared access policy that will be used to grant permission to IoT Hub endpoints.
+        /// The name of the shared access policy that will be used to grant permission to IoT hub endpoints.
         /// </summary>
         [JsonProperty(PropertyName = "rights")]
         public AccessRights Rights { get; set; }
@@ -60,12 +60,12 @@ namespace Microsoft.Azure.Devices.Common.Data
                 return false;
             }
 
-            bool equals = string.Equals(KeyName, other.KeyName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(PrimaryKey, other.PrimaryKey, StringComparison.Ordinal) &&
-                string.Equals(SecondaryKey, other.SecondaryKey, StringComparison.Ordinal) &&
-                Equals(Rights, other.Rights);
+            bool areEqual = string.Equals(KeyName, other.KeyName, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(PrimaryKey, other.PrimaryKey, StringComparison.Ordinal)
+                && string.Equals(SecondaryKey, other.SecondaryKey, StringComparison.Ordinal)
+                && Equals(Rights, other.Rights);
 
-            return equals;
+            return areEqual;
         }
 
         /// <inheritdoc/>
@@ -85,22 +85,25 @@ namespace Microsoft.Azure.Devices.Common.Data
                 return 0;
             }
 
-            int hashKeyName, hashPrimaryKey, hashSecondaryKey, hashRights;
+            int hashKeyName;
+            int hashPrimaryKey;
+            int hashSecondaryKey;
+            int hashRights;
 
-#if NETSTANDARD2_0 || NET451 || NET472
-            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
-
-            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
-
-            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
-
-            hashRights = rule.Rights.GetHashCode();
-#else
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
 
             hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
 
             hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode(StringComparison.InvariantCultureIgnoreCase);
+
+            hashRights = rule.Rights.GetHashCode();
+#else
+            hashKeyName = rule.KeyName == null ? 0 : rule.KeyName.GetHashCode();
+
+            hashPrimaryKey = rule.PrimaryKey == null ? 0 : rule.PrimaryKey.GetHashCode();
+
+            hashSecondaryKey = rule.SecondaryKey == null ? 0 : rule.SecondaryKey.GetHashCode();
 
             hashRights = rule.Rights.GetHashCode();
 #endif

@@ -12,13 +12,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     {
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
-            Exception retException;
             if (outcome == null)
             {
-                retException = new IotHubException("Unknown error.");
-                return retException;
+                return new IotHubException("Unknown error.");
             }
 
+            Exception retException;
             if (outcome.DescriptorCode == Rejected.Code)
             {
                 var rejected = (Rejected)outcome;
@@ -38,19 +37,19 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         public static Exception ToIotHubClientContract(Error error)
         {
-            Exception retException;
             if (error == null)
             {
-                retException = new IotHubException("Unknown error.");
-                return retException;
+                return new IotHubException("Unknown error.");
             }
 
+            Exception retException;
             string message = error.Description;
-
             string trackingId = null;
-            if (error.Info != null && error.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out trackingId))
+
+            if (error.Info != null
+                && error.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out trackingId))
             {
-                message = "{0}{1}{2}".FormatInvariant(message, Environment.NewLine, "Tracking Id:" + trackingId);
+                message = $"{message}\r\nTracking Id:{trackingId}";
             }
 
             if (error.Condition.Equals(IotHubAmqpErrorCode.TimeoutError))
@@ -118,11 +117,15 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
                 retException = new IotHubException(message);
             }
 
-            if (trackingId != null && retException is IotHubException exception)
+            if (trackingId != null
+                && retException is IotHubException exHub)
             {
-                IotHubException iotHubException = exception;
+                IotHubException iotHubException = exHub;
                 iotHubException.TrackingId = trackingId;
+                // This is created but not assigned to `retException`. If we change that now, it might be a
+                // breaking change. If not for v1, consider for #v2.
             }
+
             return retException;
         }
     }

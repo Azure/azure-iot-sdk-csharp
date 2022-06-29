@@ -10,6 +10,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     internal class ClientWebSocketChannelConfig : IChannelConfiguration
     {
+        public TimeSpan ConnectTimeout { get; set; }
+
+        public int WriteSpinCount { get; set; }
+
+        public IByteBufferAllocator Allocator { get; set; }
+
+        public IRecvByteBufAllocator RecvByteBufAllocator { get; set; }
+
+        public bool AutoRead { get; set; }
+
+        public int WriteBufferHighWaterMark { get; set; }
+
+        public int WriteBufferLowWaterMark { get; set; }
+
+        public IMessageSizeEstimator MessageSizeEstimator { get; set; }
+
         public T GetOption<T>(ChannelOption<T> option)
         {
             Contract.Requires(option != null);
@@ -92,21 +108,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             return true;
         }
-
-        public TimeSpan ConnectTimeout { get; set; }
-
-        public int WriteSpinCount { get; set; }
-
-        public IByteBufferAllocator Allocator { get; set; }
-
-        public IRecvByteBufAllocator RecvByteBufAllocator { get; set; }
-
-        public bool AutoRead { get; set; }
-
-        public int WriteBufferHighWaterMark { get; set; }
-
-        public int WriteBufferLowWaterMark { get; set; }
-
-        public IMessageSizeEstimator MessageSizeEstimator { get; set; }
     }
 }

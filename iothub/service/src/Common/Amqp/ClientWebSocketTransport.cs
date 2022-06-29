@@ -7,9 +7,9 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {

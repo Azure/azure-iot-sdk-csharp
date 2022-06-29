@@ -20,17 +20,17 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class E2EMsTestBase : IDisposable
     {
         private ConsoleEventListener _listener;
+        private Stopwatch _stopwatch;
 
         // Test specific logger instance
         protected MsTestLogger Logger { get; set; }
 
-        private Stopwatch Stopwatch { get; set; }
         public TestContext TestContext { get; set; }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            Stopwatch = Stopwatch.StartNew();
+            _stopwatch = Stopwatch.StartNew();
             Logger = new MsTestLogger(TestContext);
 
             // Note: Events take long and increase run time of the test suite, so only using trace.
@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCleanup]
         public void TestCleanup()
         {
-            Stopwatch.Stop();
+            _stopwatch.Stop();
 
             var extraProperties = new Dictionary<string, string>
             {
-                { LoggingPropertyNames.TimeElapsed, Stopwatch.Elapsed.ToString() },
+                { LoggingPropertyNames.TimeElapsed, _stopwatch.Elapsed.ToString() },
                 { LoggingPropertyNames.TestStatus, TestContext.CurrentTestOutcome.ToString() },
             };
 
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [AssemblyCleanup]
-        public async Task AssemblyCleanup()
+        public static async Task AssemblyCleanup()
         {
             // Flush before the test suite ends to ensure we do not lose any logs.
             await TestLogger.Instance.SafeFlushAsync().ConfigureAwait(false);

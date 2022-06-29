@@ -76,7 +76,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         {
             // arrange
             X509Certificate2 certificateNull = null;
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
             using var certificateEmpty = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
             string certificateString = null;
             string certificateStringEmpty = "";
             string certificateStringInvalid =

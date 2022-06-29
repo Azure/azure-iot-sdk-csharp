@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         RegistryRead = 1,
         RegistryWrite = RegistryRead | 2,
         ServiceConnect =  4,
-        DeviceConnect = 8
+        DeviceConnect = 8,
     }
 
     internal static class AccessRightsHelper

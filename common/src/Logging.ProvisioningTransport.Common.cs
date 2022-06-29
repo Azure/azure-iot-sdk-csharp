@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Shared
                 idScope,
                 attestationType,
                 operationId,
-                (int)(retryAfter == null ? 0 : retryAfter?.TotalSeconds),
+                (int)(retryAfter?.TotalSeconds ?? 0),
                 status);
             }
         }
@@ -75,9 +75,7 @@ namespace Microsoft.Azure.Devices.Shared
                     IdOf(thisOrContextObject),
                     registrationId,
                     operationId,
-                    retryAfter.HasValue
-                        ? (int)retryAfter.Value.TotalSeconds
-                        : 0,
+                    (int)(retryAfter?.TotalSeconds ?? 0),
                     status,
                     attempts);
             }

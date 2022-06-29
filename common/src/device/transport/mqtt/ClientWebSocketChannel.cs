@@ -292,10 +292,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         //        A ReferenceCount of 0 indicates that all messages have been flushed and the buffer can be deallocated.
                         //        By calling the method Retain() on each byte buffer component added to the CompositeByteBuffer,
                         //        we increase the ReferenceCount by 1 and mark them as ready for dequeuing.
-                        compositeByteBuffer
-                            .AddComponent(
-                                increaseWriterIndex: true,
-                                buffer: (IByteBuffer)byteBuffer.Retain());
+                        compositeByteBuffer.AddComponent(
+                            increaseWriterIndex: true,
+                            buffer: (IByteBuffer)byteBuffer.Retain());
                     }
 
                     // Once the readable bytes are added to the CompositeByteBuffer they can be removed from the ChannelOutboundBuffer

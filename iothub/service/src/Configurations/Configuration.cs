@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices
         public int Priority { get; set; }
 
         /// <summary>
-        /// The system metrics computed by the IoT Hub that cannot be customized.
+        /// The system metrics computed by the IoT hub that cannot be customized.
         /// </summary>
         [JsonProperty(PropertyName = "systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
         public ConfigurationMetrics SystemMetrics { get; internal set; } = new ConfigurationMetrics();

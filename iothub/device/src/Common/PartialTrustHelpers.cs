@@ -1,22 +1,23 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
-{
-    using System;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using System.Security;
+using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security;
 #if NET451
-    using System.Security.Permissions;
+using System.Security.Permissions;
 #endif
 
-    static class PartialTrustHelpers
+namespace Microsoft.Azure.Devices.Client
+{
+
+    internal static class PartialTrustHelpers
     {
 #if NET451
         [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
         [SecurityCritical]
-        static Type aptca;
+        private static Type s_aptca;
 #endif
         internal static bool ShouldFlowSecurityContext
         {
@@ -27,12 +28,9 @@ namespace Microsoft.Azure.Devices.Client
 #if !NET451
                 throw new NotImplementedException();
 #else
-                if (AppDomain.CurrentDomain.IsHomogenous)
-                {
-                    return false;
-                }
-
-                return SecurityManager.CurrentThreadRequiresSecurityContextCapture();
+                return AppDomain.CurrentDomain.IsHomogenous
+                    ? false
+                    : SecurityManager.CurrentThreadRequiresSecurityContextCapture();
 #endif
             }
         }
@@ -124,22 +122,22 @@ namespace Microsoft.Azure.Devices.Client
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
 #endif
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void DemandForFullTrust()
+        private static void DemandForFullTrust()
         {
         }
 
         [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
         [SecurityCritical]
-        static bool IsAssemblyAptca(Assembly assembly)
+        private static bool IsAssemblyAptca(Assembly assembly)
         {
 #if !NET451
             throw new NotImplementedException();
 #else
-            if (aptca == null)
+            if (s_aptca == null)
             {
-                aptca = typeof(AllowPartiallyTrustedCallersAttribute);
+                s_aptca = typeof(AllowPartiallyTrustedCallersAttribute);
             }
-            return assembly.GetCustomAttributes(aptca, false).Length > 0;
+            return assembly.GetCustomAttributes(s_aptca, false).Length > 0;
 #endif
         }
 
@@ -148,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
 #if NET451
         [FileIOPermission(SecurityAction.Assert, Unrestricted = true)]
 #endif
-        static bool IsAssemblySigned(Assembly assembly)
+        private static bool IsAssemblySigned(Assembly assembly)
         {
             byte[] publicKeyToken = assembly.GetName().GetPublicKeyToken();
             return publicKeyToken != null & publicKeyToken.Length > 0;
@@ -161,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client
         {
 
             return AppDomain.CurrentDomain.IsHomogenous &&
-                   permissions.IsSubsetOf(AppDomain.CurrentDomain.PermissionSet);
+                permissions.IsSubsetOf(AppDomain.CurrentDomain.PermissionSet);
         }
 #endif
 
@@ -172,11 +170,10 @@ namespace Microsoft.Azure.Devices.Client
 #if !NET451
             throw new NotImplementedException();
 #else
-            //Currently unrestricted permissions are required to create Etw provider. 
+            // Currently unrestricted permissions are required to create Etw provider. 
             var permissions = new PermissionSet(PermissionState.Unrestricted);
             return CheckAppDomainPermissions(permissions);
 #endif
         }
-
     }
 }

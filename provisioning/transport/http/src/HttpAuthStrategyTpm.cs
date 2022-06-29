@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Net.Http;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
-using System;
-using System.Net;
-using System.Net.Http;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -50,11 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)
             {
                 if (Logging.IsEnabled)
-                {
-                    Logging.Error(
-                    this,
-                    $"Authentication key not found. OperationId=${operation?.OperationId}");
-                }
+                    Logging.Error(this, $"Authentication key not found. OperationId=${operation?.OperationId}");
 
                 throw new ProvisioningTransportException(
                     "Authentication key not found.",
@@ -63,10 +58,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
+
             if (Logging.IsEnabled)
-            {
                 Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
-            }
 
             _security.ActivateIdentityKey(key);
         }

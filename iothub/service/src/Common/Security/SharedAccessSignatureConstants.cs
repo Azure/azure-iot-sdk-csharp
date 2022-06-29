@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Common.Security
 {
-    using System;
-
-    static class SharedAccessSignatureConstants
+    internal static class SharedAccessSignatureConstants
     {
         public const int MaxKeyNameLength = 256;
         public const int MaxKeyLength = 256;

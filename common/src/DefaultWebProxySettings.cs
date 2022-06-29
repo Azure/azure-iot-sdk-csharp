@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     internal sealed class DefaultWebProxySettings : IWebProxy
     {
-        private static DefaultWebProxySettings s_defaultWebproxy = new DefaultWebProxySettings();
+        private static readonly DefaultWebProxySettings s_defaultWebproxy = new DefaultWebProxySettings();
         public static DefaultWebProxySettings Instance { get; } = s_defaultWebproxy;
         public ICredentials Credentials { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
         public Uri GetProxy(Uri destination) => throw new NotSupportedException();

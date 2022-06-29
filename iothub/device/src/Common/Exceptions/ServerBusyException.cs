@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when the IoT Hub is busy.
+    /// The exception that is thrown when the IoT hub is busy.
     /// </summary>
     /// <remarks>
     /// This exception typically means the service is unavailable due to high load or an unexpected error and is usually transient.
@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public sealed class ServerBusyException : IotHubException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerBusyException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         public ServerBusyException() : base(isTransient: true)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServerBusyException"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="message">The error message.</param>
         public ServerBusyException(string message)

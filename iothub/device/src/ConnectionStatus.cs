@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
 #pragma warning disable CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     /// <summary>
-    /// Connection Status supported by DeviceClient
+    /// Connection status supported by the client.
     /// </summary>
     public enum ConnectionStatus
 #pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.

@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
                 "{idScope}/registrations/{registrationId}/operations/{operationId}").ToString();
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
             _url = _url.Replace("{operationId}", Uri.EscapeDataString(operationId), StringComparison.Ordinal);
             _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
@@ -302,22 +302,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ServiceClientTracing.Enter(_invocationId, this, "DeviceRegistrationStatusLookup", tracingParameters);
             }
             // Construct URL
-            string _baseUrl = Client.BaseUri.AbsoluteUri;
-            string _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), "{idScope}/registrations/{registrationId}").ToString();
+            string baseUrl = Client.BaseUri.AbsoluteUri;
+            string url = new Uri(
+                    new Uri(baseUrl + (baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
+                    "{idScope}/registrations/{registrationId}")
+                .ToString();
 
-#if NETSTANDARD2_1
-            _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
-            _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
+            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
 #else
-            _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
-            _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope));
+            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
+            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope));
 #endif
 
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
             _httpRequest.Method = new HttpMethod("POST");
-            _httpRequest.RequestUri = new Uri(_url);
+            _httpRequest.RequestUri = new Uri(url);
             // Set Headers
 
             if (customHeaders != null)
@@ -484,15 +487,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ServiceClientTracing.Enter(_invocationId, this, "RegisterDevice", tracingParameters);
             }
             // Construct URL
-            string _baseUrl = Client.BaseUri.AbsoluteUri;
-            string _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), "{idScope}/registrations/{registrationId}/register").ToString();
+            string baseUrl = Client.BaseUri.AbsoluteUri;
+            string url = new Uri(
+                    new Uri(baseUrl + (baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
+                    "{idScope}/registrations/{registrationId}/register")
+                .ToString();
 
-#if NETSTANDARD2_1
-            _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
-            _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
+            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
 #else
-            _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
-            _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope));
+            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
+            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope));
 #endif
 
             var _queryParameters = new List<string>();
@@ -505,13 +511,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             if (_queryParameters.Count > 0)
             {
-                _url += "?" + string.Join("&", _queryParameters);
+                url += "?" + string.Join("&", _queryParameters);
             }
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
             _httpRequest.Method = new HttpMethod("PUT");
-            _httpRequest.RequestUri = new Uri(_url);
+            _httpRequest.RequestUri = new Uri(url);
             // Set Headers
 
             if (customHeaders != null)

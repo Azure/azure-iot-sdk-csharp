@@ -18,8 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         public const string OperationStatusUnassigned = "unassigned";
 
         /// <summary>
-        /// Initializes a new instance of the RegistrationOperationStatus
-        /// class.
+        /// Initializes a new instance of the RegistrationOperationStatus class.
         /// </summary>
         public RegistrationOperationStatus()
         {
