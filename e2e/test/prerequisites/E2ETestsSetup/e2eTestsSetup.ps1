@@ -658,7 +658,7 @@ if ($InstallPrivatePreviewResources)
     }
     else
     {
-        Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
+        Write-Host -ForegroundColor DarkYellow "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
 
         $dpsPrimaryKey =  az iot dps policy show --dps-name $dpsName --resource-group $ResourceGroup --policy-name provisioningserviceowner --query primaryKey --output tsv
         $dpsEndpoint = az iot dps show --name $dpsName --query properties.serviceOperationsHostName --output tsv
@@ -694,7 +694,7 @@ if ($InstallPrivatePreviewResources)
         }
         catch
         {
-            Write-Host "`nError while linking DPS $dpsName to CA $dpsCaName."
+            Write-Host -ForegroundColor Red "`nError while linking DPS $dpsName to CA $dpsCaName."
             Write-Error -Message $_.ErrorDetails.Message
         }
     }
@@ -714,7 +714,7 @@ if ($InstallPrivatePreviewResources)
     # Azure CLI support is currently unavailable for linking DPS instance to Trust Bundle.
     # The powershell command below will need to be replaced by Azure CLI once the support is available.
 
-    Write-Host "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
+    Write-Host -ForegroundColor DarkYellow "DPS service API version $dpsServiceApiPreviewVersion is currently in private-preview. Ensure that your DPS instance $dpsName is in the allow-list, else the operation will fail."
 
     Write-Host "`nLinking DPS host $dpsName to your Test Trust Bundle with friendly name $dpsTrustBundleId."
 
@@ -742,7 +742,7 @@ if ($InstallPrivatePreviewResources)
     }
     catch
     {
-        Write-Host "`nError while linking DPS $dpsName to Trust Bundle $dpsTrustBundleId."
+        Write-Host -ForegroundColor Red "`nError while linking DPS $dpsName to Trust Bundle $dpsTrustBundleId."
         Write-Error -Message $_.ErrorDetails.Message
     }
 }
@@ -958,8 +958,15 @@ if (-not (docker images -q aziotbld/testproxy))
 # openssl is currently unavailable as an official release via Chocolatey, so it is advised to perform a manual install from a secured source.
 ############################################################################################################################
 
-Write-Host "Ensure that openssl is available on your system and is set to PATH variable."
-Write-Host "If you have Git installed, openssl can be found at `"<Git_install_directory>\Git\usr\bin\openssl.exe`""
+try
+{
+    Get-Command openssl.exe
+}
+catch
+{
+    Write-Host -ForegroundColor Red "E2E tests require openssl to be installed on your system and set to PATH variable."
+    Write-Host -ForegroundColor Red "If you have Git installed, openssl can be found at `"<Git_install_directory>\Git\usr\bin\openssl.exe`"."
+}
 
 ############################################################################################################################
 # Clean up certs and files created by the script
