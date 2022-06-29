@@ -583,28 +583,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 if (enrollmentType == EnrollmentType.Individual)
                 {
                     await RetryOperationHelper
-                                .RetryOperationsAsync(
-                                    async () =>
-                                    {
-                                        await dpsClient.DeleteIndividualEnrollmentAsync(registrationId).ConfigureAwait(false);
-                                    },
-                                    s_provisioningServiceRetryPolicy,
-                                    s_retryableExceptions,
-                                    logger)
-                                .ConfigureAwait(false);
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                await dpsClient.DeleteIndividualEnrollmentAsync(registrationId).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            logger)
+                        .ConfigureAwait(false);
                 }
                 else if (enrollmentType == EnrollmentType.Group)
                 {
                     await RetryOperationHelper
-                                .RetryOperationsAsync(
-                                    async () =>
-                                    {
-                                        await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
-                                    },
-                                    s_provisioningServiceRetryPolicy,
-                                    s_retryableExceptions,
-                                    logger)
-                                .ConfigureAwait(false);
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            logger)
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
