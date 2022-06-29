@@ -105,6 +105,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 : new X509CertificateWithInfo(secondary);
         }
 
+        [JsonConstructor]
+        private X509Certificates(X509CertificateWithInfo primary, X509CertificateWithInfo secondary = null)
+        {
+            Primary = primary ?? throw new ProvisioningServiceClientException("Primary certificate cannot be null.");
+            Secondary = secondary;
+        }
+
         /// <summary>
         /// Primary certificate.
         /// </summary>
