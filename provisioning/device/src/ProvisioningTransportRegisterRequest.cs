@@ -6,9 +6,9 @@ using Microsoft.Azure.Devices.Authentication;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Represents a provisioning registration message.
+    /// Represents a provisioning registration request.
     /// </summary>
-    public class ProvisioningTransportRegisterMessage
+    public class ProvisioningTransportRegisterRequest
     {
         private readonly ProductInfo _productInfo = new();
 
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="globalDeviceEndpoint">The global device endpoint for this message.</param>
         /// <param name="idScope">The IDScope for this message.</param>
         /// <param name="authentication">The authentication provider used to authenticate the client.</param>
-        public ProvisioningTransportRegisterMessage(
+        public ProvisioningTransportRegisterRequest(
             string globalDeviceEndpoint,
             string idScope,
             AuthenticationProvider authentication)
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="idScope">The IDScope for this message.</param>
         /// <param name="authentication">The authentication provider used to authenticate the client.</param>
         /// <param name="payload">The custom JSON content.</param>
-        public ProvisioningTransportRegisterMessage(
+        public ProvisioningTransportRegisterRequest(
             string globalDeviceEndpoint,
             string idScope,
             AuthenticationProvider authentication,

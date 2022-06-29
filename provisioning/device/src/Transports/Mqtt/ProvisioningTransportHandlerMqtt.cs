@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             TimeSpan timeout)
         {
             if (TimeSpan.Zero.Equals(timeout))
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             Debug.Assert(message.Authentication is AuthenticationProviderX509);
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverTcpUsingSymmetricKeyAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             Debug.Assert(message.Authentication is AuthenticationProviderSymmetricKey);
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         private async Task<RegistrationOperationStatus> ProvisionOverTcpCommonAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             ClientTlsSettings tlsSettings,
             CancellationToken cancellationToken)
         {
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverWssUsingX509CertificateAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             Debug.Assert(message.Authentication is AuthenticationProviderX509);
@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverWssUsingSymmetricKeyAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             Debug.Assert(message.Authentication is AuthenticationProviderSymmetricKey);
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         private async Task<RegistrationOperationStatus> ProvisionOverWssCommonAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             X509Certificate2 clientCertificate,
             CancellationToken cancellationToken)
         {

@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        ///. Creates an instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         public DeviceRegistrationResult(
             string registrationId,
@@ -49,44 +49,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ErrorMessage = errorMessage;
             Etag = etag;
             Payload = jsonPayload;
-        }
-
-        /// <summary>
-        ///. Creates an instance of this class.
-        /// </summary>
-        internal DeviceRegistrationResult(
-            string registrationId,
-            DateTime? createdDateTimeUtc,
-            string assignedHub,
-            string deviceId,
-            ProvisioningRegistrationStatusType status,
-            ProvisioningRegistrationSubstatusType substatus,
-            string generationId,
-            DateTime? lastUpdatedDateTimeUtc,
-            int errorCode,
-            string errorMessage,
-            string etag,
-            JRaw jsonPayload,
-            TpmRegistrationResult tpm = default,
-            X509RegistrationResult x509 = default,
-            SymmetricKeyRegistrationResult symmetricKey = default)
-            : this(
-                  registrationId,
-                  createdDateTimeUtc,
-                  assignedHub,
-                  deviceId,
-                  status,
-                  substatus,
-                  generationId,
-                  lastUpdatedDateTimeUtc,
-                  errorCode,
-                  errorMessage,
-                  etag,
-                  jsonPayload)
-        {
-            Tpm = tpm;
-            X509 = x509;
-            SymmetricKey = symmetricKey;
         }
 
         /// <summary>

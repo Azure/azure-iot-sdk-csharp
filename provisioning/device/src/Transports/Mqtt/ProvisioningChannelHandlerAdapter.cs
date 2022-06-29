@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private const string Registration = "registration";
 
-        private readonly ProvisioningTransportRegisterMessage _message;
+        private readonly ProvisioningTransportRegisterRequest _message;
         private readonly TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
         private readonly CancellationToken _cancellationToken;
         private int _state;
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         public ProvisioningChannelHandlerAdapter(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             TaskCompletionSource<RegistrationOperationStatus> taskCompletionSource,
             CancellationToken cancellationToken)
         {

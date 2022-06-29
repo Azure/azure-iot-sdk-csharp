@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _authentication);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
+            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
             {
                 ProductInfo = ProductInfo,
             };

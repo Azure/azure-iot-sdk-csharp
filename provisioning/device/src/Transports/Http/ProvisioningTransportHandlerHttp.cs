@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             TimeSpan timeout)
         {
             if (TimeSpan.Zero.Equals(timeout))
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public async override Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
