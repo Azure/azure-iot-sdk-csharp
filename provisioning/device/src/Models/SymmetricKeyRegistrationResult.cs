@@ -8,8 +8,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Registration result returned when using symmetric key attestation.
     /// </summary>
-    internal class SymmetricKeyRegistrationResult
+    public class SymmetricKeyRegistrationResult
     {
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        internal SymmetricKeyRegistrationResult()
+        {
+        }
+
         /// <summary>
         /// The Id of the enrollment group.
         /// </summary>

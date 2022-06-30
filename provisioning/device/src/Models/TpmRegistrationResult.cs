@@ -8,20 +8,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// TPM registration result.
     /// </summary>
-    internal class TpmRegistrationResult
+    public class TpmRegistrationResult
     {
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// For deserialization.
         /// </summary>
-        public TpmRegistrationResult(string authenticationKey = default)
+        internal TpmRegistrationResult()
         {
-            AuthenticationKey = authenticationKey;
         }
 
         /// <summary>
         /// The encrypted authentication key.
         /// </summary>
         [JsonProperty(PropertyName = "authenticationKey")]
-        public string AuthenticationKey { get; }
+        public string AuthenticationKey { get; internal set; }
     }
 }

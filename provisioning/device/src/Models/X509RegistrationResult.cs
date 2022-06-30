@@ -8,38 +8,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// X509 registration result.
     /// </summary>
-    internal class X509RegistrationResult
+    public class X509RegistrationResult
     {
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// For deserialization.
         /// </summary>
-        public X509RegistrationResult(
-            X509CertificateInfo certificateInfo = default,
-            string enrollmentGroupId = default,
-            X509CertificateInfo signingCertificateInfo = default)
+        internal X509RegistrationResult()
         {
-            CertificateInfo = certificateInfo;
-            EnrollmentGroupId = enrollmentGroupId;
-            SigningCertificateInfo = signingCertificateInfo;
         }
 
         /// <summary>
         /// Information about the X509 certificate.
         /// </summary>
         [JsonProperty(PropertyName = "certificateInfo")]
-        public X509CertificateInfo CertificateInfo { get; }
+        public X509CertificateInfo CertificateInfo { get; internal set; }
 
         /// <summary>
         /// The device provisioning service enrollment group Id.
         /// </summary>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
-        public string EnrollmentGroupId { get; }
+        public string EnrollmentGroupId { get; internal set; }
 
         /// <summary>
         /// Signing information about the certificate.
         /// </summary>
         [JsonProperty(PropertyName = "signingCertificateInfo")]
-        public X509CertificateInfo SigningCertificateInfo { get; }
+        public X509CertificateInfo SigningCertificateInfo { get; internal set; }
 
     }
 }
