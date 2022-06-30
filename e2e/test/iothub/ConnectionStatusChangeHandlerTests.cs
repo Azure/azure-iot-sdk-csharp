@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.DeleteDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [TestCategory("LongRunning")]
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.DeleteDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.DeleteDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+                Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.DeleteDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the

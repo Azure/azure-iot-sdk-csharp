@@ -315,9 +315,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             try
             {
-                await registryClient.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-                await registryClient.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
-                await registryClient.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(edgeId2).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(edgeId1).ConfigureAwait(false);
                 await registryManager.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
             }
             catch (Exception ex)

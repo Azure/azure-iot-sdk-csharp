@@ -7,12 +7,12 @@ using System.Net.Http;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains Http1 transport-specific settings for Service Client
+    /// Contains HTTP transport-specific settings for these clients.
     /// </summary>
     public sealed class HttpTransportSettings2
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpTransportSettings"/> class.
+        /// Initializes a new instance of this class using the default settings.
         /// </summary>
         public HttpTransportSettings2()
         {
@@ -25,13 +25,10 @@ namespace Microsoft.Azure.Devices
         /// <value>
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
-        /// <remarks>
-        /// The <see cref="HttpTransportSettings"/> class is only used for the <see cref="JobClient"/> or the <see cref="RegistryManager"/>; so the proxy set here will only be valid for those clients.
-        /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
-        /// static JobClient GetJobClient()
+        /// static RegistryClient GetRegistryClient()
         /// {
         ///     try
         ///     {
@@ -42,8 +39,8 @@ namespace Microsoft.Azure.Devices
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
         ///         // Specify the WebProxy to be used for the HTTP connection
-        ///         var jobClient = JobClient.CreateFromConnectionString("a connection string", transportSettings);
-        ///         return jobClient;
+        ///         var registryClient = new RegistryClient("a connection string", transportSettings);
+        ///         return registryClient;
         ///     }
         ///     catch (Exception)
         ///     {

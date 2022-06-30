@@ -11,6 +11,10 @@ using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Http2
 {
+    /// <summary>
+    /// Factory for creating HTTP requests to be sent by a service client. The requests created by
+    /// this client contain all the common headers and attributes
+    /// </summary>
     internal class HttpRequestMessageFactory
     {
         private const string ApiVersionQueryString = "?" + ClientApiVersionHelper.ApiVersionQueryString;

@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.Tests
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDeviceAsync(string.Empty).ConfigureAwait(false);
+            await RegistryClient.DeleteDeviceAsync(string.Empty).ConfigureAwait(false);
             Assert.Fail("Delete API did not throw exception when the device id was null.");
         }
 
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices.Tests
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when bad deviceid was used.");
         }
 
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.Tests
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when ETag was null.");
         }
 
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.Tests
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device was used.");
         }
 
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.Tests
             HttpTransportSettings2 settings = new HttpTransportSettings2();
             settings.HttpClient = new Mock<HttpClient>().Object;
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>()).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("DeleteDevices API did not throw exception when Null device list was used.");
         }
 
@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Tests
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -366,7 +366,7 @@ namespace Microsoft.Azure.Devices.Tests
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>() { badDevice1, badDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices.Tests
             settings.HttpClient = mockHttpClient.Object;
 
             var RegistryClient = new RegistryClient(validMockConnectionString, settings);
-            await RegistryClient.RemoveDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
+            await RegistryClient.DeleteDevicesAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]

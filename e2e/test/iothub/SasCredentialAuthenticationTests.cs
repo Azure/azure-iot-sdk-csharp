@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             Assert.IsNotNull(createdDevice);
 
             // cleanup
-            await registryClient.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
+            await registryClient.DeleteDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             Assert.IsNotNull(createdDevice);
 
             // cleanup
-            await registryClient.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
+            await registryClient.DeleteDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

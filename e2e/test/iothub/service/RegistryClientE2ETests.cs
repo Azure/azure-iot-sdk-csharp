@@ -85,9 +85,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 // clean up
 
-                await registryClient.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-                await registryClient.RemoveDeviceAsync(edgeId1).ConfigureAwait(false);
-                await registryClient.RemoveDeviceAsync(edgeId2).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(edgeId1).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(edgeId2).ConfigureAwait(false);
             }
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryClient.AddDeviceWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
 
             Device actual = await registryClient.GetDeviceAsync(deviceId).ConfigureAwait(false);
-            await registryClient.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+            await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
 
             Assert.IsTrue(actual.Capabilities.IotEdge);
         }
@@ -156,8 +156,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryClient.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
-                    await registryClient.RemoveDeviceAsync(edge.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(edge.Id).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -204,9 +204,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryClient.RemoveDeviceAsync(device1.Id).ConfigureAwait(false);
-                    await registryClient.RemoveDeviceAsync(device2.Id).ConfigureAwait(false);
-                    await registryClient.RemoveDeviceAsync(edge.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device1.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device2.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(edge.Id).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -257,8 +257,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryClient.RemoveDeviceAsync(device1.Id).ConfigureAwait(false);
-                    await registryClient.RemoveDeviceAsync(device2.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device1.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device2.Id).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // act
 
                 BulkRegistryOperationResult bulkDeleteResult = await registryClient
-                    .RemoveDevicesAsync(new[] { device1, device2 }, true, default)
+                    .DeleteDevicesAsync(new[] { device1, device2 }, true, default)
                     .ConfigureAwait(false);
 
                 // assert
@@ -315,8 +315,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryClient.RemoveDeviceAsync(device1.Id).ConfigureAwait(false);
-                    await registryClient.RemoveDeviceAsync(device2.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device1.Id).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(device2.Id).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -572,7 +572,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 if (deviceId != null)
                 {
-                    await client.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                    await client.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

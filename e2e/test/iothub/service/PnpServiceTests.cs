@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
 
             // Cleanup
-            await registryClient.RemoveDeviceAsync(testDevice.Id).ConfigureAwait(false);
+            await registryClient.DeleteDeviceAsync(testDevice.Id).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
 
             // Cleanup
-            await registryClient.RemoveDeviceAsync(testDevice.Id).ConfigureAwait(false);
+            await registryClient.DeleteDeviceAsync(testDevice.Id).ConfigureAwait(false);
 
             if (authCertificate is IDisposable disposableCert)
             {
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");
 
             // Cleanup
-            await registryClient.RemoveDeviceAsync(testModule.DeviceId).ConfigureAwait(false);
+            await registryClient.DeleteDeviceAsync(testModule.DeviceId).ConfigureAwait(false);
         }
     }
 }

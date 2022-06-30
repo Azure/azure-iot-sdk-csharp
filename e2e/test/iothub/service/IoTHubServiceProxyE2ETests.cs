@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             using (var registryClient = new RegistryClient(s_connectionString, httpTransportSettings))
             {
                 await registryClient.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
-                await registryClient.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
+                await registryClient.DeleteDeviceAsync(deviceName).ConfigureAwait(false);
             }
         }
 

@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryClient.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                    await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
                     await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
                 }
                 catch (Exception ex)

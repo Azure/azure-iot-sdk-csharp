@@ -11,11 +11,17 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Http2
 {
+    /// <summary>
+    /// A helper class for constructing HTTP requests and parsing HTTP responses.
+    /// </summary>
     internal class HttpMessageHelper2
     {
         private const string ApplicationJson = "application/json";
 
-        public const string ETagForce = "\"*\"";
+        /// <summary>
+        /// The If-Match header value for forcing the operation regardless of ETag.
+        /// </summary>
+        internal const string ETagForce = "\"*\"";
 
         /// <summary>
         /// Helper method for serializing payload objects.

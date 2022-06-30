@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -39,24 +38,20 @@ namespace Microsoft.Azure.Devices
         private const string JobsCreateUriFormat = "/jobs/create";
 
         /// <summary>
-        /// Creates an instance of RegistryManager, provided for unit testing purposes only.
+        /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         protected RegistryClient()
         {
         }
 
         /// <summary>
-        /// Create an instance of this class that authenticates service requests
-        /// using an IoT hub connection string.
+        /// Create an instance of this class that authenticates service requests using an IoT hub connection string.
         /// </summary>
         /// <param name="connectionString">The IoT hub connection string.</param>
         /// <param name="transportSettings">The optional HTTP transport settings.</param>
         public RegistryClient(string connectionString, HttpTransportSettings2 transportSettings = default)
         {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentException(nameof(connectionString));
-            }
+            Argument.RequireNotNullOrEmpty(connectionString, nameof(connectionString));
 
             if (transportSettings == null)
             {
@@ -72,8 +67,8 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of this class that authenticates service requests
-        /// using an identity in Azure Active Directory (AAD).
+        /// Create an instance of this class that authenticates service requests using an identity in Azure Active
+        /// Directory (AAD).
         /// </summary>
         /// <remarks>
         /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
@@ -86,15 +81,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportSettings">The optional HTTP transport settings.</param>
         public RegistryClient(string hostName, TokenCredential credential, HttpTransportSettings2 transportSettings = default)
         {
-            if (string.IsNullOrEmpty(hostName))
-            {
-                throw new ArgumentException(nameof(hostName));
-            }
-
-            if (credential == null)
-            {
-                throw new ArgumentNullException(nameof(credential));
-            }
+            Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
+            Argument.RequireNotNull(credential, nameof(credential));
 
             if (transportSettings == null)
             {
@@ -109,8 +97,8 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an instance of this class that authenticates service requests with
-        /// a shared access signature provided and refreshed as necessary by the caller.
+        /// Create an instance of this class that authenticates service requests with a shared access signature
+        /// provided and refreshed as necessary by the caller.
         /// </summary>
         /// <remarks>
         /// Users may wish to build their own shared access signature (SAS) tokens rather than give the shared key to the SDK and let it manage signing and renewal.
@@ -122,15 +110,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportSettings">The optional HTTP transport settings.</param>
         public RegistryClient(string hostName, AzureSasCredential credential, HttpTransportSettings2 transportSettings = default)
         {
-            if (string.IsNullOrEmpty(hostName))
-            {
-                throw new ArgumentException(nameof(hostName));
-            }
-
-            if (credential == null)
-            {
-                throw new ArgumentNullException(nameof(credential));
-            }
+            Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
+            Argument.RequireNotNull(credential, nameof(credential));
 
             if (transportSettings == null)
             {
@@ -152,14 +133,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The registered device with the generated keys and ETags.</returns>
         public virtual async Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
 
             try
             {
-                if (device == null)
-                {
-                    throw new ArgumentNullException(nameof(device));
-                }
+                Argument.RequireNotNull(device, nameof(device));
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -168,12 +147,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(AddDeviceAsync)} threw an exception: {ex}", nameof(AddDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(AddDeviceAsync)} threw an exception: {ex}", nameof(AddDeviceAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Adding device: {device?.Id}", nameof(AddDeviceAsync));
             }
         }
 
@@ -185,14 +166,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved device identity.</returns>
         public virtual async Task<Device> GetDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting device: {deviceId}", nameof(GetDeviceAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting device: {deviceId}", nameof(GetDeviceAsync));
 
             try
             {
-                if (deviceId == null)
-                {
-                    throw new ArgumentNullException(nameof(deviceId));
-                }
+                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -201,12 +180,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetDeviceAsync)} threw an exception: {ex}", nameof(GetDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetDeviceAsync)} threw an exception: {ex}", nameof(GetDeviceAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting device: {deviceId}", nameof(GetDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting device: {deviceId}", nameof(GetDeviceAsync));
             }
         }
 
@@ -235,14 +216,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The newly updated device identity including its new ETag.</returns>
         public virtual async Task<Device> UpdateDeviceAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Updating device: {device?.Id}", nameof(UpdateDeviceAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Updating device: {device?.Id}", nameof(UpdateDeviceAsync));
 
             try
             {
-                if (device == null)
-                {
-                    throw new ArgumentNullException(nameof(device));
-                }
+                Argument.RequireNotNull(device, nameof(device));
 
                 if (string.IsNullOrWhiteSpace(device.ETag) && !forceUpdate)
                 {
@@ -258,53 +237,50 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(UpdateDeviceAsync)} threw an exception: {ex}", nameof(UpdateDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(UpdateDeviceAsync)} threw an exception: {ex}", nameof(UpdateDeviceAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Updating device: {device?.Id}", nameof(UpdateDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Updating device: {device?.Id}", nameof(UpdateDeviceAsync));
             }
         }
 
         /// <summary>
-        /// Remove the device identity with the provided Id from your IoT hub's registry.
+        /// Delete the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
-        /// <param name="deviceId">The Id of the device identity to be removed.</param>
+        /// <param name="deviceId">The Id of the device identity to be deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public virtual async Task RemoveDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentException(nameof(deviceId));
-            }
+            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
 
             var device = new Device(deviceId);
             device.ETag = HttpMessageHelper2.ETagForce;
-            await RemoveDeviceAsync(device, cancellationToken);
+            await DeleteDeviceAsync(device, cancellationToken);
         }
 
         /// <summary>
-        /// Remove the device identity with the provided Id from your IoT hub's registry.
+        /// Delete the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
         /// <param name="device">
-        /// The device identity to remove from your IoT hub's registry. If the provided device's ETag
+        /// The device identity to delete from your IoT hub's registry. If the provided device's ETag
         /// is out of date, this operation will throw a <see cref="PreconditionFailedException"/>
         /// An up-to-date ETag can be retrieved using <see cref="GetDeviceAsync(string, CancellationToken)"/>.
         /// To force the operation to execute regardless of ETag, set the device identity's ETag to "*" or
-        /// use <see cref="RemoveDeviceAsync(string, CancellationToken)"/>.
+        /// use <see cref="DeleteDeviceAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public virtual async Task RemoveDeviceAsync(Device device, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteDeviceAsync(Device device, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Removing device: {device?.Id}", nameof(RemoveDeviceAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Deleting device: {device?.Id}", nameof(DeleteDeviceAsync));
 
             try
             {
-                if (device == null)
-                {
-                    throw new ArgumentNullException(nameof(device));
-                }
+                Argument.RequireNotNull(device, nameof(device));
 
                 if (device.ETag == null)
                 {
@@ -318,12 +294,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(RemoveDeviceAsync)} threw an exception: {ex}", nameof(RemoveDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(DeleteDeviceAsync)} threw an exception: {ex}", nameof(DeleteDeviceAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Removing device: {device?.Id}", nameof(RemoveDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Deleting device: {device?.Id}", nameof(DeleteDeviceAsync));
             }
         }
 
@@ -335,14 +313,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The registered module with the generated keys and ETags.</returns>
         public virtual async Task<Module> AddModuleAsync(Module module, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddModuleAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddModuleAsync));
 
             try
             {
-                if (module == null)
-                {
-                    throw new ArgumentNullException(nameof(module));
-                }
+                Argument.RequireNotNull(module, nameof(module));
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -351,12 +327,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(AddModuleAsync)} threw an exception: {ex}", nameof(AddModuleAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(AddModuleAsync)} threw an exception: {ex}", nameof(AddModuleAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddModuleAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddModuleAsync));
             }
         }
 
@@ -369,19 +347,13 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved module identity.</returns>
         public virtual async Task<Module> GetModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetModuleAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetModuleAsync));
 
             try
             {
-                if (string.IsNullOrEmpty(deviceId))
-                {
-                    throw new ArgumentException(nameof(deviceId));
-                }
-
-                if (string.IsNullOrEmpty(moduleId))
-                {
-                    throw new ArgumentException(nameof(moduleId));
-                }
+                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -390,12 +362,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetModuleAsync)} threw an exception: {ex}", nameof(GetModuleAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetModuleAsync)} threw an exception: {ex}", nameof(GetModuleAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetModuleAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetModuleAsync));
             }
         }
 
@@ -424,14 +398,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The newly updated device identity including its new ETag.</returns>
         public virtual async Task<Module> UpdateModuleAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateModuleAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateModuleAsync));
 
             try
             {
-                if (module == null)
-                {
-                    throw new ArgumentNullException(nameof(module));
-                }
+                Argument.RequireNotNull(module, nameof(module));
 
                 if (string.IsNullOrWhiteSpace(module.ETag) && !forceUpdate)
                 {
@@ -446,60 +418,52 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(UpdateModuleAsync)} threw an exception: {ex}", nameof(UpdateModuleAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(UpdateModuleAsync)} threw an exception: {ex}", nameof(UpdateModuleAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateModuleAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateModuleAsync));
             }
         }
 
         /// <summary>
-        /// Remove the module identity with the provided Id from your device with
-        /// the provided Id from IoT hub's registry.
+        /// Delete the module identity with the provided Id from your device with the provided Id from IoT hub's registry.
         /// </summary>
-        /// <param name="deviceId">The Id of the device identity that contains the module to be removed.</param>
-        /// <param name="moduleId">The Id of the module identity to be removed.</param>
+        /// <param name="deviceId">The Id of the device identity that contains the module to be deleted.</param>
+        /// <param name="moduleId">The Id of the module identity to be deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public virtual async Task RemoveModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentException(nameof(deviceId));
-            }
-
-            if (string.IsNullOrEmpty(moduleId))
-            {
-                throw new ArgumentException(nameof(moduleId));
-            }
+            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+            Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
 
             var module = new Module(deviceId, moduleId);
             module.ETag = HttpMessageHelper2.ETagForce;
-            await RemoveModuleAsync(module, cancellationToken);
+            await DeleteModuleAsync(module, cancellationToken);
         }
 
         /// <summary>
-        /// Remove the device identity with the provided Id from your IoT hub's registry.
+        /// Delete the device identity with the provided Id from your IoT hub's registry.
         /// </summary>
         /// <param name="module">
-        /// The module identity to remove from your IoT hub's registry. If the provided module's ETag
+        /// The module identity to delete from your IoT hub's registry. If the provided module's ETag
         /// is out of date, this operation will throw a <see cref="PreconditionFailedException"/>
         /// An up-to-date ETag can be retrieved using <see cref="GetModuleAsync(string, string, CancellationToken)"/>.
         /// To force the operation to execute regardless of ETag, set the module identity's ETag to "*" or
-        /// use <see cref="RemoveModuleAsync(string, string, CancellationToken)"/>.
+        /// use <see cref="DeleteModuleAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public virtual async Task RemoveModuleAsync(Module module, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteModuleAsync(Module module, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Removing module: {module?.Id} from device: {module?.DeviceId}", nameof(RemoveDeviceAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Deleting module: {module?.Id} from device: {module?.DeviceId}", nameof(DeleteDeviceAsync));
 
             try
             {
-                if (module == null)
-                {
-                    throw new ArgumentNullException(nameof(module));
-                }
+                Argument.RequireNotNull(module, nameof(module));
 
                 if (module.ETag == null)
                 {
@@ -513,12 +477,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(RemoveDeviceAsync)} threw an exception: {ex}", nameof(RemoveDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(DeleteDeviceAsync)} threw an exception: {ex}", nameof(DeleteDeviceAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Removing module: {module?.Id} from device: {module?.DeviceId}", nameof(RemoveDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Deleting module: {module?.Id} from device: {module?.DeviceId}", nameof(DeleteDeviceAsync));
             }
         }
 
@@ -530,14 +496,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The modules that are registered on the specified device.</returns>
         public virtual async Task<IEnumerable<Module>> GetModulesOnDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting modules on device: {deviceId}", nameof(GetModulesOnDeviceAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting modules on device: {deviceId}", nameof(GetModulesOnDeviceAsync));
 
             try
             {
-                if (string.IsNullOrEmpty(deviceId))
-                {
-                    throw new ArgumentException(nameof(deviceId));
-                }
+                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -546,12 +510,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetModulesOnDeviceAsync)} threw an exception: {ex}", nameof(GetModulesOnDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetModulesOnDeviceAsync)} threw an exception: {ex}", nameof(GetModulesOnDeviceAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting modules on device: {deviceId}", nameof(GetModulesOnDeviceAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting modules on device: {deviceId}", nameof(GetModulesOnDeviceAsync));
             }
         }
 
@@ -567,7 +533,8 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> AddDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
 
             try
             {
@@ -576,12 +543,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(AddDevicesAsync)} threw an exception: {ex}", nameof(AddDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(AddDevicesAsync)} threw an exception: {ex}", nameof(AddDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Adding {devices?.Count()} devices", nameof(AddDevicesAsync));
             }
         }
 
@@ -609,7 +578,8 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> UpdateDevicesAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
 
             try
             {
@@ -619,55 +589,60 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(UpdateDevicesAsync)} threw an exception: {ex}", nameof(UpdateDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(UpdateDevicesAsync)} threw an exception: {ex}", nameof(UpdateDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateDevicesAsync));
             }
         }
 
         /// <summary>
-        /// Forceably remove up to 100 device identities from your IoT hub's registry in bulk.
+        /// Forceably delete up to 100 device identities from your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices">The device identities to remove from your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="devices">The device identities to delete from your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> RemoveDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> DeleteDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
-            return await RemoveDevicesAsync(devices, false, cancellationToken);
+            return await DeleteDevicesAsync(devices, false, cancellationToken);
         }
 
         /// <summary>
-        /// Remove up to 100 device identities from your IoT hub's registry in bulk.
+        /// Delete up to 100 device identities from your IoT hub's registry in bulk.
         /// </summary>
-        /// <param name="devices">The device identities to remove from your IoT hub's registry. May not exceed 100 devices.</param>
-        /// <param name="forceRemove">
-        /// If true, device identities will be removed even if they have an out-of-date ETag. If false,
-        /// only the devices that have an up-to-date ETag will be removed. An up-to-date ETag can be retrieved
+        /// <param name="devices">The device identities to delete from your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="forceDelete">
+        /// If true, device identities will be deleted even if they have an out-of-date ETag. If false,
+        /// only the devices that have an up-to-date ETag will be deleted. An up-to-date ETag can be retrieved
         /// using <see cref="GetDeviceAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> RemoveDevicesAsync(IEnumerable<Device> devices, bool forceRemove, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> DeleteDevicesAsync(IEnumerable<Device> devices, bool forceDelete, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Deleting devices : count: {devices?.Count()} - Force delete: {forceDelete}", nameof(DeleteDevicesAsync));
 
             try
             {
-                ImportMode importMode = forceRemove ? ImportMode.Delete : ImportMode.DeleteIfMatchETag;
+                ImportMode importMode = forceDelete ? ImportMode.Delete : ImportMode.DeleteIfMatchETag;
                 IEnumerable<ExportImportDevice> exportImportDevices = GenerateExportImportDeviceListForBulkOperations(devices, importMode);
                 return await BulkDeviceOperationAsync(exportImportDevices, cancellationToken);
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(RemoveDevicesAsync)} threw an exception: {ex}", nameof(RemoveDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(DeleteDevicesAsync)} threw an exception: {ex}", nameof(DeleteDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Removing devices : count: {devices?.Count()} - Force remove: {forceRemove}", nameof(RemoveDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Deleting devices : count: {devices?.Count()} - Force delete: {forceDelete}", nameof(DeleteDevicesAsync));
             }
         }
 
@@ -675,16 +650,17 @@ namespace Microsoft.Azure.Devices
         /// Add a device identity to your IoT hub's registry with an initial twin state.
         /// </summary>
         /// <remarks>
-        /// This API uses the same underlying service API as the bulk add/update/remove APIs defined in
+        /// This API uses the same underlying service API as the bulk add/update/delete APIs defined in
         /// this client.
         /// </remarks>
         /// <param name="device">The device identity to register.</param>
         /// <param name="twin">The initial twin state for the device.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The registered device with the generated keys and ETags.</returns>
+        /// <returns>The result of the bulk operation.</returns>
         public virtual async Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Adding device with twin: {device?.Id}", nameof(AddDeviceWithTwinAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Adding device with twin: {device?.Id}", nameof(AddDeviceWithTwinAsync));
 
             try
             {
@@ -702,17 +678,18 @@ namespace Microsoft.Azure.Devices
 
                 exportImportDeviceList.Add(exportImportDevice);
 
-                //TODO why return a bulk operation result here? Can't we abstract that a bit from the user?
                 return await BulkDeviceOperationAsync(exportImportDeviceList, cancellationToken);
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(AddDeviceWithTwinAsync)} threw an exception: {ex}", nameof(AddDeviceWithTwinAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(AddDeviceWithTwinAsync)} threw an exception: {ex}", nameof(AddDeviceWithTwinAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Adding device with twin: {device?.Id}", nameof(AddDeviceWithTwinAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Adding device with twin: {device?.Id}", nameof(AddDeviceWithTwinAsync));
             }
         }
 
@@ -724,7 +701,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Exporting registry", nameof(ExportRegistryAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Exporting registry", nameof(ExportRegistryAsync));
             try
             {
                 var payload = new ExportImportRequest
@@ -739,12 +717,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(ExportRegistryAsync)} threw an exception: {ex}", nameof(ExportRegistryAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ExportRegistryAsync)} threw an exception: {ex}", nameof(ExportRegistryAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Exporting registry", nameof(ExportRegistryAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Exporting registry", nameof(ExportRegistryAsync));
             }
         }
 
@@ -756,7 +736,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Importing registry", nameof(ImportRegistryAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Importing registry", nameof(ImportRegistryAsync));
 
             try
             {
@@ -772,12 +753,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(ImportRegistryAsync)} threw an exception: {ex}", nameof(ImportRegistryAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ImportRegistryAsync)} threw an exception: {ex}", nameof(ImportRegistryAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Importing registry", nameof(ImportRegistryAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Importing registry", nameof(ImportRegistryAsync));
             }
         }
 
@@ -826,12 +809,10 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ExportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
-            if (jobParameters == null)
-            {
-                throw new ArgumentNullException(nameof(jobParameters));
-            }
+            Argument.RequireNotNull(jobParameters, nameof(jobParameters));
 
-            Logging.Enter(this, $"Export Job running with {jobParameters}", nameof(ExportDevicesAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Export Job running with {jobParameters}", nameof(ExportDevicesAsync));
 
             try
             {
@@ -840,12 +821,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(ExportDevicesAsync)} threw an exception: {ex}", nameof(ExportDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ExportDevicesAsync)} threw an exception: {ex}", nameof(ExportDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Export Job running with {jobParameters}", nameof(ExportDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Export Job running with {jobParameters}", nameof(ExportDevicesAsync));
             }
         }
 
@@ -894,12 +877,10 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the newly created job.</returns>
         public virtual Task<JobProperties> ImportDevicesAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
-            if (jobParameters == null)
-            {
-                throw new ArgumentNullException(nameof(jobParameters));
-            }
+            Argument.RequireNotNull(jobParameters, nameof(jobParameters));
 
-            Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
             try
             {
                 jobParameters.Type = JobType.ImportDevices;
@@ -907,12 +888,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(ExportDevicesAsync)} threw an exception: {ex}", nameof(ImportDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ExportDevicesAsync)} threw an exception: {ex}", nameof(ImportDevicesAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Import Job running with {jobParameters}", nameof(ImportDevicesAsync));
             }
         }
 
@@ -924,9 +907,13 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the job specified by the provided jobId.</returns>
         public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+
             try
             {
+                Argument.RequireNotNull(jobId, nameof(jobId));
+
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -934,12 +921,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
             }
         }
 
@@ -950,7 +939,9 @@ namespace Microsoft.Azure.Devices
         /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
         public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting job", nameof(GetJobsAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting job", nameof(GetJobsAsync));
+
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
@@ -960,12 +951,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting job", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting job", nameof(GetJobsAsync));
             }
         }
 
@@ -976,23 +969,28 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
+
             try
             {
+                Argument.RequireNotNull(jobId, nameof(jobId));
+
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
                 HttpMessageHelper2.InsertEtag(request, jobId);
-
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
             }
         }
 
@@ -1001,9 +999,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registry statistics for you Iot hub.</returns>
-        public virtual async Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken)
+        public virtual async Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
 
             try
             {
@@ -1014,12 +1013,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetRegistryStatisticsAsync)} threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetRegistryStatisticsAsync)} threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
             }
         }
 
@@ -1080,23 +1081,12 @@ namespace Microsoft.Azure.Devices
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
         {
-            if (devices == null)
-            {
-                throw new ArgumentNullException(nameof(devices));
-            }
-
-            if (!devices.Any())
-            {
-                throw new ArgumentException($"Parameter {nameof(devices)} cannot be empty.");
-            }
+            Argument.RequireNotNullOrEmpty(devices, nameof(devices));
 
             var exportImportDeviceList = new List<ExportImportDevice>(devices.Count());
             foreach (Device device in devices)
             {
-                if (device == null)
-                {
-                    throw new ArgumentNullException("One or more devices was null");
-                }
+                Argument.RequireNotNull(device, nameof(device));
 
                 switch (importMode)
                 {
@@ -1142,14 +1132,11 @@ namespace Microsoft.Azure.Devices
 
         private async Task<BulkRegistryOperationResult> BulkDeviceOperationAsync(IEnumerable<ExportImportDevice> devices, CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
+
             try
             {
-                if (devices == null)
-                {
-                    throw new ArgumentNullException(nameof(devices));
-                }
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -1157,12 +1144,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(BulkDeviceOperationAsync)} threw an exception: {ex}", nameof(BulkDeviceOperationAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(BulkDeviceOperationAsync)} threw an exception: {ex}", nameof(BulkDeviceOperationAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
             }
         }
 

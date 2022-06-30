@@ -14,6 +14,14 @@ namespace Microsoft.Azure.Devices
     public class Device : IETagHolder
     {
         /// <summary>
+        /// Creates a new instance of this class. For serialization purposes only.
+        /// </summary>
+        internal Device()
+        {
+            Id = "";
+        }
+
+        /// <summary>
         /// Creates a new instance of <see cref="Device"/>
         /// </summary>
         /// <param name="id">Device Id</param>

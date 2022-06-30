@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
-        /// fixed by removing the existing module from the device first with <see cref="RegistryClient.RemoveModuleAsync(Module, System.Threading.CancellationToken)"/>. This error code is only returned from
+        /// fixed by removing the existing module from the device first with <see cref="RegistryClient.DeleteModuleAsync(Module, System.Threading.CancellationToken)"/>. This error code is only returned from
         /// methods like <see cref="RegistryClient.AddModuleAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,

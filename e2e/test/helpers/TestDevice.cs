@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public async Task RemoveDeviceAsync()
         {
             using var rc = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
-            await rc.RemoveDeviceAsync(Id).ConfigureAwait(false);
+            await rc.DeleteDeviceAsync(Id).ConfigureAwait(false);
         }
 
         public void Dispose()
