@@ -52,13 +52,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// The registration id.
+        /// This id is used to uniquely identify a device registration of an enrollment.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId { get; internal set; }
 
         /// <summary>
-        /// The time when the device originally registered with the service.
+        /// Registration create date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc")]
         public DateTime? CreatedDateTimeUtc { get; internal set; }
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string ErrorMessage { get; internal set; }
 
         /// <summary>
-        /// The Etag.
+        /// The entity tag associated with the resource.
         /// </summary>
         [JsonProperty(PropertyName = "etag")]
         public string Etag { get; internal set; }

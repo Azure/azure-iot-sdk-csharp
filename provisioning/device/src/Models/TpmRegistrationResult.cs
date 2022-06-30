@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// The TPM authentication key.
+        /// The encrypted authentication key.
         /// </summary>
         [JsonProperty(PropertyName = "authenticationKey")]
         public string AuthenticationKey { get; }
