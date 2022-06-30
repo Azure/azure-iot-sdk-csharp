@@ -78,4 +78,5 @@
       <CustomToolNamespace>Microsoft.Azure.Devices</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
+
 </Project>

@@ -4,7 +4,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Authentication;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -85,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _authentication);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
+            var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
             {
                 ProductInfo = ProductInfo,
             };

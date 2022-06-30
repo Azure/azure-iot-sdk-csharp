@@ -6,9 +6,8 @@ using System.Net;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Represents the interface for a Provisioning Transport Handler.
@@ -79,7 +78,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public virtual Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
             return _innerHandler.RegisterAsync(message, cancellationToken);
@@ -92,7 +91,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
         /// <returns>The registration result.</returns>
         public virtual Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterRequest message,
             TimeSpan timeout)
         {
             return _innerHandler.RegisterAsync(message, timeout);
