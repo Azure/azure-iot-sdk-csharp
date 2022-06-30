@@ -1,10 +1,7 @@
 AssemblyPath, Version
-iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 2.0.0-preview
-iothub\service\src\Microsoft.Azure.Devices.csproj, 2.0.0-preview
-authentication\src\Microsoft.Azure.Devices.Authentication.csproj, 2.0.0-preview
-provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 2.0.0-preview
-provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 2.0.0-preview
-provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj, 2.0.0-preview
-provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj, 2.0.0-preview
-provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj, 2.0.0-preview
-security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 2.0.0-preview
+iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 2.0.0-preview001
+iothub\service\src\Microsoft.Azure.Devices.csproj, 2.0.0-preview001
+authentication\src\Microsoft.Azure.Devices.Authentication.csproj, 2.0.0-preview001
+provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 2.0.0-preview001
+provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 2.0.0-preview001
+security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 2.0.0-preview001

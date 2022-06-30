@@ -8,8 +8,6 @@ The NuGet packages provide support for the following .NET versions:
 - .NET 5.0
 - .NET Standard 2.1
 - .NET Standard 2.0
-- .NET Framework 4.7.2 (IoT Hub SDKs only)
-- .NET Framework 4.5.1 (IoT Hub SDKs only)
 
 This SDK _may_ work with newer versions of .NET, but there are no guarantees that they will _always_ work for those until we officially add support for them nor are there guarantees that we will fix bugs that are only present on those versions.
 
@@ -26,7 +24,6 @@ Nightly test platform details:
 - .NET Core 3.1
 - .NET Core 2.1.18
 - .NET Framework 4.7.2 (only IoT Hub SDKs tested)
-- .NET Framework 4.5.1 (only IoT Hub SDKs tested)
 
 
 Default locale: en_US, platform encoding: Cp1252
@@ -35,7 +32,7 @@ OS name: "windows server 2022", version: "10.0", arch: "amd64", family: "windows
 
 ## Ubuntu 20.04
 
-Note that, while we only directly test on Ubuntu 20.04, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/dotnet/core/install/linux). 
+Note that, while we only directly test on Ubuntu 20.04, we do generally support other [Linux distributions supported by .NET core](https://docs.microsoft.com/dotnet/core/install/linux).
 
 Nightly test platform details:
 
