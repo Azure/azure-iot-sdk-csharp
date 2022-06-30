@@ -25,6 +25,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </param>
         /// <param name='idScope'>
         /// </param>
+        public static RegistrationOperationStatus OperationStatusLookup(
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string operationId,
+            string idScope)
+        {
+            return operations.OperationStatusLookupAsync(registrationId, operationId, idScope).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Gets the registration operation status.
+        /// </summary>
+        /// <param name='operations'>
+        /// The operations group for this extension method.
+        /// </param>
+        /// <param name='registrationId'>
+        /// Registration ID.
+        /// </param>
+        /// <param name='operationId'>
+        /// Operation ID.
+        /// </param>
+        /// <param name='idScope'>
+        /// </param>
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
