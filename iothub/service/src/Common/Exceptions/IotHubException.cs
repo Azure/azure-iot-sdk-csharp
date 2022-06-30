@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
-    /// The exception thrown when the client receives an error while communicating with IoT Hub service.
+    /// The exception thrown when the client receives an error while communicating with IoT hub service.
     /// </summary>
     [Serializable]
     public class IotHubException : Exception
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// The <see cref="ErrorCode"/> associated with the exception.
+        /// The error code associated with the exception.
         /// </summary>
         public ErrorCode Code { get; private set; }
 

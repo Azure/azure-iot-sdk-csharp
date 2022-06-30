@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netcoreapp3.1;netcoreapp2.1.18;net472;net451</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netcoreapp3.1;netcoreapp2.1.18</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.18;net472;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.18</TargetFrameworks>
     <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
-    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.18'">False</IsTestProject>
+    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.18'">False</IsTestProject>
 
+    <LangVersion>8.0</LangVersion>
     <IsPackable>false</IsPackable>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
 
     <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>Authentication/HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Include="HsmAuthentication\**" />
+    <Compile Include="Authentication\HsmAuthentication\**" />
     <Compile Remove="ClientWebSocketTransportTests.cs" />
     <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
@@ -38,7 +38,11 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
     <PackageReference Include="NSubstitute" Version="3.1.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <ProjectReference Include="..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 

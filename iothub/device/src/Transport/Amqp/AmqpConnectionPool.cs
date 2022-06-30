@@ -31,9 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, deviceIdentity, nameof(CreateAmqpUnit));
-            }
 
             if (deviceIdentity.IsPooling())
             {
@@ -45,9 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
 
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
-                }
 
                 return amqpConnectionHolder.CreateAmqpUnit(
                     deviceIdentity,
@@ -60,9 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
-                }
 
                 return new AmqpConnectionHolder(deviceIdentity)
                     .CreateAmqpUnit(
@@ -78,9 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, amqpUnit, nameof(RemoveAmqpUnit));
-            }
 
             IDeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
             if (deviceIdentity.IsPooling())
@@ -104,9 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
-            }
         }
 
         private AmqpConnectionHolder[] ResolveConnectionGroup(IDeviceIdentity deviceIdentity)
@@ -137,9 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IDeviceIdentity deviceIdentity)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Enter(this, deviceIdentity, nameof(ResolveConnectionByHashing));
-            }
 
             int index = GetDeviceIdentityIndex(deviceIdentity, pool.Length);
 
@@ -149,9 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-            {
                 Logging.Exit(this, deviceIdentity, nameof(ResolveConnectionByHashing));
-            }
 
             return pool[index];
         }

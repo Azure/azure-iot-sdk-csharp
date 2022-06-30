@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// A class used as a model to deserialize error response object received from IoT Hub
+    /// A class used as a model to deserialize error response object received from IoT hub
     /// </summary>
     internal class IoTHubExceptionResult
     {

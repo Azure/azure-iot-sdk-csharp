@@ -16,18 +16,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     /// <example>
     /// The following JSON is an example of a single error operation from a Bulk operation
-    /// <code>
+    /// <c>
     /// {
     ///      "registrationId":"validRegistrationId1",
     ///      "errorCode":200,
     ///      "errorStatus":"Succeeded"
     /// }
-    /// </code>
+    /// </c>
     /// </example>
     public class BulkEnrollmentOperationError
     {
-        /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_002: [The BulkEnrollmentOperationError shall store the provided information.] */
-
         /// <summary>
         /// Registration Id.
         /// </summary>
@@ -36,22 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId", Required = Required.Always)]
-        public string RegistrationId
-        {
-            get
-            {
-                return _registrationId;
-            }
-
-            private set
-            {
-                /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_001: [The BulkEnrollmentOperationError shall throws JsonSerializationException if the
-                                                    provided registrationId is null, empty, or invalid.] */
-                _registrationId = value;
-            }
-        }
-
-        private string _registrationId;
+        public string RegistrationId { get; private set; }
 
         /// <summary>
         /// Error code.

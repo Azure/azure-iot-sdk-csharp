@@ -11,7 +11,7 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Common.Security
 {
     /// <summary>
-    /// A shared access signature, which can be used for authorization to an IoT Hub.
+    /// A shared access signature, which can be used for authorization to an IoT hub.
     /// </summary>
     internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         /// <summary>
         /// Parses a shared access signature string representation into a <see cref="SharedAccessSignature"/>.
         /// </summary>
-        /// <param name="iotHubName">The IoT Hub name.</param>
+        /// <param name="iotHubName">The IoT hub name.</param>
         /// <param name="rawToken">The string representation of the SAS token to parse.</param>
         /// <returns>The <see cref="SharedAccessSignature"/> instance that represents the passed in raw token.</returns>
         public static SharedAccessSignature Parse(string iotHubName, string rawToken)

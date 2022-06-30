@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Common
 {
-    using System;
-
     // An AsyncResult that completes as soon as it is instantiated.
     [Serializable]
-    class CompletedAsyncResult : AsyncResult
+    internal class CompletedAsyncResult : AsyncResult
     {
         public CompletedAsyncResult(AsyncCallback callback, object state)
             : base(callback, state)
@@ -30,14 +30,14 @@ namespace Microsoft.Azure.Devices.Common
     }
 
     [Serializable]
-    class CompletedAsyncResult<T> : AsyncResult
+    internal class CompletedAsyncResult<T> : AsyncResult
     {
-        T data;
+        private readonly T _data;
 
         public CompletedAsyncResult(T data, AsyncCallback callback, object state)
             : base(callback, state)
         {
-            this.data = data;
+            _data = data;
             Complete(true);
         }
 
@@ -46,21 +46,21 @@ namespace Microsoft.Azure.Devices.Common
         {
             Fx.AssertAndThrowFatal(result.IsCompleted, "CompletedAsyncResult<T> was not completed!");
             CompletedAsyncResult<T> completedResult = AsyncResult.End<CompletedAsyncResult<T>>(result);
-            return completedResult.data;
+            return completedResult._data;
         }
     }
 
     [Serializable]
-    class CompletedAsyncResult<TResult, TParameter> : AsyncResult
+    internal class CompletedAsyncResult<TResult, TParameter> : AsyncResult
     {
-        TResult resultData;
-        TParameter parameter;
+        private readonly TResult _resultData;
+        private readonly TParameter _parameter;
 
         public CompletedAsyncResult(TResult resultData, TParameter parameter, AsyncCallback callback, object state)
             : base(callback, state)
         {
-            this.resultData = resultData;
-            this.parameter = parameter;
+            _resultData = resultData;
+            _parameter = parameter;
             Complete(true);
         }
 
@@ -69,8 +69,8 @@ namespace Microsoft.Azure.Devices.Common
         {
             Fx.AssertAndThrowFatal(result.IsCompleted, "CompletedAsyncResult<T> was not completed!");
             CompletedAsyncResult<TResult, TParameter> completedResult = AsyncResult.End<CompletedAsyncResult<TResult, TParameter>>(result);
-            parameter = completedResult.parameter;
-            return completedResult.resultData;
+            parameter = completedResult._parameter;
+            return completedResult._resultData;
         }
     }
 }

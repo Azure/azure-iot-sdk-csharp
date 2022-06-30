@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public enum ProvisioningRegistrationSubstatusType
     {
         /// <summary>
-        /// Device has been assigned to an IoT hub for the first time
+        /// Device has been assigned to an IoT hub for the first time.
         /// </summary>
         InitialAssignment = 1,
 
@@ -23,6 +23,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Device has been assigned to a different IoT hub and its device data was populated from the initial state stored in the enrollment.
         /// Device data was removed from the previously assigned IoT hub.
         /// </summary>
-        DeviceDataReset = 3
+        DeviceDataReset = 3,
     }
 }

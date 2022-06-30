@@ -354,8 +354,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 WebSocketReceiveResult receiveResult = await _webSocket
-                .ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None)
-                .ConfigureAwait(false);
+                    .ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None)
+                    .ConfigureAwait(false);
                 if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
                     throw new ProtocolViolationException("Mqtt over WS message cannot be in text");

@@ -20,21 +20,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         }
 
         internal DeviceRegistrationResult(
-            TpmRegistrationResult tpm = default(TpmRegistrationResult),
-            X509RegistrationResult x509 = default(X509RegistrationResult),
-            SymmetricKeyRegistrationResult symmetricKey = default(SymmetricKeyRegistrationResult),
-            string registrationId = default(string),
-            DateTime? createdDateTimeUtc = default(DateTime?),
-            string assignedHub = default(string),
-            string deviceId = default(string),
-            string status = default(string),
-            string substatus = default(string),
-            string generationId = default(string),
-            DateTime? lastUpdatedDateTimeUtc = default(DateTime?),
-            int? errorCode = default(int?),
-            string errorMessage = default(string),
-            string etag = default(string),
-            JRaw payload = default(JRaw))
+            TpmRegistrationResult tpm = default,
+            X509RegistrationResult x509 = default,
+            SymmetricKeyRegistrationResult symmetricKey = default,
+            string registrationId = default,
+            DateTime? createdDateTimeUtc = default,
+            string assignedHub = default,
+            string deviceId = default,
+            string status = default,
+            string substatus = default,
+            string generationId = default,
+            DateTime? lastUpdatedDateTimeUtc = default,
+            int? errorCode = default,
+            string errorMessage = default,
+            string etag = default,
+            JRaw payload = default)
         {
             Tpm = tpm;
             X509 = x509;
@@ -96,8 +96,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets possible values include: 'unassigned', 'assigning',
-        /// 'assigned', 'failed', 'disabled'
+        /// Gets or sets possible values include:
+        /// 'unassigned', 'assigning', 'assigned', 'failed', 'disabled'
         /// </summary>
         [JsonProperty(PropertyName = "status")]
         public string Status { get; set; }

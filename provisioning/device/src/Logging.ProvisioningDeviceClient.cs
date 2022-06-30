@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Diagnostics.Tracing;
 
 namespace Microsoft.Azure.Devices.Shared
@@ -14,10 +13,10 @@ namespace Microsoft.Azure.Devices.Shared
 
         [NonEvent]
         public static void RegisterAsync(
-            object thisOrContextObject, 
-            string globalDeviceEndpoint, 
-            string idScope, 
-            object transport, 
+            object thisOrContextObject,
+            string globalDeviceEndpoint,
+            string idScope,
+            object transport,
             object security)
         {
             DebugValidateArg(thisOrContextObject);
@@ -27,8 +26,8 @@ namespace Microsoft.Azure.Devices.Shared
             if (IsEnabled)
             {
                 Log.RegisterAsync(
-                IdOf(thisOrContextObject), 
-                globalDeviceEndpoint, 
+                IdOf(thisOrContextObject),
+                globalDeviceEndpoint,
                 idScope,
                 IdOf(transport),
                 IdOf(security));
@@ -37,10 +36,10 @@ namespace Microsoft.Azure.Devices.Shared
 
         [Event(RegisterAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
         private void RegisterAsync(
-            string thisOrContextObject, 
-            string globalDeviceEndpoint, 
-            string idScope, 
-            string transport, 
+            string thisOrContextObject,
+            string globalDeviceEndpoint,
+            string idScope,
+            string transport,
             string security) =>
             WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, transport, security);
     }

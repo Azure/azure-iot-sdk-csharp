@@ -14,14 +14,18 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessKey))
             {
-                return new ServiceAuthenticationWithSharedAccessPolicyToken(iotHubConnectionStringBuilder.SharedAccessKeyName, iotHubConnectionStringBuilder.SharedAccessSignature);
+                return new ServiceAuthenticationWithSharedAccessPolicyToken(
+                    iotHubConnectionStringBuilder.SharedAccessKeyName,
+                    iotHubConnectionStringBuilder.SharedAccessSignature);
             }
             else if (string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessSignature))
             {
-                return new ServiceAuthenticationWithSharedAccessPolicyKey(iotHubConnectionStringBuilder.SharedAccessKeyName, iotHubConnectionStringBuilder.SharedAccessKey);
+                return new ServiceAuthenticationWithSharedAccessPolicyKey(
+                    iotHubConnectionStringBuilder.SharedAccessKeyName,
+                    iotHubConnectionStringBuilder.SharedAccessKey);
             }
 
-            throw new InvalidOperationException("Unsupported Authentication Method {0}".FormatInvariant(iotHubConnectionStringBuilder));
+            throw new InvalidOperationException($"Unsupported Authentication Method {iotHubConnectionStringBuilder}");
         }
 
         /// <summary>

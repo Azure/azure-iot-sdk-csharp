@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.16.1</Version>
+    <Version>1.16.2</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client AMQP Transport</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -93,7 +93,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.8" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

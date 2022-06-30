@@ -30,5 +30,4 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         [JsonProperty(PropertyName = "keyName")]
         public string KeyName { get; set; } = "registration";
     }
-
 }

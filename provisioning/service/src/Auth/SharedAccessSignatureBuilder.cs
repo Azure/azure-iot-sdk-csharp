@@ -23,10 +23,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string Key
         {
-            get
-            {
-                return _key;
-            }
+            get => _key;
 
             set
             {
@@ -62,16 +59,24 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
 
             var buffer = new StringBuilder();
-            buffer.AppendFormat(CultureInfo.InvariantCulture, "{0} {1}={2}&{3}={4}&{5}={6}",
+            buffer.AppendFormat(
+                CultureInfo.InvariantCulture,
+                "{0} {1}={2}&{3}={4}&{5}={6}",
                 SharedAccessSignatureConstants.SharedAccessSignature,
-                SharedAccessSignatureConstants.AudienceFieldName, audience,
-                SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
-                SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiresOn));
+                SharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                SharedAccessSignatureConstants.SignatureFieldName,
+                WebUtility.UrlEncode(signature),
+                SharedAccessSignatureConstants.ExpiryFieldName,
+                WebUtility.UrlEncode(expiresOn));
 
             if (!string.IsNullOrEmpty(keyName))
             {
-                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
-                    SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));
+                buffer.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "&{0}={1}",
+                    SharedAccessSignatureConstants.KeyNameFieldName,
+                    WebUtility.UrlEncode(keyName));
             }
 
             return buffer.ToString();
@@ -87,10 +92,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         private static string Sign(string requestString, string key)
         {
-            using (var hmac = new HMACSHA256(Convert.FromBase64String(key)))
-            {
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
-            }
+            using var hmac = new HMACSHA256(Convert.FromBase64String(key));
+            return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
         }
     }
 }

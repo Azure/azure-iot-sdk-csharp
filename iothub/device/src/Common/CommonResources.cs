@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class CommonResources
-        : Microsoft.Azure.Devices.Client.Common.Resources
+        : Common.Resources
     {
         internal static string GetString(string value, params object[] args)
         {
@@ -15,14 +15,15 @@ namespace Microsoft.Azure.Devices.Client
             {
                 for (int i = 0; i < args.Length; i++)
                 {
-                    string text = args[i] as string;
-                    if (text != null && text.Length > 1024)
+                    if (args[i] is string text
+                        && text != null
+                        && text.Length > 1024)
                     {
                         args[i] = text.Substring(0, 1021) + "...";
                     }
                 }
 
-                return string.Format(CommonResources.Culture, value, args);
+                return string.Format(Culture, value, args);
             }
 
             return value;

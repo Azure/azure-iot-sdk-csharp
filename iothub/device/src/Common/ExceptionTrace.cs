@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
                 exception.GetType(),
                 exception.ToStringSlim()));
 #endif
-            this.BreakOnException(exception);
+            BreakOnException(exception);
         }
 
 #if NET451
@@ -103,50 +103,19 @@ namespace Microsoft.Azure.Devices.Client
                 // Only trace if this is the first time an exception is thrown by this ExceptionTrace/EventSource.
                 exception.Data[_eventSourceName] = _eventSourceName;
 
+#if NET451
                 switch (level)
                 {
                     case TraceEventType.Critical:
                     case TraceEventType.Error:
-#if NET451
-                        Trace.TraceError("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
-#endif
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Error,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionError(activity, GetDetailsForThrownException(exception));
-                        ////}
-
+                        Trace.TraceError($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
                         break;
 
                     case TraceEventType.Warning:
-#if NET451
-                        Trace.TraceWarning("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
-#endif
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Warning,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionWarning(activity, GetDetailsForThrownException(exception));
-                        ////}
-
-                        break;
-
-                    default:
-#if DEBUG
-                        ////if (MessagingClientEtwProvider.Provider.IsEnabled(
-                        ////        EventLevel.Verbose,
-                        ////        MessagingClientEventSource.Keywords.Client,
-                        ////        MessagingClientEventSource.Channels.DebugChannel))
-                        ////{
-                        ////    MessagingClientEtwProvider.Provider.ThrowingExceptionVerbose(activity, GetDetailsForThrownException(exception));
-                        ////}
-#endif
-
+                        Trace.TraceWarning($"An Exception is being thrown: {GetDetailsForThrownException(exception)}");
                         break;
                 }
+#endif
             }
 
             BreakOnException(exception);
@@ -158,14 +127,15 @@ namespace Microsoft.Azure.Devices.Client
             string details = e.GetType().ToString();
 
 #if NET451
-            const int MaxStackFrames = 10;
+            const int maxStackFrames = 10;
             // Include the current callstack (this ensures we see the Stack in case exception is not output when caught)
             var stackTrace = new StackTrace();
             string stackTraceString = stackTrace.ToString();
-            if (stackTrace.FrameCount > MaxStackFrames)
+
+            if (stackTrace.FrameCount > maxStackFrames)
             {
-                string[] frames = stackTraceString.Split(new[] { Environment.NewLine }, MaxStackFrames + 1, StringSplitOptions.RemoveEmptyEntries);
-                stackTraceString = string.Join(Environment.NewLine, frames, 0, MaxStackFrames) + "...";
+                string[] frames = stackTraceString.Split(new[] { Environment.NewLine }, maxStackFrames + 1, StringSplitOptions.RemoveEmptyEntries);
+                stackTraceString = string.Join(Environment.NewLine, frames, 0, maxStackFrames) + "...";
             }
 
             details += Environment.NewLine + stackTraceString;
