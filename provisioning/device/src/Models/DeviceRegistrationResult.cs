@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class DeviceRegistrationResult
     {
         /// <summary>
-        /// For serialization.
+        /// For deserialization.
         /// </summary>
         internal DeviceRegistrationResult()
         {
@@ -21,44 +21,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        public DeviceRegistrationResult(
-            string registrationId,
-            DateTime? createdDateTimeUtc,
-            string assignedHub,
-            string deviceId,
-            ProvisioningRegistrationStatusType status,
-            ProvisioningRegistrationSubstatusType substatus,
-            string generationId,
-            DateTime? lastUpdatedDateTimeUtc,
-            int errorCode,
-            string errorMessage,
-            string etag,
-            JRaw jsonPayload)
-        {
-            RegistrationId = registrationId;
-            CreatedDateTimeUtc = createdDateTimeUtc;
-            AssignedHub = assignedHub;
-            DeviceId = deviceId;
-            Status = status;
-            Substatus = substatus;
-            GenerationId = generationId;
-            LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
-            ErrorCode = errorCode;
-            ErrorMessage = errorMessage;
-            Etag = etag;
-            Payload = jsonPayload;
-        }
-
-        /// <summary>
-        /// The registration id.
+        /// This id is used to uniquely identify a device registration of an enrollment.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId { get; internal set; }
 
         /// <summary>
-        /// The time when the device originally registered with the service.
+        /// Registration create date time (in UTC).
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc")]
         public DateTime? CreatedDateTimeUtc { get; internal set; }
@@ -112,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public string ErrorMessage { get; internal set; }
 
         /// <summary>
-        /// The Etag.
+        /// The entity tag associated with the resource.
         /// </summary>
         [JsonProperty(PropertyName = "etag")]
         public string Etag { get; internal set; }
@@ -127,18 +96,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The registration result for TPM authentication.
         /// </summary>
         [JsonProperty(PropertyName = "tpm")]
-        internal TpmRegistrationResult Tpm { get; set; }
+        public TpmRegistrationResult Tpm { get; internal set; }
 
         /// <summary>
         /// The registration result for X.509 certificate authentication.
         /// </summary>
         [JsonProperty(PropertyName = "x509")]
-        internal X509RegistrationResult X509 { get; set; }
+        public X509RegistrationResult X509 { get; internal set; }
 
         /// <summary>
         /// The registration result for symmetric key authentication.
         /// </summary>
         [JsonProperty(PropertyName = "symmetricKey")]
-        internal SymmetricKeyRegistrationResult SymmetricKey { get; set; }
+        public SymmetricKeyRegistrationResult SymmetricKey { get; internal set; }
     }
 }

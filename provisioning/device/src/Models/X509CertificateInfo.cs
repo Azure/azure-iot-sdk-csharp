@@ -9,77 +9,61 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// X509 certificate info.
     /// </summary>
-    internal class X509CertificateInfo
+    public class X509CertificateInfo
     {
         /// <summary>
-        /// Initializes a new instance of the X509CertificateInfo class.
+        /// For deserialization.
         /// </summary>
-        public X509CertificateInfo(
-            string subjectName = default,
-            string sha1Thumbprint = default,
-            string sha256Thumbprint = default,
-            string issuerName = default,
-            DateTime? notBeforeUtc = default,
-            DateTime? notAfterUtc = default,
-            string serialNumber = default,
-            int? version = default)
+        internal X509CertificateInfo()
         {
-            SubjectName = subjectName;
-            Sha1Thumbprint = sha1Thumbprint;
-            Sha256Thumbprint = sha256Thumbprint;
-            IssuerName = issuerName;
-            NotBeforeUtc = notBeforeUtc;
-            NotAfterUtc = notAfterUtc;
-            SerialNumber = serialNumber;
-            Version = version;
         }
 
         /// <summary>
         /// The certificate subject name.
         /// </summary>
         [JsonProperty(PropertyName = "subjectName")]
-        public string SubjectName { get; }
+        public string SubjectName { get; internal set; }
 
         /// <summary>
         /// The certificate SHA1 thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "sha1Thumbprint")]
-        public string Sha1Thumbprint { get; }
+        public string Sha1Thumbprint { get; internal set; }
 
         /// <summary>
         /// The certificate SHA256 thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "sha256Thumbprint")]
-        public string Sha256Thumbprint { get; }
+        public string Sha256Thumbprint { get; internal set; }
 
         /// <summary>
         /// The certificate issuer name.
         /// </summary>
         [JsonProperty(PropertyName = "issuerName")]
-        public string IssuerName { get; }
+        public string IssuerName { get; internal set; }
 
         /// <summary>
         /// The certificate invalidity before date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notBeforeUtc")]
-        public DateTime? NotBeforeUtc { get; }
+        public DateTime? NotBeforeUtc { get; internal set; }
 
         /// <summary>
         /// The certificate invalidity after date in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "notAfterUtc")]
-        public DateTime? NotAfterUtc { get; }
+        public DateTime? NotAfterUtc { get; internal set; }
 
         /// <summary>
         /// The certificate serial number.
         /// </summary>
         [JsonProperty(PropertyName = "serialNumber")]
-        public string SerialNumber { get; }
+        public string SerialNumber { get; internal set; }
 
         /// <summary>
         /// The certficiate version.
         /// </summary>
         [JsonProperty(PropertyName = "version")]
-        public int? Version { get; }
+        public int? Version { get; internal set; }
     }
 }

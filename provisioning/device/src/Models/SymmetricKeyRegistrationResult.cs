@@ -1,13 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Symmetric Key registration result.
+    /// Registration result returned when using symmetric key attestation.
     /// </summary>
-    internal class SymmetricKeyRegistrationResult
+    public class SymmetricKeyRegistrationResult
     {
-        // this class has no implementation. does the service not send a payload?
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        internal SymmetricKeyRegistrationResult()
+        {
+        }
+
+        /// <summary>
+        /// The Id of the enrollment group.
+        /// </summary>
+        [JsonProperty(PropertyName = "enrollmentGroupId")]
+        public string EnrollmentGroupId { get; internal set; }
     }
 }
