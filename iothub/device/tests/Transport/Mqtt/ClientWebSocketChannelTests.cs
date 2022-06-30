@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Test.Mqtt
+namespace Microsoft.Azure.Devices.Client.Tests.Mqtt
 {
     using System;
     using System.Net;
@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
     using DotNetty.Handlers.Logging;
     using DotNetty.Transport.Channels;
     using Microsoft.Azure.Devices.Client.Tests;
-    using Microsoft.Azure.Devices.Client.Tests.Mqtt;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
