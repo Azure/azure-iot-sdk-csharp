@@ -47,5 +47,16 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Convention.PayloadSerializer.CreateWritablePropertyResponse(Value, statusCode, Version, description);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyValue"></param>
+        /// <returns></returns>
+        public bool TryGetValue<T>(out T propertyValue)
+        {
+            return ObjectConversionHelpers.TryCastOrConvert(Value, Convention, out propertyValue);
+        }
     }
 }

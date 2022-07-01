@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using Microsoft.Azure.Devices.Client.Convention;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -16,10 +17,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ClientProperties ToClientProperties(PayloadConvention payloadConvention)
         {
-            ClientPropertyCollection writablePropertyRequestCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Desired, payloadConvention);
+            WritableClientPropertyCollection writableClientPropertyCollection = new WritableClientPropertyCollection(Desired, payloadConvention);
             ClientPropertyCollection clientReportedPropertyCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Reported, payloadConvention);
 
-            return new ClientProperties(writablePropertyRequestCollection, clientReportedPropertyCollection);
+            return new ClientProperties(writableClientPropertyCollection, clientReportedPropertyCollection);
         }
     }
 }
