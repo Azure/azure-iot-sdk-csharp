@@ -111,40 +111,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             throw new NotImplementedException();
         }
 
-        public static bool operator ==(ClientWebSocketChannel left, ClientWebSocketChannel right)
-        {
-            return left is null ? right is null : left.Equals(right);
-        }
-
-        public static bool operator !=(ClientWebSocketChannel left, ClientWebSocketChannel right)
-        {
-            return !(left == right);
-        }
-
-        public static bool operator <(ClientWebSocketChannel left, ClientWebSocketChannel right)
-        {
-            return left is null
-                ? right is object
-                : left.CompareTo(right) < 0;
-        }
-
-        public static bool operator <=(ClientWebSocketChannel left, ClientWebSocketChannel right)
-        {
-            return left is null || left.CompareTo(right) <= 0;
-        }
-
-        public static bool operator >(ClientWebSocketChannel left, ClientWebSocketChannel right)
-        {
-            return left is object && left.CompareTo(right) > 0;
-        }
-
-        public static bool operator >=(ClientWebSocketChannel left, ClientWebSocketChannel right)
-        {
-            return left is null
-                ? right is null
-                : left.CompareTo(right) >= 0;
-        }
-
         protected override void DoBind(EndPoint localAddress)
         {
             throw new NotSupportedException("ClientWebSocketChannel does not support DoBind()");

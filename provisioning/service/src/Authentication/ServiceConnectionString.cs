@@ -58,18 +58,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string SharedAccessSignature { get; private set; }
 
-        public string GetUser()
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(SharedAccessKeyName);
-            stringBuilder.Append(UserSeparator);
-            stringBuilder.Append("sas.");
-            stringBuilder.Append("root.");
-            stringBuilder.Append(ServiceName);
-
-            return stringBuilder.ToString();
-        }
-
         public string GetPassword()
         {
             string password = string.IsNullOrWhiteSpace(SharedAccessSignature)

@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public override void InitializeServiceClient<T>(ServiceClient<T> client)
         {
             base.InitializeServiceClient(client);
-            
+
             var httpClientHandler = client.HttpMessageHandlers.FirstOrDefault((handler) => handler is HttpClientHandler) as HttpClientHandler;
 
             Debug.Assert(httpClientHandler != null);
