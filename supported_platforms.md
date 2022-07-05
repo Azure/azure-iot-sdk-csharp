@@ -22,7 +22,7 @@ Nightly test platform details:
 .NET versions tested on
 - .NET 5.0
 - .NET Core 3.1
-- .NET Core 2.1.18
+- .NET Core 2.1.30
 - .NET Framework 4.7.2 (only IoT Hub SDKs tested)
 
 
@@ -39,7 +39,7 @@ Nightly test platform details:
 .NET versions tested on:
 - .NET 5.0
 - .NET Core 3.1
-- .NET Core 2.1.18
+- .NET Core 2.1.30
 
 Default locale: en_US, platform encoding: UTF-8
 
