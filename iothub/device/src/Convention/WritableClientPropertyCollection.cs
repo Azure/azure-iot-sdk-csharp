@@ -71,6 +71,8 @@ namespace Microsoft.Azure.Devices.Client
 
             if (WritableClientProperties.TryGetValue(componentName, out object component))
             {
+                // The SDK constructed writable property collection is dictionary for root-level only properties. In case component-level properties
+                // are also present, it is then a multi-level nested dictionary.
                 if (component is IDictionary<string, object> componentPropertiesCollection)
                 {
                     return componentPropertiesCollection.ContainsKey(propertyName);
@@ -78,20 +80,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-
-            /*if (!string.IsNullOrEmpty(componentName) && WritableClientProperties.TryGetValue(componentName, out object component))
-            {
-            // ok
-                if (component is IDictionary<string, object> nestedDictionary)
-                {
-                    // ok
-                    return nestedDictionary.TryGetValue(propertyName, out object _);
-                }
-                // WHEN ????
-                return Convention.PayloadSerializer.TryGetNestedJsonObjectValue<object>(component, propertyName, out _);
-            }
-            // ok
-            return WritableClientProperties.TryGetValue(propertyName, out _);*/
         }
 
         /// <summary>
@@ -269,6 +257,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     // Check if the property value is for a root property or a component property.
                     // A component property be a JObject and will have the "__t": "c" identifiers.
+                    // The component property collection will be a JObject because it has been deserailized into a dictionary using Newtonsoft.Json.
                     bool isComponentProperty = propertyValueAsObject is JObject
                         && Convention.PayloadSerializer.TryGetNestedJsonObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
