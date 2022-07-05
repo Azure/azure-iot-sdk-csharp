@@ -1061,8 +1061,7 @@ namespace Microsoft.Azure.Devices
         public virtual Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
+                Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
 
             try
             {
