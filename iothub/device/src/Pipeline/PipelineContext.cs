@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ConnectionStatusChangesHandler ConnectionStatusChangesHandler { get; set; }
 
-        internal Action<TwinCollection> DesiredPropertyUpdateCallback { get; set; }
+        internal Action<IDictionary<string, object>> DesiredPropertyUpdateCallback { get; set; }
 
         internal InternalClient.OnMethodCalledDelegate MethodCallback { get; set; }
 

@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
         private readonly Func<MethodRequestInternal, Task> _methodListener;
-        private readonly Action<TwinCollection> _onDesiredStatePatchListener;
+        private readonly Action<IDictionary<string, object>> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
+            Action<IDictionary<string, object>> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null)
@@ -549,7 +549,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     using var reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8);
                     string patch = reader.ReadToEnd();
-                    TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(patch);
+                    IDictionary<string, object> props = JsonConvert.DeserializeObject<IDictionary<string, object>>(patch);
                     await Task.Run(() => _onDesiredStatePatchListener(props)).ConfigureAwait(false);
                 }
             }

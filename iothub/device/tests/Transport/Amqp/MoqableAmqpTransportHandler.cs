@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Tests.ConnectionString;
 using Moq;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport
             IotHubConnectionString connectionString, 
             AmqpTransportSettings transportSettings, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null, 
+            Action<IDictionary<string, object>> onDesiredStatePatchReceivedCallback = null, 
             Func<string, Message, Task> onModuleMessageReceivedCallback = null, 
             Func<Message, Task> onDeviceMessageReceivedCallback = null) 
             : base(
