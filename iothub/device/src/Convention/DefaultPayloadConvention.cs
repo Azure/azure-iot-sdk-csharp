@@ -11,6 +11,11 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public sealed class DefaultPayloadConvention : PayloadConvention
     {
+        private DefaultPayloadConvention()
+        {
+
+        }
+
         /// <summary>
         /// A static instance of this class.
         /// </summary>

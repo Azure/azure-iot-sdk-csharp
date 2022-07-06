@@ -337,12 +337,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate that the writable property update request was acknowledged
 
-            bool isWritablePropertyAckPresent = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out IWritablePropertyResponse writablePropertyAck);
+            bool isWritablePropertyAckPresent = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out IWritablePropertyAcknowledgementValue writablePropertyAck);
             isWritablePropertyAckPresent.Should().BeTrue();
             // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
             deviceClient.PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(writablePropertyAck.Value).Should().BeEquivalentTo(propValue);
 
-            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out NewtonsoftJsonWritablePropertyResponse writablePropertyAckNewtonSoft);
+            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out NewtonsoftJsonWritablePropertyAcknowledgementValue writablePropertyAckNewtonSoft);
             isWritablePropertyAckPresentSpecific.Should().BeTrue();
             // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
             deviceClient.PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(writablePropertyAckNewtonSoft.Value).Should().BeEquivalentTo(propValue);

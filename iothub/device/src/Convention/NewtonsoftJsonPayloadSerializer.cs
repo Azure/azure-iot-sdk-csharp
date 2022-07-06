@@ -16,6 +16,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         internal const string ApplicationJson = "application/json";
 
+        private NewtonsoftJsonPayloadSerializer()
+        {
+
+        }
+
         /// <summary>
         /// The default instance of this class.
         /// </summary>
@@ -47,10 +52,29 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override bool TryGetNestedJsonObjectValue<T>(object nestedObject, string propertyName, out T outValue)
+        public override IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = null)
+        {
+            return new NewtonsoftJsonWritablePropertyAcknowledgementValue(value, statusCode, version, description);
+        }
+
+        /// <summary>
+        /// Gets a nested property from the serialized JSON data.
+        /// </summary>
+        /// <remarks>
+        /// This class is used by the <see cref="TelemetryCollection"/>, <see cref="ClientPropertyCollection"/>
+        /// and <see cref="WritableClientPropertyCollection"/> classes to attempt to get a property of the underlying JSON object.
+        /// An example of this would be a property under the component.
+        /// </remarks>
+        /// <typeparam name="T">The type to convert the retrieved property to.</typeparam>
+        /// <param name="nestedJsonObject">The object that might contain the nested property.
+        /// This needs to be in the json object equivalent format as required by the serializer or the string representation of it.</param>
+        /// <param name="propertyName">The name of the property to be retrieved.</param>
+        /// <param name="outValue">The retrieved value.</param>
+        /// <returns>True if the nested object contains an element with the specified key, otherwise false.</returns>
+        internal bool TryGetNestedJsonObjectValue<T>(JObject nestedJsonObject, string propertyName, out T outValue)
         {
             outValue = default;
-            if (nestedObject == null
+            if (nestedJsonObject == null
                 || string.IsNullOrEmpty(propertyName))
             {
                 return false;
@@ -58,13 +82,8 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                // The supplied nested object is either a JObject or the string representation of a JObject.
-                JObject nestedObjectAsJObject = nestedObject.GetType() == typeof(string)
-                    ? DeserializeToType<JObject>((string)nestedObject)
-                    : nestedObject as JObject;
-
-                if (nestedObjectAsJObject != null
-                    && nestedObjectAsJObject.TryGetValue(propertyName, out JToken element))
+                if (nestedJsonObject != null
+                    && nestedJsonObject.TryGetValue(propertyName, out JToken element))
                 {
                     outValue = element.ToObject<T>();
                     return true;
@@ -76,12 +95,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-        }
-
-        /// <inheritdoc/>
-        public override IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = null)
-        {
-            return new NewtonsoftJsonWritablePropertyResponse(value, statusCode, version, description);
         }
     }
 }

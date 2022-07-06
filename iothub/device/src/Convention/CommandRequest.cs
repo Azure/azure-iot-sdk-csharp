@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="commandName">The name of the command.</param>
         /// <param name="componentName">The name of the component that is command is invoked on.</param>
         /// <param name="payload">The command payload.</param>
-        protected internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] payload = default)
+        internal CommandRequest(PayloadConvention payloadConvention, string commandName, string componentName = default, byte[] payload = default)
         {
             CommandName = commandName;
             ComponentName = componentName;

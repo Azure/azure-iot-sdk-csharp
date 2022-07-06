@@ -116,11 +116,9 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Gets the value of a root-level property.
-        /// </summary>
-        /// <remarks>
         /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
         /// which has a convenience method to help you build the writable property acknowledgement object.
-        /// </remarks>
+        /// </summary>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="propertyName">The property to get.</param>
         /// <param name="propertyValue">When this method returns true, this contains the value of the root-level property.
@@ -191,11 +189,9 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Gets the value of a component-level property.
-        /// </summary>
-        /// <remarks>
         /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
         /// which has a convenience method to help you build the writable property acknowledgement object.
-        /// </remarks>
+        /// </summary>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
@@ -253,13 +249,12 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // Serialize the received property value. You can use the default serializer here as the response has previously been deserialized using the default serializer.
                     object propertyValueAsObject = property.Value;
-                    string propertyValueAsString = DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(propertyValueAsObject);
 
                     // Check if the property value is for a root property or a component property.
                     // A component property be a JObject and will have the "__t": "c" identifiers.
                     // The component property collection will be a JObject because it has been deserailized into a dictionary using Newtonsoft.Json.
-                    bool isComponentProperty = propertyValueAsObject is JObject
-                        && Convention.PayloadSerializer.TryGetNestedJsonObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+                    bool isComponentProperty = propertyValueAsObject is JObject propertyValueAsJObject
+                        && NewtonsoftJsonPayloadSerializer.Instance.TryGetNestedJsonObjectValue(propertyValueAsJObject, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
                     if (isComponentProperty)
                     {

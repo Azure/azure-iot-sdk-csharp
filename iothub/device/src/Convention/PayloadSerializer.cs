@@ -55,29 +55,14 @@ namespace Microsoft.Azure.Devices.Client
         public abstract T ConvertFromJsonObject<T>(object jsonObjectToConvert);
 
         /// <summary>
-        /// Gets a nested property from the serialized JSON data.
-        /// </summary>
-        /// <remarks>
-        /// This class is used by the <see cref="TelemetryCollection"/>, <see cref="ClientPropertyCollection"/>
-        /// and <see cref="WritableClientPropertyCollection"/> classes to attempt to get a property of the underlying JSON object.
-        /// An example of this would be a property under the component.
-        /// </remarks>
-        /// <typeparam name="T">The type to convert the retrieved property to.</typeparam>
-        /// <param name="nestedJsonObject">The object that might contain the nested property.
-        /// This needs to be in the json object equivalent format as required by the serializer or the string representation of it.</param>
-        /// <param name="propertyName">The name of the property to be retrieved.</param>
-        /// <param name="outValue">The retrieved value.</param>
-        /// <returns>True if the nested object contains an element with the specified key, otherwise false.</returns>
-        public abstract bool TryGetNestedJsonObjectValue<T>(object nestedJsonObject, string propertyName, out T outValue);
-
-        /// <summary>
-        /// Creates the correct <see cref="IWritablePropertyResponse"/> to be used with this serializer.
+        /// Creates the correct <see cref="IWritablePropertyAcknowledgementValue"/> to be used with this serializer.
+        /// You will need to send both the property name and this response object when acknowledging a writable property update request.
         /// </summary>
         /// <param name="value">The value of the property.</param>
         /// <param name="statusCode">The status code of the write operation.</param>
         /// <param name="version">The version the property is responding to.</param>
         /// <param name="description">An optional response description to the writable property request.</param>
         /// <returns>The writable property response to be used with this serializer.</returns>
-        public abstract IWritablePropertyResponse CreateWritablePropertyResponse(object value, int statusCode, long version, string description = default);
+        public abstract IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = default);
     }
 }

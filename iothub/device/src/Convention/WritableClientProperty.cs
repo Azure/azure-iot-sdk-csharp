@@ -31,10 +31,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Creates a writable property update response that contains the requested property value and version that can be reported back to the service.
+        /// You will need to send both the property name and this response object when acknowledging a writable property update request.
         /// </summary>
         /// <remarks>
         /// To construct a writable property update response with custom value and version number, use
-        /// <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> from
+        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/> from
         /// <see cref="DeviceClient.PayloadConvention"/>.
         /// <para>
         /// See <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/> for more details.
@@ -43,9 +44,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="statusCode">An acknowledgment code that uses an HTTP status code.</param>
         /// <param name="description">An optional acknowledgment description.</param>
         /// <returns>A writable property update response that can be reported back to the service.</returns>
-        public IWritablePropertyResponse AcknowledgeWith(int statusCode, string description = default)
+        public IWritablePropertyAcknowledgementValue AcknowledgeWith(int statusCode, string description = default)
         {
-            return Convention.PayloadSerializer.CreateWritablePropertyResponse(Value, statusCode, Version, description);
+            return Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementValue(Value, statusCode, Version, description);
         }
 
         /// <summary>

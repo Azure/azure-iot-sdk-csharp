@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// When using this as part of the writable property flow to respond to a writable property update, pass in
         /// <paramref name="propertyValue"/> as an instance of
-        /// <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/>
         /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
         /// to ensure the correct formatting is applied when the object is serialized.
         /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement object.
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// When using this as part of the writable property flow to respond to a writable property update, pass in
         /// <paramref name="propertyValue"/> as an instance of
-        /// <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/>
+        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/>
         /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
         /// to ensure the correct formatting is applied when the object is serialized.
         /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement object.
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client
             // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
             // 2. Client property returned through GetClientProperties:
             //  a. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
-            //      and needs to be converted to an IWritablePropertyResponse implementation using the payload serializer.
+            //      and needs to be converted to an IWritablePropertyAcknowledgementValue implementation using the payload serializer.
             //  b. Client reported properties sent by the client application - stored as a JSON object
             //      and needs to be converted to the expected type using the payload serializer.
 
@@ -195,24 +195,24 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         // Case 2a:
                         // Check if the retrieved value is a writable property update acknowledgment
-                        NewtonsoftJsonWritablePropertyResponse newtonsoftWritablePropertyResponse = Convention
-                            .PayloadSerializer
-                            .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyResponse>(retrievedPropertyValue);
+                        NewtonsoftJsonWritablePropertyAcknowledgementValue newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
+                            .Instance
+                            .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementValue>(retrievedPropertyValue);
 
-                        if (typeof(IWritablePropertyResponse).IsAssignableFrom(typeof(T)))
+                        if (typeof(IWritablePropertyAcknowledgementValue).IsAssignableFrom(typeof(T)))
                         {
-                            // If T is IWritablePropertyResponse the property value should be of type IWritablePropertyResponse as defined in the PayloadSerializer.
-                            // We'll convert the json object to NewtonsoftJsonWritablePropertyResponse and then convert it to the appropriate IWritablePropertyResponse object.
-                            propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyResponse(
-                                newtonsoftWritablePropertyResponse.Value,
-                                newtonsoftWritablePropertyResponse.AckCode,
-                                newtonsoftWritablePropertyResponse.AckVersion,
-                                newtonsoftWritablePropertyResponse.AckDescription);
+                            // If T is IWritablePropertyAcknowledgementValue the property value should be of type IWritablePropertyAcknowledgementValue as defined in the PayloadSerializer.
+                            // We'll convert the json object to NewtonsoftJsonWritablePropertyAcknowledgementValue and then convert it to the appropriate IWritablePropertyAcknowledgementValue object.
+                            propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementValue(
+                                newtonsoftWritablePropertyAcknowledgementValue.Value,
+                                newtonsoftWritablePropertyAcknowledgementValue.AckCode,
+                                newtonsoftWritablePropertyAcknowledgementValue.AckVersion,
+                                newtonsoftWritablePropertyAcknowledgementValue.AckDescription);
 
                             return true;
                         }
 
-                        object writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
+                        object writablePropertyValue = newtonsoftWritablePropertyAcknowledgementValue.Value;
 
                         // If the object is of type T or can be cast or converted to type T, go ahead and return it.
                         if (ObjectConversionHelpers.TryCastOrConvert(writablePropertyValue, Convention, out propertyValue))
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.Client
             // 1. A property collection constructed by the client application - can be retrieved using dictionary indexer.
             // 2. Client property returned through GetClientProperties:
             //  a. Client reported properties sent by the client application in response to writable property update requests - stored as a JSON object
-            //      and needs to be converted to an IWritablePropertyResponse implementation using the payload serializer.
+            //      and needs to be converted to an IWritablePropertyAcknowledgementValue implementation using the payload serializer.
             //  b. Client reported properties sent by the client application - stored as a JSON object
             //      and needs to be converted to the expected type using the payload serializer.
 
@@ -304,23 +304,23 @@ namespace Microsoft.Azure.Devices.Client
                                 {
                                     // Case 2a:
                                     // Check if the retrieved value is a writable property update acknowledgment
-                                    NewtonsoftJsonWritablePropertyResponse newtonsoftWritablePropertyResponse = Convention
-                                        .PayloadSerializer
-                                        .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyResponse>(dictionaryElement);
+                                    NewtonsoftJsonWritablePropertyAcknowledgementValue newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
+                                        .Instance
+                                        .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementValue>(dictionaryElement);
 
-                                    if (typeof(IWritablePropertyResponse).IsAssignableFrom(typeof(T)))
+                                    if (typeof(IWritablePropertyAcknowledgementValue).IsAssignableFrom(typeof(T)))
                                     {
-                                        // If T is IWritablePropertyResponse the property value should be of type IWritablePropertyResponse as defined in the PayloadSerializer.
-                                        // We'll convert the json object to NewtonsoftJsonWritablePropertyResponse and then convert it to the appropriate IWritablePropertyResponse object.
-                                        propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyResponse(
-                                            newtonsoftWritablePropertyResponse.Value,
-                                            newtonsoftWritablePropertyResponse.AckCode,
-                                            newtonsoftWritablePropertyResponse.AckVersion,
-                                            newtonsoftWritablePropertyResponse.AckDescription);
+                                        // If T is IWritablePropertyAcknowledgementValue the property value should be of type IWritablePropertyAcknowledgementValue as defined in the PayloadSerializer.
+                                        // We'll convert the json object to NewtonsoftJsonWritablePropertyAcknowledgementValue and then convert it to the appropriate IWritablePropertyAcknowledgementValue object.
+                                        propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementValue(
+                                            newtonsoftWritablePropertyAcknowledgementValue.Value,
+                                            newtonsoftWritablePropertyAcknowledgementValue.AckCode,
+                                            newtonsoftWritablePropertyAcknowledgementValue.AckVersion,
+                                            newtonsoftWritablePropertyAcknowledgementValue.AckDescription);
                                         return true;
                                     }
 
-                                    object writablePropertyValue = newtonsoftWritablePropertyResponse.Value;
+                                    object writablePropertyValue = newtonsoftWritablePropertyAcknowledgementValue.Value;
 
                                     // If the object is of type T or can be cast or converted to type T, go ahead and return it.
                                     if (ObjectConversionHelpers.TryCastOrConvert(writablePropertyValue, Convention, out propertyValue))
@@ -394,13 +394,12 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // Serialize the received property value. You can use the default serializer here as the response has previously been deserialized using the default serializer.
                     object propertyValueAsObject = property.Value;
-                    string propertyValueAsString = DefaultPayloadConvention.Instance.PayloadSerializer.SerializeToString(propertyValueAsObject);
 
                     // Check if the property value is for a root property or a component property.
                     // A component property be a JObject and will have the "__t": "c" identifiers.
                     // The component property collection will be a JObject because it has been deserailized into a dictionary using Newtonsoft.Json.
-                    bool isComponentProperty = propertyValueAsObject is JObject
-                        && Convention.PayloadSerializer.TryGetNestedJsonObjectValue(propertyValueAsString, ConventionBasedConstants.ComponentIdentifierKey, out string _);
+                    bool isComponentProperty = propertyValueAsObject is JObject propertyValueAsJObject
+                        && NewtonsoftJsonPayloadSerializer.Instance.TryGetNestedJsonObjectValue(propertyValueAsJObject, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
                     if (isComponentProperty)
                     {
