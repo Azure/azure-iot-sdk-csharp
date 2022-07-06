@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
-            using var rc = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
             s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await rc.AddDeviceAsync(requestDevice).ConfigureAwait(false);
+                        device = await serviceClient.Devices.AddAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_retryableExceptions,
@@ -196,8 +196,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task RemoveDeviceAsync()
         {
-            using var rc = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
-            await rc.DeleteDeviceAsync(Id).ConfigureAwait(false);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
         }
 
         public void Dispose()

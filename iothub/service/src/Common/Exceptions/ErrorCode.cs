@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// The operation failed because the device cannot be found by IoT hub.
         /// <para>
         /// The device is either not registered or disabled. May be thrown by operations such as
-        /// <see cref="RegistryClient.GetDeviceAsync(string, System.Threading.CancellationToken)"/>.
+        /// <see cref="DevicesClient.GetAsync(string, System.Threading.CancellationToken)"/>.
         /// </para>
         /// </summary>
         DeviceNotFound = 404001,
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// The operation failed because the module cannot be found by IoT hub.
         /// <para>
         /// The module is either not registered or disabled. May be thrown by operations such as
-        /// <see cref="RegistryClient.GetModuleAsync(string, string, System.Threading.CancellationToken)"/>.
+        /// <see cref="ModulesClient.GetAsync(string, string, System.Threading.CancellationToken)"/>.
         /// </para>
         /// </summary>
         ModuleNotFound = 404010,
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// There's already a device with the same device Id in the IoT hub.
         /// <para>
-        /// This can be returned on calling <see cref="RegistryClient.AddDeviceAsync(Device, System.Threading.CancellationToken)"/>
+        /// This can be returned on calling <see cref="DevicesClient.AddAsync(Device, System.Threading.CancellationToken)"/>
         /// with a device that already exists in the IoT hub.
         /// </para>
         /// </summary>
@@ -136,8 +136,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
-        /// fixed by removing the existing module from the device first with <see cref="RegistryClient.DeleteModuleAsync(Module, System.Threading.CancellationToken)"/>. This error code is only returned from
-        /// methods like <see cref="RegistryClient.AddModuleAsync(Module, System.Threading.CancellationToken)"/>.
+        /// fixed by removing the existing module from the device first with <see cref="ModulesClient.DeleteAsync(Module, System.Threading.CancellationToken)"/>. This error code is only returned from
+        /// methods like <see cref="ModulesClient.AddAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,
 
