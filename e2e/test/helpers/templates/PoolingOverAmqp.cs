@@ -34,10 +34,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             {
                 new AmqpTransportSettings(transport)
                 {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings
                     {
                         MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true
+                        Pooling = true,
                     }
                 }
             };
@@ -47,11 +47,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             int currentSuccessRate = 0;
             bool reRunTest = false;
 
-            var testDevices = new List<TestDevice>();
-            var deviceClients = new List<DeviceClient>();
-            var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
-            var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
-            var operations = new List<Task>();
+            var testDevices = new List<TestDevice>(devicesCount);
+            var deviceClients = new List<DeviceClient>(devicesCount);
+            var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
+            var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>(devicesCount);
+            var operations = new List<Task>(devicesCount);
 
             do
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // Arrange
                 // Initialize the test device client instances
                 // Set the device client connection status change handler
-                logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing Device Clients for multiplexing test - Test run {totalRuns}");
+                logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);

@@ -120,11 +120,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             int sasTokenRenewalBuffer = 50;
             using var deviceDisconnected = new SemaphoreSlim(0);
 
-            int operationTimeoutInMilliseconds = (int)sasTokenTimeToLive.TotalMilliseconds * 2;
-
-            // Service allows a buffer time of upto 10mins before dropping connections that are authenticated with an expired sas tokens.
-            using var tokenRefreshCts = new CancellationTokenSource((int)(sasTokenTimeToLive.TotalMilliseconds * 2 + TimeSpan.FromMinutes(10).TotalMilliseconds));
-
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var options = new ClientOptions
@@ -144,21 +139,27 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceDisconnected.Release();
                 }
             });
-            deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeoutInMilliseconds;
 
             using var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
-            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+            var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
+            using var cts1 = new CancellationTokenSource(timeout);
+            await deviceClient.SendEventAsync(message, cts1.Token).ConfigureAwait(false);
 
             // Wait for the Token to expire.
+
+            // Service allows a buffer time of upto 10mins before dropping connections that are authenticated with an expired sas tokens.
+            using var tokenRefreshCts = new CancellationTokenSource((int)(sasTokenTimeToLive.TotalMilliseconds * 2 + TimeSpan.FromMinutes(10).TotalMilliseconds));
+
             Logger.Trace($"[{testDevice.Id}]: Waiting for device disconnect.");
             await deviceDisconnected.WaitAsync(tokenRefreshCts.Token).ConfigureAwait(false);
 
             try
             {
                 Logger.Trace($"[{testDevice.Id}]: SendEventAsync (2)");
-                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+                using var cts2 = new CancellationTokenSource(TimeSpan.FromMilliseconds(250));
+                await deviceClient.SendEventAsync(message, cts2.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {

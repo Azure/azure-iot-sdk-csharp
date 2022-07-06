@@ -154,14 +154,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-
-            Assert.AreEqual((uint)(4 * 60 * 1000), deviceClient.OperationTimeoutInMilliseconds);
-        }
-
-        [TestMethod]
         public void DeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -242,44 +234,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 Assert.AreEqual($"{TransportType.Http1} protocol doesn't support E2E diagnostic.", e.Message);
             }
-        }
-
-        [TestMethod]
-        public void DeviceClient_OperationTimeoutInMilliseconds_Property_GetSet()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            deviceClient.OperationTimeoutInMilliseconds = 9999;
-
-            Assert.AreEqual((uint)9999, deviceClient.OperationTimeoutInMilliseconds);
-        }
-
-        [TestMethod]
-        public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Open()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-            deviceClient.OperationTimeoutInMilliseconds = 0;
-
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            deviceClient.InnerHandler = innerHandler;
-
-            Task t = deviceClient.OpenAsync();
-
-            await innerHandler.Received().OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Receive()
-        {
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
-
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.ReceiveAsync(Arg.Any<TimeoutHelper>()).Returns(new Task<Message>(() => new Message()));
-            deviceClient.InnerHandler = innerHandler;
-
-            Task<Message> t = deviceClient.ReceiveMessageAsync(TimeSpan.Zero);
-
-            await innerHandler.Received().ReceiveAsync(Arg.Any<TimeoutHelper>()).ConfigureAwait(false);
         }
 
         [TestMethod]
