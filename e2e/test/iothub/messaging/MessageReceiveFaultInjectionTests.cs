@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                    await deviceClient.ReceiveMessageAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                 }
             }
 
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 testDeviceCallbackHandler.ExpectedMessageSentByService = message;
                 await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 
-                Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
+                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 receivedMessage.Should().BeNull();
             }
