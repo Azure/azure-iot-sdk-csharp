@@ -23,7 +23,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ClientPropertyCollection()
         {
-            // set Convention for user created ClientPropertyCollection??
+            // The Convention for user created ClientPropertyCollection is set in the InternalClient
+            // right before the payload bytes are sent to the transport layer.
         }
 
         internal ClientPropertyCollection(IDictionary<string, object> clientPropertiesReported, PayloadConvention payloadConvention)
@@ -175,6 +176,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 object retrievedPropertyValue = ClientPropertiesReported[propertyName];
 
+                // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
+                if (retrievedPropertyValue == null)
+                {
+                    return true;
+                }
+
                 // Case 1:
                 // If the object is of type T or can be cast to type T, go ahead and return it.
                 if (ObjectConversionHelpers.TryCast(retrievedPropertyValue, out propertyValue))
@@ -276,6 +283,12 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
                         {
+                            // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
+                            if (dictionaryElement == null)
+                            {
+                                return true;
+                            }
+
                             // Case 1:
                             // If the object is of type T or can be cast to type T, go ahead and return it.
                             if (dictionaryElement is T valueRef
@@ -369,19 +382,13 @@ namespace Microsoft.Azure.Devices.Client
 
         private void PopulateClientPropertiesReported(IDictionary<string, object> clientPropertiesReported)
         {
-            // The version information should not be a part of the enumerable ProperyCollection, but rather should be
-            // accessible through its dedicated accessor.
-            bool versionPresent = clientPropertiesReported.TryGetValue(VersionName, out object version);
-            Version = versionPresent
-                ? (long)version
-                : throw new IotHubException("Properties document missing version number. Contact service with logs.");
-
             foreach (KeyValuePair<string, object> property in clientPropertiesReported)
             {
-                // Ignore the version entry since we've already saved it off.
+                // The version information should not be a part of the enumerable ProperyCollection, but rather should be
+                // accessible through its dedicated accessor.
                 if (property.Key == VersionName)
                 {
-                    // no-op
+                    Version = (long)property.Value;
                 }
                 else
                 {
