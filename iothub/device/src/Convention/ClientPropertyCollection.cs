@@ -323,10 +323,8 @@ namespace Microsoft.Azure.Devices.Client
                                 // Case 2b:
                                 // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
                                 // If it can be successfully converted, go ahead and return it.
-                                if (Convention.PayloadSerializer.TryGetNestedJsonObjectValue<T>(componentProperties, propertyName, out propertyValue))
-                                {
-                                    return true;
-                                }
+                                propertyValue = Convention.PayloadSerializer.ConvertFromJsonObject<T>(dictionaryElement);
+                                return true;
                             }
                             catch
                             {

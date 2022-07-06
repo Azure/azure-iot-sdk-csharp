@@ -375,9 +375,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().Be(propValue);
 
-            bool isWritablePropertyPresent = clientProperties.WritablePropertyRequests.TryGetWritableClientProperty(ComponentName, propName, out WritableClientProperty writableClientProperty);
-            isWritablePropertyPresent.Should().BeTrue();
-
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
