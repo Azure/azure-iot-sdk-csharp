@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ClientProperties ToClientProperties(PayloadConvention payloadConvention)
         {
-            WritableClientPropertyCollection writableClientPropertyCollection = new WritableClientPropertyCollection(Desired, payloadConvention);
-            ClientPropertyCollection clientReportedPropertyCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Reported, payloadConvention);
+            var writableClientPropertyCollection = new WritableClientPropertyCollection(Desired, payloadConvention);
+            var clientReportedPropertyCollection = new ClientPropertyCollection(Reported, payloadConvention);
 
             return new ClientProperties(writableClientPropertyCollection, clientReportedPropertyCollection);
         }

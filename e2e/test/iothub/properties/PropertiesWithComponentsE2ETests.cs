@@ -198,7 +198,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 [propName] = propValue
             };
             twinPatch.Properties.Desired[componentName] = componentProperties;
-            twinPatch.Properties.Desired[$"root-{Guid.NewGuid()}"] = Guid.NewGuid().ToString();
 
             await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
@@ -310,7 +309,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                                     }
                                 }
                             }
-
                             await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
                         }
                         finally

@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonsoft_CanGetValue()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act, assert
 
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonsoft_CanGetValueWithComponent()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act, assert
 
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonsoft_CanAddSimpleWritablePropertyAndGetBack()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             clientProperties.TryGetValue(RootWritablePropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonsoft_CanAddWritablePropertyWithComponentAndGetBack()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             clientProperties.TryGetValue(ComponentName, ComponentWritablePropertyName, out NewtonsoftJsonWritablePropertyResponse outValue);
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonsoft_CanGetComponentIdentifier()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             clientProperties.TryGetValue(ComponentName, ComponentStringPropertyName, out string outValue);
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueNotFound()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue("thisPropertyDoesNotExist", out int outIntValue);
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueNotFound()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, "thisPropertyDoesNotExist", out int outIntValue);
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue(RootStringPropertyName, out int outIntValue);
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
             bool isValueRetrieved = clientProperties.TryGetValue(ComponentName, ComponentStringPropertyName, out int outIntValue);
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void ClientPropertyCollectionNewtonSoft_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
         {
             // arrange
-            var clientProperties = ClientPropertyCollection.FromClientPropertiesAsDictionary(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
+            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
             string incorrectlyMappedComponentName = ComponentMapPropertyName;
             string incorrectlyMappedComponentPropertyName = "key1";
 

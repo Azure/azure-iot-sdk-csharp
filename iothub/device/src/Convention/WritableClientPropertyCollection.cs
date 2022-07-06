@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The client application can ignore all update notifications with version less that or equal to the version of the full document.
         /// </remarks>
         /// <value>A <see cref="long"/> that is used to identify the version of the writable property collection.</value>
-        public long Version { get; protected set; }
+        public long Version { get; private set; }
 
         internal IDictionary<string, object> WritableClientProperties { get; } = new Dictionary<string, object>();
 
