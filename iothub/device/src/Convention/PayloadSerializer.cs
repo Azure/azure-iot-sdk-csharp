@@ -44,7 +44,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Converts the JSON object using the serializer.
         /// </summary>
         /// <remarks>
-        /// This class is used by the PayloadCollection-based classes to attempt to convert from the native serializer type
+        /// This class is used by the <see cref="TelemetryCollection"/>, <see cref="ClientPropertyCollection"/>
+        /// and <see cref="WritableClientPropertyCollection"/> classes to attempt to convert from the native serializer type
         /// (for example, JObject or JsonElement) to the desired type.
         /// When implementing this, be aware of what type the serializer will use for anonymous types.
         /// </remarks>
@@ -57,7 +58,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets a nested property from the serialized JSON data.
         /// </summary>
         /// <remarks>
-        /// This is used by the PayloadCollection-based classes to attempt to get a property of the underlying JSON object.
+        /// This class is used by the <see cref="TelemetryCollection"/>, <see cref="ClientPropertyCollection"/>
+        /// and <see cref="WritableClientPropertyCollection"/> classes to attempt to get a property of the underlying JSON object.
         /// An example of this would be a property under the component.
         /// </remarks>
         /// <typeparam name="T">The type to convert the retrieved property to.</typeparam>

@@ -98,8 +98,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The callback should either enumerate the requested changes and match that against the module's supported
         /// writable properties, or explicitly check for the module's supported writable properties using
-        /// <see cref="PayloadCollection.Contains(string)"/> or <see cref="PayloadCollection.TryGetValue{T}(string, out T)"/>
-        /// (or using the component-level overloads on <see cref="ClientPropertyCollection"/>).
+        /// <see cref="WritableClientPropertyCollection.Contains(string)"/> or <see cref="WritableClientPropertyCollection.TryGetValue{T}(string, out T)"/>
+        /// (or using the component-level overloads on <see cref="WritableClientPropertyCollection"/>).
         /// <para>
         /// To update client properties, call <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
         /// </para>
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
         /// 
         /// Or as a separate method:
         /// <code language="csharp">
-        /// async Task OnPropertyUpdateRequestReceivedAsync(ClientPropertyCollection writableProperties)
+        /// async Task OnPropertyUpdateRequestReceivedAsync(WritableClientPropertyCollection writableProperties)
         /// {
         ///     // Identify and process supported writable property update requests
         /// }
