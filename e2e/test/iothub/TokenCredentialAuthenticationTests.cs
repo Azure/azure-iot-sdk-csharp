@@ -29,20 +29,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task RegistryClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var registryManager = new RegistryClient(
+            using var serviceClient = new ServiceClient2(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 
             var device = new Device(Guid.NewGuid().ToString());
 
             // act
-            Device createdDevice = await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);
 
             // cleanup
-            await registryManager.DeleteDeviceAsync(device.Id).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

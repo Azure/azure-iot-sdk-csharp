@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class RegistryClientExportDevicesTests : E2EMsTestBase
+    public class ExportDevicesTests : E2EMsTestBase
     {
         // A bug in either Azure.Storage.Blob or System.Diagnostics causes an exception during container creation
         // so for now, we need to use the older storage nuget.
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string configsFileName = $"{idPrefix}-configsexport-{StorageContainer.GetRandomSuffix(4)}.txt";
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using RegistryClient registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -80,32 +80,29 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                Device edge1 = await registryClient
-                    .AddDeviceAsync(
-                        new Device(edgeId1)
-                        {
-                            Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                            Capabilities = new DeviceCapabilities { IotEdge = true },
-                        })
+                Device edge1 = await serviceClient.Devices.AddAsync(
+                    new Device(edgeId1)
+                    {
+                        Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
+                        Capabilities = new DeviceCapabilities { IotEdge = true },
+                    })
                     .ConfigureAwait(false);
 
-                Device edge2 = await registryClient
-                    .AddDeviceAsync(
-                        new Device(edgeId2)
-                        {
-                            Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                            Capabilities = new DeviceCapabilities { IotEdge = true },
-                            ParentScopes = { edge1.Scope },
-                        })
+                Device edge2 = await serviceClient.Devices.AddAsync(
+                    new Device(edgeId2)
+                    {
+                        Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
+                        Capabilities = new DeviceCapabilities { IotEdge = true },
+                        ParentScopes = { edge1.Scope },
+                    })
                     .ConfigureAwait(false);
 
-                Device device = await registryClient
-                    .AddDeviceAsync(
-                        new Device(deviceId)
-                        {
-                            Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                            Scope = edge1.Scope,
-                        })
+                Device device = await serviceClient.Devices.AddAsync(
+                    new Device(deviceId)
+                    {
+                        Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
+                        Scope = edge1.Scope,
+                    })
                     .ConfigureAwait(false);
 
                 Configuration configuration = await registryManager
@@ -133,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         isUserAssignedMsi,
                         devicesFileName,
                         configsFileName,
-                        registryClient,
+                        serviceClient,
                         containerUri)
                     .ConfigureAwait(false);
 
@@ -153,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             finally
             {
-                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, registryManager, registryClient).ConfigureAwait(false);
+                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, registryManager, serviceClient).ConfigureAwait(false);
             }
         }
 
@@ -162,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             bool isUserAssignedMsi,
             string devicesFileName,
             string configsFileName,
-            RegistryClient registryClient,
+            ServiceClient2 serviceClient,
             Uri containerUri)
         {
             int tryCount = 0;
@@ -175,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 : null;
 
             JobProperties exportJobResponse = JobProperties.CreateForExportJob(
-                containerUri.ToString(),
+                containerUri,
                 true,
                 devicesFileName,
                 storageAuthenticationType,
@@ -187,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    exportJobResponse = await registryClient.ExportDevicesAsync(exportJobResponse).ConfigureAwait(false);
+                    exportJobResponse = await serviceClient.Devices.ExportAsync(exportJobResponse).ConfigureAwait(false);
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
@@ -202,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                exportJobResponse = await registryClient.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
+                exportJobResponse = await serviceClient.Devices.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
                 if (!s_incompleteJobs.Contains(exportJobResponse.Status))
                 {
@@ -311,13 +308,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string deviceId,
             string configurationId,
             RegistryManager registryManager,
-            RegistryClient registryClient)
+            ServiceClient2 serviceClient)
         {
             try
             {
-                await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
-                await registryClient.DeleteDeviceAsync(edgeId2).ConfigureAwait(false);
-                await registryClient.DeleteDeviceAsync(edgeId1).ConfigureAwait(false);
+                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                await serviceClient.Devices.DeleteAsync(edgeId2).ConfigureAwait(false);
+                await serviceClient.Devices.DeleteAsync(edgeId1).ConfigureAwait(false);
                 await registryManager.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
             }
             catch (Exception ex)

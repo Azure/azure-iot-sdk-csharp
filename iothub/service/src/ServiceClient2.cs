@@ -43,21 +43,21 @@ namespace Microsoft.Azure.Devices
         /// Create an instance of this class that authenticates service requests using an IoT hub connection string.
         /// </summary>
         /// <param name="connectionString">The IoT hub connection string.</param>
-        /// <param name="transportSettings">The optional HTTP transport settings.</param>
-        public ServiceClient2(string connectionString, HttpTransportSettings2 transportSettings = default)
+        /// <param name="options">The optional client settings.</param>
+        public ServiceClient2(string connectionString, ServiceClientOptions2 options = default)
         {
             Argument.RequireNotNullOrEmpty(connectionString, nameof(connectionString));
 
-            if (transportSettings == null)
+            if (options == null)
             {
-                transportSettings = new HttpTransportSettings2();
+                options = new ServiceClientOptions2();
             }
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             _credentialProvider = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
-            _httpClient = HttpClientFactory.Create(_hostName, transportSettings);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint);
+            _httpClient = HttpClientFactory.Create(_hostName, options);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, options.GetVersionString());
 
             InitializeSubclients();
         }
@@ -74,21 +74,21 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
-        /// <param name="transportSettings">The optional HTTP transport settings.</param>
-        public ServiceClient2(string hostName, TokenCredential credential, HttpTransportSettings2 transportSettings = default)
+        /// <param name="options">The optional client settings.</param>
+        public ServiceClient2(string hostName, TokenCredential credential, ServiceClientOptions2 options = default)
         {
             Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
             Argument.RequireNotNull(credential, nameof(credential));
 
-            if (transportSettings == null)
+            if (options == null)
             {
-                transportSettings = new HttpTransportSettings2();
+                options = new ServiceClientOptions2();
             }
 
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
             _hostName = hostName;
-            _httpClient = HttpClientFactory.Create(_hostName, transportSettings);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint);
+            _httpClient = HttpClientFactory.Create(_hostName, options);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, options.GetVersionString());
 
             InitializeSubclients();
         }
@@ -104,21 +104,21 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
-        /// <param name="transportSettings">The optional HTTP transport settings.</param>
-        public ServiceClient2(string hostName, AzureSasCredential credential, HttpTransportSettings2 transportSettings = default)
+        /// <param name="options">The optional client settings.</param>
+        public ServiceClient2(string hostName, AzureSasCredential credential, ServiceClientOptions2 options = default)
         {
             Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
             Argument.RequireNotNull(credential, nameof(credential));
 
-            if (transportSettings == null)
+            if (options == null)
             {
-                transportSettings = new HttpTransportSettings2();
+                options = new ServiceClientOptions2();
             }
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
-            _httpClient = HttpClientFactory.Create(_hostName, transportSettings);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint);
+            _httpClient = HttpClientFactory.Create(_hostName, options);
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, options.GetVersionString());
 
             InitializeSubclients();
         }

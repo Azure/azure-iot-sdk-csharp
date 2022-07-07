@@ -44,14 +44,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             // Get device twin.
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
             Twin twin = await registryManager.GetTwinAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
 
             // Cleanup
-            await registryClient.DeleteDeviceAsync(testDevice.Id).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(testDevice.Id).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -76,14 +76,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             // Get device twin.
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
             Twin twin = await registryManager.GetTwinAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
 
             // Cleanup
-            await registryClient.DeleteDeviceAsync(testDevice.Id).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(testDevice.Id).ConfigureAwait(false);
 
             if (authCertificate is IDisposable disposableCert)
             {
@@ -111,14 +111,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             // Get module twin.
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
             Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");
 
             // Cleanup
-            await registryClient.DeleteDeviceAsync(testModule.DeviceId).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(testModule.DeviceId).ConfigureAwait(false);
         }
     }
 }

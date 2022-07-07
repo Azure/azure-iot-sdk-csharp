@@ -33,20 +33,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
-            using var registryClient = new RegistryClient(
+            using var serviceClient = new ServiceClient2(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
             var device = new Device(Guid.NewGuid().ToString());
 
             // act
-            Device createdDevice = await registryClient.AddDeviceAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);
 
             // cleanup
-            await registryClient.DeleteDeviceAsync(device.Id).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // arrange
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
             var sasCredential = new AzureSasCredential(signature);
-            using var registryClient = new RegistryClient(
+            using var serviceClient = new ServiceClient2(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 sasCredential);
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // act
             try
             {
-                await registryClient.AddDeviceAsync(device).ConfigureAwait(false);
+                await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
             catch (UnauthorizedException)
@@ -73,13 +73,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             sasCredential.Update(signature);
-            Device createdDevice = await registryClient.AddDeviceAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);
 
             // cleanup
-            await registryClient.DeleteDeviceAsync(device.Id).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

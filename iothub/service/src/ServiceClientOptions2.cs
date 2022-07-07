@@ -1,20 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains HTTP transport-specific settings for these clients.
+    /// The configurable settings for a <see cref="ServiceClient2"/> instance.
     /// </summary>
-    public sealed class HttpTransportSettings2
+    public class ServiceClientOptions2
     {
         /// <summary>
         /// Initializes a new instance of this class using the default settings.
         /// </summary>
-        public HttpTransportSettings2()
+        public ServiceClientOptions2()
         {
             Proxy = DefaultWebProxySettings.Instance;
         }
@@ -28,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
-        /// static RegistryClient GetRegistryClient()
+        /// static ServiceClient GetServiceClient
         /// {
         ///     try
         ///     {
@@ -39,8 +43,8 @@ namespace Microsoft.Azure.Devices
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
         ///         // Specify the WebProxy to be used for the HTTP connection
-        ///         var registryClient = new RegistryClient("a connection string", transportSettings);
-        ///         return registryClient;
+        ///         var serviceClient = new ServiceClient("a connection string", transportSettings);
+        ///         return serviceClient;
         ///     }
         ///     catch (Exception)
         ///     {
@@ -64,12 +68,44 @@ namespace Microsoft.Azure.Devices
         /// are advised to set this value to a value of 0 or greater. Larger values will make better use of caching to save network resources over time,
         /// but smaller values will make the client respond more quickly to failed over IoT hubs.
         /// </remarks>
-        public int ConnectionLeaseTimeoutMilliseconds { get; set; } = ServicePointHelpers.DefaultConnectionLeaseTimeout;
+        public TimeSpan HttpConnectionLeaseTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
         /// <summary>
         /// The HTTP client to use for all HTTP operations. If provided, all other settings will be ignored. If not provided,
         /// an HTTP client will be created for you based on the other provided settings.
         /// </summary>
         public HttpClient HttpClient { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="ServiceVersion"/> of the service API used when
+        /// making requests.
+        /// </summary>
+        public ServiceVersion Version { get; } = LatestVersion;
+
+        /// <summary>
+        /// The service API versions that the service supports.
+        /// </summary>
+        public enum ServiceVersion
+        {
+            /// <summary>
+            /// 2021-04-12
+            /// </summary>
+#pragma warning disable CA1707 // Remove the underscores from member name
+            V2021_04_12 = 1
+#pragma warning restore
+
+            //TODO get the other service API versions
+        }
+
+        internal const ServiceVersion LatestVersion = ServiceVersion.V2021_04_12;
+
+        internal string GetVersionString()
+        {
+            return Version switch
+            {
+                ServiceVersion.V2021_04_12 => "2021-04-12",
+                _ => throw new ArgumentException(Version.ToString()),
+            };
+        }
     }
 }
