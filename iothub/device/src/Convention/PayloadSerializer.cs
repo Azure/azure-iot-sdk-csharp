@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Creates the correct <see cref="IWritablePropertyAcknowledgementValue"/> payload to be used with this serializer.
-        /// Send both the property name and this payload when acknowledging a writable property update request.
+        /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
         /// </summary>
         /// <param name="value">The value of the property.</param>
         /// <param name="statusCode">The status code of the write operation.</param>

@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Client
         private readonly ReadOnlyCollection<byte> _payload;
         private readonly PayloadConvention _payloadConvention;
 
+        // TODO: Unit-testable and mockable
+
         /// <summary>
         /// For internal use only, unless used in mocking for testing.
         /// </summary>

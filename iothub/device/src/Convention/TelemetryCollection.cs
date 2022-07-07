@@ -13,6 +13,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class TelemetryCollection : IEnumerable<KeyValuePair<string, object>>
     {
+        // TODO: Unit-testable and mockable
+
         /// <summary>
         /// The underlying collection for the payload.
         /// </summary>

@@ -8,6 +8,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientPropertiesUpdateResponse
     {
+        // TODO: Unit-testable and mockable
+
         internal ClientPropertiesUpdateResponse()
         {
         }

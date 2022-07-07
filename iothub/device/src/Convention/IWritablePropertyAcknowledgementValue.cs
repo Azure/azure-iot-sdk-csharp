@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The interface that defines the structure of a writable property payload value.
-    /// Send both the property name and this payload when acknowledging a writable property update request.
+    /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
     /// </summary>
     /// <remarks>
     /// This interface is used to allow extension to use a different set of attributes for serialization.

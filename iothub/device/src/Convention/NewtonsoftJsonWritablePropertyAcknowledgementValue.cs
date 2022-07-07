@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// An optional, helper class for constructing a writable property payload value.
-    /// Send both the property name and this payload when acknowledging a writable property update request.
+    /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
     /// </summary>
     /// <remarks>
     /// This helper class will only work with <see cref="Newtonsoft.Json"/>.
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         /// <summary>
         /// Convenience constructor for specifying the properties.
-        /// Send both the property name and this payload when acknowledging a writable property update request.
+        /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
         /// </summary>
         /// <param name="propertyValue">The unserialized property value.</param>
         /// <param name="ackCode">The acknowledgment code, usually an HTTP Status Code e.g. 200, 400.</param>

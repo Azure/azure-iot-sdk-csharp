@@ -309,6 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                                     }
                                 }
                             }
+
                             await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
                         }
                         finally

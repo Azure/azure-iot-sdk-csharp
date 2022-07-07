@@ -13,6 +13,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class WritableClientProperty
     {
+        // TODO: Unit-testable and mockable
+
         internal WritableClientProperty()
         {
         }
@@ -30,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a writable property update payload that contains the requested property value and version to be reported back to the service
         /// using <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
         /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>.
-        /// Send both the property name and this payload when acknowledging a writable property update request.
+        /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
         /// </summary>
         /// <remarks>
         /// To construct a writable property update payload with custom value and version number, use
