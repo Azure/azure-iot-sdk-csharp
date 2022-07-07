@@ -51,11 +51,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// 
+        /// The value of the writable property update request, deserialized to the specified type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="propertyValue"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
+        /// <param name="propertyValue">When this method returns true, this contains the value of the writable property update request.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns><c>true</c> if a writable property update request of type <c>T</c> was found; otherwise, <c>false</c>.</returns>
         public bool TryGetValue<T>(out T propertyValue)
         {
             return ObjectConversionHelpers.TryCastOrConvert(Value, Convention, out propertyValue);

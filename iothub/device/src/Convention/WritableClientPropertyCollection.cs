@@ -12,8 +12,11 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// 
+    /// The collection of writable property requests received from service.
     /// </summary>
+    /// <remarks>
+    /// See the <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
+    /// </remarks>
     public class WritableClientPropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         private const string VersionName = "$version";
