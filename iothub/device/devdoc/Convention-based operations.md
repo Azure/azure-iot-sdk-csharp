@@ -61,20 +61,6 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
     public override IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = null);
 }
 
-public abstract class PayloadCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
-    protected PayloadCollection();
-    public PayloadConvention Convention { get; internal set; }
-    public virtual object this[string key] { get; set; }
-    public virtual void Add(string key, object value);
-    public void ClearCollection();
-    public bool Contains(string key);
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
-    public virtual byte[] GetPayloadObjectBytes();
-    public virtual string GetSerializedString();
-    IEnumerator System.Collections.IEnumerable.GetEnumerator();
-    public bool TryGetValue<T>(string key, out T value);
-}
-
 public static class ConventionBasedConstants {
     public const char ComponentLevelCommandSeparator = '*';
     public const string AckCodePropertyName = "ac";
