@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The response of an <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
+    /// The response of a <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
     /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
     /// </summary>
     public class ClientPropertiesUpdateResponse
