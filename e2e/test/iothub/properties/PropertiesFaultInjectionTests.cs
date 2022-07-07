@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
                 clientProperties.Should().NotBeNull();
 
-                bool isPropertyPresent = clientProperties.ReportedFromClient.TryGetValue(propName, out string propFromCollection);
+                bool isPropertyPresent = clientProperties.ReportedByClient.TryGetValue(propName, out string propFromCollection);
                 isPropertyPresent.Should().BeTrue();
                 propFromCollection.Should().Be(propValue);
             }

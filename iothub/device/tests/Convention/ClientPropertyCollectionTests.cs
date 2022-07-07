@@ -60,16 +60,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             var clientProperties = new ClientPropertyCollection
             {
-                { StringPropertyName, StringPropertyValue },
-                { BoolPropertyName, BoolPropertyValue },
-                { DoublePropertyName, DoublePropertyValue },
-                { FloatPropertyName, FloatPropertyValue },
-                { IntPropertyName, IntPropertyValue },
-                { ShortPropertyName, ShortPropertyValue },
-                { ObjectPropertyName, s_objectPropertyValue },
-                { ArrayPropertyName, s_arrayPropertyValue },
-                { MapPropertyName, s_mapPropertyValue },
-                { DateTimePropertyName, s_dateTimePropertyValue }
+                [StringPropertyName] = StringPropertyValue,
+                [BoolPropertyName] = BoolPropertyValue,
+                [DoublePropertyName] = DoublePropertyValue,
+                [FloatPropertyName] = FloatPropertyValue,
+                [IntPropertyName] = IntPropertyValue,
+                [ShortPropertyName] = ShortPropertyValue,
+                [ObjectPropertyName] = s_objectPropertyValue,
+                [ArrayPropertyName] = s_arrayPropertyValue,
+                [MapPropertyName] = s_mapPropertyValue,
+                [DateTimePropertyName] = s_dateTimePropertyValue,
             };
 
             // act, assert
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             var clientProperties = new ClientPropertyCollection
             {
-                { StringPropertyName, StringPropertyValue }
+                [StringPropertyName] = StringPropertyValue,
             };
 
             // act
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             var clientProperties = new ClientPropertyCollection
             {
-                { StringPropertyName, StringPropertyValue }
+                [StringPropertyName] = StringPropertyValue,
             };
 
             // act, assert

@@ -6,10 +6,6 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A container for properties retrieved from the service.
     /// </summary>
-    /// <remarks>
-    /// The <see cref="ClientProperties"/> class is not meant to be constructed by customer code.
-    /// It is intended to be returned fully populated from the internal client method <see cref="InternalClient.GetClientTwinPropertiesAsync(System.Threading.CancellationToken)"/>.
-    /// </remarks>
     public class ClientProperties
     {
         // TODO: Unit-testable and mockable
@@ -38,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Client reported properties can either be <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
-        /// or they can be <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see>.
+        /// or they can be <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable property acknowledgements</see>.
         /// </remarks>
         public ClientPropertyCollection ReportedByClient { get; }
     }

@@ -4,14 +4,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// 
+    /// The collection of properties reported by the client.
     /// </summary>
+    /// <remarks>
+    /// Client reported properties can either be <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#read-only-properties">Read-only properties</see>
+    /// or they can be <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable property acknowledgements</see>.
+    /// </remarks>
     public class ClientPropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         private const string VersionName = "$version";
@@ -19,8 +22,15 @@ namespace Microsoft.Azure.Devices.Client
         // TODO: Unit-testable and mockable
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of <see cref="ClientPropertyCollection"/>.
         /// </summary>
+        /// <remarks>
+        /// Use the <see cref="AddRootProperty(string, object)"/> and/or <see cref="AddComponentProperty(string, string, object)"/> methods
+        /// to add properties into the collection.
+        /// This collection can be reported to service using 
+        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> or
+        /// <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>.
+        /// </remarks>
         public ClientPropertyCollection()
         {
             // The Convention for user created ClientPropertyCollection is set in the InternalClient
@@ -44,24 +54,26 @@ namespace Microsoft.Azure.Devices.Client
         internal PayloadConvention Convention { get; set; }
 
         /// <summary>
-        /// Required to allow new ClientPropertyCollection { [prop] = ... } initialization.
+        /// Gets or sets the value associated with the specified key.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// If getting or setting root-level properties, pass in the property name as the <paramref name="key"/> and the property value as the <c>value</c>.
+        /// If getting or setting a component, pass in the component name as the <paramref name="key"/> and the correctly formatted component-level properties as the <c>value</c>.
+        /// <para>
+        /// Also, see the convenience methods <see cref="AddRootProperty(string, object)"/> and <see cref="AddComponentProperty(string, string, object)"/>
+        /// for adding properties to the collection, and <see cref="TryGetValue{T}(string, out T)"/> and <see cref="TryGetValue{T}(string, string, out T)"/>
+        /// for retrieving properties from the collection.
+        /// </para>
+        /// </remarks>
+        /// <param name="key">
+        /// The key of the value to get or set.
+        /// </param>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
+        /// <exception cref="KeyNotFoundException">The property is retrieved and the <paramref name="key"/> does not exist in the collection.</exception>
         public virtual object this[string key]
         {
             get => ClientPropertiesReported[key];
-            set => Add(key, value);
-        }
-
-        /// <summary>
-        ///  Required to allow new ClientPropertyCollection { { .... } } initialization.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        public virtual void Add(string key, object value)
-        {
-            ClientPropertiesReported[key] = value;
+            set => ClientPropertiesReported[key] = value;
         }
 
         /// <summary>
@@ -73,9 +85,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/>
         /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
         /// to ensure the correct formatting is applied when the object is serialized.
-        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement object.
+        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
         /// </remarks>
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string)" />
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
@@ -91,9 +102,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/>
         /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
         /// to ensure the correct formatting is applied when the object is serialized.
-        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement object.
+        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
         /// </remarks>
-        /// <inheritdoc path="/seealso" cref="AddInternal(IDictionary{string, object}, string)" />
         /// <param name="componentName">The component with the property to add or update.</param>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
@@ -367,15 +377,7 @@ namespace Microsoft.Azure.Devices.Client
             return GetEnumerator();
         }
 
-        /// <summary>
-        /// Gets the collection as a byte array.
-        /// </summary>
-        /// <remarks>
-        /// This will get the fully encoded serialized string using both <see cref="PayloadSerializer.SerializeToString(object)"/>.
-        /// and <see cref="PayloadEncoder.EncodeStringToByteArray(string)"/> methods implemented in the <see cref="PayloadConvention"/>.
-        /// </remarks>
-        /// <returns>A fully encoded serialized string.</returns>
-        internal virtual byte[] GetPayloadObjectBytes()
+        internal byte[] GetPayloadObjectBytes()
         {
             return Convention.GetObjectBytes(ClientPropertiesReported);
         }
@@ -421,16 +423,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        /// <summary>
-        /// Adds or updates the value for the collection.
-        /// </summary>
-        /// <seealso cref="PayloadConvention"/>
-        /// <seealso cref="PayloadSerializer"/>
-        /// <seealso cref="PayloadEncoder"/>
-        /// <param name="properties">A collection of properties to add or update.</param>
-        /// <param name="componentName">The component with the properties to add or update.</param>
-        /// 
-        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is <c>null</c>.</exception>
         private void AddInternal(IDictionary<string, object> properties, string componentName = default)
         {
             // If the componentName is null then simply add the key-value pair to Collection dictionary.

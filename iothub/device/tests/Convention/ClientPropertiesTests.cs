@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             // These are the device reported property values.
-            foreach (var deviceReportedKeyValuePairs in clientProperties.ReportedFromClient)
+            foreach (var deviceReportedKeyValuePairs in clientProperties.ReportedByClient)
             {
                 if (deviceReportedKeyValuePairs.Key.Equals(StringPropertyName))
                 {
