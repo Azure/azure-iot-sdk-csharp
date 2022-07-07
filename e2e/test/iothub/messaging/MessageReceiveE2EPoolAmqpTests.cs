@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Logger.Trace($"Sent 1st C2D message from service - to be received on callback: deviceId={testDevice.Id}, messageId={firstMessage.MessageId}");
 
                 // The message should be received on the callback, while a call to ReceiveAsync() should return null.
-                Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
+                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 receivedMessage.Should().BeNull();
 
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 {
                     await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 };
-                Client.Message message = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
+                Client.Message message = await deviceClient.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                 message.MessageId.Should().Be(secondMessage.MessageId);
                 receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
             }
