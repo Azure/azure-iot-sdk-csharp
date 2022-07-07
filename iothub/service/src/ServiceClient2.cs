@@ -25,12 +25,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// TODO
         /// </summary>
-        public DevicesClient Devices;
+        public DevicesClient Devices { get; private set; }
 
         /// <summary>
         /// TODO
         /// </summary>
-        public ModulesClient Modules;
+        public ModulesClient Modules { get; private set; }
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.

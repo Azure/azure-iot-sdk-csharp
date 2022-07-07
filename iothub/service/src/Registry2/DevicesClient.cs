@@ -231,10 +231,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="twin">The initial twin state for the device.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> AddTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> AddWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding device with twin: {device?.Id}", nameof(AddTwinAsync));
+                Logging.Enter(this, $"Adding device with twin: {device?.Id}", nameof(AddWithTwinAsync));
 
             try
             {
@@ -257,13 +257,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(AddTwinAsync)} threw an exception: {ex}", nameof(AddTwinAsync));
+                    Logging.Error(this, $"{nameof(AddWithTwinAsync)} threw an exception: {ex}", nameof(AddWithTwinAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding device with twin: {device?.Id}", nameof(AddTwinAsync));
+                    Logging.Exit(this, $"Adding device with twin: {device?.Id}", nameof(AddWithTwinAsync));
             }
         }
 

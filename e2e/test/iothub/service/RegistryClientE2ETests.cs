@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string edgeId2 = _idPrefix + Guid.NewGuid();
             string deviceId = _idPrefix + Guid.NewGuid();
 
-            using var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 {
                     Capabilities = new DeviceCapabilities { IotEdge = true }
                 };
-                edgeDevice1 = await registryClient.AddDeviceAsync(edgeDevice1).ConfigureAwait(false);
+                edgeDevice1 = await serviceClient.Devices.AddAsync(edgeDevice1).ConfigureAwait(false);
 
                 // Create a second-level edge device with edge 1 as the parent.
                 var edgeDevice2 = new Device(edgeId2)
@@ -67,11 +67,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     Capabilities = new DeviceCapabilities { IotEdge = true },
                     ParentScopes = { edgeDevice1.Scope },
                 };
-                edgeDevice2 = await registryClient.AddDeviceAsync(edgeDevice2).ConfigureAwait(false);
+                edgeDevice2 = await serviceClient.Devices.AddAsync(edgeDevice2).ConfigureAwait(false);
 
                 // Create a leaf device with edge 2 as the parent.
                 var leafDevice = new Device(deviceId) { Scope = edgeDevice2.Scope };
-                leafDevice = await registryClient.AddDeviceAsync(leafDevice).ConfigureAwait(false);
+                leafDevice = await serviceClient.Devices.AddAsync(leafDevice).ConfigureAwait(false);
 
                 // assert
 
@@ -85,9 +85,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 // clean up
 
-                await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
-                await registryClient.DeleteDeviceAsync(edgeId1).ConfigureAwait(false);
-                await registryClient.DeleteDeviceAsync(edgeId2).ConfigureAwait(false);
+                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                await serviceClient.Devices.DeleteAsync(edgeId1).ConfigureAwait(false);
+                await serviceClient.Devices.DeleteAsync(edgeId2).ConfigureAwait(false);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             string deviceId = _idPrefix + Guid.NewGuid();
 
-            using var registryClient = new RegistryClient(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
             var twin = new Twin
             {
                 Tags = new TwinCollection(@"{ companyId: 1234 }"),
@@ -107,9 +107,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Capabilities = new DeviceCapabilities { IotEdge = true }
             };
 
-            await registryClient.AddDeviceWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
+            await serviceClient.Devices.AddWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
 
-            Device actual = await registryClient.GetDeviceAsync(deviceId).ConfigureAwait(false);
+            Device actual = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
+            
             await registryClient.DeleteDeviceAsync(deviceId).ConfigureAwait(false);
 
             Assert.IsTrue(actual.Capabilities.IotEdge);
