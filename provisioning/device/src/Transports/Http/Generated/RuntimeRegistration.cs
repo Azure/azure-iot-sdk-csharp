@@ -113,15 +113,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
                 "{idScope}/registrations/{registrationId}/operations/{operationId}").ToString();
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-            _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
-            _url = _url.Replace("{operationId}", Uri.EscapeDataString(operationId), StringComparison.Ordinal);
-            _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
-#else
             _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
             _url = _url.Replace("{operationId}", Uri.EscapeDataString(operationId));
             _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope));
-#endif
 
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
@@ -306,14 +300,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     "{idScope}/registrations/{registrationId}")
                 .ToString();
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
-            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
-#else
             url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
             url = url.Replace("{idScope}", Uri.EscapeDataString(idScope));
-#endif
-
+            
             // Create HTTP transport objects
             var _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;
@@ -491,13 +480,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     "{idScope}/registrations/{registrationId}/register")
                 .ToString();
 
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId), StringComparison.Ordinal);
-            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope), StringComparison.Ordinal);
-#else
             url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
             url = url.Replace("{idScope}", Uri.EscapeDataString(idScope));
-#endif
 
             var _queryParameters = new List<string>();
             if (forceRegistration != null)

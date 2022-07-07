@@ -58,11 +58,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public static bool IsBase64String(string value)
         {
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-            value = value.Replace("\r", string.Empty, StringComparison.Ordinal).Replace("\n", string.Empty, StringComparison.Ordinal);
-#else
             value = value.Replace("\r", string.Empty).Replace("\n", string.Empty);
-#endif
 
             if (value.Length == 0
                 || value.Length % 4 != 0)

@@ -31,10 +31,10 @@ This may not be sufficient to run certain samples that require Visual Studio and
 
 ## Optional Setup required to test Xamarin, Windows IoT
 
-### Installing Visual Studio 2017 for Xamarin applications
+### Installing Visual Studio for Xamarin applications
 
-- Install [Visual Studio 2017][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
-- During the installation of Visual Studio 2017, we found that selecting the following workloads and components helps in running and debugging the SDK.
+- Install [Visual Studio][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
+- During the installation of Visual Studio, we found that selecting the following workloads and components helps in running and debugging the SDK.
 
 Workloads:
 ![](./workloads.png)
@@ -44,7 +44,7 @@ Components:
 
 ### Installing Windows IoT Core SDK
 
-Install the Microsoft IoT Windows Core Project Templates for Visual Studio 2017 from the Extension Marketplace:
+Install the Microsoft IoT Windows Core Project Templates for Visual Studio 2017+ from the Extension Marketplace:
     https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15
 
 ### [Deprecated] Installing .NET Micro Framework

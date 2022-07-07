@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
     public class ModuleClient : IDisposable
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
         , IAsyncDisposable
 #endif
     {
@@ -491,7 +491,7 @@ namespace Microsoft.Azure.Devices.Client
             GC.SuppressFinalize(this);
         }
 
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
         // IAsyncDisposable is available in .NET Standard 2.1 and above
 
         /// <summary>

@@ -33,12 +33,6 @@ namespace Microsoft.Azure.Devices
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
-#if NET5_0_OR_GREATER
-                case SocketsHttpHandler socketsHttpHandler:
-                    socketsHttpHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-                    socketsHttpHandler.PooledConnectionLifetime = TimeSpan.FromMilliseconds(connectionLeaseTimeoutMilliseconds);
-                    break;
-#endif
             }
         }
     }

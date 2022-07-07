@@ -20,12 +20,7 @@ using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-
-#if NET5_0_OR_GREATER
-using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
-#else
 using TaskCompletionSource = Microsoft.Azure.Devices.TaskCompletionSource;
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {

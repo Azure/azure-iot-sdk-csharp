@@ -48,13 +48,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             var builder = new StringBuilder();
             while (true)
             {
-#if NETSTANDARD2_0
                 int length = await _innerStream
                     .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
                     .ConfigureAwait(false);
-#else
-                int length = await _innerStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-#endif
 
                 if (length == 0)
                 {

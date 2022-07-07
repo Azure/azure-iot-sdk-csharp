@@ -14,11 +14,7 @@ namespace Microsoft.Azure.Devices
     {
         internal static async Task WriteToStreamAsync(this Stream stream, byte[] requestBytes, CancellationToken cancellationToken)
         {
-#if NETSTANDARD2_0
             await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);
-#else
-            await stream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
-#endif
         }
     }
 }
