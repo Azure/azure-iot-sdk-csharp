@@ -110,7 +110,7 @@ public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPr
 
 ```csharp
 public class ClientProperties {
-    public ClientPropertyCollection ReportedFromClient { get; }
+    public ClientPropertyCollection ReportedByClient { get; }
     public WritableClientPropertyCollection WritablePropertyRequests { get; }
 }
 
@@ -143,7 +143,6 @@ public class WritableClientPropertyCollection : IEnumerable, IEnumerable<KeyValu
 
 public class WritableClientProperty {
     public object Value { get; internal set; }
-    public long Version { get; internal set; }
     public IWritablePropertyAcknowledgementValue AcknowledgeWith(int statusCode, string description = null);
     public bool TryGetValue<T>(out T propertyValue);
 }
