@@ -339,9 +339,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
-            return await UpdateAsync(devices, false, cancellationToken);
+            return await SetAsync(devices, false, cancellationToken);
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateAsync));

@@ -108,9 +108,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="module">The module identity's new state.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated module identity including its new ETag.</returns>
-        public virtual async Task<Module> UpdateAsync(Module module, CancellationToken cancellationToken = default)
+        public virtual async Task<Module> SetAsync(Module module, CancellationToken cancellationToken = default)
         {
-            return await UpdateAsync(module, false, cancellationToken);
+            return await SetAsync(module, false, cancellationToken);
         }
 
         /// <summary>
@@ -125,10 +125,10 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
-        public virtual async Task<Module> UpdateAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<Module> SetAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateAsync));
+                Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(SetAsync));
 
             try
             {
@@ -148,13 +148,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(UpdateAsync)} threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(UpdateAsync));
+                    Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(SetAsync));
             }
         }
 

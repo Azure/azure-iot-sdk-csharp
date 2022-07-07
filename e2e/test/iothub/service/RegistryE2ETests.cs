@@ -10,22 +10,24 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
+    /// <summary>
+    /// E2E test class for all registry operations including device/module CRUD.
+    /// </summary>
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class RegistryClientE2ETests : E2EMsTestBase
+    public class RegistryE2ETests : E2EMsTestBase
     {
-        private readonly string _idPrefix = $"E2E_{nameof(RegistryClientE2ETests)}_";
+        private readonly string _idPrefix = $"E2E_{nameof(RegistryE2ETests)}_";
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(HttpRequestException))]
-        public async Task registryClient_BadProxy_ThrowsException()
+        public async Task devicesClient_BadProxy_ThrowsException()
         {
             // arrange
             using var serviceClient = new ServiceClient2(
@@ -40,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_AddAndRemoveDeviceWithScope()
+        public async Task devicesClient_AddAndRemoveDeviceWithScope()
         {
             // arrange
 
@@ -92,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_AddDeviceWithTwinWithDeviceCapabilities()
+        public async Task devicesClient_AddDeviceWithTwinWithDeviceCapabilities()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
 
@@ -117,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_AddDevices2Async_Works()
+        public async Task devicesClient_AddDevices2Async_Works()
         {
             // arrange
 
@@ -167,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task Devices_UpdateDevices2Async_Works()
+        public async Task devicesClient_UpdateDevices2Async_Works()
         {
             // arrange
 
@@ -187,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 addedDevice1.Scope = addedEdge.Scope;
                 addedDevice2.Scope = addedEdge.Scope;
                 BulkRegistryOperationResult result = await serviceClient.Devices
-                    .UpdateAsync(new[] { addedDevice1, addedDevice2 })
+                    .SetAsync(new[] { addedDevice1, addedDevice2 })
                     .ConfigureAwait(false);
 
                 // assert
@@ -216,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_UpdateTwins2Async_Works()
+        public async Task RegistryManager_UpdateTwins2Async_Works()
         {
             // arrange
 
@@ -268,7 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_RemoveDevices2Async_Works()
+        public async Task devicesClient_RemoveDevices2Async_Works()
         {
             // arrange
 
@@ -326,7 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_AddDeviceWithProxy()
+        public async Task devicesClient_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
             var options = new ServiceClientOptions2
@@ -340,7 +342,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_ConfigurationOperations_Work()
+        public async Task RegistryManager_ConfigurationOperations_Work()
         {
             // arrange
 
@@ -408,7 +410,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task registryClient_Query_Works()
+        public async Task RegistryManager_Query_Works()
         {
             // arrange
 
@@ -517,7 +519,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 string managedByValue = "SomeChangedValue";
                 retrievedModule.ManagedBy = managedByValue;
 
-                Module updatedModule = await serviceClient.Modules.UpdateAsync(retrievedModule).ConfigureAwait(false);
+                Module updatedModule = await serviceClient.Modules.SetAsync(retrievedModule).ConfigureAwait(false);
 
                 updatedModule.ManagedBy.Should().Be(managedByValue, "Module should have changed its managedBy value");
 
@@ -534,7 +536,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         /// Test basic operations of a module's twin.
         /// </summary>
         [LoggedTestMethod]
-        public async Task ModulesClient_DeviceTwinLifecycle()
+        public async Task RegistryManager_DeviceTwinLifecycle()
         {
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
