@@ -77,11 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 int hashCode = _endorsementKey != null ? _endorsementKey.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ (_storageRootKey != null ? _storageRootKey.GetHashCode() : 0);
-#if NETSTANDARD2_1
-                hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode(StringComparison.Ordinal) : 0);
-#else
                 hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode() : 0);
-#endif
                 hashCode = (hashCode * 397) ^ (_authentication != null ? _authentication.GetHashCode() : 0);
 
                 return hashCode;

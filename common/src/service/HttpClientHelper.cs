@@ -870,14 +870,9 @@ namespace Microsoft.Azure.Devices
 
         internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
-#if NET5_0_OR_GREATER
-            var httpMessageHandler = new SocketsHttpHandler();
-            httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
-#else
             var httpMessageHandler = new HttpClientHandler();
             httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
-#endif
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {

@@ -50,13 +50,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             //
             // Since then the UnixDomainSocketEndpoint has been added to the dotnet framework and there has been considerable work
             // around unix sockets in the BCL. For older versions of the framework we will continue to use the existing class since it works
-            // fine. For netcore 2.1 and greater as well as .NET 5.0 and greater we'll use the native framework version.
+            // fine. For netcore 2.1 and greater as well as .NET 5.0 and greater the native framework version can be an alternatve.
 
-#if NETSTANDARD2_0
             var endpoint = new Microsoft.Azure.Devices.Client.HsmAuthentication.Transport.UnixDomainSocketEndPoint(_providerUri.LocalPath);
-#else
-            var endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(_providerUri.LocalPath);
-#endif
             await socket.ConnectAsync(endpoint).ConfigureAwait(false);
             return socket;
         }

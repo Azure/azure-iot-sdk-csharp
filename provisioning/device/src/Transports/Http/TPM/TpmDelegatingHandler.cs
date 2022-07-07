@@ -32,11 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if(response.StatusCode == HttpStatusCode.Unauthorized)
             {
-#if NET5_0_OR_GREATER
-                if (request.Options.TryGetValue(new HttpRequestOptionsKey<object>(ProvisioningHeaderName), out object result))
-#else
                 if (request.Properties.TryGetValue(ProvisioningHeaderName, out object result))
-#endif
                 {
                     if (result is Action<string> setSasToken)
                     {

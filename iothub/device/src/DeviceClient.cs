@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public class DeviceClient : IDisposable
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
         , IAsyncDisposable
 #endif
     {
@@ -656,7 +656,7 @@ namespace Microsoft.Azure.Devices.Client
             GC.SuppressFinalize(this);
         }
 
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
         // IAsyncDisposable is available in .NET Standard 2.1 and above
 
         /// <summary>

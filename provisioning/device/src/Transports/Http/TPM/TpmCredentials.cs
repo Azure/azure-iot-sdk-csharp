@@ -25,21 +25,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 Action<string> action = (value) =>
                 {
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-                    _sasToken = value.Replace(SASHeaderName + " ", "", StringComparison.Ordinal);
-#else
                     _sasToken = value.Replace(SASHeaderName + " ", "");
-#endif
                     SetAuthorizationHeader(request, _sasToken);
                 };
 
-#if NET5_0_OR_GREATER
-                HttpRequestOptions requestOptions = request.Options;
-                var requestOptionsKey = new HttpRequestOptionsKey<Action<string>>(TpmDelegatingHandler.ProvisioningHeaderName);
-                requestOptions.Set(requestOptionsKey, action);
-#else
                 request.Properties.Add(TpmDelegatingHandler.ProvisioningHeaderName, action);
-#endif
             }
             else
             {
