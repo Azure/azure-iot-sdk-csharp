@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Tests
     public class DevicesTests
     {
         private const string HostName = "acme.azure-devices.net";
+        private static Uri HttpUri = new Uri("https://" + HostName);
         private const string validMockConnectionString = $"HostName={HostName};SharedAccessKeyName=iothubowner;SharedAccessKey=dGVzdFN0cmluZzE=";
         private const string validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
 
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Tests
             const string DeviceId = "123";
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var deviceToReturn = new Device(DeviceId) { ConnectionState = DeviceConnectionState.Connected };
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
             var device = await DevicesClient.GetAsync(DeviceId).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, device.Id);
             mockHttpClient.VerifyAll();
@@ -63,14 +64,14 @@ namespace Microsoft.Azure.Devices.Tests
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
             var returnedDevice = await DevicesClient.AddAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
             mockHttpClient.VerifyAll();
@@ -143,24 +144,18 @@ namespace Microsoft.Azure.Devices.Tests
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
             var returnedDevice = await DevicesClient.SetAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
             mockHttpClient.VerifyAll();
-        }
-
-        private Device PrepareTestDevice(int batteryLevel, string firmwareVersion)
-        {
-            var deviceToReturn = new Device("Device123");
-            return deviceToReturn;
         }
 
         [ExpectedException(typeof(ArgumentNullException))]
@@ -249,13 +244,13 @@ namespace Microsoft.Azure.Devices.Tests
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
             await DevicesClient.SetAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
@@ -286,13 +281,13 @@ namespace Microsoft.Azure.Devices.Tests
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
             await DevicesClient.SetAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
@@ -383,14 +378,14 @@ namespace Microsoft.Azure.Devices.Tests
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = null;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
             await DevicesClient.DeleteAsync(new List<Device>() { goodDevice1, goodDevice2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
@@ -421,13 +416,13 @@ namespace Microsoft.Azure.Devices.Tests
             var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
-            var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
+            var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
             await DevicesClient.DeleteAsync(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None).ConfigureAwait(false);
         }

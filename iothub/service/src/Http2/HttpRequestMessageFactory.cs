@@ -19,6 +19,13 @@ namespace Microsoft.Azure.Devices.Http2
         private Uri _baseUri;
         private string _apiVersionQueryString;
 
+        /// <summary>
+        /// Constructor for mocking purposes only.
+        /// </summary>
+        protected HttpRequestMessageFactory()
+        {
+        }
+
         public HttpRequestMessageFactory(Uri baseUri, string apiVersion)
         {
             _baseUri = baseUri;
