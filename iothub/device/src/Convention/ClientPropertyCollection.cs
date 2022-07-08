@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         // TODO: Unit-testable and mockable
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ClientPropertyCollection"/>.
+        /// Initializes a new instance of this class.
         /// </summary>
         /// <remarks>
         /// Use the <see cref="AddRootProperty(string, object)"/> and/or <see cref="AddComponentProperty(string, string, object)"/> methods
