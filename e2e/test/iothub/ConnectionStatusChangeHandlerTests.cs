@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
-                    await r.Devices.UpdateAsync(device).ConfigureAwait(false);
+                    await r.Devices.SetAsync(device).ConfigureAwait(false);
                 }).ConfigureAwait(false);
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
-                    await r.Devices.UpdateAsync(device).ConfigureAwait(false);
+                    await r.Devices.SetAsync(device).ConfigureAwait(false);
                 }).ConfigureAwait(false);
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
-                    await r.Devices.UpdateAsync(device).ConfigureAwait(false);
+                    await r.Devices.SetAsync(device).ConfigureAwait(false);
                 }).ConfigureAwait(false);
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
                 device.Status = DeviceStatus.Disabled;
-                await r.Devices.UpdateAsync(device).ConfigureAwait(false);
+                await r.Devices.SetAsync(device).ConfigureAwait(false);
             }).ConfigureAwait(false);
         }
 

@@ -121,9 +121,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="device">The device identity's new state.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
-        public virtual async Task<Device> UpdateAsync(Device device, CancellationToken cancellationToken = default)
+        public virtual async Task<Device> SetAsync(Device device, CancellationToken cancellationToken = default)
         {
-            return await UpdateAsync(device, false, cancellationToken);
+            return await SetAsync(device, false, cancellationToken);
         }
 
         /// <summary>
@@ -138,10 +138,10 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
-        public virtual async Task<Device> UpdateAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<Device> SetAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device: {device?.Id}", nameof(UpdateAsync));
+                Logging.Enter(this, $"Updating device: {device?.Id}", nameof(SetAsync));
 
             try
             {
@@ -162,13 +162,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(UpdateAsync)} threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device: {device?.Id}", nameof(UpdateAsync));
+                    Logging.Exit(this, $"Updating device: {device?.Id}", nameof(SetAsync));
             }
         }
 
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateAsync));
+                Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(SetAsync));
 
             try
             {
@@ -378,13 +378,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(UpdateAsync)} threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(UpdateAsync));
+                    Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(SetAsync));
             }
         }
 
@@ -604,8 +604,6 @@ namespace Microsoft.Azure.Devices
                    inputBlobName),
                cancellationToken);
         }
-
-#pragma warning restore CA1054 // Uri parameters should not be strings
 
         /// <summary>
         /// Creates a new bulk job to import device registrations into the IoT hub.

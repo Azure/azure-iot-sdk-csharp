@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
-            var returnedDevice = await DevicesClient.UpdateAsync(deviceToReturn).ConfigureAwait(false);
+            var returnedDevice = await DevicesClient.SetAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
             mockHttpClient.VerifyAll();
         }
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
-            await DevicesClient.UpdateAsync((Device)null).ConfigureAwait(false);
+            await DevicesClient.SetAsync((Device)null).ConfigureAwait(false);
             Assert.Fail("UpdateDevice api did not throw exception when the device parameter was null.");
         }
 
