@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Message msg = msgSent.Item1;
                 string payload = msgSent.Item2;
 
-                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger);
+                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger);
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
                 // Invoke direct methods

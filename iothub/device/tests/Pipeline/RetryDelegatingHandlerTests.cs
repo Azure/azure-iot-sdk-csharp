@@ -380,15 +380,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            const string lockToken = "fakeLockToken";
             using var cts = new CancellationTokenSource();
             cts.Cancel();
-            innerHandlerMock.CompleteAsync(Arg.Any<string>(), cts.Token).Returns(TaskHelpers.CompletedTask);
+            innerHandlerMock.CompleteAsync(lockToken, cts.Token).Returns(TaskHelpers.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
-            await sut.CompleteAsync("", cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.CompleteAsync(lockToken, cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
