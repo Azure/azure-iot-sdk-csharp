@@ -18,7 +18,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal Device()
         {
-            Id = "";
         }
 
         /// <summary>

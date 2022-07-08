@@ -17,6 +17,13 @@ namespace Microsoft.Azure.Devices
     public class Module : IETagHolder
     {
         /// <summary>
+        /// Creates a new instance of this class. For serialization purposes only.
+        /// </summary>
+        internal Module()
+        {
+        }
+
+        /// <summary>
         /// Creates a new instance of <see cref="Module"/>
         /// </summary>
         /// <param name="deviceId">Device identifier</param>

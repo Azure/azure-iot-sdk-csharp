@@ -13,7 +13,9 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// TODO
+    /// The client for making service requests to IoT hub. This client contains subclients for the various feature sets
+    /// within IoT hub including managing device/module identities, getting/setting twin for device/modules, invoking
+    /// direct methods on devices/modules, and more.
     /// </summary>
     public class ServiceClient2 : IDisposable
     {

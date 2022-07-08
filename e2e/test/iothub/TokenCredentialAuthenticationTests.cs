@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private readonly string _devicePrefix = $"E2E_{nameof(TokenCredentialAuthenticationTests)}_";
 
         [LoggedTestMethod]
-        public async Task RegistryClient_Http_TokenCredentialAuth_Success()
+        public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
             using var serviceClient = new ServiceClient2(

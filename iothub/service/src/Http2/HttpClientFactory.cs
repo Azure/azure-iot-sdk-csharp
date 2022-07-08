@@ -59,22 +59,9 @@ namespace Microsoft.Azure.Devices.Http2
                 httpMessageHandler.Proxy = options.Proxy;
             }
 
-            // messageHandler passed in is an HttpClientHandler for .NET Framework and .NET standard, and a SocketsHttpHandler for .NET core
-            switch ((HttpMessageHandler)httpMessageHandler)
-            {
-                case HttpClientHandler httpClientHandler:
-                    httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-                    ServicePoint servicePoint = ServicePointManager.FindServicePoint(httpsEndpoint);
-                    servicePoint.ConnectionLeaseTimeout = options.HttpConnectionLeaseTimeout.Milliseconds;
-                    break;
-#if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
-                // SocketsHttpHandler is only available in netcore2.1 and onwards
-                case SocketsHttpHandler socketsHttpHandler:
-                    socketsHttpHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-                    socketsHttpHandler.PooledConnectionLifetime = TimeSpan.FromMilliseconds(options.HttpConnectionLeaseTimeout.Milliseconds);
-                    break;
-#endif
-            }
+            httpMessageHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
+            ServicePoint servicePoint = ServicePointManager.FindServicePoint(httpsEndpoint);
+            servicePoint.ConnectionLeaseTimeout = options.HttpConnectionLeaseTimeout.Milliseconds;
 
             return new HttpClient(httpMessageHandler);
         }
