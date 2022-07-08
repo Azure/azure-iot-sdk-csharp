@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client
@@ -77,32 +78,33 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Adds or updates the value for the collection.
+        /// Adds or updates the value to the collection.
         /// </summary>
         /// <remarks>
-        /// When using this as part of the writable property flow to respond to a writable property update, pass in
-        /// <paramref name="propertyValue"/> as an instance of
-        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/>
-        /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
-        /// to ensure the correct formatting is applied when the object is serialized.
-        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
+        /// Use this when reporting a property that is not a response of a writable property update request.
+        /// When using this as part of the writable property flow to respond to a writable property update,
+        /// see <see cref="AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>.
         /// </remarks>
         /// <param name="propertyName">The name of the property to add or update.</param>
         /// <param name="propertyValue">The value of the property to add or update.</param>
         /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         public void AddRootProperty(string propertyName, object propertyValue)
-            => AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null);
+        {
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
+            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null);
+        }
 
         /// <summary>
-        /// Adds or updates the value for the collection.
+        /// Adds or updates the value to the collection.
         /// </summary>
         /// <remarks>
-        /// When using this as part of the writable property flow to respond to a writable property update, pass in
-        /// <paramref name="propertyValue"/> as an instance of
-        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/>
-        /// from <see cref="DeviceClient.PayloadConvention"/> (or <see cref="ModuleClient.PayloadConvention"/>)
-        /// to ensure the correct formatting is applied when the object is serialized.
-        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
+        /// Use this when reporting a property that is not a response of a writable property update request.
+        /// When using this as part of the writable property flow to respond to a writable property update,
+        /// see <see cref="AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>.
         /// </remarks>
         /// <param name="componentName">The component with the property to add or update.</param>
         /// <param name="propertyName">The name of the property to add or update.</param>
@@ -115,7 +117,45 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(componentName));
             }
 
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
             AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName);
+        }
+
+        /// <summary>
+        /// Adds or updates a writable property acknowledgement value to the collection.
+        /// </summary>
+        /// <remarks>
+        /// Use this as part of the writable property flow to respond to a writable property update.
+        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
+        /// </remarks>
+        /// <param name="writableClientPropertyAcknowledgement">The writable property update acknowledgement payload.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="writableClientPropertyAcknowledgement"/> is <c>null</c>.</exception>
+        public void AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement writableClientPropertyAcknowledgement)
+        {
+            if (writableClientPropertyAcknowledgement == null)
+            {
+                throw new ArgumentNullException(nameof(writableClientPropertyAcknowledgement));
+            }
+
+            if (writableClientPropertyAcknowledgement.ComponentName == null)
+            {
+                // This is an acknowledgement for a root-level writable property update request.
+                AddRootProperty(
+                    writableClientPropertyAcknowledgement.PropertyName,
+                    writableClientPropertyAcknowledgement.Payload);
+            }
+            else
+            {
+                // This is an acknowledgement for a component-level writable property update request.
+                AddComponentProperty(
+                    writableClientPropertyAcknowledgement.ComponentName,
+                    writableClientPropertyAcknowledgement.PropertyName,
+                    writableClientPropertyAcknowledgement.Payload);
+            }
         }
 
         /// <summary>
@@ -123,8 +163,14 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
         /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         public bool Contains(string propertyName)
         {
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
             return ClientPropertiesReported.ContainsKey(propertyName);
         }
 
@@ -134,13 +180,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyName">The property to locate.</param>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> is null. See the root-level <see cref="Contains(string)"/> instead.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> or <paramref name="propertyName"/> is <c>null</c>.</exception>
         public bool Contains(string componentName, string propertyName)
         {
             if (componentName == null)
             {
-                throw new ArgumentNullException(nameof(componentName), "It looks like you are trying determine if a root-level property is present in the collection. " +
-                    "Use the method Contains(string propertyName) instead.");
+                throw new ArgumentNullException(nameof(componentName));
+            }
+
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
             }
 
             if (ClientPropertiesReported.TryGetValue(componentName, out object component))
@@ -205,15 +255,15 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         // Case 2a:
                         // Check if the retrieved value is a writable property update acknowledgment
-                        NewtonsoftJsonWritablePropertyAcknowledgementValue newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
+                        NewtonsoftJsonWritablePropertyAcknowledgementPayload newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
                             .Instance
-                            .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementValue>(retrievedPropertyValue);
+                            .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementPayload>(retrievedPropertyValue);
 
-                        if (typeof(IWritablePropertyAcknowledgementValue).IsAssignableFrom(typeof(T)))
+                        if (typeof(IWritablePropertyAcknowledgementPayload).IsAssignableFrom(typeof(T)))
                         {
                             // If T is IWritablePropertyAcknowledgementValue the property value should be of type IWritablePropertyAcknowledgementValue as defined in the PayloadSerializer.
                             // We'll convert the json object to NewtonsoftJsonWritablePropertyAcknowledgementValue and then convert it to the appropriate IWritablePropertyAcknowledgementValue object.
-                            propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementValue(
+                            propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(
                                 newtonsoftWritablePropertyAcknowledgementValue.Value,
                                 newtonsoftWritablePropertyAcknowledgementValue.AckCode,
                                 newtonsoftWritablePropertyAcknowledgementValue.AckVersion,
@@ -314,15 +364,15 @@ namespace Microsoft.Azure.Devices.Client
                                 {
                                     // Case 2a:
                                     // Check if the retrieved value is a writable property update acknowledgment
-                                    NewtonsoftJsonWritablePropertyAcknowledgementValue newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
+                                    NewtonsoftJsonWritablePropertyAcknowledgementPayload newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
                                         .Instance
-                                        .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementValue>(dictionaryElement);
+                                        .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementPayload>(dictionaryElement);
 
-                                    if (typeof(IWritablePropertyAcknowledgementValue).IsAssignableFrom(typeof(T)))
+                                    if (typeof(IWritablePropertyAcknowledgementPayload).IsAssignableFrom(typeof(T)))
                                     {
                                         // If T is IWritablePropertyAcknowledgementValue the property value should be of type IWritablePropertyAcknowledgementValue as defined in the PayloadSerializer.
                                         // We'll convert the json object to NewtonsoftJsonWritablePropertyAcknowledgementValue and then convert it to the appropriate IWritablePropertyAcknowledgementValue object.
-                                        propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementValue(
+                                        propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(
                                             newtonsoftWritablePropertyAcknowledgementValue.Value,
                                             newtonsoftWritablePropertyAcknowledgementValue.AckCode,
                                             newtonsoftWritablePropertyAcknowledgementValue.AckVersion,
@@ -390,7 +440,9 @@ namespace Microsoft.Azure.Devices.Client
                 // accessible through its dedicated accessor.
                 if (property.Key == VersionName)
                 {
-                    Version = (long)property.Value;
+                    Version = ObjectConversionHelpers.TryCastNumericTo(property.Value, out long longVersion)
+                        ? longVersion
+                        : throw new IotHubException("Properties document has incorrectly formatted version number. Contact service with logs.");
                 }
                 else
                 {

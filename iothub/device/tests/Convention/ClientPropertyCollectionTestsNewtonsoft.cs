@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         };
 
         // Create a writable property response with the expected values.
-        private static readonly IWritablePropertyAcknowledgementValue s_writablePropertyResponse = new NewtonsoftJsonWritablePropertyAcknowledgementValue(
+        private static readonly IWritablePropertyAcknowledgementPayload s_writablePropertyResponse = new NewtonsoftJsonWritablePropertyAcknowledgementPayload(
             propertyValue: StringPropertyValue,
             ackCode: CommonClientResponseCodes.OK,
             ackVersion: 2,
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
-            clientProperties.TryGetValue(RootWritablePropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementValue outValue);
+            clientProperties.TryGetValue(RootWritablePropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementPayload outValue);
 
             // assert
             outValue.Value.Should().Be(StringPropertyValue);
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
 
             // act
-            clientProperties.TryGetValue(ComponentName, ComponentWritablePropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementValue outValue);
+            clientProperties.TryGetValue(ComponentName, ComponentWritablePropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementPayload outValue);
 
             // assert
             outValue.Value.Should().Be(StringPropertyValue);
@@ -352,7 +352,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public DateTimeOffset DateTimeProperty { get; set; }
 
         [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.RootWritablePropertyName)]
-        public IWritablePropertyAcknowledgementValue WritablePropertyResponse { get; set; }
+        public IWritablePropertyAcknowledgementPayload WritablePropertyResponse { get; set; }
 
         [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentName)]
         public ComponentProperties ComponentProperties { get; set; }
@@ -394,6 +394,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public DateTimeOffset DateTimeProperty { get; set; }
 
         [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentWritablePropertyName)]
-        public IWritablePropertyAcknowledgementValue WritablePropertyResponse { get; set; }
+        public IWritablePropertyAcknowledgementPayload WritablePropertyResponse { get; set; }
     }
 }

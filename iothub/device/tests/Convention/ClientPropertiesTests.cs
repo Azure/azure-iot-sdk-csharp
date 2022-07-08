@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             // These are the device reported property values.
-            foreach (var deviceReportedKeyValuePairs in clientProperties.ReportedByClient)
+            foreach (KeyValuePair<string, object> deviceReportedKeyValuePairs in clientProperties.ReportedByClient)
             {
                 if (deviceReportedKeyValuePairs.Key.Equals(StringPropertyName))
                 {
@@ -93,18 +93,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
             }
 
             // These are the property values for which service has requested an update.
-            foreach (var updateRequestedKeyValuePairs in clientProperties.WritablePropertyRequests)
+            foreach (WritableClientProperty updateRequesteProperties in clientProperties.WritablePropertyRequests)
             {
-                if (updateRequestedKeyValuePairs.Key.Equals(DoublePropertyName))
+                if (updateRequesteProperties.PropertyName == DoublePropertyName)
                 {
-                    WritableClientProperty writableClientProperty = (WritableClientProperty)updateRequestedKeyValuePairs.Value;
-                    writableClientProperty.TryGetValue(out double value).Should().BeTrue();
+                    updateRequesteProperties.TryGetValue(out double value).Should().BeTrue();
                     value.Should().Be(DoublePropertyValue);
                 }
-                else if (updateRequestedKeyValuePairs.Key.Equals(MapPropertyName))
+                else if (updateRequesteProperties.PropertyName == MapPropertyName)
                 {
-                    WritableClientProperty writableClientProperty = (WritableClientProperty)updateRequestedKeyValuePairs.Value;
-                    writableClientProperty.TryGetValue(out Dictionary<string, object> value).Should().BeTrue();
+                    updateRequesteProperties.TryGetValue(out Dictionary<string, object> value).Should().BeTrue();
                     value.Should().HaveSameCount(s_mapPropertyValue);
 
                     // TryGetValue doesn't have nested deserialization, so we'll have to serialize the retrieved value to compare with the input
@@ -112,14 +110,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
                     string actualMapPropertyValue = JsonConvert.SerializeObject(value);
                     expectedMapPropertyValue.Should().Be(actualMapPropertyValue);
                 }
-                else if (updateRequestedKeyValuePairs.Key.Equals(ComponentName))
+                else if (updateRequesteProperties.ComponentName == ComponentName && updateRequesteProperties.PropertyName == FloatPropertyName)
                 {
-                    updateRequestedKeyValuePairs.Value.Should().BeOfType(typeof(Dictionary<string, object>));
-                    var componentDictionary = updateRequestedKeyValuePairs.Value as Dictionary<string, object>;
-
-                    componentDictionary.TryGetValue(FloatPropertyName, out object writableClientProperty);
-                    writableClientProperty.Should().BeOfType(typeof(WritableClientProperty));
-                    ((WritableClientProperty)writableClientProperty).TryGetValue(out float value).Should().BeTrue();
+                    (updateRequesteProperties).TryGetValue(out float value).Should().BeTrue();
                     value.Should().Be(FloatPropertyValue);
                 }
             }

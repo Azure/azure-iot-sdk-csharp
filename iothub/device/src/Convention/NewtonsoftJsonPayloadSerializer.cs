@@ -52,9 +52,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = null)
+        public override IWritablePropertyAcknowledgementPayload CreateWritablePropertyAcknowledgementPayload(object value, int statusCode, long version, string description = null)
         {
-            return new NewtonsoftJsonWritablePropertyAcknowledgementValue(value, statusCode, version, description);
+            return new NewtonsoftJsonWritablePropertyAcknowledgementPayload(value, statusCode, version, description);
         }
 
         /// <summary>

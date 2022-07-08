@@ -339,17 +339,25 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var clientProperties = new ClientPropertyCollection();
-            var writableResponse = new NewtonsoftJsonWritablePropertyAcknowledgementValue(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
-            clientProperties.AddRootProperty(StringPropertyName, writableResponse);
+            var writableAckValue = new NewtonsoftJsonWritablePropertyAcknowledgementPayload(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
+            var writableAck = new WritableClientPropertyAcknowledgement
+            {
+                PropertyName = StringPropertyName,
+                Payload = writableAckValue,
+            };
+            clientProperties.AddWritableClientPropertyAcknowledgement(writableAck);
 
             // act
-            clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementValue outValue);
+            clientProperties.TryGetValue(StringPropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementPayload outValue);
+            bool hasComponentIdentifier = clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string _);
 
             // assert
-            outValue.Value.Should().Be(writableResponse.Value);
-            outValue.AckCode.Should().Be(writableResponse.AckCode);
-            outValue.AckVersion.Should().Be(writableResponse.AckVersion);
-            outValue.AckDescription.Should().Be(writableResponse.AckDescription);
+            outValue.Value.Should().Be(writableAck.Payload.Value);
+            outValue.AckCode.Should().Be(writableAck.Payload.AckCode);
+            outValue.AckVersion.Should().Be(writableAck.Payload.AckVersion);
+            outValue.AckDescription.Should().Be(writableAck.Payload.AckDescription);
+
+            hasComponentIdentifier.Should().BeFalse();
         }
 
         [TestMethod]
@@ -357,17 +365,26 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var clientProperties = new ClientPropertyCollection();
-            var writableResponse = new NewtonsoftJsonWritablePropertyAcknowledgementValue(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
-            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, writableResponse);
+            var writableAckValue = new NewtonsoftJsonWritablePropertyAcknowledgementPayload(StringPropertyValue, CommonClientResponseCodes.OK, 2, WritablePropertyDescription);
+            var writableAck = new WritableClientPropertyAcknowledgement
+            {
+                ComponentName = ComponentName,
+                PropertyName = StringPropertyName,
+                Payload = writableAckValue,
+            };
+            clientProperties.AddWritableClientPropertyAcknowledgement(writableAck);
 
             // act
-            clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementValue outValue);
+            clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementPayload outValue);
+            clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
 
             // assert
-            outValue.Value.Should().Be(writableResponse.Value);
-            outValue.AckCode.Should().Be(writableResponse.AckCode);
-            outValue.AckVersion.Should().Be(writableResponse.AckVersion);
-            outValue.AckDescription.Should().Be(writableResponse.AckDescription);
+            outValue.Value.Should().Be(writableAck.Payload.Value);
+            outValue.AckCode.Should().Be(writableAck.Payload.AckCode);
+            outValue.AckVersion.Should().Be(writableAck.Payload.AckVersion);
+            outValue.AckDescription.Should().Be(writableAck.Payload.AckDescription);
+
+            componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
         }
 
         [TestMethod]
@@ -578,28 +595,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddNullClientPropertyCollectionWithComponentThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.Convention = DefaultPayloadConvention.Instance;
-            testPropertyCollection.AddComponentProperty("testComponent", "qwe", 98);
-
-            // act
-            // This should add an entry in the dictionary with a null value.
-            // This patch would be interpreted by the service as the client wanting to remove component "testComponent" from its properties.
-            testPropertyCollection.AddRootProperty("testComponent", null);
-
-            // assert
-            bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int property2Value);
-            iscomponentValueRetrieved.Should().BeFalse();
-
-            bool iscomponentRetrieved = testPropertyCollection.TryGetValue<object>("testComponent", out object componentValue);
-            iscomponentRetrieved.Should().BeTrue();
-            componentValue.Should().BeNull();
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_AddPropertyValueAlreadyExistsWithComponentSuccess()
         {
             // arrange
@@ -669,6 +664,90 @@ namespace Microsoft.Azure.Devices.Client.Tests
             bool isNamePresent = testPropertyCollection.TryGetValue<string>("Name", out string name);
             isNamePresent.Should().BeTrue();
             name.Should().Be("testProperty");
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_ContainsWithNullPropertyNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddRootProperty("abc", 123);
+
+            // act
+            Action testAction = () => testPropertyCollection.Contains(null);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_ContainsWithNullComponentNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("component", "abc", 123);
+
+            // act
+            Action testAction = () => testPropertyCollection.Contains(null, "abc");
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_ContainsWithComponentAndNullPropertyNameThrows()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("component", "abc", 123);
+
+            // act
+            Action testAction = () => testPropertyCollection.Contains("component", null);
+
+            // assert
+            testAction.Should().Throw<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithNullPropertyNameReturnsFalse()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddRootProperty("abc", 123);
+
+            // act
+            bool isPresent = testPropertyCollection.TryGetValue(null, out object value);
+
+            // assert
+            isPresent.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithNullComponentNameReturnsFalse()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("component", "abc", 123);
+
+            // act
+            bool isPresent = testPropertyCollection.TryGetValue(null, "abc", out object value);
+
+            // assert
+            isPresent.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentAndNullPropertyNameReturnsFalse()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("component", "abc", 123);
+
+            // act
+            bool isPresent = testPropertyCollection.TryGetValue("component", null, out object value);
+
+            // assert
+            isPresent.Should().BeFalse();
         }
     }
 }

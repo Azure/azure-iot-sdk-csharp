@@ -55,14 +55,14 @@ namespace Microsoft.Azure.Devices.Client
         public abstract T ConvertFromJsonObject<T>(object jsonObjectToConvert);
 
         /// <summary>
-        /// Creates the correct <see cref="IWritablePropertyAcknowledgementValue"/> payload to be used with this serializer.
-        /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
+        /// Creates the correct <see cref="IWritablePropertyAcknowledgementPayload"/> to be used with this serializer.
+        /// This is used by <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create a writable property acknowledgement payload.
         /// </summary>
         /// <param name="value">The value of the property.</param>
         /// <param name="statusCode">The status code of the write operation.</param>
         /// <param name="version">The version the property is responding to.</param>
         /// <param name="description">An optional response description to the writable property request.</param>
         /// <returns>The writable property response to be used with this serializer.</returns>
-        public abstract IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = default);
+        public abstract IWritablePropertyAcknowledgementPayload CreateWritablePropertyAcknowledgementPayload(object value, int statusCode, long version, string description = default);
     }
 }
