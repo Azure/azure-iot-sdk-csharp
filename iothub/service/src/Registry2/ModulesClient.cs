@@ -15,7 +15,8 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// TODO
+    /// Subclient of <see cref="ServiceClient2"/> that handles all module registry operations including
+    /// getting/adding/setting/deleting module identities.
     /// </summary>
     public class ModulesClient
     {
@@ -25,6 +26,13 @@ namespace Microsoft.Azure.Devices
         private HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
+
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected ModulesClient()
+        {
+        }
 
         internal ModulesClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {

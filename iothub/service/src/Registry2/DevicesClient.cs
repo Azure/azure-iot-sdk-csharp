@@ -15,7 +15,9 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// TODO
+    /// Subclient of <see cref="ServiceClient2"/> that handles all device registry operations including
+    /// getting/adding/setting/deleting device identities, getting modules on a device, and getting device
+    /// registry statistics.
     /// </summary>
     public class DevicesClient
     {
@@ -31,6 +33,13 @@ namespace Microsoft.Azure.Devices
         private const string JobsCreateUriFormat = "/jobs/create";
         private const string StatisticsUriFormat = "/statistics/devices";
         private const string AdminUriFormat = "/$admin/{0}";
+
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected DevicesClient()
+        {
+        }
 
         internal DevicesClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {

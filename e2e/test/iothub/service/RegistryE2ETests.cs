@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(HttpRequestException))]
-        public async Task devicesClient_BadProxy_ThrowsException()
+        public async Task DevicesClient_BadProxy_ThrowsException()
         {
             // arrange
             using var serviceClient = new ServiceClient2(
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task devicesClient_AddAndRemoveDeviceWithScope()
+        public async Task DevicesClient_AddAndRemoveDeviceWithScope()
         {
             // arrange
 
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task devicesClient_AddDeviceWithTwinWithDeviceCapabilities()
+        public async Task DevicesClient_AddDeviceWithTwinWithDeviceCapabilities()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
 
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task devicesClient_AddDevices2Async_Works()
+        public async Task DevicesClient_AddDevices2Async_Works()
         {
             // arrange
 
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task devicesClient_UpdateDevices2Async_Works()
+        public async Task DevicesClient_UpdateDevices2Async_Works()
         {
             // arrange
 
@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task devicesClient_RemoveDevices2Async_Works()
+        public async Task DevicesClient_RemoveDevices2Async_Works()
         {
             // arrange
 
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task devicesClient_AddDeviceWithProxy()
+        public async Task DevicesClient_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
             var options = new ServiceClientOptions2
@@ -565,6 +565,36 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             finally
             {
                 await CleanupAsync(serviceClient, module.DeviceId).ConfigureAwait(false);
+            }
+        }
+
+        // Create a service client that uses each service API version and try a basic registry operation
+        // in order to confirm that the service API version works.
+        [LoggedTestMethod]
+        public async Task DevicesClient_ServiceApiVersionsAllWork()
+        {
+            foreach (ServiceClientOptions2.ServiceVersion serviceVersion in Enum.GetValues(typeof(ServiceClientOptions2.ServiceVersion)))
+            {
+                ServiceClientOptions2 options = new ServiceClientOptions2()
+                {
+                    Version = serviceVersion
+                };
+
+                using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString, options);
+                string deviceId = Guid.NewGuid().ToString();
+
+                try
+                {
+                    await serviceClient.Devices.AddAsync(new Device(deviceId)).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    throw new AssertFailedException($"Could not make a service request with service API version {serviceVersion}", e);
+                }
+                finally
+                {
+                    await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                }
             }
         }
 

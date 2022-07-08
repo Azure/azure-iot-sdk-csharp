@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
 
-            const string idPrefix = nameof(RegistryManager_ExportDevices);
+            const string idPrefix = nameof(DevicesClient_ExportDevices);
 
             string edgeId1 = $"{idPrefix}-Edge-{StorageContainer.GetRandomSuffix(4)}";
             string edgeId2 = $"{idPrefix}-Edge-{StorageContainer.GetRandomSuffix(4)}";

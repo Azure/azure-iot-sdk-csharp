@@ -23,12 +23,14 @@ namespace Microsoft.Azure.Devices
         private HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
-        /// TODO
+        /// The subclient for all device registry operations including getting/adding/setting/deleting
+        /// device identities, getting modules on a device, and getting device registry statistics.
         /// </summary>
         public DevicesClient Devices { get; private set; }
 
         /// <summary>
-        /// TODO
+        /// Subclient of <see cref="ServiceClient2"/> that handles all module registry operations including
+        /// getting/adding/setting/deleting module identities.
         /// </summary>
         public ModulesClient Modules { get; private set; }
 

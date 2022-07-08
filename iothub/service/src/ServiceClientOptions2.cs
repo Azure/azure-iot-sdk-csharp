@@ -1,26 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The configurable settings for a <see cref="ServiceClient2"/> instance.
+    /// The configurable options for <see cref="ServiceClient2"/> instances.
     /// </summary>
     public class ServiceClientOptions2
     {
         /// <summary>
         /// Initializes a new instance of this class using the default settings.
         /// </summary>
-        public ServiceClientOptions2()
+        /// <param name="version">
+        /// The service API version that this client will use when making service requests. Defaults to the latest
+        /// version.
+        /// </param>
+        public ServiceClientOptions2(ServiceVersion version = LatestVersion)
         {
             Proxy = DefaultWebProxySettings.Instance;
+            Version = version;
         }
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
-        /// static ServiceClient GetServiceClient
+        /// static ServiceClient GetServiceClient()
         /// {
         ///     try
         ///     {
@@ -80,7 +82,7 @@ namespace Microsoft.Azure.Devices
         /// Gets the <see cref="ServiceVersion"/> of the service API used when
         /// making requests.
         /// </summary>
-        public ServiceVersion Version { get; } = LatestVersion;
+        public ServiceVersion Version { get; set; } = LatestVersion;
 
         /// <summary>
         /// The service API versions that the service supports.
@@ -90,11 +92,37 @@ namespace Microsoft.Azure.Devices
             /// <summary>
             /// 2021-04-12
             /// </summary>
-#pragma warning disable CA1707 // Remove the underscores from member name
-            V2021_04_12 = 1
-#pragma warning restore
+            V2021_04_12 = 1,
 
-            //TODO get the other service API versions
+            /// <summary>
+            /// 2020-03-13
+            /// </summary>
+            V2020_03_13 = 2,
+
+            /// <summary>
+            /// 2019-10-01
+            /// </summary>
+            V2019_10_01 = 3,
+
+            /// <summary>
+            /// 2020-09-30
+            /// </summary>
+            V2019_09_30 = 4,
+
+            /// <summary>
+            /// 2019-03-30
+            /// </summary>
+            V2019_03_30 = 5,
+
+            /// <summary>
+            /// 2018-06-30
+            /// </summary>
+            V2018_06_30 = 6,
+
+            /// <summary>
+            /// 2018_04_01
+            /// </summary>
+            V2018_04_01 = 7
         }
 
         internal const ServiceVersion LatestVersion = ServiceVersion.V2021_04_12;
@@ -104,6 +132,12 @@ namespace Microsoft.Azure.Devices
             return Version switch
             {
                 ServiceVersion.V2021_04_12 => "2021-04-12",
+                ServiceVersion.V2020_03_13 => "2020-03-13",
+                ServiceVersion.V2019_10_01 => "2019-10-01",
+                ServiceVersion.V2019_09_30 => "2020-09-30",
+                ServiceVersion.V2019_03_30 => "2019-03-30",
+                ServiceVersion.V2018_06_30 => "2018-06-30",
+                ServiceVersion.V2018_04_01 => "2018-04-01",
                 _ => throw new ArgumentException(Version.ToString()),
             };
         }

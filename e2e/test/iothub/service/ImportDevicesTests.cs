@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
 
-            const string idPrefix = nameof(RegistryManager_ImportDevices);
+            const string idPrefix = nameof(DevicesClient_ImportDevices);
 
             string deviceId = $"{idPrefix}-device-{StorageContainer.GetRandomSuffix(4)}";
             string configId = $"{idPrefix}-config-{StorageContainer.GetRandomSuffix(4)}".ToLower(); // Configuration Id characters must be all lower-case.
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             try
             {
-                string containerName = StorageContainer.BuildContainerName(nameof(RegistryManager_ImportDevices));
+                string containerName = StorageContainer.BuildContainerName(nameof(DevicesClient_ImportDevices));
                 using StorageContainer storageContainer = await StorageContainer.GetInstanceAsync(containerName).ConfigureAwait(false);
                 Logger.Trace($"Using devices container {storageContainer.Uri}");
 
