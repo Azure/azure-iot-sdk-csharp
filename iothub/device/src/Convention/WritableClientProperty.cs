@@ -13,6 +13,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class WritableClientProperty
     {
+        // TODO: Unit-testable and mockable
+
         internal WritableClientProperty()
         {
         }
@@ -22,19 +24,19 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public object Value { get; internal set; }
 
-        /// <summary>
-        /// The version number associated with the writable property update request.
-        /// </summary>
-        public long Version { get; internal set; }
+        internal long Version { get; set; }
 
         internal PayloadConvention Convention { get; set; }
 
         /// <summary>
-        /// Creates a writable property update response that contains the requested property value and version that can be reported back to the service.
+        /// Creates a writable property update payload that contains the requested property value and version to be reported back to the service
+        /// using <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
+        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>.
+        /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
         /// </summary>
         /// <remarks>
-        /// To construct a writable property update response with custom value and version number, use
-        /// <see cref="PayloadSerializer.CreateWritablePropertyResponse(object, int, long, string)"/> from
+        /// To construct a writable property update payload with custom value and version number, use
+        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementValue(object, int, long, string)"/> from
         /// <see cref="DeviceClient.PayloadConvention"/>.
         /// <para>
         /// See <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/> for more details.
@@ -42,10 +44,22 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="statusCode">An acknowledgment code that uses an HTTP status code.</param>
         /// <param name="description">An optional acknowledgment description.</param>
-        /// <returns>A writable property update response that can be reported back to the service.</returns>
-        public IWritablePropertyResponse AcknowledgeWith(int statusCode, string description = default)
+        /// <returns>A writable property update payload to be reported back to the service.</returns>
+        public IWritablePropertyAcknowledgementValue AcknowledgeWith(int statusCode, string description = default)
         {
-            return Convention.PayloadSerializer.CreateWritablePropertyResponse(Value, statusCode, Version, description);
+            return Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementValue(Value, statusCode, Version, description);
+        }
+
+        /// <summary>
+        /// The value of the writable property update request, deserialized to the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
+        /// <param name="propertyValue">When this method returns true, this contains the value of the writable property update request.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns><c>true</c> if a writable property update request of type <c>T</c> was found; otherwise, <c>false</c>.</returns>
+        public bool TryGetValue<T>(out T propertyValue)
+        {
+            return ObjectConversionHelpers.TryCastOrConvert(Value, Convention, out propertyValue);
         }
     }
 }

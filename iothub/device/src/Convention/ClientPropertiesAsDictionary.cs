@@ -16,10 +16,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ClientProperties ToClientProperties(PayloadConvention payloadConvention)
         {
-            ClientPropertyCollection writablePropertyRequestCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Desired, payloadConvention);
-            ClientPropertyCollection clientReportedPropertyCollection = ClientPropertyCollection.FromClientPropertiesAsDictionary(Reported, payloadConvention);
+            var writableClientPropertyCollection = new WritableClientPropertyCollection(Desired, payloadConvention);
+            var clientReportedPropertyCollection = new ClientPropertyCollection(Reported, payloadConvention);
 
-            return new ClientProperties(writablePropertyRequestCollection, clientReportedPropertyCollection);
+            return new ClientProperties(writableClientPropertyCollection, clientReportedPropertyCollection);
         }
     }
 }

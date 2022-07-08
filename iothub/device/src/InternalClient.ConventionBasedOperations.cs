@@ -17,6 +17,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal partial class InternalClient
     {
+        internal Func<WritableClientPropertyCollection, Task> _writableClientPropertyUpdateCallback;
+
         internal PayloadConvention PayloadConvention => _clientOptions.PayloadConvention ?? DefaultPayloadConvention.Instance;
 
         internal Task SendTelemetryAsync(TelemetryMessage telemetryMessage, CancellationToken cancellationToken)
@@ -109,22 +111,41 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<ClientPropertyCollection, Task> callback, CancellationToken cancellationToken)
+        internal async Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPropertyCollection, Task> callback, CancellationToken cancellationToken)
         {
-            // Subscribe to DesiredPropertyUpdateCallback internally and use the callback received internally to invoke the user supplied Property callback.
-            var desiredPropertyUpdateCallback = new DesiredPropertyUpdateCallback(async (twinCollection, userContext) =>
-            {
-                // convert a TwinCollection to PropertyCollection
-                var propertyCollection = ClientPropertyCollection.WritablePropertyUpdateRequestsFromTwinCollection(twinCollection, PayloadConvention);
-                await callback.Invoke(propertyCollection).ConfigureAwait(false);
-            });
+            if (Logging.IsEnabled)
+                Logging.Enter(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));
 
-            // We pass in a null context to the internal API because the updated SubscribeToWritablePropertyUpdateRequestsAsync API
-            // does not require you to pass in a user context.
-            // Since SubscribeToWritablePropertyUpdateRequestsAsync callback is invoked for all property update events,
-            // the user context passed in would be the same for all scenarios.
-            // This user context can be set at a class level instead.
-            return SetDesiredPropertyUpdateCallbackAsync(desiredPropertyUpdateCallback, null, cancellationToken);
+            // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
+            await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (callback != null && !_twinPatchSubscribedWithService)
+                {
+                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                    _twinPatchSubscribedWithService = true;
+                }
+                else if (callback == null && _twinPatchSubscribedWithService)
+                {
+                    await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                _writableClientPropertyUpdateCallback = callback;
+                _desiredPropertyUpdateCallback = null;
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+            finally
+            {
+                _twinDesiredPropertySemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));
+            }
         }
     }
 }

@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.ReportedFromClient.TryGetValue<T>(ComponentName, propName, out T propFromCollection);
+            bool isPropertyPresent = clientProperties.ReportedByClient.TryGetValue(ComponentName, propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
             propFromCollection.Should().BeEquivalentTo<T>(propValue);
 
@@ -257,9 +257,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue<T>(ComponentName, propName, out T propFromCollection);
+            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue(ComponentName, propName, out T propFromCollection);
             isPropertyPresent.Should().BeTrue();
-            propFromCollection.Should().BeEquivalentTo<T>(propValue);
+            propFromCollection.Should().BeEquivalentTo(propValue);
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await s_registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
@@ -338,17 +338,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate that the writable property update request was acknowledged
 
-            bool isWritablePropertyAckPresent = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out IWritablePropertyResponse writablePropertyAck);
+            bool isWritablePropertyAckPresent = clientProperties.ReportedByClient.TryGetValue(ComponentName, propName, out IWritablePropertyAcknowledgementValue writablePropertyAck);
             isWritablePropertyAckPresent.Should().BeTrue();
             // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
             deviceClient.PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(writablePropertyAck.Value).Should().BeEquivalentTo(propValue);
 
-            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out NewtonsoftJsonWritablePropertyResponse writablePropertyAckNewtonSoft);
+            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedByClient.TryGetValue(ComponentName, propName, out NewtonsoftJsonWritablePropertyAcknowledgementValue writablePropertyAckNewtonSoft);
             isWritablePropertyAckPresentSpecific.Should().BeTrue();
             // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
             deviceClient.PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(writablePropertyAckNewtonSoft.Value).Should().BeEquivalentTo(propValue);
 
-            bool isWritablePropertyAckPresentAsValue = clientProperties.ReportedFromClient.TryGetValue(ComponentName, propName, out T writablePropertyAckValue);
+            bool isWritablePropertyAckPresentAsValue = clientProperties.ReportedByClient.TryGetValue(ComponentName, propName, out T writablePropertyAckValue);
             isWritablePropertyAckPresentAsValue.Should().BeTrue();
             writablePropertyAckValue.Should().BeEquivalentTo(propValue);
         }
@@ -494,13 +494,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                     .UpdateClientPropertiesAsync(
                         new ClientPropertyCollection
                         {
-                            {
-                                ComponentName,
+                            [ComponentName] = 
                                 new Dictionary<string, object> {
+                                    { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
                                     { propName1, 123 },
                                     { propName2, "abcd" }
                                 }
-                            }
                         })
                     .ConfigureAwait(false);
             };

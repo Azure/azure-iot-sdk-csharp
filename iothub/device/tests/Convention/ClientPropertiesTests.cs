@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -45,10 +46,24 @@ namespace Microsoft.Azure.Devices.Client.Tests
             deviceReportedProperties.AddRootProperty(ObjectPropertyName, s_objectPropertyValue);
             deviceReportedProperties.AddComponentProperty(ComponentName, BoolPropertyName, BoolPropertyValue);
 
-            var serviceUpdateRequestedProperties = new ClientPropertyCollection();
-            serviceUpdateRequestedProperties.AddRootProperty(DoublePropertyName, DoublePropertyValue);
-            serviceUpdateRequestedProperties.AddRootProperty(MapPropertyName, s_mapPropertyValue);
-            serviceUpdateRequestedProperties.AddComponentProperty(ComponentName, FloatPropertyName, FloatPropertyValue);
+            var serviceUpdateRequestedComponentProperty = new Dictionary<string, object>
+            {
+                { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
+                { FloatPropertyName, FloatPropertyValue }
+            };
+            var serviceUpdateRequestedPropertiesDictionary = new Dictionary<string, object>
+            {
+                { DoublePropertyName, DoublePropertyValue },
+                { MapPropertyName, s_mapPropertyValue },
+                { ComponentName, serviceUpdateRequestedComponentProperty},
+                { "$version", (long)2 }
+            };
+
+            // The service update requested properties are always deserialized into a dictionary using Newtonsoft.Json.
+            // So, even though we have a dictionary object here for testing, we'll need to serialize it and deserialize it back using Newtonsoft.Json.
+            string serializedServiceUpdateRequestedPropertiesDictionary = JsonConvert.SerializeObject(serviceUpdateRequestedPropertiesDictionary);
+            var dictInput = JsonConvert.DeserializeObject<Dictionary<string, object>>(serializedServiceUpdateRequestedPropertiesDictionary);
+            var serviceUpdateRequestedProperties = new WritableClientPropertyCollection(dictInput, DefaultPayloadConvention.Instance);
 
             // act
             // The test makes a call to the internal constructor.
@@ -57,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             // These are the device reported property values.
-            foreach (var deviceReportedKeyValuePairs in clientProperties.ReportedFromClient)
+            foreach (var deviceReportedKeyValuePairs in clientProperties.ReportedByClient)
             {
                 if (deviceReportedKeyValuePairs.Key.Equals(StringPropertyName))
                 {
@@ -82,19 +97,30 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 if (updateRequestedKeyValuePairs.Key.Equals(DoublePropertyName))
                 {
-                    updateRequestedKeyValuePairs.Value.Should().Be(DoublePropertyValue);
+                    WritableClientProperty writableClientProperty = (WritableClientProperty)updateRequestedKeyValuePairs.Value;
+                    writableClientProperty.TryGetValue(out double value).Should().BeTrue();
+                    value.Should().Be(DoublePropertyValue);
                 }
                 else if (updateRequestedKeyValuePairs.Key.Equals(MapPropertyName))
                 {
-                    updateRequestedKeyValuePairs.Value.Should().BeEquivalentTo(s_mapPropertyValue);
+                    WritableClientProperty writableClientProperty = (WritableClientProperty)updateRequestedKeyValuePairs.Value;
+                    writableClientProperty.TryGetValue(out Dictionary<string, object> value).Should().BeTrue();
+                    value.Should().HaveSameCount(s_mapPropertyValue);
+
+                    // TryGetValue doesn't have nested deserialization, so we'll have to serialize the retrieved value to compare with the input
+                    string expectedMapPropertyValue = JsonConvert.SerializeObject(s_mapPropertyValue);
+                    string actualMapPropertyValue = JsonConvert.SerializeObject(value);
+                    expectedMapPropertyValue.Should().Be(actualMapPropertyValue);
                 }
                 else if (updateRequestedKeyValuePairs.Key.Equals(ComponentName))
                 {
                     updateRequestedKeyValuePairs.Value.Should().BeOfType(typeof(Dictionary<string, object>));
-                    var componentDictionary = updateRequestedKeyValuePairs.Value;
+                    var componentDictionary = updateRequestedKeyValuePairs.Value as Dictionary<string, object>;
 
-                    componentDictionary.As<Dictionary<string, object>>().TryGetValue(FloatPropertyName, out object outValue).Should().BeTrue();
-                    outValue.Should().Be(FloatPropertyValue);
+                    componentDictionary.TryGetValue(FloatPropertyName, out object writableClientProperty);
+                    writableClientProperty.Should().BeOfType(typeof(WritableClientProperty));
+                    ((WritableClientProperty)writableClientProperty).TryGetValue(out float value).Should().BeTrue();
+                    value.Should().Be(FloatPropertyValue);
                 }
             }
         }

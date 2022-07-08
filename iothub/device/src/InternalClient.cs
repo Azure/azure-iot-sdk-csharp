@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client
                 TransportSettingsArray = transportSettings,
                 IotHubConnectionString = iotHubConnectionString,
                 MethodCallback = OnMethodCalledAsync,
-                DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
+                DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangesHandler = OnConnectionStatusChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
@@ -1064,6 +1064,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 _desiredPropertyUpdateCallback = callback;
                 _twinPatchCallbackContext = userContext;
+
+                _writableClientPropertyUpdateCallback = null;
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1165,17 +1167,21 @@ namespace Microsoft.Azure.Devices.Client
             await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
         }
 
-        internal void OnReportedStatePatchReceived(TwinCollection patch)
+        internal void OnDesiredStatePatchReceived(IDictionary<string, object> patch)
         {
-            if (_desiredPropertyUpdateCallback == null)
-            {
-                return;
-            }
-
             if (Logging.IsEnabled)
-                Logging.Info(this, patch.ToJson(), nameof(OnReportedStatePatchReceived));
+                Logging.Info(this, string.Join(",", patch), nameof(OnDesiredStatePatchReceived));
 
-            _desiredPropertyUpdateCallback(patch, _twinPatchCallbackContext);
+            if (_desiredPropertyUpdateCallback != null)
+            {
+                TwinCollection twinUpdate = JsonConvert.DeserializeObject<TwinCollection>(JsonConvert.SerializeObject(patch));
+                _desiredPropertyUpdateCallback(twinUpdate, _twinPatchCallbackContext);
+            }
+            else if (_writableClientPropertyUpdateCallback != null)
+            {
+                var writableClientPropertyCollection = new WritableClientPropertyCollection(patch, PayloadConvention);
+                _writableClientPropertyUpdateCallback(writableClientPropertyCollection);
+            }
         }
 
         #region Device Specific API

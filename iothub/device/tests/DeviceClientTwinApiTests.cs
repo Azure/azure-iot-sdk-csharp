@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -198,14 +199,14 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            var myPatch = new TwinCollection();
+            var myPatch = new Dictionary<string, object>();
 
             int callCount = 0;
-            TwinCollection receivedPatch = null;
+            Dictionary<string, object> receivedPatch = null;
             DesiredPropertyUpdateCallback myCallback = (p, c) =>
             {
                 callCount++;
-                receivedPatch = p;
+                receivedPatch = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(p));
                 return TaskHelpers.CompletedTask;
             };
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -213,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 #pragma warning restore CS0618 // Type or member is obsolete
 
             // act
-            client.InternalClient.OnReportedStatePatchReceived(myPatch);
+            client.InternalClient.OnDesiredStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);
@@ -228,20 +229,20 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            var myPatch = new TwinCollection();
+            var myPatch = new Dictionary<string, object>();
 
             int callCount = 0;
-            TwinCollection receivedPatch = null;
+            Dictionary<string, object> receivedPatch = null;
             DesiredPropertyUpdateCallback myCallback = (p, c) =>
             {
                 callCount++;
-                receivedPatch = p;
+                receivedPatch = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(p));
                 return TaskHelpers.CompletedTask;
             };
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // act
-            client.InternalClient.OnReportedStatePatchReceived(myPatch);
+            client.InternalClient.OnDesiredStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);

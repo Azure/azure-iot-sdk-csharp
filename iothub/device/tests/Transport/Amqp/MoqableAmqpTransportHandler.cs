@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
-using System.Threading.Tasks;
 using System;
-using Microsoft.Azure.Devices.Client.Transport.Amqp;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Shared;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Tests.ConnectionString;
-using Moq;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
@@ -24,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport
             IotHubConnectionString connectionString, 
             AmqpTransportSettings transportSettings, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null, 
+            Action<IDictionary<string, object>> onDesiredStatePatchReceivedCallback = null, 
             Func<string, Message, Task> onModuleMessageReceivedCallback = null, 
             Func<Message, Task> onDeviceMessageReceivedCallback = null) 
             : base(

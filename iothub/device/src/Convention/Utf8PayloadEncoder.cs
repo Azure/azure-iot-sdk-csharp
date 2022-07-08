@@ -10,6 +10,11 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class Utf8PayloadEncoder : PayloadEncoder
     {
+        private Utf8PayloadEncoder()
+        {
+
+        }
+
         /// <summary>
         /// The default instance of this class.
         /// </summary>

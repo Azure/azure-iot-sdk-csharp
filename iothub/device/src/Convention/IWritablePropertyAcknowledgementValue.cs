@@ -4,13 +4,14 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The interface that defines the structure of a writable property response.
+    /// The interface that defines the structure of a writable property payload value.
+    /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
     /// </summary>
     /// <remarks>
     /// This interface is used to allow extension to use a different set of attributes for serialization.
-    /// For example our default implementation found in <see cref="NewtonsoftJsonWritablePropertyResponse"/> is based on <see cref="Newtonsoft.Json"/> serializer attributes.
+    /// For example our default implementation found in <see cref="NewtonsoftJsonWritablePropertyAcknowledgementValue"/> is based on <see cref="Newtonsoft.Json"/> serializer attributes.
     /// </remarks>
-    public interface IWritablePropertyResponse
+    public interface IWritablePropertyAcknowledgementValue
     {
         /// <summary>
         /// The unserialized property value.

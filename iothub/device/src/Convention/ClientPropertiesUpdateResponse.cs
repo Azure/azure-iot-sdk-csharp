@@ -4,17 +4,20 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The response of an <see cref="InternalClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
+    /// The response of a <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
+    /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
     /// </summary>
     public class ClientPropertiesUpdateResponse
     {
+        // TODO: Unit-testable and mockable
+
         internal ClientPropertiesUpdateResponse()
         {
         }
 
         /// <summary>
-        /// The request Id that is associated with the
-        /// <see cref="InternalClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
+        /// The request Id that is associated with the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
+        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
         /// </summary>
         /// <remarks>
         /// This request Id is relevant only for operations over MQTT, and can be used for tracking the operation on service side logs.
@@ -28,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// For clients communicating with IoT hub via IoT Edge, since the patch isn't applied immediately an updated version number is not returned.
         /// You can call <see cref="ModuleClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/>
-        /// and verify <see cref="ClientPropertyCollection.Version"/> from <see cref="ClientProperties.ReportedFromClient"/> to check
+        /// and verify <see cref="ClientPropertyCollection.Version"/> from <see cref="ClientProperties.ReportedByClient"/> to check
         /// if your patch is successfully applied.
         /// </remarks>
         public long Version { get; internal set; }
