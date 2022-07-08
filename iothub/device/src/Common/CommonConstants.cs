@@ -84,33 +84,5 @@ namespace Microsoft.Azure.Devices.Client
 
         // Security message constants
         public const string SecurityMessageInterfaceId = "urn:azureiot:Security:SecurityAgent:1";
-
-        public static class CloudToDevice
-        {
-            public const int DefaultMaxDeliveryCount = 10;
-            public const int MaximumMaxDeliveryCount = 100;
-            public const int MinimumMaxDeliveryCount = 1;
-
-            public static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(1);
-            public static readonly TimeSpan MaximumDefaultTtl = TimeSpan.FromDays(2);
-            public static readonly TimeSpan MinimumDefaultTtl = TimeSpan.FromMinutes(1);
-        }
-
-        public static class Feedback
-        {
-            public static readonly TimeSpan DefaultLockDuration = TimeSpan.FromMinutes(1);
-            public static readonly TimeSpan MaximumLockDuration = TimeSpan.FromMinutes(5);
-            public static readonly TimeSpan MinimumLockDuration = TimeSpan.FromSeconds(5);
-
-            public static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(1);
-            public static readonly TimeSpan MaximumTtl = TimeSpan.FromHours(48);
-            public static readonly TimeSpan MinimumTtl = TimeSpan.FromMinutes(1);
-
-            public const int DefaultMaxDeliveryCount = 10;
-            public const int MaximumMaxDeliveryCount = 100;
-            public const int MinimumMaxDeliveryCount = 1;
-
-            public const int QueuePartitionSizeInMegabytes = 5120;
-        }
     }
 }

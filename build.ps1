@@ -321,9 +321,6 @@ try
         BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
         BuildPackage security\tpm\src "SecurityProvider for TPM"
         BuildPackage provisioning\device\src "Provisioning Device Client SDK"
-        BuildPackage provisioning\transport\amqp\src "Provisioning Transport for AMQP"
-        BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
-        BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
 

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
     public class ModuleClient : IDisposable
-#if !NET472 && !NETSTANDARD2_0
+#if NETSTANDARD2_1_OR_GREATER
         , IAsyncDisposable
 #endif
     {
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task CompleteAsync(string lockToken) => InternalClient.CompleteAsync(lockToken);
+        public Task CompleteMessageAsync(string lockToken) => InternalClient.CompleteMessageAsync(lockToken);
 
         /// <summary>
         /// Deletes a received message from the module queue.
@@ -313,14 +313,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task CompleteAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.CompleteAsync(lockToken, cancellationToken);
+        public Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.CompleteMessageAsync(lockToken, cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the module queue.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The previously received message</returns>
-        public Task CompleteAsync(Message message) => InternalClient.CompleteAsync(message);
+        public Task CompleteMessageAsync(Message message) => InternalClient.CompleteMessageAsync(message);
 
         /// <summary>
         /// Deletes a received message from the module queue.
@@ -329,14 +329,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
-        public Task CompleteAsync(Message message, CancellationToken cancellationToken) => InternalClient.CompleteAsync(message, cancellationToken);
+        public Task CompleteMessageAsync(Message message, CancellationToken cancellationToken) => InternalClient.CompleteMessageAsync(message, cancellationToken);
 
         /// <summary>
         /// Puts a received message back onto the module queue.
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
-        public Task AbandonAsync(string lockToken) => InternalClient.AbandonAsync(lockToken);
+        public Task AbandonMessageAsync(string lockToken) => InternalClient.AbandonMessageAsync(lockToken);
 
         /// <summary>
         /// Puts a received message back onto the module queue.
@@ -345,13 +345,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The previously received message</returns>
-        public Task AbandonAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.AbandonAsync(lockToken, cancellationToken);
+        public Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken) => InternalClient.AbandonMessageAsync(lockToken, cancellationToken);
 
         /// <summary>
         /// Puts a received message back onto the module queue.
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task AbandonAsync(Message message) => InternalClient.AbandonAsync(message);
+        public Task AbandonMessageAsync(Message message) => InternalClient.AbandonMessageAsync(message);
 
         /// <summary>
         /// Puts a received message back onto the module queue.
@@ -360,7 +360,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
-        public Task AbandonAsync(Message message, CancellationToken cancellationToken) => InternalClient.AbandonAsync(message, cancellationToken);
+        public Task AbandonMessageAsync(Message message, CancellationToken cancellationToken) => InternalClient.AbandonMessageAsync(message, cancellationToken);
 
         /// <summary>
         /// Sends an event to IoT hub.
@@ -491,7 +491,7 @@ namespace Microsoft.Azure.Devices.Client
             GC.SuppressFinalize(this);
         }
 
-#if !NET472 && !NETSTANDARD2_0
+#if NETSTANDARD2_1_OR_GREATER
         // IAsyncDisposable is available in .NET Standard 2.1 and above
 
         /// <summary>

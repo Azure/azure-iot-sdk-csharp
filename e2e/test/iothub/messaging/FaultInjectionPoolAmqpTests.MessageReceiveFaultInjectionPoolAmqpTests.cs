@@ -970,7 +970,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sent message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
 
-                Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
+                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 receivedMessage.Should().BeNull();
             }

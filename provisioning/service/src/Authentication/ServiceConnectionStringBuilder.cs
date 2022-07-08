@@ -84,29 +84,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ServiceName { get; private set; }
 
-        internal ServiceConnectionString ToServiceConnectionString()
-        {
-            Validate();
-            return new ServiceConnectionString(this);
-        }
-
-        public override string ToString()
-        {
-            Validate();
-
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(s_hostNamePropertyName, HostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(s_sharedAccessKeyNamePropertyName, SharedAccessKeyName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(s_sharedAccessKeyPropertyName, SharedAccessKey);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(s_sharedAccessSignaturePropertyName, SharedAccessSignature);
-            if (stringBuilder.Length > 0)
-            {
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
-            }
-
-            return stringBuilder.ToString();
-        }
-
         private void Parse(string serviceConnectionString)
         {
             IDictionary<string, string> map = serviceConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);

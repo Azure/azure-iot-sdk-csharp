@@ -77,12 +77,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-        private MessageTooLargeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            MaximumMessageSizeInBytes = info.GetInt32("MaximumMessageSizeInBytes");
-        }
-
         internal int MaximumMessageSizeInBytes { get; private set; }
 
         /// <inheritdoc />

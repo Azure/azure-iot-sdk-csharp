@@ -32,21 +32,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         {
         }
 
-        internal HttpHsmComunicationException()
-            : base()
-        {
-        }
-
-        internal HttpHsmComunicationException(string message)
-            : base(message)
-        {
-        }
-
-        internal HttpHsmComunicationException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
         /// <summary>
         /// Status code of the communication failure.
         /// </summary>

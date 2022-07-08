@@ -498,11 +498,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     if (transport == Client.TransportType.Http1)
                     {
                         // timeout on HTTP is not supported
-                        receivedMessage = await dc.ReceiveAsync().ConfigureAwait(false);
+                        receivedMessage = await dc.ReceiveMessageAsync().ConfigureAwait(false);
                     }
                     else
                     {
-                        receivedMessage = await dc.ReceiveAsync(s_oneMinute).ConfigureAwait(false);
+                        receivedMessage = await dc.ReceiveMessageAsync(s_oneMinute).ConfigureAwait(false);
                     }
 
                     if (receivedMessage == null)
@@ -513,7 +513,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     try
                     {
                         // always complete message
-                        await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
+                        await dc.CompleteMessageAsync(receivedMessage).ConfigureAwait(false);
                     }
                     catch (Exception)
                     {
@@ -551,7 +551,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             try
             {
                 using var cts = new CancellationTokenSource(s_fiveSeconds);
-                await dc.ReceiveAsync(cts.Token).ConfigureAwait(false);
+                await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex)
                 when (ex.IsTransient && ex.InnerException is OperationCanceledException)
@@ -574,7 +574,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 logger.Trace($"Receiving messages for device {deviceId}.");
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
-                using Client.Message receivedMessage = await dc.ReceiveAsync(cts.Token).ConfigureAwait(false);
+                using Client.Message receivedMessage = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
 
                 if (receivedMessage == null)
                 {
@@ -584,7 +584,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 try
                 {
                     // always complete message
-                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
+                    await dc.CompleteMessageAsync(receivedMessage).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
@@ -660,7 +660,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
+                await deviceClient.ReceiveMessageAsync(s_fiveSeconds).ConfigureAwait(false);
             }
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
@@ -704,7 +704,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
+                await deviceClient.ReceiveMessageAsync(s_fiveSeconds).ConfigureAwait(false);
             }
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
@@ -728,7 +728,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     logger.Trace($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Calling ReceiveAsync()");
 
                     sw.Restart();
-                    using Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    using Client.Message message = await dc.ReceiveMessageAsync().ConfigureAwait(false);
                     sw.Stop();
 
                     logger.Trace($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Received message={message}; time taken={sw.ElapsedMilliseconds} ms");
@@ -738,7 +738,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                         break;
                     }
 
-                    await dc.CompleteAsync(message).ConfigureAwait(false);
+                    await dc.CompleteMessageAsync(message).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -791,7 +791,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                Client.Message leftoverMessage = await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
+                Client.Message leftoverMessage = await deviceClient.ReceiveMessageAsync(s_fiveSeconds).ConfigureAwait(false);
                 Logger.Trace($"Leftover message on Mqtt was: {leftoverMessage} with Id={leftoverMessage?.MessageId}");
             }
 
@@ -800,9 +800,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.SendAsync(testDevice.Id, firstMessage).ConfigureAwait(false);
             Logger.Trace($"Sent C2D message from service, messageId={firstMessage.MessageId} - to be received on polling ReceiveAsync");
 
-            using Client.Message receivedFirstMessage = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
+            using Client.Message receivedFirstMessage = await deviceClient.ReceiveMessageAsync(s_tenSeconds).ConfigureAwait(false);
             receivedFirstMessage.MessageId.Should().Be(firstMessage.MessageId);
-            await deviceClient.CompleteAsync(receivedFirstMessage).ConfigureAwait(false);
+            await deviceClient.CompleteMessageAsync(receivedFirstMessage).ConfigureAwait(false);
 
             // Now, set a callback on the device client to receive C2D messages.
             await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
@@ -815,7 +815,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // The message should be received on the callback, while a call to ReceiveAsync() should return null.
             using var cts = new CancellationTokenSource(s_tenSeconds);
-            using Client.Message receivedSecondMessage = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
+            using Client.Message receivedSecondMessage = await deviceClient.ReceiveMessageAsync(s_tenSeconds).ConfigureAwait(false);
             await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             receivedSecondMessage.Should().BeNull();
 
@@ -827,7 +827,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
-                Client.Message leftoverMessage = await deviceClient.ReceiveAsync(s_fiveSeconds).ConfigureAwait(false);
+                Client.Message leftoverMessage = await deviceClient.ReceiveMessageAsync(s_fiveSeconds).ConfigureAwait(false);
                 Logger.Trace($"Leftover message on Mqtt was: {leftoverMessage} with Id={leftoverMessage?.MessageId}");
             }
 
@@ -841,10 +841,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             };
-            using Client.Message receivedThirdMessage = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
+            using Client.Message receivedThirdMessage = await deviceClient.ReceiveMessageAsync(s_tenSeconds).ConfigureAwait(false);
             receivedThirdMessage.MessageId.Should().Be(thirdMessage.MessageId);
             receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
-            await deviceClient.CompleteAsync(receivedThirdMessage).ConfigureAwait(false);
+            await deviceClient.CompleteMessageAsync(receivedThirdMessage).ConfigureAwait(false);
 
             firstMessage.Dispose();
             secondMessage.Dispose();
@@ -868,7 +868,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 async (message, context) =>
                 {
                     Logger.Trace($"Received message over the first message handler: MessageId={message.MessageId}");
-                    await deviceClient.CompleteAsync(message).ConfigureAwait(false);
+                    await deviceClient.CompleteMessageAsync(message).ConfigureAwait(false);
                     firstHandlerSemaphore.Release();
                 },
                 deviceClient);
@@ -888,7 +888,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 async (message, context) =>
                 {
                     Logger.Trace($"Received message over the second message handler: MessageId={message.MessageId}");
-                    await deviceClient.CompleteAsync(message).ConfigureAwait(false);
+                    await deviceClient.CompleteMessageAsync(message).ConfigureAwait(false);
                     secondHandlerSemaphore.Release();
                 },
                 deviceClient);

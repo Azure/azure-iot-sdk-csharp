@@ -694,6 +694,7 @@ $keyvaultKvps = @{
     "FAR-AWAY-IOTHUB-HOSTNAME" = $farHubHostName;
     "CUSTOM-ALLOCATION-POLICY-WEBHOOK" = $customAllocationPolicyWebhook;
     "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
+    "DPS-X509-GROUP-ENROLLMENT-NAME" = $groupEnrollmentId;
 
     # Environment variables for Azure resources used for E2E tests (common)
     "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;
@@ -782,8 +783,15 @@ if (-not (docker images -q aziotbld/testproxy))
 # openssl is currently unavailable as an official release via Chocolatey, so it is advised to perform a manual install from a secured source.
 ############################################################################################################################
 
-Write-Host "Ensure that openssl is available on your system and is set to PATH variable."
-Write-Host "If you have Git installed, openssl can be found at `"<Git_install_directory>\Git\usr\bin\openssl.exe`""
+try
+{
+    Get-Command openssl.exe
+}
+catch
+{
+    Write-Host -ForegroundColor Red "E2E tests require openssl to be installed on your system and set to PATH variable."
+    Write-Host -ForegroundColor Red "If you have Git installed, openssl can be found at `"<Git_install_directory>\Git\usr\bin\openssl.exe`"."
+}
 
 ############################################################################################################################
 # Clean up certs and files created by the script

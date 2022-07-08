@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.19.1</Version>
+    <Version>2.0.0-preview001</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -41,20 +41,31 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
+    <Common>$(RootDir)\common\src</Common>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
+      <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
+    <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
+    <PackageReference Include="DotNetty.Common" Version="0.7.1" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
   </ItemGroup>
 
   <ItemGroup>

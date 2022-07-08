@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                    await deviceClient.ReceiveMessageAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 {
                     (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
                     await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                    Client.Message message = await deviceClient.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
+                    Client.Message message = await deviceClient.ReceiveMessageAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     if (message == null)
                     {
                         Assert.Fail("No message received.");
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 {
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
-                    await deviceClient.CompleteAsync(messages[MESSAGE_COUNT - 1 - i]).ConfigureAwait(false);
+                    await deviceClient.CompleteMessageAsync(messages[MESSAGE_COUNT - 1 - i]).ConfigureAwait(false);
                     stopwatch.Stop();
                     Assert.IsFalse(stopwatch.ElapsedMilliseconds > deviceClient.OperationTimeoutInMilliseconds, $"CompleteAsync is over {deviceClient.OperationTimeoutInMilliseconds}");
                 }

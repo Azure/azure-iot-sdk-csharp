@@ -251,9 +251,13 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public Type ElementType { get; private set; }
+
                 public string Scope { get; set; }
+
                 public string SizeLimit { get; set; }
+
                 public bool StaleElementsRemovedImmediately { get; set; }
+
                 public bool EnqueueThrowsIfFull { get; set; }
             }
 
@@ -271,7 +275,9 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public bool Blocking { get; set; }
+
                 public string Scope { get; set; }
+
                 public SynchronizationKind Kind { get; set; }
             }
 
@@ -285,8 +291,11 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 public BlocksUsing BlocksUsing { get; private set; }
+
                 public bool SupportsAsync { get; set; }
+
                 public bool Spins { get; set; }
+
                 public string ReleaseMethod { get; set; }
             }
 
@@ -295,7 +304,9 @@ namespace Microsoft.Azure.Devices.Client
             public sealed class BlockingAttribute : Attribute
             {
                 public string CancelMethod { get; set; }
+
                 public Type CancelDeclaringType { get; set; }
+
                 public string Conditional { get; set; }
             }
 
@@ -319,7 +330,9 @@ namespace Microsoft.Azure.Devices.Client
             public sealed class SecurityNoteAttribute : Attribute
             {
                 public string Critical { get; set; }
+
                 public string Safe { get; set; }
+
                 public string Miscellaneous { get; set; }
             }
         }

@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
-    <!--See #1874 for additional details-->
-    <TargetFrameworks>net5.0;netstandard2.1;netstandard2.0;net472;netcoreapp2.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
@@ -26,7 +23,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.37.1</Version>
+    <Version>2.0.0-preview001</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -54,7 +51,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;1138</NoWarn>
   </PropertyGroup>
 
@@ -129,16 +126,8 @@
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
   </ItemGroup>
 
-  <!-- net472 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-
-  <!-- NetStandard 2.1, NetStandard 2.0 and net472 -->
   <ItemGroup>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
     <Compile Include="DigitalTwin\**\*.cs" />
   </ItemGroup>
   <ItemGroup>

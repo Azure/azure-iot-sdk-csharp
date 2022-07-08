@@ -20,12 +20,7 @@ using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-
-#if NET5_0_OR_GREATER
-using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
-#else
 using TaskCompletionSource = Microsoft.Azure.Devices.TaskCompletionSource;
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -1101,15 +1096,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private bool IsInState(StateFlags stateFlagsToCheck)
         {
             return _stateFlags.HasFlag(stateFlagsToCheck);
-        }
-
-        private static IByteBuffer GetWillMessageBody(Message message)
-        {
-            Stream bodyStream = message.GetBodyStream();
-            byte[] buffer = new byte[bodyStream.Length];
-            bodyStream.Read(buffer, 0, buffer.Length);
-            IByteBuffer copiedBuffer = Unpooled.CopiedBuffer(buffer);
-            return copiedBuffer;
         }
 
         private string GetTelemetryTopicName()

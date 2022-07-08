@@ -30,14 +30,7 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Newtonsoft.Json;
-
-#if NET5_0_OR_GREATER
-
-using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
-
-#else
 using TaskCompletionSource = Microsoft.Azure.Devices.TaskCompletionSource;
-#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -1313,7 +1306,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
                 if (settings.RemoteCertificateValidationCallback != null)
                 {
                     websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;

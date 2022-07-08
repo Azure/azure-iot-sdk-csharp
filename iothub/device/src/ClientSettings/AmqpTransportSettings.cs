@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly TransportType _transportType;
         private TimeSpan _operationTimeout;
-        private TimeSpan _openTimeout;
 
         /// <summary>
         /// The default operation timeout
@@ -196,13 +195,6 @@ namespace Microsoft.Azure.Devices.Client
         private void SetOperationTimeout(TimeSpan timeout)
         {
             _operationTimeout = timeout > TimeSpan.Zero
-                ? timeout
-                : throw new ArgumentOutOfRangeException(nameof(timeout));
-        }
-
-        private void SetOpenTimeout(TimeSpan timeout)
-        {
-            _openTimeout = timeout > TimeSpan.Zero
                 ? timeout
                 : throw new ArgumentOutOfRangeException(nameof(timeout));
         }
