@@ -43,6 +43,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
         internal const string ComponentDateTimePropertyName = "componentDateTimePropertyName";
         internal const string ComponentWritablePropertyName = "componentWritablePropertyName";
 
+        internal const string VersionName = "$version";
+
         private const bool BoolPropertyValue = false;
         private const double DoublePropertyValue = 1.001;
         private const float FloatPropertyValue = 1.2f;
@@ -104,7 +106,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 MapProperty = s_mapPropertyValue,
                 DateTimeProperty = s_dateTimePropertyValue,
                 WritablePropertyResponse = s_writablePropertyResponse,
-            }
+            },
+            Version = 2,
         };
 
         private static string getClientPropertiesStringResponse = JsonConvert.SerializeObject(new Dictionary<string, object> { { "reported", s_testClientProperties } });
@@ -232,21 +235,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollectionNewtonsoft_CanGetComponentIdentifier()
-        {
-            // arrange
-            var clientProperties = new ClientPropertyCollection(clientPropertiesAsDictionary.Reported, DefaultPayloadConvention.Instance);
-
-            // act
-            clientProperties.TryGetValue(ComponentName, ComponentStringPropertyName, out string outValue);
-            clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
-
-            // assert
-            outValue.Should().Be(StringPropertyValue);
-            componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
-        }
-
-        [TestMethod]
         public void ClientPropertyCollectionNewtonSoft_TryGetValueShouldReturnFalseIfValueNotFound()
         {
             // arrange
@@ -356,6 +344,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
         [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.ComponentName)]
         public ComponentProperties ComponentProperties { get; set; }
+
+        [JsonProperty(ClientPropertyCollectionTestsNewtonsoft.VersionName)]
+        public long Version { get; set; }
     }
 
     internal class ComponentProperties

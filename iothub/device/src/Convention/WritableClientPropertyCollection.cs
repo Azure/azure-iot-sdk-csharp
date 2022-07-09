@@ -213,14 +213,6 @@ namespace Microsoft.Azure.Devices.Client
             return GetEnumerator();
         }
 
-        private IEnumerable<WritableClientProperty> GetMatches(string componentName, string propertyName)
-        {
-            return WritableClientProperties
-                .Where(property =>
-                    property.ComponentName == componentName
-                    && property.PropertyName == propertyName);
-        }
-
         private void PopulateWritableClientProperties(IDictionary<string, object> writableClientPropertyRequests)
         {
             // The version information should not be a part of the enumerable ProperyCollection, but rather should be
@@ -253,7 +245,6 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         // If this is a component property then the collection is a JObject with each individual property as a writable property update request.
                         var componentPropertiesAsJObject = (JObject)propertyValueAsObject;
-                        var collectionDictionary = new Dictionary<string, WritableClientProperty>();
 
                         foreach (KeyValuePair<string, JToken> componentProperty in componentPropertiesAsJObject)
                         {
@@ -288,6 +279,14 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
+        }
+
+        private IEnumerable<WritableClientProperty> GetMatches(string componentName, string propertyName)
+        {
+            return WritableClientProperties
+                .Where(property =>
+                    property.ComponentName == componentName
+                    && property.PropertyName == propertyName);
         }
     }
 }

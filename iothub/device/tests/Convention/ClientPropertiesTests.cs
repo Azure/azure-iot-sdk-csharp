@@ -72,22 +72,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             // These are the device reported property values.
-            foreach (KeyValuePair<string, object> deviceReportedKeyValuePairs in clientProperties.ReportedByClient)
+            foreach (ClientProperty deviceReportedClientProperty in clientProperties.ReportedByClient)
             {
-                if (deviceReportedKeyValuePairs.Key.Equals(StringPropertyName))
+                if (deviceReportedClientProperty.PropertyName == StringPropertyName)
                 {
-                    deviceReportedKeyValuePairs.Value.Should().Be(StringPropertyValue);
+                    deviceReportedClientProperty.Value.Should().Be(StringPropertyValue);
                 }
-                else if (deviceReportedKeyValuePairs.Key.Equals(ObjectPropertyName))
+                else if (deviceReportedClientProperty.PropertyName == ObjectPropertyName)
                 {
-                    deviceReportedKeyValuePairs.Value.Should().BeEquivalentTo(s_objectPropertyValue);
+                    deviceReportedClientProperty.Value.Should().BeEquivalentTo(s_objectPropertyValue);
                 }
-                else if (deviceReportedKeyValuePairs.Key.Equals(ComponentName))
+                else if (deviceReportedClientProperty.ComponentName == ComponentName && deviceReportedClientProperty.PropertyName == BoolPropertyName)
                 {
-                    deviceReportedKeyValuePairs.Value.Should().BeOfType(typeof(Dictionary<string, object>));
-                    var componentDictionary = deviceReportedKeyValuePairs.Value;
-
-                    componentDictionary.As<Dictionary<string, object>>().TryGetValue(BoolPropertyName, out object outValue).Should().BeTrue();
+                    deviceReportedClientProperty.TryGetValue(out bool outValue).Should().BeTrue();
                     outValue.Should().Be(BoolPropertyValue);
                 }
             }

@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <remarks>
     /// A writable property update request should be acknowledged by the device or module by sending a reported property.
-    /// This type contains a convenience method to format the reported property as per IoT Plug and Play convention.
+    /// This type contains a convenience method <see cref="AcknowledgeWith(int, string)"/> to format the reported property as per IoT Plug and Play convention.
     /// For more details see <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/>.
     /// </remarks>
     public class WritableClientProperty

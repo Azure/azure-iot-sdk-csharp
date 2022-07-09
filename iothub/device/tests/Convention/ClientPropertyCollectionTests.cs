@@ -118,10 +118,11 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             // act
-            clientProperties.AddRootProperty(StringPropertyName, StringPropertyValue);
+            clientProperties.AddRootProperty(StringPropertyName, $"{StringPropertyValue}-new");
 
             // assert
-            clientProperties[StringPropertyName].Should().Be(StringPropertyValue);
+            clientProperties.TryGetValue(StringPropertyName, out string outValue).Should().BeTrue();
+            outValue.Should().Be($"{StringPropertyValue}-new");
         }
 
         [TestMethod]
@@ -376,31 +377,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // act
             clientProperties.TryGetValue(ComponentName, StringPropertyName, out NewtonsoftJsonWritablePropertyAcknowledgementPayload outValue);
-            clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
 
             // assert
             outValue.Value.Should().Be(writableAck.Payload.Value);
             outValue.AckCode.Should().Be(writableAck.Payload.AckCode);
             outValue.AckVersion.Should().Be(writableAck.Payload.AckVersion);
             outValue.AckDescription.Should().Be(writableAck.Payload.AckDescription);
-
-            componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_AddingComponentAddsComponentIdentifier()
-        {
-            // arrange
-            var clientProperties = new ClientPropertyCollection();
-            clientProperties.AddComponentProperty(ComponentName, StringPropertyName, StringPropertyValue);
-
-            // act
-            clientProperties.TryGetValue(ComponentName, StringPropertyName, out string outValue);
-            clientProperties.TryGetValue(ComponentName, ConventionBasedConstants.ComponentIdentifierKey, out string componentOut);
-
-            // assert
-            outValue.Should().Be(StringPropertyValue);
-            componentOut.Should().Be(ConventionBasedConstants.ComponentIdentifierValue);
         }
 
         [TestMethod]
@@ -525,16 +507,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_AddNullPropertyNameWithComponentThrows()
+        public void ClientPropertyCollection_AddNullPropertyNameWithComponentSuccess()
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
 
             // act
-            Action testAction = () => testPropertyCollection.AddComponentProperty("testComponent", null, 123);
+            // This operation will result in service removing the component "testComponent" from the client properties.
+            testPropertyCollection.AddComponentProperty("testComponent", null, 123);
 
             // assert
-            testAction.Should().Throw<ArgumentNullException>();
+            bool isRetrieved = testPropertyCollection.TryGetValue("testComponent", null, out object value);
+            isRetrieved.Should().BeTrue();
+            value.Should().BeNull();
         }
 
         [TestMethod]
@@ -583,13 +568,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // act
             // This should add an entry in the dictionary with a null value.
             // This patch would be interpreted by the service as the client wanting to remove component "testComponent" from its properties.
-            testPropertyCollection.AddRootProperty("testComponent", null);
+            testPropertyCollection.AddComponentProperty("testComponent", null, null);
 
             // assert
             bool iscomponentValueRetrieved = testPropertyCollection.TryGetValue<int>("testComponent", "qwe", out int _);
             iscomponentValueRetrieved.Should().BeFalse();
 
-            bool iscomponentRetrieved = testPropertyCollection.TryGetValue<object>("testComponent", out object componentValue);
+            bool iscomponentRetrieved = testPropertyCollection.TryGetValue<object>("testComponent", null, out object componentValue);
             iscomponentRetrieved.Should().BeTrue();
             componentValue.Should().BeNull();
         }
@@ -699,13 +684,15 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddComponentProperty("component", "abc", 123);
+            
+            // This operation will result in service removing the component "testComponent" from the client properties.
+            testPropertyCollection.AddComponentProperty("component", null, 123);
 
             // act
-            Action testAction = () => testPropertyCollection.Contains("component", null);
+            bool isPresent = testPropertyCollection.Contains("component", null);
 
             // assert
-            testAction.Should().Throw<ArgumentNullException>();
+            isPresent.Should().BeTrue();
         }
 
         [TestMethod]
