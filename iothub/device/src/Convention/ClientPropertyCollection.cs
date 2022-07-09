@@ -65,8 +65,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If getting or setting root-level properties, pass in the property name as the <paramref name="key"/> and the property value as the <c>value</c>.
         /// If getting or setting a component, pass in the component name as the <paramref name="key"/> and the correctly formatted component-level properties as the <c>value</c>.
+        /// Due to similarity in structure of maps and component-level properties, they cannot be disambiguated. As a result, all maps passed into this method
+        /// will be treated as component-level properties.
         /// <para>
-        /// Also, see the convenience methods <see cref="AddRootProperty(string, object)"/> and <see cref="AddComponentProperty(string, string, object)"/>
+        /// See the convenience methods <see cref="AddRootProperty(string, object)"/> and <see cref="AddComponentProperty(string, string, object)"/>
         /// for adding properties to the collection, and <see cref="TryGetValue{T}(string, out T)"/> and <see cref="TryGetValue{T}(string, string, out T)"/>
         /// for retrieving properties from the collection.
         /// </para>

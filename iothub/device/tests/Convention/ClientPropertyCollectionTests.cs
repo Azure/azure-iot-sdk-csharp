@@ -68,9 +68,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 [ShortPropertyName] = ShortPropertyValue,
                 [ObjectPropertyName] = s_objectPropertyValue,
                 [ArrayPropertyName] = s_arrayPropertyValue,
-                [MapPropertyName] = s_mapPropertyValue,
                 [DateTimePropertyName] = s_dateTimePropertyValue,
             };
+            clientProperties.AddRootProperty(MapPropertyName, s_mapPropertyValue);
 
             // act, assert
 
