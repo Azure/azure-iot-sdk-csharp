@@ -59,6 +59,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal PayloadConvention Convention { get; set; }
 
+        private readonly object _lockForPopulatingPropertiesForReporting = new object();
+
         /// <summary>
         /// Gets or sets the value associated with the specified key.
         /// </summary>
@@ -147,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(propertyName));
             }
 
-            AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, null);
+            AddInternal(null, new Dictionary<string, object> { { propertyName, propertyValue } });
         }
 
         /// <summary>
@@ -172,11 +174,11 @@ namespace Microsoft.Azure.Devices.Client
             // The property name can be null if this is an operation to remove the component at service-end.
             if (propertyName == null)
             {
-                AddInternal(null, componentName);
+                AddInternal(componentName, null);
             }
             else
             {
-                AddInternal(new Dictionary<string, object> { { propertyName, propertyValue } }, componentName);
+                AddInternal(componentName, new Dictionary<string, object> { { propertyName, propertyValue } });
             }
         }
 
@@ -308,10 +310,10 @@ namespace Microsoft.Azure.Devices.Client
             return GetEnumerator();
         }
 
-        // TODO: IMPORTANT - this needs to ensure the proper dictionary and "__t: c" formatting is applied
         internal byte[] GetPayloadObjectBytes()
         {
-            return Convention.GetObjectBytes(ClientPropertiesReported);
+            IDictionary<string, object> propertiesToReport = PopulateClientPropertiesForReporting();
+            return Convention.GetObjectBytes(propertiesToReport);
         }
 
         private void PopulateClientPropertiesReported(IDictionary<string, object> clientPropertiesReported)
@@ -380,7 +382,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private void AddInternal(IDictionary<string, object> properties, string componentName = default)
+        private void AddInternal(string componentName, IDictionary<string, object> properties)
         {
             // If both the component name and properties collection are null then throw an ArgumentNullException.
             // This is not a valid use-case.
@@ -446,6 +448,55 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        private IDictionary<string, object> PopulateClientPropertiesForReporting()
+        {
+            var result = new Dictionary<string, object>();
+
+            // Do this under a lock so that the collection isn't modified while it is being processed.
+            lock (_lockForPopulatingPropertiesForReporting)
+            {
+
+                foreach (ClientProperty clientProperty in ClientPropertiesReported)
+                {
+                    // If the component name is null then this is a root-level property. Add it as-is.
+                    if (clientProperty.ComponentName == null)
+                    {
+                        result[clientProperty.PropertyName] = clientProperty.Value;
+                    }
+                    else
+                    {
+                        var componentProperties = new Dictionary<string, object>();
+
+                        // If the component name is not null then this is a component-level property.
+                        // First check if an entry for this component already exists in the dictionary.
+                        if (result.ContainsKey(clientProperty.ComponentName))
+                        {
+                            componentProperties = (Dictionary<string, object>)result[clientProperty.ComponentName];
+                        }
+
+                        // If the property name is null then this is an operation to remove the component.
+                        if (clientProperty.PropertyName == null)
+                        {
+                            result[clientProperty.ComponentName] = null;
+                        }
+                        else
+                        {
+                            // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
+                            if (!componentProperties.ContainsKey(ConventionBasedConstants.ComponentIdentifierKey))
+                            {
+                                componentProperties[ConventionBasedConstants.ComponentIdentifierKey] = ConventionBasedConstants.ComponentIdentifierValue;
+                            }
+
+                            componentProperties[clientProperty.PropertyName] = clientProperty.Value;
+                            result[clientProperty.ComponentName] = componentProperties;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private IEnumerable<ClientProperty> GetMatches(string componentName, string propertyName)
         {
             return ClientPropertiesReported
@@ -467,69 +518,72 @@ namespace Microsoft.Azure.Devices.Client
 
             IEnumerable<ClientProperty> matches = GetMatches(componentName, propertyName);
 
-            // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
-            ClientProperty retrievedProperty = matches.FirstOrDefault();
-
-            // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
-            if (retrievedProperty == null || retrievedProperty.Value == null)
+            if (matches.Any())
             {
-                return true;
-            }
+                // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
+                ClientProperty retrievedProperty = matches.FirstOrDefault();
 
-            object retrievedPropertyValue = retrievedProperty.Value;
+                // If the value associated with the key is null, then return true with the default value of the type <T> passed in.
+                if (retrievedProperty == null || retrievedProperty.Value == null)
+                {
+                    return true;
+                }
 
-            // Case 1:
-            // If the object is of type T or can be cast to type T, go ahead and return it.
-            if (ObjectConversionHelpers.TryCast(retrievedPropertyValue, out propertyValue))
-            {
-                return true;
-            }
+                object retrievedPropertyValue = retrievedProperty.Value;
 
-            try
-            {
+                // Case 1:
+                // If the object is of type T or can be cast to type T, go ahead and return it.
+                if (ObjectConversionHelpers.TryCast(retrievedPropertyValue, out propertyValue))
+                {
+                    return true;
+                }
+
                 try
                 {
-                    // Case 2a:
-                    // Check if the retrieved value is a writable property update acknowledgment
-                    NewtonsoftJsonWritablePropertyAcknowledgementPayload newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
-                        .Instance
-                        .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementPayload>(retrievedPropertyValue);
-
-                    if (typeof(IWritablePropertyAcknowledgementPayload).IsAssignableFrom(typeof(T)))
+                    try
                     {
-                        // If T is IWritablePropertyAcknowledgementValue the property value should be of type IWritablePropertyAcknowledgementValue as defined in the PayloadSerializer.
-                        // We'll convert the json object to NewtonsoftJsonWritablePropertyAcknowledgementValue and then convert it to the appropriate IWritablePropertyAcknowledgementValue object.
-                        propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(
-                            newtonsoftWritablePropertyAcknowledgementValue.Value,
-                            newtonsoftWritablePropertyAcknowledgementValue.AckCode,
-                            newtonsoftWritablePropertyAcknowledgementValue.AckVersion,
-                            newtonsoftWritablePropertyAcknowledgementValue.AckDescription);
-                        return true;
+                        // Case 2a:
+                        // Check if the retrieved value is a writable property update acknowledgment
+                        NewtonsoftJsonWritablePropertyAcknowledgementPayload newtonsoftWritablePropertyAcknowledgementValue = NewtonsoftJsonPayloadSerializer
+                            .Instance
+                            .ConvertFromJsonObject<NewtonsoftJsonWritablePropertyAcknowledgementPayload>(retrievedPropertyValue);
+
+                        if (typeof(IWritablePropertyAcknowledgementPayload).IsAssignableFrom(typeof(T)))
+                        {
+                            // If T is IWritablePropertyAcknowledgementValue the property value should be of type IWritablePropertyAcknowledgementValue as defined in the PayloadSerializer.
+                            // We'll convert the json object to NewtonsoftJsonWritablePropertyAcknowledgementValue and then convert it to the appropriate IWritablePropertyAcknowledgementValue object.
+                            propertyValue = (T)Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(
+                                newtonsoftWritablePropertyAcknowledgementValue.Value,
+                                newtonsoftWritablePropertyAcknowledgementValue.AckCode,
+                                newtonsoftWritablePropertyAcknowledgementValue.AckVersion,
+                                newtonsoftWritablePropertyAcknowledgementValue.AckDescription);
+                            return true;
+                        }
+
+                        object writablePropertyValue = newtonsoftWritablePropertyAcknowledgementValue.Value;
+
+                        // If the object is of type T or can be cast or converted to type T, go ahead and return it.
+                        if (ObjectConversionHelpers.TryCastOrConvert(writablePropertyValue, Convention, out propertyValue))
+                        {
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                        // In case of an exception ignore it and continue.
                     }
 
-                    object writablePropertyValue = newtonsoftWritablePropertyAcknowledgementValue.Value;
-
-                    // If the object is of type T or can be cast or converted to type T, go ahead and return it.
-                    if (ObjectConversionHelpers.TryCastOrConvert(writablePropertyValue, Convention, out propertyValue))
-                    {
-                        return true;
-                    }
+                    // Case 2b:
+                    // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
+                    // If it can be successfully converted, go ahead and return it.
+                    propertyValue = Convention.PayloadSerializer.ConvertFromJsonObject<T>(retrievedPropertyValue);
+                    return true;
                 }
                 catch
                 {
-                    // In case of an exception ignore it and continue.
+                    // In case the value cannot be converted using the serializer,
+                    // then return false with the default value of the type <T> passed in.
                 }
-
-                // Case 2b:
-                // Since the value cannot be cast to <T> directly, we need to try to convert it using the serializer.
-                // If it can be successfully converted, go ahead and return it.
-                propertyValue = Convention.PayloadSerializer.ConvertFromJsonObject<T>(retrievedPropertyValue);
-                return true;
-            }
-            catch
-            {
-                // In case the value cannot be converted using the serializer,
-                // then return false with the default value of the type <T> passed in.
             }
 
             return false;

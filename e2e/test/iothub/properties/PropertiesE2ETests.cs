@@ -391,16 +391,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             // First send a property patch with valid values for both prop1 and prop2.
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = new Dictionary<string, object>
-                        {
-                            [propName2] = propValue
-                        }
-                    })
-                .ConfigureAwait(false);
+            var propertyPatch1 = new ClientPropertyCollection();
+            propertyPatch1.AddRootProperty(
+                propName1,
+                new Dictionary<string, object>
+                {
+                    [propName2] = propValue
+                });
+            await deviceClient.UpdateClientPropertiesAsync(propertyPatch1).ConfigureAwait(false);
+
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
 
@@ -412,16 +411,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Sending a null value for a property will result in service removing the property from the client's twin representation.
             // For the property patch sent here will result in propName2 being removed.
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = new Dictionary<string, object>
-                        {
-                            [propName2] = null
-                        }
-                    })
-                .ConfigureAwait(false);
+            var propertyPatch2 = new ClientPropertyCollection();
+            propertyPatch2.AddRootProperty(
+                propName1,
+                new Dictionary<string, object>
+                {
+                    [propName2] = null
+                });
+            await deviceClient.UpdateClientPropertiesAsync(propertyPatch2).ConfigureAwait(false);
+
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
 
@@ -429,13 +427,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             serializedActualProperty.Should().Be(propEmptyValue);
 
             // For the property patch sent here will result in propName1 being removed.
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = null
-                    })
-                .ConfigureAwait(false);
+            var propertyPatch3 = new ClientPropertyCollection();
+            propertyPatch3.AddRootProperty(propName1, null);
+            await deviceClient.UpdateClientPropertiesAsync(propertyPatch3).ConfigureAwait(false);
+
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeFalse();
         }

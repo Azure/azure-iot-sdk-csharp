@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         internal PayloadConvention Convention { get; set; }
 
         /// <summary>
-        /// Creates a writable property update acknowledgement payload that contains the requested property name, property value, component name (if applicable) and version.
+        /// Creates a writable property update acknowledgement that contains the requested property name, property value, component name (if applicable) and version.
         /// </summary>
         /// <remarks>
         /// Use the <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="statusCode">An acknowledgment code that uses an HTTP status code.</param>
         /// <param name="description">An optional acknowledgment description.</param>
-        /// <returns>A writable property update acknowledegement payload to be reported back to the service.</returns>
+        /// <returns>A writable property update acknowledegement to be reported back to the service.</returns>
         public WritableClientPropertyAcknowledgement AcknowledgeWith(int statusCode, string description = default)
         {
             return new WritableClientPropertyAcknowledgement

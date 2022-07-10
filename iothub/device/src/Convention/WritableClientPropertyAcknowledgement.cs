@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A writable property update acknowledgement payload that contains the requested property name, property value, component name (if applicable) and version.
+    /// A writable property update acknowledgement that contains the requested property name, property value, component name (if applicable) and version.
     /// </summary>
     /// <remarks>
     /// Use the <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
