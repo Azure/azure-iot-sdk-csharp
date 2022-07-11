@@ -86,15 +86,20 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets the value of a root-level property.
+        /// Gets the value of a root-level property as a <see cref="WritableClientProperty"/>.
         /// </summary>
+        /// <remarks>
+        /// <see cref="WritableClientProperty"/> has a convenience method to help you build the writable property acknowledgement object.
+        /// To retrieve the value of the root-level writable property update request see <see cref="TryGetValue{T}(string, out T)"/>
+        /// or <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
+        /// </remarks>
         /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">When this method returns true, this contains the value of the root-level property.
+        /// <param name="writableClientProperty">When this method returns true, this contains the value of the root-level property.
         /// When this method returns false, this contains an empty <see cref="WritableClientProperty"/>.</param>
         /// <returns><c>true</c> if a root-level property with the specified key was found; otherwise, <c>false</c>.</returns>
-        public bool TryGetWritableClientProperty(string propertyName, out WritableClientProperty propertyValue)
+        public bool TryGetWritableClientProperty(string propertyName, out WritableClientProperty writableClientProperty)
         {
-            propertyValue = default;
+            writableClientProperty = default;
 
             // If the propertyName is null, empty or whitespace then return false with an empty WritableClientProperty.
             if (string.IsNullOrWhiteSpace(propertyName))
@@ -107,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
                 IEnumerable<WritableClientProperty> matches = GetMatches(null, propertyName);
 
                 // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
-                propertyValue = matches.First();
+                writableClientProperty = matches.First();
                 return true;
             }
 
@@ -116,9 +121,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Gets the value of a root-level property.
-        /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
-        /// which has a convenience method to help you build the writable property acknowledgement object.
         /// </summary>
+        /// <remarks>
+        /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
+        /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object.
+        /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="propertyName">The property to get.</param>
         /// <param name="propertyValue">When this method returns true, this contains the value of the root-level property.
@@ -141,16 +148,21 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets the value of a component-level property.
+        /// Gets the value of a component-level property as a <see cref="WritableClientProperty"/>.
         /// </summary>
+        /// <remarks>
+        /// <see cref="WritableClientProperty"/> has a convenience method to help you build the writable property acknowledgement object.
+        /// To retrieve the value of the component-level writable property update request see <see cref="TryGetValue{T}(string, string, out T)"/>
+        /// or <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
+        /// </remarks>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">When this method returns true, this contains the value of the component-level property.
+        /// <param name="writableClientProperty">When this method returns true, this contains the value of the component-level property.
         /// When this method returns false, this contains an empty <see cref="WritableClientProperty"/>.</param>
         /// <returns><c>true</c> if a component-level property with the specified key was found; otherwise, <c>false</c>.</returns>
-        public bool TryGetWritableClientProperty(string componentName, string propertyName, out WritableClientProperty propertyValue)
+        public bool TryGetWritableClientProperty(string componentName, string propertyName, out WritableClientProperty writableClientProperty)
         {
-            propertyValue = default;
+            writableClientProperty = default;
 
             // If either the component name or the property name is null, empty or whitespace,
             // then return false with the default value of the type <T> passed in.
@@ -164,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
                 IEnumerable<WritableClientProperty> matches = GetMatches(componentName, propertyName);
 
                 // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
-                propertyValue = matches.First();
+                writableClientProperty = matches.First();
                 return true;
             }
 
@@ -173,9 +185,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Gets the value of a component-level property.
+        /// </summary>
+        /// <remarks>
         /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
         /// which has a convenience method to help you build the writable property acknowledgement object.
-        /// </summary>
+        /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
@@ -254,13 +268,11 @@ namespace Microsoft.Azure.Devices.Client
                             }
                             else
                             {
-                                var individualPropertyValue = new WritableClientProperty
+                                var individualPropertyValue = new WritableClientProperty(Version, Convention)
                                 {
-                                    Convention = Convention,
                                     ComponentName = property.Key,
                                     PropertyName = componentProperty.Key,
                                     Value = Convention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(componentProperty.Value)),
-                                    Version = Version,
                                 };
                                 WritableClientProperties.Add(individualPropertyValue);
                             }
@@ -268,12 +280,10 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
-                        var individualPropertyValue = new WritableClientProperty
+                        var individualPropertyValue = new WritableClientProperty(Version, Convention)
                         {
-                            Convention = Convention,
                             PropertyName = property.Key,
                             Value = Convention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(propertyValueAsObject)),
-                            Version = Version,
                         };
                         WritableClientProperties.Add(individualPropertyValue);
                     }
