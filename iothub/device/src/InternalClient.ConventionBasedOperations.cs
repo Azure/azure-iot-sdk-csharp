@@ -91,9 +91,9 @@ namespace Microsoft.Azure.Devices.Client
 
         internal async Task<ClientPropertiesUpdateResponse> UpdateClientPropertiesAsync(ClientPropertyCollection clientProperties, CancellationToken cancellationToken)
         {
-            if (clientProperties == null)
+            if (clientProperties == null || !clientProperties.Any())
             {
-                throw new ArgumentNullException(nameof(clientProperties));
+                throw new ArgumentException("Pass in a populated ClientPropertyCollection to report.", nameof(clientProperties));
             }
 
             try

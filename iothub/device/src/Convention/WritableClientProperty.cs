@@ -15,8 +15,10 @@ namespace Microsoft.Azure.Devices.Client
     {
         // TODO: Unit-testable and mockable
 
-        internal WritableClientProperty()
+        internal WritableClientProperty(long version, PayloadConvention payloadConvention)
         {
+            Version = version;
+            Convention = payloadConvention;
         }
 
         /// <summary>
@@ -35,9 +37,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public object Value { get; internal set; }
 
-        internal long Version { get; set; }
+        private long Version { get; set; }
 
-        internal PayloadConvention Convention { get; set; }
+        private PayloadConvention Convention { get; set; }
 
         /// <summary>
         /// Creates a writable property update acknowledgement that contains the requested property name, property value, component name (if applicable) and version.

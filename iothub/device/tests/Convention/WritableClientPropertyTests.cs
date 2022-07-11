@@ -25,11 +25,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void WritableClientProperty_TryGetValueShouldReturnTrueIfValueCanBeDeserialized()
         {
             // arrange
-            var writableClientProperty = new WritableClientProperty
+            var writableClientProperty = new WritableClientProperty(2, DefaultPayloadConvention.Instance)
             {
                 PropertyName = IntPropertyName,
                 Value = IntPropertyValue,
-                Convention = DefaultPayloadConvention.Instance,
             };
 
             // act
@@ -44,11 +43,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void WritableClientProperty_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
             // arrange
-            var writableClientProperty = new WritableClientProperty
+            var writableClientProperty = new WritableClientProperty(2, DefaultPayloadConvention.Instance)
             {
                 PropertyName = ObjectPropertyName,
                 Value = s_objectPropertyValue,
-                Convention = DefaultPayloadConvention.Instance,
             };
 
             // act
