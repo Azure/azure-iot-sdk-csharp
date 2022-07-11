@@ -6,24 +6,23 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// An optional, helper class for constructing a writable property payload value.
-    /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
+    /// An optional, helper class for constructing a writable property payload.
     /// </summary>
     /// <remarks>
+    /// This is used by <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create a writable property acknowledgement payload.
     /// This helper class will only work with <see cref="Newtonsoft.Json"/>.
     /// It uses <see cref="Newtonsoft.Json"/> based <see cref="JsonPropertyAttribute"/> to define the JSON property names.
     /// </remarks>
-    public sealed class NewtonsoftJsonWritablePropertyAcknowledgementValue : IWritablePropertyAcknowledgementValue
+    public sealed class NewtonsoftJsonWritablePropertyAcknowledgementPayload : IWritablePropertyAcknowledgementPayload
     {
         /// <summary>
         /// Convenience constructor for specifying the properties.
-        /// Send the component name (if applicable), property name and this payload when acknowledging a writable property update request.
         /// </summary>
         /// <param name="propertyValue">The unserialized property value.</param>
         /// <param name="ackCode">The acknowledgment code, usually an HTTP Status Code e.g. 200, 400.</param>
         /// <param name="ackVersion">The acknowledgment version, as supplied in the property update request.</param>
         /// <param name="ackDescription">The acknowledgment description, an optional, human-readable message about the result of the property update.</param>
-        public NewtonsoftJsonWritablePropertyAcknowledgementValue(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
+        public NewtonsoftJsonWritablePropertyAcknowledgementPayload(object propertyValue, int ackCode, long ackVersion, string ackDescription = default)
         {
             Value = propertyValue;
             AckCode = ackCode;

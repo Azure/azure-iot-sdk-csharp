@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <remarks>
     /// See the <see href="https://docs.microsoft.com/azure/iot-pnp/concepts-convention#writable-properties">Writable properties</see> documentation for more information.
     /// </remarks>
-    public class WritableClientPropertyCollection : IEnumerable<KeyValuePair<string, object>>
+    public class WritableClientPropertyCollection : IEnumerable<WritableClientProperty>
     {
         private const string VersionName = "$version";
 
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <value>A <see cref="long"/> that is used to identify the version of the writable property collection.</value>
         public long Version { get; private set; }
 
-        internal IDictionary<string, object> WritableClientProperties { get; } = new Dictionary<string, object>();
+        internal IList<WritableClientProperty> WritableClientProperties { get; } = new List<WritableClientProperty>();
 
         internal PayloadConvention Convention { get; set; }
 
@@ -52,9 +53,15 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
         /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
         public bool Contains(string propertyName)
         {
-            return WritableClientProperties.ContainsKey(propertyName);
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
+            return GetMatches(null, propertyName).Any();
         }
 
         /// <summary>
@@ -63,26 +70,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyName">The property to locate.</param>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> is null. See the root-level <see cref="Contains(string)"/> instead.</exception>
         public bool Contains(string componentName, string propertyName)
         {
             if (componentName == null)
             {
-                throw new ArgumentNullException(nameof(componentName), "It looks like you are trying determine if a root-level property is present in the collection. " +
-                    "Use the method Contains(string propertyName) instead.");
+                throw new ArgumentNullException(nameof(componentName));
             }
 
-            if (WritableClientProperties.TryGetValue(componentName, out object component))
+            if (propertyName == null)
             {
-                // The SDK constructed writable property collection is dictionary for root-level only properties. In case component-level properties
-                // are also present, it is then a multi-level nested dictionary.
-                if (component is IDictionary<string, object> componentPropertiesCollection)
-                {
-                    return componentPropertiesCollection.ContainsKey(propertyName);
-                }
+                throw new ArgumentNullException(nameof(propertyName));
             }
 
-            return false;
+            return GetMatches(componentName, propertyName).Any();
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             propertyValue = default;
 
-            // If the key is null, empty or whitespace, then return false with an empty WritableClientProperty.
+            // If the propertyName is null, empty or whitespace then return false with an empty WritableClientProperty.
             if (string.IsNullOrWhiteSpace(propertyName))
             {
                 return false;
@@ -104,14 +104,11 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Contains(propertyName))
             {
-                object retrievedPropertyValue = WritableClientProperties[propertyName];
+                IEnumerable<WritableClientProperty> matches = GetMatches(null, propertyName);
 
-                // Check if the retrieved value is a writable property update request
-                if (retrievedPropertyValue is WritableClientProperty writableClientProperty)
-                {
-                    propertyValue = writableClientProperty;
-                    return true;
-                }
+                // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
+                propertyValue = matches.First();
+                return true;
             }
 
             return false;
@@ -156,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client
             propertyValue = default;
 
             // If either the component name or the property name is null, empty or whitespace,
-            // then return false with an empty WritableClientProperty.
+            // then return false with the default value of the type <T> passed in.
             if (string.IsNullOrWhiteSpace(componentName) || string.IsNullOrWhiteSpace(propertyName))
             {
                 return false;
@@ -164,29 +161,13 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Contains(componentName, propertyName))
             {
-                object componentProperties = WritableClientProperties[componentName];
+                IEnumerable<WritableClientProperty> matches = GetMatches(componentName, propertyName);
 
-                if (componentProperties is IDictionary<string, object> nestedDictionary)
-                {
-                    // First verify that the retrieved dictionary contains the component identifier { "__t": "c" }.
-                    // If not, then the retrieved nested dictionary is actually a root-level property of type map.
-                    if (nestedDictionary.TryGetValue(ConventionBasedConstants.ComponentIdentifierKey, out object componentIdentifierValue)
-                        && componentIdentifierValue.ToString() == ConventionBasedConstants.ComponentIdentifierValue)
-                    {
-                        if (nestedDictionary.TryGetValue(propertyName, out object dictionaryElement))
-                        {
-                            // Check if the retrieved value is a writable property update request
-                            if (dictionaryElement is WritableClientProperty writableClientProperty)
-                            {
-                                propertyValue = writableClientProperty;
-                                return true;
-                            }
-                        }
-                    }
-                }
+                // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
+                propertyValue = matches.First();
+                return true;
             }
 
-            propertyValue = default;
             return false;
         }
 
@@ -218,9 +199,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        public IEnumerator<WritableClientProperty> GetEnumerator()
         {
-            foreach (KeyValuePair<string, object> property in WritableClientProperties)
+            foreach (WritableClientProperty property in WritableClientProperties)
             {
                 yield return property;
             }
@@ -237,9 +218,10 @@ namespace Microsoft.Azure.Devices.Client
             // The version information should not be a part of the enumerable ProperyCollection, but rather should be
             // accessible through its dedicated accessor.
             bool versionPresent = writableClientPropertyRequests.TryGetValue(VersionName, out object version);
-            Version = versionPresent
-                ? (long)version
-                : throw new IotHubException("Properties document missing version number. Contact service with logs.");
+
+            Version = versionPresent && ObjectConversionHelpers.TryCastNumericTo(version, out long longVersion)
+                ? longVersion
+                : throw new IotHubException("Properties document either missing version number or not formatted as expected. Contact service with logs.");
 
             foreach (KeyValuePair<string, object> property in writableClientPropertyRequests)
             {
@@ -263,40 +245,48 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         // If this is a component property then the collection is a JObject with each individual property as a writable property update request.
                         var componentPropertiesAsJObject = (JObject)propertyValueAsObject;
-                        var collectionDictionary = new Dictionary<string, object>();
 
                         foreach (KeyValuePair<string, JToken> componentProperty in componentPropertiesAsJObject)
                         {
-                            object individualPropertyValue;
                             if (componentProperty.Key == ConventionBasedConstants.ComponentIdentifierKey)
                             {
-                                individualPropertyValue = componentProperty.Value;
+                                // Ignore it. We won't be saving the component identifiers into the collection that we return to the user.
                             }
                             else
                             {
-                                individualPropertyValue = new WritableClientProperty
+                                var individualPropertyValue = new WritableClientProperty
                                 {
                                     Convention = Convention,
+                                    ComponentName = property.Key,
+                                    PropertyName = componentProperty.Key,
                                     Value = Convention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(componentProperty.Value)),
                                     Version = Version,
                                 };
+                                WritableClientProperties.Add(individualPropertyValue);
                             }
-                            collectionDictionary.Add(componentProperty.Key, individualPropertyValue);
                         }
-                        WritableClientProperties.Add(property.Key, collectionDictionary);
                     }
                     else
                     {
                         var individualPropertyValue = new WritableClientProperty
                         {
                             Convention = Convention,
+                            PropertyName = property.Key,
                             Value = Convention.PayloadSerializer.DeserializeToType<object>(JsonConvert.SerializeObject(propertyValueAsObject)),
                             Version = Version,
                         };
-                        WritableClientProperties.Add(property.Key, individualPropertyValue);
+                        WritableClientProperties.Add(individualPropertyValue);
                     }
                 }
             }
+        }
+
+        private IEnumerable<WritableClientProperty> GetMatches(string componentName, string propertyName)
+        {
+            return WritableClientProperties
+                .Where(property =>
+                    property.ComponentName == componentName
+                    && property.PropertyName == propertyName);
         }
     }
 }

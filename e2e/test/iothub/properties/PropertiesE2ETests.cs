@@ -287,12 +287,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                             propertyFromCollection.Should().BeEquivalentTo(propValue);
 
                             var writablePropertyAcks = new ClientPropertyCollection();
-                            foreach (KeyValuePair<string, object> writableProperty in writableProperties)
+                            foreach (WritableClientProperty writableProperty in writableProperties)
                             {
-                                if (writableProperty.Value is WritableClientProperty writableClientProperty)
-                                {
-                                    writablePropertyAcks.AddRootProperty(writableProperty.Key, writableClientProperty.AcknowledgeWith(CommonClientResponseCodes.OK));
-                                }
+                                writablePropertyAcks.AddWritableClientPropertyAcknowledgement(writableProperty.AcknowledgeWith(CommonClientResponseCodes.OK));
                             }
 
                             await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
@@ -323,12 +320,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate that the writable property update request was acknowledged
 
-            bool isWritablePropertyAckPresent = clientProperties.ReportedByClient.TryGetValue(propName, out IWritablePropertyAcknowledgementValue writablePropertyAck);
+            bool isWritablePropertyAckPresent = clientProperties.ReportedByClient.TryGetValue(propName, out IWritablePropertyAcknowledgementPayload writablePropertyAck);
             isWritablePropertyAckPresent.Should().BeTrue();
             // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
             deviceClient.PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(writablePropertyAck.Value).Should().BeEquivalentTo(propValue);
 
-            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedByClient.TryGetValue(propName, out NewtonsoftJsonWritablePropertyAcknowledgementValue writablePropertyAckNewtonSoft);
+            bool isWritablePropertyAckPresentSpecific = clientProperties.ReportedByClient.TryGetValue(propName, out NewtonsoftJsonWritablePropertyAcknowledgementPayload writablePropertyAckNewtonSoft);
             isWritablePropertyAckPresentSpecific.Should().BeTrue();
             // TryGetValue doesn't have nested deserialization, so we'll have to deserialize the retrieved value
             deviceClient.PayloadConvention.PayloadSerializer.ConvertFromJsonObject<T>(writablePropertyAckNewtonSoft.Value).Should().BeEquivalentTo(propValue);
@@ -394,16 +391,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             // First send a property patch with valid values for both prop1 and prop2.
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = new Dictionary<string, object>
-                        {
-                            [propName2] = propValue
-                        }
-                    })
-                .ConfigureAwait(false);
+            var propertyPatch1 = new ClientPropertyCollection();
+            propertyPatch1.AddRootProperty(
+                propName1,
+                new Dictionary<string, object>
+                {
+                    [propName2] = propValue
+                });
+            await deviceClient.UpdateClientPropertiesAsync(propertyPatch1).ConfigureAwait(false);
+
             Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
 
@@ -415,16 +411,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Sending a null value for a property will result in service removing the property from the client's twin representation.
             // For the property patch sent here will result in propName2 being removed.
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = new Dictionary<string, object>
-                        {
-                            [propName2] = null
-                        }
-                    })
-                .ConfigureAwait(false);
+            var propertyPatch2 = new ClientPropertyCollection();
+            propertyPatch2.AddRootProperty(
+                propName1,
+                new Dictionary<string, object>
+                {
+                    [propName2] = null
+                });
+            await deviceClient.UpdateClientPropertiesAsync(propertyPatch2).ConfigureAwait(false);
+
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
 
@@ -432,13 +427,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             serializedActualProperty.Should().Be(propEmptyValue);
 
             // For the property patch sent here will result in propName1 being removed.
-            await deviceClient
-                .UpdateClientPropertiesAsync(
-                    new ClientPropertyCollection
-                    {
-                        [propName1] = null
-                    })
-                .ConfigureAwait(false);
+            var propertyPatch3 = new ClientPropertyCollection();
+            propertyPatch3.AddRootProperty(propName1, null);
+            await deviceClient.UpdateClientPropertiesAsync(propertyPatch3).ConfigureAwait(false);
+
             serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeFalse();
         }
