@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a root-level property.
         /// </summary>
         /// <remarks>
-        /// When retrieveing a writable client property acknowledgement payload <typeparamref name="T"/> should be
+        /// When retrieving a writable client property, acknowledgement payload <typeparamref name="T"/> should be
         /// assignable from <see cref="IWritablePropertyAcknowledgementPayload"/>.
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
