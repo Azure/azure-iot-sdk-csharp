@@ -414,8 +414,9 @@ namespace Microsoft.Azure.Devices.Client
                     // If a property with the same key already exists in the collection, then remove it.
                     IEnumerable<ClientProperty> existingProperty = ClientPropertiesReported
                         .Where(property =>
-                            property.PropertyName == entry.Key
-                            && property.ComponentName == componentName);
+                            property.ComponentName == componentName
+                            && (property.PropertyName == entry.Key
+                                || property.PropertyName == null));
 
                     if (existingProperty.Any())
                     {
@@ -465,15 +466,6 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
-                        var componentProperties = new Dictionary<string, object>();
-
-                        // If the component name is not null then this is a component-level property.
-                        // First check if an entry for this component already exists in the dictionary.
-                        if (result.ContainsKey(clientProperty.ComponentName))
-                        {
-                            componentProperties = (Dictionary<string, object>)result[clientProperty.ComponentName];
-                        }
-
                         // If the property name is null then this is an operation to remove the component.
                         if (clientProperty.PropertyName == null)
                         {
@@ -481,6 +473,21 @@ namespace Microsoft.Azure.Devices.Client
                         }
                         else
                         {
+                            var componentProperties = new Dictionary<string, object>();
+
+                            // If the component name is not null then this is a component-level property.
+                            // First check if an entry for this component already exists in the dictionary.
+                            if (result.ContainsKey(clientProperty.ComponentName))
+                            {
+                                componentProperties = (Dictionary<string, object>)result[clientProperty.ComponentName];
+
+                                // If a previous entry was added to remove the component then the component properties dictionary retrieved will be bull.
+                                if (componentProperties == null)
+                                {
+                                    componentProperties = new Dictionary<string, object>();
+                                }
+                            }
+
                             // For a component level property, the property patch needs to contain the {"__t": "c"} component identifier.
                             if (!componentProperties.ContainsKey(ConventionBasedConstants.ComponentIdentifierKey))
                             {
