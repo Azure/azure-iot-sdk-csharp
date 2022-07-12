@@ -58,14 +58,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 totalRuns++;
 
                 // Arrange
-                // Initialize the test device client instances
-                // Set the device client connection status change handler
+
                 logger.Trace($">>> {nameof(PoolingOverAmqp)} Initializing device clients for multiplexing test - Test run {totalRuns}");
                 for (int i = 0; i < devicesCount; i++)
                 {
+                    // Initialize the test device client instances
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
 
+                    // Set the device client connection status change handler
                     var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
                     deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
 
@@ -78,12 +79,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     if (initOperation != null)
                     {
-                        operations.Add(initOperation(deviceClient, testDevice, testDeviceCallbackHandler));
+                        await initOperation(deviceClient, testDevice, testDeviceCallbackHandler).ConfigureAwait(false);
                     }
                 }
-
-                await Task.WhenAll(operations).ConfigureAwait(false);
-                operations.Clear();
 
                 try
                 {

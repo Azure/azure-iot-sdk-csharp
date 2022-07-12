@@ -334,12 +334,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cts = new CancellationTokenSource();
 
             cts.Cancel();
-            innerHandlerMock.ReceiveAsync(cts.Token).Returns(new Task<Message>(() => new Message(new byte[0])));
+            innerHandlerMock.ReceiveMessageAsync(cts.Token).Returns(new Task<Message>(() => new Message(new byte[0])));
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 
             // act and assert
-            await sut.ReceiveAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
+            await sut.ReceiveMessageAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
         }
 
         [TestMethod]
