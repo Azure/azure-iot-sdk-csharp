@@ -1774,18 +1774,26 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
 
-                switch (response)
+                try
                 {
-                    case MessageResponse.Completed:
-                        await CompleteAsync(message).ConfigureAwait(false);
-                        break;
+                    switch (response)
+                    {
+                        case MessageResponse.Completed:
+                            await CompleteAsync(message).ConfigureAwait(false);
+                            break;
 
-                    case MessageResponse.Abandoned:
-                        await AbandonAsync(message).ConfigureAwait(false);
-                        break;
+                        case MessageResponse.Abandoned:
+                            await AbandonAsync(message).ConfigureAwait(false);
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex) when (Logging.IsEnabled)
+                {
+                    Logging.Error(this, ex, nameof(OnModuleEventMessageReceivedAsync));
+                    throw;
                 }
             }
             finally
