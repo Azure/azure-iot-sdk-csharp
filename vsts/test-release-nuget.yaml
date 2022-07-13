@@ -17,8 +17,8 @@ jobs:
           FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.18:
-          FRAMEWORK: netcoreapp2.1.18
+        .Net Core 2.1.30:
+          FRAMEWORK: netcoreapp2.1.30
 
     condition: succeeded()
     pool:
@@ -176,8 +176,8 @@ jobs:
           FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.18:
-          FRAMEWORK: netcoreapp2.1.18
+        .Net Core 2.1.30:
+          FRAMEWORK: netcoreapp2.1.30
         .Net Framework 4.7.2:
           FRAMEWORK: net472
         .Net Framework 4.5.1:
