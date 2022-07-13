@@ -536,47 +536,55 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, Client.TransportType transport)
+        private async Task ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, Client.TransportType transportType)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
-            DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-            var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
+            using DeviceClient deviceClient1 = testDevice.CreateDeviceClient(transportType);
+
+            // An MQTT client must have connected at least once to be able to receive C2D messages.
+            if (transportType == Client.TransportType.Mqtt
+                || transportType == Client.TransportType.Mqtt_Tcp_Only
+                || transportType == Client.TransportType.Mqtt_WebSocket_Only)
+            {
+                await deviceClient1.OpenAsync().ConfigureAwait(false);
+                await deviceClient1.CloseAsync().ConfigureAwait(false);
+            }
 
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-
-            (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
-
-            // Subscribe to receive C2D messages over the callback.
-            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
-
-            // Now dispose and reinitialize the client instance.
-            deviceClient.Dispose();
-            deviceClient = null;
-
-            testDeviceCallbackHandler.Dispose();
-            testDeviceCallbackHandler = null;
-
-            deviceClient = testDevice.CreateDeviceClient(transport);
-            testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
-
-            // Open the device client - for MQTT, this will connect the device with CleanSession flag set to false.
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
             // Send the message from service.
+            (Message msg, string _, string _) = ComposeC2dTestMessage(Logger);
             Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
             await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
-            // Subscribe to receive C2D messages over the callback.
-            testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
-            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+            using DeviceClient deviceClient2 = testDevice.CreateDeviceClient(transportType);
+            // Open the device client - for MQTT, this will connect the device with CleanSession flag set to false.
+            // Also, over MQTT it seems the device must be connected (although not necessarily subscribed for C2D messages)
+            // in order for C2D messages to get to the device. If they are offline, the messages will never be delivered.
+            await deviceClient2.OpenAsync().ConfigureAwait(false);
 
-            // Wait to ensure that the message was received.
-            using var cts = new CancellationTokenSource(s_tenSeconds);
-            await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
+            List<Client.Message> receivedMessages = new();
+            var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task OnC2dMessage(Client.Message message, object userContext)
+            {
+                receivedMessages.Add(message);
+                messageReceived.SetResult(true);
+                return Task.CompletedTask;
+            }
+
+            // After message was sent, subscribe for messages to see if the device can get them.
+            await deviceClient2.SetReceiveMessageHandlerAsync(OnC2dMessage, null).ConfigureAwait(false);
+            try
+            {
+                using var cts = new CancellationTokenSource(s_tenSeconds);
+                await Task.WhenAny(messageReceived.Task, Task.Delay(-1, cts.Token)).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) { }
+
+            receivedMessages.Should().HaveCount(1);
+            receivedMessages.First().MessageId.Should().Be(msg.MessageId);
 
             await serviceClient.CloseAsync().ConfigureAwait(false);
-            deviceClient.Dispose();
-            testDeviceCallbackHandler.Dispose();
+            await deviceClient2.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, ITransportSettings[] transportSettings)
