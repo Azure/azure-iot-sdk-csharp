@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transport,
                 Logger);
 
-            using var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
+            using var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, refresher, transport);
             Logger.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             if (transport == Client.TransportType.Mqtt)

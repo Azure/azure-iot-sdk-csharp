@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("IoTHub")]
     public class MessageReceiveE2EPoolAmqpTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2EPoolAmqpTests)}_";
+        private readonly string DevicePrefix = $"{nameof(MessageReceiveE2EPoolAmqpTests)}_";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
