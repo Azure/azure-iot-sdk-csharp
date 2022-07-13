@@ -720,7 +720,7 @@ namespace Microsoft.Azure.Devices.Client
             // unrecoverable (authentication, quota exceed) error occurs.
             try
             {
-                return await InnerHandler.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {

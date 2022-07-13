@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return message;
         }
 
-        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));

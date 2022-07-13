@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (_isDeviceReceiveMessageCallbackSet)
             {
