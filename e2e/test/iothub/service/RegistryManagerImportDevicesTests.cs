@@ -121,8 +121,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 // assert
 
-                importJobResponse.Status.Should().Be(JobStatus.Completed, "Otherwise import failed");
-                importJobResponse.FailureReason.Should().BeNullOrEmpty("Otherwise import failed");
+                importJobResponse.Status.Should().Be(JobStatus.Completed, $"Import failed due to '{importJobResponse.FailureReason}'.");
+                importJobResponse.FailureReason.Should().BeNullOrEmpty("Import failed.");
 
                 // should not throw due to 404, but device may not immediately appear in registry
                 Device device = null;
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 }
             }
 
-            // wait for job to complete
+            // Wait for job to complete
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
