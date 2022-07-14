@@ -137,7 +137,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Commands
 
                         try
                         {
-                            var valueToTest = request.GetPayload<ServiceCommandRequestObject>();
+                            bool canGetPayload = request.TryGetPayload(out ServiceCommandRequestObject valueToTest);
+                            canGetPayload.Should().BeTrue();
+
                             if (string.IsNullOrEmpty(componentName))
                             {
                                 request.ComponentName.Should().BeNull();

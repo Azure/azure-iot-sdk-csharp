@@ -16,10 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         // TODO: Unit-testable and mockable
 
-        internal WritableClientPropertyAcknowledgement()
-        {
-        }
-
         /// <summary>
         /// The name of the component for which an update request is received.
         /// This is <c>null</c> for an update request for a root-level writable property.
