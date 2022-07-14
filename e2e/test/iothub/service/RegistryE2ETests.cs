@@ -30,9 +30,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DevicesClient_BadProxy_ThrowsException()
         {
             // arrange
-            using var serviceClient = new ServiceClient2(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.ConnectionString,
-                new ServiceClientOptions2
+                new IotHubServiceClientOptions
                 {
                     Proxy = new WebProxy(TestConfiguration.IoTHub.InvalidProxyServerAddress),
                 });
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string edgeId2 = _idPrefix + Guid.NewGuid();
             string deviceId = _idPrefix + Guid.NewGuid();
 
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             string deviceId = _idPrefix + Guid.NewGuid();
 
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             var twin = new Twin
             {
                 Tags = new TwinCollection(@"{ companyId: 1234 }"),
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Scope = edge.Scope,
             };
 
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var device1 = new Device(_idPrefix + Guid.NewGuid());
             var device2 = new Device(_idPrefix + Guid.NewGuid());
             var edge = new Device(_idPrefix + Guid.NewGuid());
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             var device1 = new Device(_idPrefix + Guid.NewGuid());
             var device2 = new Device(_idPrefix + Guid.NewGuid());
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             try
@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             var device1 = new Device(_idPrefix + Guid.NewGuid());
             var device2 = new Device(_idPrefix + Guid.NewGuid());
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -331,12 +331,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DevicesClient_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
-            var options = new ServiceClientOptions2
+            var options = new IotHubServiceClientOptions
             {
                 Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
 
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString, options);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             var device = new Device(deviceId);
             await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
         }
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
 
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             string deviceId = TestConfiguration.IoTHub.X509ChainDeviceName;
 
@@ -448,7 +448,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
 
             Device device = null;
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
             string testModuleId = $"IdentityLifecycleModule{Guid.NewGuid()}";
 
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -539,7 +539,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task RegistryManager_DeviceTwinLifecycle()
         {
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             TestModule module = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix, Logger).ConfigureAwait(false);
 
             try
@@ -573,14 +573,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task DevicesClient_ServiceApiVersionsAllWork()
         {
-            foreach (ServiceClientOptions2.ServiceVersion serviceVersion in Enum.GetValues(typeof(ServiceClientOptions2.ServiceVersion)))
+            foreach (IotHubServiceClientOptions.ServiceVersion serviceVersion in Enum.GetValues(typeof(IotHubServiceClientOptions.ServiceVersion)))
             {
-                ServiceClientOptions2 options = new ServiceClientOptions2()
+                IotHubServiceClientOptions options = new IotHubServiceClientOptions()
                 {
                     Version = serviceVersion
                 };
 
-                using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString, options);
+                using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
                 string deviceId = Guid.NewGuid().ToString();
 
                 try
@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        private static async Task CleanupAsync(ServiceClient2 serviceClient, string deviceId)
+        private static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)
         {
             // cleanup
             try

@@ -8,9 +8,9 @@ using System.Net.Http;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The configurable options for <see cref="ServiceClient2"/> instances.
+    /// The configurable options for <see cref="IotHubServiceClient"/> instances.
     /// </summary>
-    public class ServiceClientOptions2
+    public class IotHubServiceClientOptions
     {
         /// <summary>
         /// Initializes a new instance of this class using the default settings.
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
         /// The service API version that this client will use when making service requests. Defaults to the latest
         /// version.
         /// </param>
-        public ServiceClientOptions2(ServiceVersion version = LatestVersion)
+        public IotHubServiceClientOptions(ServiceVersion version = LatestVersion)
         {
             Proxy = DefaultWebProxySettings.Instance;
             Version = version;

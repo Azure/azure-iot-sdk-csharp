@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = testDevice.Id;
             string moduleName = "E2E_" + moduleNamePrefix + Guid.NewGuid();
 
-            using var sc = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             logger.Trace($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
             var requestModule = new Module(deviceName, moduleName);

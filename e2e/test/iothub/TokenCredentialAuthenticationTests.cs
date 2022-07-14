@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var serviceClient = new ServiceClient2(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 

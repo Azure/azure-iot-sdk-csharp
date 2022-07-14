@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// <param name="hostName">The host name of the IoT hub this client will send requests to.</param>
         /// <param name="options">The optional settings for this client to use.</param>
         /// <returns>The created HTTP client.</returns>
-        internal static HttpClient Create(string hostName, ServiceClientOptions2 options)
+        internal static HttpClient Create(string hostName, IotHubServiceClientOptions options)
         {
             Uri httpsEndpoint = new UriBuilder(HttpsEndpointPrefix, hostName).Uri;
 

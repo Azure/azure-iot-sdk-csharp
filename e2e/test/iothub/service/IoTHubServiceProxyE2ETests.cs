@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
-            var options = new ServiceClientOptions2();
+            var options = new IotHubServiceClientOptions();
             options.Proxy = new WebProxy(s_proxyServerAddress);
 
             await RegistryManager_AddDevice(options).ConfigureAwait(false);
@@ -69,11 +69,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        private async Task RegistryManager_AddDevice(ServiceClientOptions2 options)
+        private async Task RegistryManager_AddDevice(IotHubServiceClientOptions options)
         {
             string deviceName = DevicePrefix + Guid.NewGuid();
 
-            using (var serviceClient = new ServiceClient2(s_connectionString, options))
+            using (var serviceClient = new IotHubServiceClient(s_connectionString, options))
             {
                 await serviceClient.Devices.AddAsync(new Device(deviceName)).ConfigureAwait(false);
                 await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);

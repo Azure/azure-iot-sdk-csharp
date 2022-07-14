@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 using Microsoft.Azure.Devices.Http2;
@@ -17,7 +14,10 @@ namespace Microsoft.Azure.Devices
     /// within IoT hub including managing device/module identities, getting/setting twin for device/modules, invoking
     /// direct methods on devices/modules, and more.
     /// </summary>
-    public class ServiceClient2 : IDisposable
+    /// <remarks>
+    /// This client is <see cref="IDisposable"/> but users are not responsible for disposing subclients within this client.
+    /// </remarks>
+    public class IotHubServiceClient : IDisposable
     {
         private string _hostName;
         private IotHubConnectionProperties _credentialProvider;
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         public DevicesClient Devices { get; private set; }
 
         /// <summary>
-        /// Subclient of <see cref="ServiceClient2"/> that handles all module registry operations including
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles all module registry operations including
         /// getting/adding/setting/deleting module identities.
         /// </summary>
         public ModulesClient Modules { get; private set; }
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        protected ServiceClient2()
+        protected IotHubServiceClient()
         {
         }
 
@@ -48,13 +48,13 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="connectionString">The IoT hub connection string.</param>
         /// <param name="options">The optional client settings.</param>
-        public ServiceClient2(string connectionString, ServiceClientOptions2 options = default)
+        public IotHubServiceClient(string connectionString, IotHubServiceClientOptions options = default)
         {
             Argument.RequireNotNullOrEmpty(connectionString, nameof(connectionString));
 
             if (options == null)
             {
-                options = new ServiceClientOptions2();
+                options = new IotHubServiceClientOptions();
             }
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
@@ -79,14 +79,14 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
         /// <param name="options">The optional client settings.</param>
-        public ServiceClient2(string hostName, TokenCredential credential, ServiceClientOptions2 options = default)
+        public IotHubServiceClient(string hostName, TokenCredential credential, IotHubServiceClientOptions options = default)
         {
             Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
             Argument.RequireNotNull(credential, nameof(credential));
 
             if (options == null)
             {
-                options = new ServiceClientOptions2();
+                options = new IotHubServiceClientOptions();
             }
 
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
@@ -109,14 +109,14 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="options">The optional client settings.</param>
-        public ServiceClient2(string hostName, AzureSasCredential credential, ServiceClientOptions2 options = default)
+        public IotHubServiceClient(string hostName, AzureSasCredential credential, IotHubServiceClientOptions options = default)
         {
             Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
             Argument.RequireNotNull(credential, nameof(credential));
 
             if (options == null)
             {
-                options = new ServiceClientOptions2();
+                options = new IotHubServiceClientOptions();
             }
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
@@ -134,7 +134,8 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Dispose this client and all the disposable resources it has.
+        /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
+        /// created by or given to this client.
         /// </summary>
         public void Dispose()
         {

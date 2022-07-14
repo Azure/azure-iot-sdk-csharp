@@ -15,7 +15,7 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="ServiceClient2"/> that handles all device registry operations including
+    /// Subclient of <see cref="IotHubServiceClient"/> that handles all device registry operations including
     /// getting/adding/setting/deleting device identities, getting modules on a device, and getting device
     /// registry statistics.
     /// </summary>

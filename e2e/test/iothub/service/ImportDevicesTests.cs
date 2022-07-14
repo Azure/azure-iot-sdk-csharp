@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             StorageAuthenticationType storageAuthenticationType,
             string devicesFileName,
             string configsFileName,
-            ServiceClient2 serviceClient,
+            IotHubServiceClient serviceClient,
             Uri containerUri,
             ManagedIdentity identity)
         {

@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string configsFileName = $"{idPrefix}-configsexport-{StorageContainer.GetRandomSuffix(4)}.txt";
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            using var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             bool isUserAssignedMsi,
             string devicesFileName,
             string configsFileName,
-            ServiceClient2 serviceClient,
+            IotHubServiceClient serviceClient,
             Uri containerUri)
         {
             int tryCount = 0;
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string deviceId,
             string configurationId,
             RegistryManager registryManager,
-            ServiceClient2 serviceClient)
+            IotHubServiceClient serviceClient)
         {
             try
             {

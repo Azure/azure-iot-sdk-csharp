@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            Client.TransportType protocol, Func<ServiceClient2, string, Task> registryManagerOperation)
+            Client.TransportType protocol, Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangesHandler.
-                using (var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString))
+                using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(serviceClient, deviceId).ConfigureAwait(false);
                 }
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            Client.TransportType protocol, Func<ServiceClient2, string, Task> registryManagerOperation)
+            Client.TransportType protocol, Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
             var amqpTransportSettings = new AmqpTransportSettings(protocol);
             var transportSettings = new ITransportSettings[] { amqpTransportSettings };
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(twin);
 
                 // Delete/disable the device in IoT hub.
-                using (var serviceClient = new ServiceClient2(TestConfiguration.IoTHub.ConnectionString))
+                using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
                 {
                     await registryManagerOperation(serviceClient, testModule.DeviceId).ConfigureAwait(false);
                 }

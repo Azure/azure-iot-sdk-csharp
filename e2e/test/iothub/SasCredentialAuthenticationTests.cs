@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
-            using var serviceClient = new ServiceClient2(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // arrange
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));
             var sasCredential = new AzureSasCredential(signature);
-            using var serviceClient = new ServiceClient2(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 sasCredential);
 
