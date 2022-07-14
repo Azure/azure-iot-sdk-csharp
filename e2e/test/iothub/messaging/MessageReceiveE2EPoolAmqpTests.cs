@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("IoTHub")]
     public class MessageReceiveE2EPoolAmqpTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2EPoolAmqpTests)}_";
+        private readonly string DevicePrefix = $"{nameof(MessageReceiveE2EPoolAmqpTests)}_";
 
         [LoggedTestMethod]
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()

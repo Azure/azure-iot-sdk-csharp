@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class NoRetryE2ETests : E2EMsTestBase
     {
-        private static readonly string _devicePrefix = $"E2E_{nameof(NoRetryE2ETests)}_";
+        private static readonly string _devicePrefix = $"{nameof(NoRetryE2ETests)}_";
 
         [LoggedTestMethod]
         [TestCategory("FaultInjection")]

@@ -3,13 +3,15 @@
 //     Generated using the NSwag toolchain v11.17.6.0 (NJsonSchema v9.10.46.0 (Newtonsoft.Json v9.0.0.0)) (http://NSwag.org)
 // </auto-generated>
 //----------------------
-// Note: Code manually changed to replace System.Uri.EscapeDataString with System.Net.WebUtility.UrlEncode
+// <Note>
+//     Code manually changed to replace System.Uri.EscapeDataString with System.Net.WebUtility.UrlEncode
+//     Newtonsoft.Json dependency upgraded from v9 to v13. 
+// </Note>
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 {
 #pragma warning disable // Disable all warnings
 
-    [System.CodeDom.Compiler.GeneratedCode("NSwag", "11.17.6.0 (NJsonSchema v9.10.46.0 (Newtonsoft.Json v9.0.0.0))")]
     internal partial class HttpHsmClient
     {
         private string _baseUrl = "http://";
@@ -775,7 +777,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
     }
     
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class SignRequest : System.ComponentModel.INotifyPropertyChanged
     {
         private string _keyId;
@@ -849,7 +850,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class SignResponse : System.ComponentModel.INotifyPropertyChanged
     {
         private byte[] _digest;
@@ -890,7 +890,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class EncryptRequest : System.ComponentModel.INotifyPropertyChanged
     {
         private byte[] _plaintext;
@@ -947,7 +946,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class EncryptResponse : System.ComponentModel.INotifyPropertyChanged
     {
         private byte[] _ciphertext;
@@ -988,7 +986,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class DecryptRequest : System.ComponentModel.INotifyPropertyChanged
     {
         private byte[] _ciphertext;
@@ -1045,7 +1042,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class DecryptResponse : System.ComponentModel.INotifyPropertyChanged
     {
         private byte[] _plaintext;
@@ -1086,7 +1082,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class ServerCertificateRequest : System.ComponentModel.INotifyPropertyChanged
     {
         private string _commonName;
@@ -1143,7 +1138,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class CertificateResponse : System.ComponentModel.INotifyPropertyChanged
     {
         private PrivateKey _privateKey = new PrivateKey();
@@ -1215,7 +1209,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class TrustBundleResponse : System.ComponentModel.INotifyPropertyChanged
     {
         private string _certificate;
@@ -1256,7 +1249,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class PrivateKey : System.ComponentModel.INotifyPropertyChanged
     {
         private PrivateKeyType _type;
@@ -1330,7 +1322,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal partial class ErrorResponse : System.ComponentModel.INotifyPropertyChanged
     {
         private string _message;
@@ -1370,7 +1361,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal enum SignRequestAlgo
     {
         [System.Runtime.Serialization.EnumMember(Value = "HMACSHA256")]
@@ -1378,7 +1368,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "9.10.46.0 (Newtonsoft.Json v9.0.0.0)")]
     internal enum PrivateKeyType
     {
         [System.Runtime.Serialization.EnumMember(Value = "ref")]
@@ -1389,7 +1378,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NSwag", "11.17.6.0 (NJsonSchema v9.10.46.0 (Newtonsoft.Json v9.0.0.0))")]
     internal partial class SwaggerException : System.Exception
     {
         public int StatusCode { get; private set; }
@@ -1412,7 +1400,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NSwag", "11.17.6.0 (NJsonSchema v9.10.46.0 (Newtonsoft.Json v9.0.0.0))")]
     internal partial class SwaggerException<TResult> : SwaggerException
     {
         public TResult Result { get; private set; }
