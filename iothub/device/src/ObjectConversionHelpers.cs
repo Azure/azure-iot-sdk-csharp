@@ -25,6 +25,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch
             {
+                // In case the value cannot be converted using the serializer,
+                // then return false with the default value of the type <T> passed in.
             }
 
             value = default;
@@ -55,6 +57,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 catch
                 {
+                    // In case the value cannot be converted,
+                    // then return false with the default value of the type <T> passed in.
                 }
             }
 
