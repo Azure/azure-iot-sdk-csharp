@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets the listener for all command calls from the service.
         /// </summary>
         /// <remarks>
-        /// Calling this API more than once will result in the listerner set last overwriting any previously set listener.
+        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// You can pass in a <c>null</c> <paramref name="callback"/> to unsubscribe from receiving command requests.
         /// </remarks>
         /// <param name="callback">The callback to handle all incoming commands for the client.</param>
