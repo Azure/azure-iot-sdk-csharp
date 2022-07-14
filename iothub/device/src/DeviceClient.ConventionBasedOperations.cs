@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <remarks>
-        /// Calling this API more than once will result in the listerner set last overwriting any previously set listener.
+        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// You can pass in a <c>null</c> <paramref name="callback"/> to unsubscribe from receiving writable property update requests.
         /// <para>
         /// The callback should either enumerate the requested changes and match that against the device's supported
