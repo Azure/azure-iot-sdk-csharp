@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     [TestCategory("IoTHub")]
     public class TwinE2ETests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(TwinE2ETests)}_";
+        private readonly string _devicePrefix = $"{nameof(TwinE2ETests)}_";
 
         private static readonly RegistryManager _registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 

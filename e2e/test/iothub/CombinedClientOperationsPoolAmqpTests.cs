@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class CombinedClientOperationsPoolAmqpTests : E2EMsTestBase
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
-        private readonly string _devicePrefix = $"E2E_{nameof(CombinedClientOperationsPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
