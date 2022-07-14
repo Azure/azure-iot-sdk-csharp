@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ImportExportDevicesSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SOURCE_IOTHUB_CONN_STRING_CSHARP": "<connection string to IoT Hub you're going to copy from>",
+        "DEST_IOTHUB_CONN_STRING_CSHARP": "<connection string to new IoT Hub>",
+        "STORAGE_CONN_STRING_CSHARP": "<storage account connection string>"
+      }
+    }
+  }
+}

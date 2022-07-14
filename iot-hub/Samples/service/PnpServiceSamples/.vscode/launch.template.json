@@ -1,0 +1,44 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "TemperatureController",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildTemperatureController",
+            "program": "${workspaceFolder}/TemperatureController/bin/Debug/netcoreapp3.1/TemperatureController.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/TemperatureController",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env" :{
+                "IOTHUB_CONNECTION_STRING": "",
+                "IOTHUB_DEVICE_ID": ""
+            }
+        },
+        {
+            "name": "Thermostat",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildThermostat",
+            "program": "${workspaceFolder}/Thermostat/bin/Debug/netcoreapp3.1/Thermostat.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Thermostat",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env" :{
+                "IOTHUB_CONNECTION_STRING": "",
+                "IOTHUB_DEVICE_ID": ""
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        }
+    ]
+}

@@ -1,0 +1,45 @@
+{
+     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "IoTHubName_in": {
+            "value": "ContosoTestHub"
+        },
+        "location": {
+            "value": "westus"
+        },
+        "consumer_group":{
+            "value": "ContosoConsumers"
+        },
+        "sku_name": {
+            "value": "S1"
+        },
+        "sku_units": {
+            "value": "1"
+        },
+        "d2c_partitions": {
+            "value": "4"
+        },
+        "storageAccountName_in": {
+            "value": "contosostorage"
+        },
+        "storageContainerName": {
+            "value": "contosoresults"
+        },
+        "storage_endpoint": {
+            "value": "ContosoStorageEndpoint"
+        },
+        "service_bus_namespace_in": {
+            "value": "ContosoSBNamespace"
+        },
+        "service_bus_queue_in": {
+            "value": "ContosoSBQueue"
+        },
+        "service_bus_queue_endpoint": {
+            "value": "ContosoSBQueueEndpoint"
+        },
+        "AuthRules_sb_queue": {
+            "value": "AuthRules_sb_queue"
+        }
+    }
+}
