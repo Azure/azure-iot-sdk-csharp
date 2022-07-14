@@ -119,6 +119,14 @@ namespace Microsoft.Azure.Devices.Client
             Collection.Clear();
         }
 
+        /// <summary>
+        /// The telemetry collection, as a serialized string.
+        /// </summary>
+        public string GetSerializedString()
+        {
+            return Convention.PayloadSerializer.SerializeToString(Collection);
+        }
+
         ///  <inheritdoc />
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {

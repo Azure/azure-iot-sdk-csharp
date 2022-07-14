@@ -318,6 +318,14 @@ namespace Microsoft.Azure.Devices.Client
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// The reported client properties, as a serialized string.
+        /// </summary>
+        public string GetSerializedString()
+        {
+            return Convention.PayloadSerializer.SerializeToString(ClientPropertiesReported);
+        }
+
         internal byte[] GetPayloadObjectBytes()
         {
             IDictionary<string, object> propertiesToReport = PopulateClientPropertiesForReporting();

@@ -41,6 +41,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets the listener for all command calls from the service.
         /// </summary>
+        /// <remarks>
+        /// Calling this API more than once will result in the listerner set last overwriting any previously set listener.
+        /// You can pass in a <c>null</c> <paramref name="callback"/> to unsubscribe from receiving command requests.
+        /// </remarks>
         /// <param name="callback">The callback to handle all incoming commands for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <example>
@@ -102,10 +106,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <remarks>
+        /// Calling this API more than once will result in the listerner set last overwriting any previously set listener.
+        /// You can pass in a <c>null</c> <paramref name="callback"/> to unsubscribe from receiving writable property update requests.
+        /// <para>
         /// The callback should either enumerate the requested changes and match that against the device's supported
         /// writable properties, or explicitly check for the device's supported writable properties using
         /// <see cref="WritableClientPropertyCollection.Contains(string)"/> or <see cref="WritableClientPropertyCollection.TryGetValue{T}(string, out T)"/>
         /// (or using the component-level overloads on <see cref="WritableClientPropertyCollection"/>).
+        /// </para>
         /// <para>
         /// To update client properties, call <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
         /// </para>

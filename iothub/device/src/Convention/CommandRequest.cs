@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -42,17 +43,32 @@ namespace Microsoft.Azure.Devices.Client
         public string CommandName { get; }
 
         /// <summary>
-        /// The command request payload.
+        /// The command request payload, deserialized to the specified type.
         /// </summary>
         /// <typeparam name="T">The type to deserialize the command request payload to.</typeparam>
-        /// <returns>The command request payload.</returns>
-        public T GetPayload<T>()
+        /// <param name="payload">When this method returns true, this contains the value of the command request payload.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns><c>true</c> if the command request payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
+        public bool TryGetPayload<T>(out T payload)
         {
-            string dataAsJson = GetPayloadAsString();
+            payload = default;
+            string jsonPayload = GetPayloadAsString();
 
-            return dataAsJson == null
-                ? default
-                : _payloadConvention.PayloadSerializer.DeserializeToType<T>(dataAsJson);
+            try
+            {
+                if (jsonPayload == null)
+                {
+                    return false;
+                }
+
+                payload = _payloadConvention.PayloadSerializer.DeserializeToType<T>(jsonPayload);
+                return true;
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
         }
 
         /// <summary>

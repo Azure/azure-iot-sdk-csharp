@@ -41,6 +41,12 @@ namespace Microsoft.Azure.Devices.Client
         internal Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>> callback, CancellationToken cancellationToken)
         {
             // Subscribe to methods default handler internally and use the callback received internally to invoke the user supplied command callback.
+
+            if (callback == null)
+            {
+                return SetMethodDefaultHandlerAsync(null, null, cancellationToken);
+            }
+
             var methodDefaultCallback = new MethodCallback(async (methodRequest, userContext) =>
             {
                 CommandRequest commandRequest;
