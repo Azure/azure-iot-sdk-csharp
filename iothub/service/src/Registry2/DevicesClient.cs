@@ -31,7 +31,8 @@ namespace Microsoft.Azure.Devices
         private const string JobsGetUriFormat = "/jobs/{0}";
         private const string JobsListUriFormat = "/jobs";
         private const string JobsCreateUriFormat = "/jobs/create";
-        private const string StatisticsUriFormat = "/statistics/devices";
+        private const string DeviceStatisticsUriFormat = "/statistics/devices";
+        private const string ServiceStatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string AdminUriFormat = "/$admin/{0}";
 
         /// <summary>
@@ -743,7 +744,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetStatisticsUri(), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDeviceStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<RegistryStatistics>(response, cancellationToken);
@@ -758,6 +759,36 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
+            }
+        }
+
+        /// <summary>
+        /// Gets service statistics for the IoT hub. This call is made over HTTP.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
+        public virtual async Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
+
+            try
+            {
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetServiceStatisticsUri(), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<ServiceStatistics>(response, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
             }
         }
 
@@ -798,9 +829,14 @@ namespace Microsoft.Azure.Devices
             return new Uri(JobsCreateUriFormat.FormatInvariant(), UriKind.Relative);
         }
 
-        private static Uri GetStatisticsUri()
+        private static Uri GetDeviceStatisticsUri()
         {
-            return new Uri(StatisticsUriFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceStatisticsUriFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+        }
+
+        private static Uri GetServiceStatisticsUri()
+        {
+            return new Uri(ServiceStatisticsUriFormat, UriKind.Relative);
         }
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
