@@ -93,8 +93,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
         /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// <para>
         /// To retrieve the value of the root-level writable property update request see <see cref="TryGetValue{T}(string, out T)"/>
         /// or <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
@@ -134,8 +134,8 @@ namespace Microsoft.Azure.Devices.Client
         /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object
         /// that you can add to a <see cref="ClientPropertyCollection"/> using
         /// <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="propertyName">The property to get.</param>
@@ -165,8 +165,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
         /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// <para>
         /// To retrieve the value of the component-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>
         /// or <see cref="TryGetValue{T}(string, string, out T)"/>.
@@ -208,8 +208,8 @@ namespace Microsoft.Azure.Devices.Client
         /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object
         /// that you can add to a <see cref="ClientPropertyCollection"/> using
         /// <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>

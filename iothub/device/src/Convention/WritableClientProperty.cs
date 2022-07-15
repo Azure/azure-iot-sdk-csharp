@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Use the <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
         /// to add this payload to your client properties to be reported back to the service using 
         /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
-        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>.
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// <para>
         /// To construct a writable property update payload with custom value and version number, use
         /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(object, int, long, string)"/> from

@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The response of a <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
-    /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
+    /// (or corresponding method on the <see cref="ModuleClient"/>) operation.
     /// </summary>
     public class ClientPropertiesUpdateResponse
     {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The request Id that is associated with the <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
-        /// or <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> operation.
+        /// (or corresponding method on the <see cref="ModuleClient"/>) operation.
         /// </summary>
         /// <remarks>
         /// This request Id is relevant only for operations over MQTT, and can be used for tracking the operation on service side logs.

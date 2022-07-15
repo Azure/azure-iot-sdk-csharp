@@ -28,8 +28,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Use the <see cref="AddRootProperty(string, object)"/> and/or <see cref="AddComponentProperty(string, string, object)"/> methods
-        /// to add properties into the collection. Use the <see cref="AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// to add properties into the collection. 
+        /// <para>
+        /// Use the <see cref="AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
         /// to add writable property acknowledgements into the collection.
+        /// </para>
         /// <para>
         /// This collection can be reported to service using 
         /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> or

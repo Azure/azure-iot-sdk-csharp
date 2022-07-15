@@ -103,10 +103,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// You can pass in a <c>null</c> <paramref name="callback"/> to unsubscribe from receiving writable property update requests.
         /// <para>
-        /// The callback should either enumerate the requested <see cref="WritableClientProperty"/> changes and match that against the device's supported
-        /// writable properties using <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>, or explicitly check for the device's supported writable properties using
+        /// The callback should either enumerate the requested <see cref="WritableClientProperty"/> changes and match that against the module's supported
+        /// writable properties using <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>, or explicitly check for the module's supported writable properties using
         /// <see cref="WritableClientPropertyCollection.TryGetWritableClientProperty(string, out WritableClientProperty)"/>
-        /// or <see cref="WritableClientPropertyCollection.TryGetWritableClientProperty(string, string, out WritableClientProperty)"/>.
+        /// (or using the component-level overloads on <see cref="WritableClientPropertyCollection"/>).
         /// </para>
         /// <para>
         /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
