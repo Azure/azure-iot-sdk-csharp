@@ -19,7 +19,6 @@ public class IotHubServiceClientOptions
 	public IotHubServiceClientOptions(ServiceVersion version = LatestVersion)
 
 	public IWebProxy Proxy { get; set; }
-	public TimeSpan HttpConnectionLeaseTimeout { get; set; } = TimeSpan.FromMinutes(5);
 	public HttpClient HttpClient { get; set; }
 	public ServiceVersion Version { get; set; } = LatestVersion;
 
