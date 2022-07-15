@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class FaultInjectionPoolAmqpTests
     {
-        private readonly string MessageReceive_DevicePrefix = $"MessageReceiveFaultInjectionPoolAmqpTests";
+        private readonly string MessageReceive_DevicePrefix = $"{nameof(FaultInjectionPoolAmqpTests)}.MessagaeReceive_";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -907,7 +907,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync()
                 .ConfigureAwait(false);
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger)
+                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger)
                 .ConfigureAwait(false);
             }
 
@@ -962,15 +962,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                var timeout = TimeSpan.FromSeconds(20);
-                using var cts = new CancellationTokenSource(timeout);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sent message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
 
-                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 receivedMessage.Should().BeNull();
             }

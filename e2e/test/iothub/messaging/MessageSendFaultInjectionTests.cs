@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("FaultInjection")]
     public partial class MessageSendFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
+        private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
 
         [LoggedTestMethod]
@@ -424,21 +425,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Client.TransportType transport,
             string faultType,
             string reason,
-            TimeSpan delayInSec,
-            TimeSpan durationInSec = default,
-            TimeSpan retryDurationInMilliSec = default,
+            TimeSpan delay,
+            TimeSpan duration = default,
+            TimeSpan retryDuration = default,
             string proxyAddress = null)
         {
-            TimeSpan operationTimeoutInMilliSecs = retryDurationInMilliSec == TimeSpan.Zero ? FaultInjection.RecoveryTime : retryDurationInMilliSec;
-            Func <DeviceClient, TestDevice, Task> init = (deviceClient, testDevice) =>
-            {
-                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec.TotalMilliseconds;
-                return Task.FromResult(0);
-            };
+            TimeSpan operationTimeoutInMilliSecs = retryDuration == TimeSpan.Zero ? FaultInjection.RecoveryTime : retryDuration;
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
+                using var cts = new CancellationTokenSource(retryDuration);
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             };
 
@@ -450,9 +447,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     proxyAddress,
                     faultType,
                     reason,
-                    delayInSec,
-                    durationInSec == TimeSpan.Zero ? FaultInjection.DefaultFaultDuration : durationInSec,
-                    init,
+                    delay,
+                    duration == TimeSpan.Zero ? FaultInjection.DefaultFaultDuration : duration,
+                    null,
                     testOperation,
                     () => { return Task.FromResult(false); },
                     Logger)

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestCategory("IoTHub")]
     public class SasCredentialAuthenticationTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(SasCredentialAuthenticationTests)}_";
+        private readonly string _devicePrefix = $"{nameof(SasCredentialAuthenticationTests)}_";
 
         [LoggedTestMethod]
         public async Task RegistryManager_Http_SasCredentialAuth_Success()

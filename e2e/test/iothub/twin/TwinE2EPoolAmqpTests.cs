@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     [TestCategory("IoTHub")]
     public class TwinE2EPoolAmqpTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(TwinE2EPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TwinE2EPoolAmqpTests)}_";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]

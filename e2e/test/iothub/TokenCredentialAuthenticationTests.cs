@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestCategory("IoTHub")]
     public class TokenCredentialAuthenticationTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(TokenCredentialAuthenticationTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
 
         [LoggedTestMethod]
         public async Task DevicesClient_Http_TokenCredentialAuth_Success()

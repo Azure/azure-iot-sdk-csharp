@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestCategory("IoTHub")]
     public class RegistryE2ETests : E2EMsTestBase
     {
-        private readonly string _idPrefix = $"E2E_{nameof(RegistryE2ETests)}_";
+        private readonly string _idPrefix = $"{nameof(RegistryE2ETests)}_";
 
         [LoggedTestMethod]
         [TestCategory("Proxy")]
@@ -111,11 +111,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             await serviceClient.Devices.AddWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
 
-            Device actual = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
-
-            await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-
-            Assert.IsTrue(actual.Capabilities.IotEdge);
+            try
+            {
+                Device actual = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
+                actual.Should().NotBeNull($"Got null in GET on device {deviceId} to check IotEdge property.");
+                actual.Capabilities.IotEdge.Should().BeTrue();
+            }
+            finally
+            {
+                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+            }
         }
 
         [LoggedTestMethod]
@@ -497,11 +502,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
+            // Create a device to house the module
+            Device device = await serviceClient.Devices.AddAsync(new Device(testDeviceId)).ConfigureAwait(false);
+
             try
             {
-                // Create a device to house the module
-                Device device = await serviceClient.Devices.AddAsync(new Device(testDeviceId)).ConfigureAwait(false);
-
                 // Create a module on the device
                 Module createdModule = await serviceClient.Modules.AddAsync(
                     new Module(testDeviceId, testModuleId)).ConfigureAwait(false);
@@ -513,7 +518,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // Get the device and compare ETag values (should remain unchanged);
                 Module retrievedModule = await serviceClient.Modules.GetAsync(testDeviceId, testModuleId).ConfigureAwait(false);
 
-                retrievedModule.ETag.Should().BeEquivalentTo(createdModule.ETag, "ETag value should not have changed between create and get.");
+                retrievedModule.Should().NotBeNull($"When checking for ETag, got null back for GET on module '{testDeviceId}/{testModuleId}'.");
+                retrievedModule.ETag.Should().Be(createdModule.ETag, "ETag value should not have changed between create and get.");
 
                 // Update a module
                 string managedByValue = "SomeChangedValue";
@@ -600,17 +606,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         private static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)
         {
+            if (deviceId == null)
+            {
+                return;
+            }
+
             // cleanup
             try
             {
-                if (deviceId != null)
-                {
-                    await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-                }
+                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Test clean up failed: {ex.Message}");
+                Assert.Fail($"Test clean up of device {deviceId} failed due to {ex}.");
             }
         }
     }

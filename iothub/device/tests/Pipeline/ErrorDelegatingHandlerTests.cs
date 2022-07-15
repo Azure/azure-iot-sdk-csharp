@@ -191,9 +191,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.ReceiveAsync(Arg.Any<CancellationToken>()),
-                di => di.ReceiveAsync(cancellationToken),
-                di => di.Received(2).ReceiveAsync(Arg.Any<CancellationToken>()),
+                di => di.ReceiveMessageAsync(Arg.Any<CancellationToken>()),
+                di => di.ReceiveMessageAsync(cancellationToken),
+                di => di.Received(2).ReceiveMessageAsync(Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
         }
 
