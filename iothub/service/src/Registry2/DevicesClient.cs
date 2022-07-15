@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Subclient of <see cref="IotHubServiceClient"/> that handles all device registry operations including
-    /// getting/adding/setting/deleting device identities, getting modules on a device, and getting device
+    /// getting/creating/setting/deleting device identities, getting modules on a device, and getting device
     /// registry statistics.
     /// </summary>
     public class DevicesClient
@@ -51,15 +51,16 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Add a device identity to your IoT hub's registry.
+        /// Create a device identity in your IoT hub's registry.
         /// </summary>
         /// <param name="device">The device identity to register.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered device with the generated keys and ETags.</returns>
-        public virtual async Task<Device> AddAsync(Device device, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
+        public virtual async Task<Device> CreateAsync(Device device, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding device: {device?.Id}", nameof(AddAsync));
+                Logging.Enter(this, $"Creating device: {device?.Id}", nameof(CreateAsync));
 
             try
             {
@@ -73,13 +74,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(AddAsync)} threw an exception: {ex}", nameof(AddAsync));
+                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding device: {device?.Id}", nameof(AddAsync));
+                    Logging.Exit(this, $"Creating device: {device?.Id}", nameof(CreateAsync));
             }
         }
 
@@ -89,6 +90,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The unique identifier of the device identity to retrieve.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The retrieved device identity.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
         public virtual async Task<Device> GetAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -122,6 +125,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="device">The device identity's new state.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
         public virtual async Task<Device> SetAsync(Device device, CancellationToken cancellationToken = default)
         {
             return await SetAsync(device, false, cancellationToken);
@@ -139,6 +143,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
         public virtual async Task<Device> SetAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -178,6 +183,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The Id of the device identity to be deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
         public virtual async Task DeleteAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
@@ -198,6 +205,7 @@ namespace Microsoft.Azure.Devices
         /// use <see cref="DeleteAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
         public virtual async Task DeleteAsync(Device device, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -231,20 +239,21 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Add a device identity to your IoT hub's registry with an initial twin state.
+        /// Create a device identity in your IoT hub's registry with an initial twin state.
         /// </summary>
         /// <remarks>
-        /// This API uses the same underlying service API as the bulk add/update/delete APIs defined in
-        /// this client.
+        /// This API uses the same underlying service API as the bulk create/set/delete APIs defined in
+        /// this client such as <see cref="CreateAsync(IEnumerable{Device}, CancellationToken)"/>.
         /// </remarks>
         /// <param name="device">The device identity to register.</param>
         /// <param name="twin">The initial twin state for the device.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> AddWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">Thrown when the provided device or twin is null.</exception>
+        public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding device with twin: {device?.Id}", nameof(AddWithTwinAsync));
+                Logging.Enter(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
 
             try
             {
@@ -267,13 +276,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(AddWithTwinAsync)} threw an exception: {ex}", nameof(AddWithTwinAsync));
+                    Logging.Error(this, $"{nameof(CreateWithTwinAsync)} threw an exception: {ex}", nameof(CreateWithTwinAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding device with twin: {device?.Id}", nameof(AddWithTwinAsync));
+                    Logging.Exit(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
             }
         }
 
@@ -283,6 +292,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The Id of the device to get the modules of.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The modules that are registered on the specified device.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
         public virtual async Task<IEnumerable<Module>> GetModulesAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -311,19 +322,21 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Add up to 100 device identities to your IoT hub's registry in bulk.
+        /// Create up to 100 new device identities in your IoT hub's registry in bulk.
         /// </summary>
         /// <remarks>
         /// For larger scale operations, consider using <see cref="ImportAsync(string, string, CancellationToken)"/>
         /// which allows you to import devices from an Azure Storage container.
         /// </remarks>
-        /// <param name="devices">The device identities to add to your IoT hub's registry. May not exceed 100 devices.</param>
+        /// <param name="devices">The device identities to create in your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
-        public virtual async Task<BulkRegistryOperationResult> AddAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
+        public virtual async Task<BulkRegistryOperationResult> CreateAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding {devices?.Count()} devices", nameof(AddAsync));
+                Logging.Enter(this, $"Creating {devices?.Count()} devices", nameof(CreateAsync));
 
             try
             {
@@ -333,13 +346,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(AddAsync)} threw an exception: {ex}", nameof(AddAsync));
+                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding {devices?.Count()} devices", nameof(AddAsync));
+                    Logging.Exit(this, $"Creating {devices?.Count()} devices", nameof(CreateAsync));
             }
         }
 
@@ -349,6 +362,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             return await SetAsync(devices, false, cancellationToken);
@@ -365,6 +380,8 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -395,6 +412,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="devices">The device identities to delete from your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
         public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             return await DeleteAsync(devices, false, cancellationToken);
@@ -411,6 +430,8 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
         public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, bool forceDelete, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -441,6 +462,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount.</param>
         /// <param name="containerName">Destination blob container name.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
         public virtual async Task ExportAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -476,6 +499,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount.</param>
         /// <param name="containerName">Source blob container name.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
         public virtual async Task ImportAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -513,6 +538,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided container URI is null.</exception>
         public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, bool excludeKeys, CancellationToken cancellationToken = default)
         {
             return ExportAsync(
@@ -530,6 +556,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided container URI or blob name is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the output blob name is empty or whitespace.</exception>
         public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken = default)
         {
             return ExportAsync(
@@ -547,6 +575,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
         public virtual Task<JobProperties> ExportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNull(jobParameters, nameof(jobParameters));
@@ -579,6 +608,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null.</exception>
         public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, CancellationToken cancellationToken = default)
         {
             return ImportAsync(
@@ -596,6 +626,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null or when the input blob name is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided input blob name is empty or whitespace.</exception>
         public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken = default)
         {
             return ImportAsync(
@@ -613,6 +645,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
         public virtual Task<JobProperties> ImportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNull(jobParameters, nameof(jobParameters));
@@ -643,6 +676,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="jobId">Id of the registry job to retrieve.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the job specified by the provided jobId.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided job Id is empty or whitespace.</exception>
         public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -705,6 +740,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="jobId">Id of the job to cancel.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided job Id is empty or whitespace.</exception>
         public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

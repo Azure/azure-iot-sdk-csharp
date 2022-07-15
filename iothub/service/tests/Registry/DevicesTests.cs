@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Tests
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
-            var returnedDevice = await DevicesClient.AddAsync(deviceToReturn).ConfigureAwait(false);
+            var returnedDevice = await DevicesClient.CreateAsync(deviceToReturn).ConfigureAwait(false);
             Assert.AreEqual(deviceToReturn.Id, returnedDevice.Id);
             mockHttpClient.VerifyAll();
         }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpClient = new Mock<HttpClient>();
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
-            await DevicesClient.AddAsync((Device)null).ConfigureAwait(false);
+            await DevicesClient.CreateAsync((Device)null).ConfigureAwait(false);
             Assert.Fail("RegisterDevice API did not throw exception when the device parameter was null.");
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
-            await DevicesClient.AddAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
+            await DevicesClient.CreateAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when ETag was used.");
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
-            await DevicesClient.AddAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
+            await DevicesClient.CreateAsync(new List<Device>() { goodDevice, badDevice }).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device was used.");
         }
 
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Tests
 
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
-            await DevicesClient.AddAsync(new List<Device>()).ConfigureAwait(false);
+            await DevicesClient.CreateAsync(new List<Device>()).ConfigureAwait(false);
             Assert.Fail("RegisterDevices API did not throw exception when Null device list was used.");
         }
 

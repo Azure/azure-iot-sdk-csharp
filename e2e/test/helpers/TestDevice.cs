@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await serviceClient.Devices.AddAsync(requestDevice).ConfigureAwait(false);
+                        device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingExceptions,

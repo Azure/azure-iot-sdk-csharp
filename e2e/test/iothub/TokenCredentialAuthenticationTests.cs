@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var device = new Device(Guid.NewGuid().ToString());
 
             // act
-            Device createdDevice = await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);

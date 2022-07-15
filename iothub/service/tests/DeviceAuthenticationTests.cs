@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceGoodAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceGoodAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceGoodAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceGoodAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceGoodAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceGoodAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceBadAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceBadAuthConfig).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             var devicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
 
-            await devicesClient.AddAsync(deviceBadThumbprint).ConfigureAwait(false);
+            await devicesClient.CreateAsync(deviceBadThumbprint).ConfigureAwait(false);
         }
     }
 }

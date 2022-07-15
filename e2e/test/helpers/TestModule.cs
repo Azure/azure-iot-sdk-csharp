@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             logger.Trace($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
             var requestModule = new Module(deviceName, moduleName);
-            Module module = await sc.Modules.AddAsync(requestModule).ConfigureAwait(false);
+            Module module = await sc.Modules.CreateAsync(requestModule).ConfigureAwait(false);
 
             var ret = new TestModule(module);
 

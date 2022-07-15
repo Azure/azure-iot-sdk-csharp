@@ -19,22 +19,10 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class IotHubServiceClient : IDisposable
     {
-        private string _hostName;
-        private IotHubConnectionProperties _credentialProvider;
-        private HttpClient _httpClient;
-        private HttpRequestMessageFactory _httpRequestMessageFactory;
-
-        /// <summary>
-        /// The subclient for all device registry operations including getting/adding/setting/deleting
-        /// device identities, getting modules on a device, and getting device registry statistics.
-        /// </summary>
-        public DevicesClient Devices { get; private set; }
-
-        /// <summary>
-        /// Subclient of <see cref="IotHubServiceClient"/> that handles all module registry operations including
-        /// getting/adding/setting/deleting module identities.
-        /// </summary>
-        public ModulesClient Modules { get; private set; }
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -48,6 +36,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="connectionString">The IoT hub connection string.</param>
         /// <param name="options">The optional client settings.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided connection string is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided connection string is empty or whitespace.</exception>
         public IotHubServiceClient(string connectionString, IotHubServiceClientOptions options = default)
         {
             Argument.RequireNotNullOrEmpty(connectionString, nameof(connectionString));
@@ -79,6 +69,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
         /// <param name="options">The optional client settings.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided hostName or credential is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided hostName is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, TokenCredential credential, IotHubServiceClientOptions options = default)
         {
             Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
@@ -109,6 +101,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="options">The optional client settings.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided hostName or credential is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided hostName is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, AzureSasCredential credential, IotHubServiceClientOptions options = default)
         {
             Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
@@ -127,11 +121,17 @@ namespace Microsoft.Azure.Devices
             InitializeSubclients();
         }
 
-        private void InitializeSubclients()
-        {
-            Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-        }
+        /// <summary>
+        /// The subclient for all device registry operations including getting/adding/setting/deleting
+        /// device identities, getting modules on a device, and getting device registry statistics.
+        /// </summary>
+        public DevicesClient Devices { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles all module registry operations including
+        /// getting/adding/setting/deleting module identities.
+        /// </summary>
+        public ModulesClient Modules { get; protected set; }
 
         /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
@@ -140,6 +140,12 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _httpClient?.Dispose();
+        }
+
+        private void InitializeSubclients()
+        {
+            Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }

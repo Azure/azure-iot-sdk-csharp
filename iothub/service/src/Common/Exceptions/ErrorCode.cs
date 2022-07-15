@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// There's already a device with the same device Id in the IoT hub.
         /// <para>
-        /// This can be returned on calling <see cref="DevicesClient.AddAsync(Device, System.Threading.CancellationToken)"/>
+        /// This can be returned on calling <see cref="DevicesClient.CreateAsync(Device, System.Threading.CancellationToken)"/>
         /// with a device that already exists in the IoT hub.
         /// </para>
         /// </summary>
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
         /// fixed by removing the existing module from the device first with <see cref="ModulesClient.DeleteAsync(Module, System.Threading.CancellationToken)"/>. This error code is only returned from
-        /// methods like <see cref="ModulesClient.AddAsync(Module, System.Threading.CancellationToken)"/>.
+        /// methods like <see cref="ModulesClient.CreateAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,
 

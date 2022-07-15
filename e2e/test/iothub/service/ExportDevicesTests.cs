@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     ? storageContainer.SasUri
                     : storageContainer.Uri;
 
-                Device edge1 = await serviceClient.Devices.AddAsync(
+                Device edge1 = await serviceClient.Devices.CreateAsync(
                     new Device(edgeId1)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     })
                     .ConfigureAwait(false);
 
-                Device edge2 = await serviceClient.Devices.AddAsync(
+                Device edge2 = await serviceClient.Devices.CreateAsync(
                     new Device(edgeId2)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     })
                     .ConfigureAwait(false);
 
-                Device device = await serviceClient.Devices.AddAsync(
+                Device device = await serviceClient.Devices.CreateAsync(
                     new Device(deviceId)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },

@@ -15,14 +15,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initializes a new instance of this class using the default settings.
         /// </summary>
-        /// <param name="version">
-        /// The service API version that this client will use when making service requests. Defaults to the latest
-        /// version.
-        /// </param>
-        public IotHubServiceClientOptions(ServiceVersion version = LatestVersion)
+        public IotHubServiceClientOptions()
         {
             Proxy = DefaultWebProxySettings.Instance;
-            Version = version;
         }
 
         /// <summary>
@@ -63,69 +58,5 @@ namespace Microsoft.Azure.Devices
         /// an HTTP client will be created for you based on the other provided settings.
         /// </summary>
         public HttpClient HttpClient { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="ServiceVersion"/> of the service API used when
-        /// making requests.
-        /// </summary>
-        public ServiceVersion Version { get; set; } = LatestVersion;
-
-        /// <summary>
-        /// The service API versions that the service supports.
-        /// </summary>
-        public enum ServiceVersion
-        {
-            /// <summary>
-            /// 2021-04-12
-            /// </summary>
-            V2021_04_12 = 1,
-
-            /// <summary>
-            /// 2020-03-13
-            /// </summary>
-            V2020_03_13 = 2,
-
-            /// <summary>
-            /// 2019-10-01
-            /// </summary>
-            V2019_10_01 = 3,
-
-            /// <summary>
-            /// 2020-09-30
-            /// </summary>
-            V2019_09_30 = 4,
-
-            /// <summary>
-            /// 2019-03-30
-            /// </summary>
-            V2019_03_30 = 5,
-
-            /// <summary>
-            /// 2018-06-30
-            /// </summary>
-            V2018_06_30 = 6,
-
-            /// <summary>
-            /// 2018_04_01
-            /// </summary>
-            V2018_04_01 = 7
-        }
-
-        internal const ServiceVersion LatestVersion = ServiceVersion.V2021_04_12;
-
-        internal string GetVersionString()
-        {
-            return Version switch
-            {
-                ServiceVersion.V2021_04_12 => "2021-04-12",
-                ServiceVersion.V2020_03_13 => "2020-03-13",
-                ServiceVersion.V2019_10_01 => "2019-10-01",
-                ServiceVersion.V2019_09_30 => "2020-09-30",
-                ServiceVersion.V2019_03_30 => "2019-03-30",
-                ServiceVersion.V2018_06_30 => "2018-06-30",
-                ServiceVersion.V2018_04_01 => "2018-04-01",
-                _ => throw new ArgumentException(Version.ToString()),
-            };
-        }
     }
 }

@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 {
                     Capabilities = new DeviceCapabilities { IotEdge = true }
                 };
-                edgeDevice1 = await serviceClient.Devices.AddAsync(edgeDevice1).ConfigureAwait(false);
+                edgeDevice1 = await serviceClient.Devices.CreateAsync(edgeDevice1).ConfigureAwait(false);
 
                 // Create a second-level edge device with edge 1 as the parent.
                 var edgeDevice2 = new Device(edgeId2)
@@ -69,11 +69,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     Capabilities = new DeviceCapabilities { IotEdge = true },
                     ParentScopes = { edgeDevice1.Scope },
                 };
-                edgeDevice2 = await serviceClient.Devices.AddAsync(edgeDevice2).ConfigureAwait(false);
+                edgeDevice2 = await serviceClient.Devices.CreateAsync(edgeDevice2).ConfigureAwait(false);
 
                 // Create a leaf device with edge 2 as the parent.
                 var leafDevice = new Device(deviceId) { Scope = edgeDevice2.Scope };
-                leafDevice = await serviceClient.Devices.AddAsync(leafDevice).ConfigureAwait(false);
+                leafDevice = await serviceClient.Devices.CreateAsync(leafDevice).ConfigureAwait(false);
 
                 // assert
 
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Capabilities = new DeviceCapabilities { IotEdge = true }
             };
 
-            await serviceClient.Devices.AddWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
+            await serviceClient.Devices.CreateWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
 
             try
             {
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 // act
                 BulkRegistryOperationResult bulkAddResult =
-                    await serviceClient.Devices.AddAsync(new List<Device> { edge, device }).ConfigureAwait(false);
+                    await serviceClient.Devices.CreateAsync(new List<Device> { edge, device }).ConfigureAwait(false);
 
                 // assert
 
@@ -185,9 +185,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             try
             {
-                Device addedDevice1 = await serviceClient.Devices.AddAsync(device1).ConfigureAwait(false);
-                Device addedDevice2 = await serviceClient.Devices.AddAsync(device2).ConfigureAwait(false);
-                Device addedEdge = await serviceClient.Devices.AddAsync(edge).ConfigureAwait(false);
+                Device addedDevice1 = await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
+                Device addedDevice2 = await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
+                Device addedEdge = await serviceClient.Devices.CreateAsync(edge).ConfigureAwait(false);
 
                 // act
 
@@ -234,9 +234,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             try
             {
-                await serviceClient.Devices.AddAsync(device1).ConfigureAwait(false);
+                await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
                 Twin twin1 = await registryManager.GetTwinAsync(device1.Id).ConfigureAwait(false);
-                await serviceClient.Devices.AddAsync(device2).ConfigureAwait(false);
+                await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
                 Twin twin2 = await registryManager.GetTwinAsync(device2.Id).ConfigureAwait(false);
 
                 // act
@@ -285,8 +285,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             try
             {
-                await serviceClient.Devices.AddAsync(device1).ConfigureAwait(false);
-                await serviceClient.Devices.AddAsync(device2).ConfigureAwait(false);
+                await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
+                await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
 
                 // act
 
@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             var device = new Device(deviceId);
-            await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
+            await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -458,12 +458,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             try
             {
                 // Create a device to house the modules
-                device = await serviceClient.Devices.AddAsync(new Device(testDeviceId)).ConfigureAwait(false);
+                device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
 
                 // Create the modules on the device
                 for (int i = 0; i < moduleCount; i++)
                 {
-                    Module createdModule = await serviceClient.Modules.AddAsync(
+                    Module createdModule = await serviceClient.Modules.CreateAsync(
                         new Module(testDeviceId, testModuleIds[i])).ConfigureAwait(false);
                 }
 
@@ -503,12 +503,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             // Create a device to house the module
-            Device device = await serviceClient.Devices.AddAsync(new Device(testDeviceId)).ConfigureAwait(false);
+            Device device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
 
             try
             {
                 // Create a module on the device
-                Module createdModule = await serviceClient.Modules.AddAsync(
+                Module createdModule = await serviceClient.Modules.CreateAsync(
                     new Module(testDeviceId, testModuleId)).ConfigureAwait(false);
 
                 createdModule.DeviceId.Should().Be(testDeviceId);
@@ -591,7 +591,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 try
                 {
-                    await serviceClient.Devices.AddAsync(new Device(deviceId)).ConfigureAwait(false);
+                    await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {

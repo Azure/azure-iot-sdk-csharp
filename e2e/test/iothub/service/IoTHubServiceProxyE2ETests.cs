@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             using (var serviceClient = new IotHubServiceClient(s_connectionString, options))
             {
-                await serviceClient.Devices.AddAsync(new Device(deviceName)).ConfigureAwait(false);
+                await serviceClient.Devices.CreateAsync(new Device(deviceName)).ConfigureAwait(false);
                 await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);
             }
         }

@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Subclient of <see cref="IotHubServiceClient"/> that handles all module registry operations including
-    /// getting/adding/setting/deleting module identities.
+    /// getting/creating/setting/deleting module identities.
     /// </summary>
     public class ModulesClient
     {
@@ -43,15 +43,16 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Add a module identity to your IoT hub's registry.
+        /// Create a module identity in your IoT hub's registry.
         /// </summary>
         /// <param name="module">The module identity to register.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered module with the generated keys and ETags.</returns>
-        public virtual async Task<Module> AddAsync(Module module, CancellationToken cancellationToken = default)
+        /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
+        public virtual async Task<Module> CreateAsync(Module module, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddAsync));
+                Logging.Enter(this, $"Creating module: {module?.Id} to device: {module?.DeviceId}", nameof(CreateAsync));
 
             try
             {
@@ -65,13 +66,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(AddAsync)} threw an exception: {ex}", nameof(AddAsync));
+                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Adding module: {module?.Id} to device: {module?.DeviceId}", nameof(AddAsync));
+                    Logging.Exit(this, $"Creating module: {module?.Id} to device: {module?.DeviceId}", nameof(CreateAsync));
             }
         }
 
@@ -82,6 +83,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The unique identifier of the device identity that the module is registered on.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The retrieved module identity.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
         public virtual async Task<Module> GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -116,6 +119,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="module">The module identity's new state.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated module identity including its new ETag.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         public virtual async Task<Module> SetAsync(Module module, CancellationToken cancellationToken = default)
         {
             return await SetAsync(module, false, cancellationToken);
@@ -133,6 +137,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         public virtual async Task<Module> SetAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -172,6 +177,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The Id of the device identity that contains the module to be deleted.</param>
         /// <param name="moduleId">The Id of the module identity to be deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
         public virtual async Task DeleteAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
@@ -193,6 +200,7 @@ namespace Microsoft.Azure.Devices
         /// use <see cref="DeleteAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         public virtual async Task DeleteAsync(Module module, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

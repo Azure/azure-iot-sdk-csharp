@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var device = new Device(Guid.NewGuid().ToString());
 
             // act
-            Device createdDevice = await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // act
             try
             {
-                await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
+                await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
             catch (UnauthorizedException)
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             sasCredential.Update(signature);
-            Device createdDevice = await serviceClient.Devices.AddAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);
