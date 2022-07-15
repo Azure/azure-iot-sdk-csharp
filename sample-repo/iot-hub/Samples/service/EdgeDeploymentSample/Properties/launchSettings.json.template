@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "RegistryManagerSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_CONNECTION_STRING": "<yourIoTHubConnectionString>",
+      }
+    }
+  }
+}

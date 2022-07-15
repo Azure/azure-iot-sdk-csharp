@@ -1,0 +1,8 @@
+//set env variables. Fill in the fields below, then run this at the command level before running the NET Core app.
+//Doing this instead of hardcoding them ensures that you don't accidentally save them to github.
+//
+SET DEVICE_ID="Contoso-Test-Device"
+SET IOT_HUB_URI="IotTestHubdlxlud5h.azure-devices-net";
+SET DEVICE_KEY="RClD0LGxZCYavagk8tS2M7L1MI5bcKcyR+tJHzj+gDk="
+
+dotnet run "Contoso-Test-Device" "IotTestHubdlxlud5h.azure-devices-net" "RClD0LGxZCYavagk8tS2M7L1MI5bcKcyR+tJHzj+gDk="

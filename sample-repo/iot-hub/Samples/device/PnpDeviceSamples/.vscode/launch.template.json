@@ -1,0 +1,74 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Thermostat-Hub",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildThermostat",
+            "program": "${workspaceFolder}/Thermostat/bin/Debug/netcoreapp3.1/Thermostat.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Thermostat",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "IOTHUB_DEVICE_SECURITY_TYPE": "connectionString",
+                "IOTHUB_DEVICE_CONNECTION_STRING": ""
+            }
+        },
+        {
+            "name": "Thermostat-DPS",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildThermostat",
+            "program": "${workspaceFolder}/Thermostat/bin/Debug/netcoreapp3.1/Thermostat.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Thermostat",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "IOTHUB_DEVICE_SECURITY_TYPE": "dps",
+                "IOTHUB_DEVICE_DPS_ID_SCOPE": "",
+                "IOTHUB_DEVICE_DPS_DEVICE_ID": "",
+                "IOTHUB_DEVICE_DPS_DEVICE_KEY": "",
+                "IOTHUB_DEVICE_DPS_ENDPOINT": "global.azure-devices-provisioning.net"
+            }
+        },
+        {
+            "name": "TempCtrlr-Hub",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildTempCtrlr",
+            "program": "${workspaceFolder}/TemperatureController/bin/Debug/netcoreapp3.1/TemperatureController.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/TemperatureController",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "IOTHUB_DEVICE_SECURITY_TYPE": "connectionString",
+                "IOTHUB_DEVICE_CONNECTION_STRING": ""
+            }
+        },
+        {
+            "name": "TempCtrlr-DPS",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildTempCtrlr",
+            "program": "${workspaceFolder}/TemperatureController/bin/Debug/netcoreapp3.1/TemperatureController.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/TemperatureController",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "IOTHUB_DEVICE_SECURITY_TYPE": "dps",
+                "IOTHUB_DEVICE_DPS_ID_SCOPE": "",
+                "IOTHUB_DEVICE_DPS_DEVICE_ID": "",
+                "IOTHUB_DEVICE_DPS_DEVICE_KEY": "",
+                "IOTHUB_DEVICE_DPS_ENDPOINT": "global.azure-devices-provisioning.net"
+            }
+        }
+    ]
+}

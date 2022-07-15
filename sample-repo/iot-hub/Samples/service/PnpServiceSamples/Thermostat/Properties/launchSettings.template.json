@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "TemperatureController": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_CONNECTION_STRING": "",
+        "IOTHUB_DEVICE_ID": ""
+      }
+    }
+  }
+}

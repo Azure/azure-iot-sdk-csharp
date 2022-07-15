@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ServiceClientSample": {
+      "commandName": "Project",
+      "commandLineArgs": "-c <yourIoTHubConnectionString> -d <deviceId> -t <transportType>"
+    }
+  }
+}

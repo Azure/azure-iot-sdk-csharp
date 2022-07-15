@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DeviceStreamSample": {
+      "commandName": "Project",
+        "environmentVariables": {
+            "IOTHUB_CONNECTION_STRING": "<yourIoTHubConnectionString>",
+            "DEVICE_ID": "<deviceId>",
+            "LOCAL_PORT":  "<localPortOpenedByTheSample>"
+        }
+    }
+  }
+}

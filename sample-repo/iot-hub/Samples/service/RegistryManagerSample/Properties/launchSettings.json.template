@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RegistryManagerSample": {
+      "commandName": "Project",
+      "commandLineArgs": "-c <yourIoTHubConnectionString> -p <deviceCertPrimaryThumbprint> -s <deviceCertSecondaryThumbprint>"
+    }
+  }
+}
