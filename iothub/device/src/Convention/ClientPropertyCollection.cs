@@ -28,10 +28,16 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Use the <see cref="AddRootProperty(string, object)"/> and/or <see cref="AddComponentProperty(string, string, object)"/> methods
-        /// to add properties into the collection.
+        /// to add properties into the collection. 
+        /// <para>
+        /// Use the <see cref="AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// to add writable property acknowledgements into the collection.
+        /// </para>
+        /// <para>
         /// This collection can be reported to service using 
         /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> or
         /// <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>.
+        /// </para>
         /// </remarks>
         public ClientPropertyCollection()
         {
@@ -187,7 +193,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Use this as part of the writable property flow to respond to a writable property update.
-        /// You can use the convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
+        /// <para>
+        /// If responding with the service requested property value and version, you can use the convenience method
+        /// <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
+        /// To construct a writable property update payload with custom value and version number, use
+        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(object, int, long, string)"/> from
+        /// <see cref="DeviceClient.PayloadConvention"/> to create a <see cref="WritableClientPropertyAcknowledgement"/>.
+        /// </para>
         /// </remarks>
         /// <param name="writableClientPropertyAcknowledgement">The writable property update acknowledgement payload.</param>
         /// <exception cref="ArgumentNullException"><paramref name="writableClientPropertyAcknowledgement"/> is <c>null</c>.</exception>
@@ -252,7 +264,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a root-level property.
         /// </summary>
         /// <remarks>
-        /// When retrieving a writable client property, acknowledgement payload <typeparamref name="T"/> should be
+        /// When retrieving a writable client property acknowledgement payload, <typeparamref name="T"/> should be
         /// assignable from <see cref="IWritablePropertyAcknowledgementPayload"/>.
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
@@ -278,7 +290,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a component-level property.
         /// </summary>
         /// <remarks>
-        /// When retrieving a writable client property, acknowledgement payload <typeparamref name="T"/> should be
+        /// When retrieving a writable client property acknowledgement payload, <typeparamref name="T"/> should be
         /// assignable from <see cref="IWritablePropertyAcknowledgementPayload"/>.
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>

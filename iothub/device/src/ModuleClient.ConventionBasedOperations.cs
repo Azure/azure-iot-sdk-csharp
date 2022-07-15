@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.UpdateClientPropertiesAsync(propertyCollection, cancellationToken);
 
         /// <summary>
-        /// Sets the listener for writable property update events.
+        /// Sets the listener for all writable property update events.
         /// </summary>
         /// <param name="callback">The callback to handle all writable property updates for the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -103,40 +103,59 @@ namespace Microsoft.Azure.Devices.Client
         /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// You can pass in a <c>null</c> <paramref name="callback"/> to unsubscribe from receiving writable property update requests.
         /// <para>
-        /// The callback should either enumerate the requested changes and match that against the module's supported
-        /// writable properties, or explicitly check for the module's supported writable properties using
-        /// <see cref="WritableClientPropertyCollection.Contains(string)"/> or <see cref="WritableClientPropertyCollection.TryGetValue{T}(string, out T)"/>
+        /// The callback should either enumerate the requested <see cref="WritableClientProperty"/> changes and match that against the module's supported
+        /// writable properties using <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>, or explicitly check for the module's supported writable properties using
+        /// <see cref="WritableClientPropertyCollection.TryGetWritableClientProperty(string, out WritableClientProperty)"/>
         /// (or using the component-level overloads on <see cref="WritableClientPropertyCollection"/>).
         /// </para>
         /// <para>
-        /// To update client properties, call <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
+        /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
+        /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// and report it to service via <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
         /// </para>
         /// </remarks>
         /// <example>
-        /// Inline:
+        /// Enumerate the changes:
         /// <code language="csharp">
         /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(
         ///     async (writableProperties) =>
         ///     {
         ///         var propertiesToBeUpdated = new ClientPropertyCollection();
-        ///         if (writableProperties.TryGetValue("samplePropertyName", out WritableClientProperty propertyUpdateRequested))
+        ///         foreach (WritableClientProperty writableProperty in writableProperties)
         ///         {
-        ///             propertiesToBeUpdated.AddRootProperty(
-        ///                 "samplePropertyName",
-        ///                 propertyUpdateRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///             if (writableProperty.PropertyName == "samplePropertyName" &amp;&amp; writableProperty.TryGetValue(out int propertyValue))
+        ///             {
+        ///                 // Process "samplePropertyName"
+        ///
+        ///                 propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
+        ///                     writableProperty.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///             }
         ///         }
         ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         ///     },
         ///     cancellationToken);
-        /// </code>
+        ///</code>
         /// 
-        /// Or as a separate method:
+        /// Or retrieve specific property:
         /// <code language="csharp">
-        /// async Task OnPropertyUpdateRequestReceivedAsync(WritableClientPropertyCollection writableProperties)
-        /// {
-        ///     // Identify and process supported writable property update requests
-        /// }
-        /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(OnPropertyUpdateRequestReceivedAsync, cancellationToken);
+        /// await client.SubscribeToWritablePropertyUpdateRequestsAsync(
+        ///     async (writableProperties) =>
+        ///     {
+        ///         var propertiesToBeUpdated = new ClientPropertyCollection();
+        ///         if (writableProperties.TryGetWritableClientProperty("samplePropertyName", out WritableClientProperty propertyUpdateRequested))
+        ///         {
+        ///             if (propertyUpdateRequested.TryGetValue(out int propertyValue))
+        ///             {
+        ///                 // Process "samplePropertyName"
+        ///
+        ///                 propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
+        ///                     propertyUpdateRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///             }
+        ///         }
+        ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
+        ///     },
+        ///     cancellationToken);
         /// </code>
         /// </example>
         public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default)

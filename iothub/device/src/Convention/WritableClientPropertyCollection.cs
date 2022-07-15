@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Newtonsoft.Json;
@@ -89,9 +90,15 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a root-level property as a <see cref="WritableClientProperty"/>.
         /// </summary>
         /// <remarks>
-        /// <see cref="WritableClientProperty"/> has a convenience method to help you build the writable property acknowledgement object.
+        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
+        /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
+        /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// <para>
         /// To retrieve the value of the root-level writable property update request see <see cref="TryGetValue{T}(string, out T)"/>
         /// or <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
+        /// </para>
         /// </remarks>
         /// <param name="propertyName">The property to get.</param>
         /// <param name="writableClientProperty">When this method returns true, this contains the value of the root-level property.
@@ -124,7 +131,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
-        /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object.
+        /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object
+        /// that you can add to a <see cref="ClientPropertyCollection"/> using
+        /// <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="propertyName">The property to get.</param>
@@ -151,9 +162,15 @@ namespace Microsoft.Azure.Devices.Client
         /// Gets the value of a component-level property as a <see cref="WritableClientProperty"/>.
         /// </summary>
         /// <remarks>
-        /// <see cref="WritableClientProperty"/> has a convenience method to help you build the writable property acknowledgement object.
-        /// To retrieve the value of the component-level writable property update request see <see cref="TryGetValue{T}(string, string, out T)"/>
-        /// or <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
+        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
+        /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
+        /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// <para>
+        /// To retrieve the value of the component-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>
+        /// or <see cref="TryGetValue{T}(string, string, out T)"/>.
+        /// </para>
         /// </remarks>
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
@@ -188,7 +205,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
-        /// which has a convenience method to help you build the writable property acknowledgement object.
+        /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object
+        /// that you can add to a <see cref="ClientPropertyCollection"/> using
+        /// <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </remarks>
         /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
         /// <param name="componentName">The component which holds the required property.</param>
