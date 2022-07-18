@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains Device properties and their accessors.
     /// </summary>
-    public class Device : IETagHolder
+    public class Device
     {
         /// <summary>
         /// Creates a new instance of this class. For serialization purposes only.
@@ -26,9 +26,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="id">Device Id</param>
         public Device(string id)
         {
+            Argument.RequireNotNullOrEmpty(id, nameof(id));
+
             Id = id;
-            ConnectionState = DeviceConnectionState.Disconnected;
-            LastActivityTime = StatusUpdatedTime = ConnectionStateUpdatedTime = DateTime.MinValue;
         }
 
         /// <summary>

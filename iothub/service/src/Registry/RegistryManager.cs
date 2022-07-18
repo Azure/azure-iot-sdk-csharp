@@ -1346,74 +1346,12 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private static void ValidateDeviceAuthentication(AuthenticationMechanism authentication, string deviceId)
-        {
-            if (authentication != null)
-            {
-                // Both symmetric keys and X.509 cert thumbprints cannot be specified for the same device
-                bool symmetricKeyIsSet = !authentication.SymmetricKey?.IsEmpty() ?? false;
-                bool x509ThumbprintIsSet = !authentication.X509Thumbprint?.IsEmpty() ?? false;
-
-                if (symmetricKeyIsSet && x509ThumbprintIsSet)
-                {
-                    throw new ArgumentException(ApiResources.DeviceAuthenticationInvalid.FormatInvariant(deviceId ?? string.Empty));
-                }
-
-                // Validate X.509 thumbprints or SymmetricKeys since we should not have both at the same time
-                if (x509ThumbprintIsSet)
-                {
-                    authentication.X509Thumbprint.IsValid(true);
-                }
-                else if (symmetricKeyIsSet)
-                {
-                    authentication.SymmetricKey.IsValid(true);
-                }
-            }
-        }
-
         private void EnsureInstanceNotClosed()
         {
             if (_httpClientHelper == null)
             {
                 throw new ObjectDisposedException("RegistryManager", ApiResources.RegistryManagerInstanceAlreadyClosed);
             }
-        }
-
-        private static void NormalizeDevice(Device device)
-        {
-            // auto generate keys if not specified
-            if (device.Authentication == null)
-            {
-                device.Authentication = new AuthenticationMechanism();
-            }
-
-            NormalizeAuthenticationInfo(device.Authentication);
-        }
-
-        private static void NormalizeAuthenticationInfo(AuthenticationMechanism authenticationInfo)
-        {
-            //to make it backward compatible we set the type according to the values
-            //we don't set CA type - that has to be explicit
-            if (authenticationInfo.SymmetricKey != null && !authenticationInfo.SymmetricKey.IsEmpty())
-            {
-                authenticationInfo.Type = AuthenticationType.Sas;
-            }
-
-            if (authenticationInfo.X509Thumbprint != null && !authenticationInfo.X509Thumbprint.IsEmpty())
-            {
-                authenticationInfo.Type = AuthenticationType.SelfSigned;
-            }
-        }
-
-        private static void NormalizeExportImportDevice(ExportImportDevice device)
-        {
-            // auto generate keys if not specified
-            if (device.Authentication == null)
-            {
-                device.Authentication = new AuthenticationMechanism();
-            }
-
-            NormalizeAuthenticationInfo(device.Authentication);
         }
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
@@ -1532,8 +1470,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Performing bulk device operation on : {devices?.Count()} devices. version: {version}", nameof(BulkDeviceOperationsAsync));
             try
             {
-                BulkDeviceOperationSetup(devices);
-
                 var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
                 {
                     { HttpStatusCode.PreconditionFailed, async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) },
@@ -1553,23 +1489,6 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Performing bulk device operation on : {devices?.Count()} devices. version: {version}", nameof(BulkDeviceOperationsAsync));
-            }
-        }
-
-        private void BulkDeviceOperationSetup(IEnumerable<ExportImportDevice> devices)
-        {
-            EnsureInstanceNotClosed();
-
-            if (devices == null)
-            {
-                throw new ArgumentNullException(nameof(devices));
-            }
-
-            foreach (ExportImportDevice device in devices)
-            {
-                ValidateDeviceAuthentication(device.Authentication, device.Id);
-
-                NormalizeExportImportDevice(device);
             }
         }
     }
