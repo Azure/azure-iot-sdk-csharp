@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -62,7 +59,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Module> CreateAsync(Module module, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating module: {module?.Id} to device: {module?.DeviceId}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating module: {module?.Id} on device: {module?.DeviceId}", nameof(CreateAsync));
 
             try
             {
@@ -84,7 +81,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating module: {module?.Id} to device: {module?.DeviceId}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating module: {module?.Id} on device: {module?.DeviceId}", nameof(CreateAsync));
             }
         }
 
@@ -110,7 +107,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Module> GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting module: {moduleId} on device: {deviceId}", nameof(GetAsync));
 
             try
             {
@@ -133,7 +130,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting module: {moduleId} from device: {deviceId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting module: {moduleId} on device: {deviceId}", nameof(GetAsync));
             }
         }
 
@@ -164,13 +161,13 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="module">The module identity's new state.</param>
         /// <param name="forceUpdate">
-        /// If true, this update operation will execute even if the provided device identity has
+        /// If true, this update operation will execute even if the provided module identity has
         /// an out of date ETag. If false, the operation will throw a <see cref="PreconditionFailedException"/>
         /// if the provided module identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The newly updated device identity including its new ETag.</returns>
+        /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -218,7 +215,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Delete the module identity with the provided Id from your device with the provided Id from IoT hub's registry.
+        /// Delete the module identity with the provided Id from the device with the provided Id from your IoT hub's registry.
         /// </summary>
         /// <param name="deviceId">The Id of the device identity that contains the module to be deleted.</param>
         /// <param name="moduleId">The Id of the module identity to be deleted.</param>
@@ -246,7 +243,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Delete the device identity with the provided Id from your IoT hub's registry.
+        /// Delete the module identity from your IoT hub's registry.
         /// </summary>
         /// <param name="module">
         /// The module identity to delete from your IoT hub's registry. If the provided module's ETag
@@ -270,7 +267,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task DeleteAsync(Module module, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting module: {module?.Id} from device: {module?.DeviceId}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId}", nameof(DeleteAsync));
 
             try
             {
@@ -297,7 +294,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting module: {module?.Id} from device: {module?.DeviceId}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId}", nameof(DeleteAsync));
             }
         }
 
