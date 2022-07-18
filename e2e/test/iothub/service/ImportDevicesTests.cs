@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class RegistryManagerImportDevicesTests : E2EMsTestBase
+    public class ImportDevicesTests : E2EMsTestBase
     {
         // A bug in either Storage or System.Diagnostics causes an exception during container creation
         // so for now, we need to use the older storage nuget.
@@ -43,11 +44,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, true)]
-        public async Task RegistryManager_ImportDevices(StorageAuthenticationType storageAuthenticationType, bool isUserAssignedMsi)
+        public async Task DevicesClient_ImportDevices(StorageAuthenticationType storageAuthenticationType, bool isUserAssignedMsi)
         {
             // arrange
 
-            const string idPrefix = nameof(RegistryManager_ImportDevices);
+            const string idPrefix = nameof(DevicesClient_ImportDevices);
 
             string deviceId = $"{idPrefix}-device-{StorageContainer.GetRandomSuffix(4)}";
             string configId = $"{idPrefix}-config-{StorageContainer.GetRandomSuffix(4)}".ToLower(); // Configuration Id characters must be all lower-case.
@@ -57,10 +58,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
 
             using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
-                string containerName = StorageContainer.BuildContainerName(nameof(RegistryManager_ImportDevices));
+                string containerName = StorageContainer.BuildContainerName(nameof(DevicesClient_ImportDevices));
                 using StorageContainer storageContainer = await StorageContainer.GetInstanceAsync(containerName).ConfigureAwait(false);
                 Logger.Trace($"Using devices container {storageContainer.Uri}");
 
@@ -114,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                         storageAuthenticationType,
                         devicesFileName,
                         configsFileName,
-                        registryManager,
+                        serviceClient,
                         containerUri,
                         identity)
                     .ConfigureAwait(false);
@@ -132,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     try
                     {
-                        device = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
+                        device = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
                         config = await registryManager.GetConfigurationAsync(configId).ConfigureAwait(false);
                         break;
                     }
@@ -154,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                    await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
                     await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
@@ -187,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             StorageAuthenticationType storageAuthenticationType,
             string devicesFileName,
             string configsFileName,
-            RegistryManager registryManager,
+            IotHubServiceClient serviceClient,
             Uri containerUri,
             ManagedIdentity identity)
         {
@@ -195,8 +197,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             JobProperties importJobResponse = null;
 
             JobProperties jobProperties = JobProperties.CreateForImportJob(
-                containerUri.ToString(),
-                containerUri.ToString(),
+                containerUri,
+                containerUri,
                 devicesFileName,
                 storageAuthenticationType,
                 identity);
@@ -207,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 try
                 {
-                    importJobResponse = await registryManager.ImportDevicesAsync(jobProperties).ConfigureAwait(false);
+                    importJobResponse = await serviceClient.Devices.ImportAsync(jobProperties).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(importJobResponse.FailureReason))
                     {
                         Logger.Trace($"Job failed due to {importJobResponse.FailureReason}");
@@ -227,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                importJobResponse = await registryManager.GetJobAsync(importJobResponse?.JobId).ConfigureAwait(false);
+                importJobResponse = await serviceClient.Devices.GetJobAsync(importJobResponse?.JobId).ConfigureAwait(false);
                 Logger.Trace($"Job {importJobResponse.JobId} is {importJobResponse.Status} with progress {importJobResponse.Progress}%");
                 if (!s_incompleteJobs.Contains(importJobResponse.Status))
                 {

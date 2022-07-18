@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
+using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -76,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
             // Delete existing devices named this way and create a new one.
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             s_logger.Trace($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
             Client.IAuthenticationMethod auth = null;
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await rm.AddDeviceAsync(requestDevice).ConfigureAwait(false);
+                        device = await serviceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingExceptions,
@@ -118,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        device = await rm.GetDeviceAsync(requestDevice.Id).ConfigureAwait(false);
+                        device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                         if (device is null)
                         {
                             throw new DeviceNotFoundException(ErrorCode.DeviceNotFound, $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
@@ -128,8 +129,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     s_getRetryableExceptions,
                     s_logger)
                 .ConfigureAwait(false);
-
-            await rm.CloseAsync().ConfigureAwait(false);
 
             return device == null
                 ? throw new Exception($"Exhausted attempts for creating device {device.Id}, requests got throttled.")
@@ -214,13 +213,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task RemoveDeviceAsync()
         {
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             await RetryOperationHelper
                 .RetryOperationsAsync(
                     async () =>
                     {
-                        await rm.RemoveDeviceAsync(Id).ConfigureAwait(false);
+                        await serviceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
                     s_exponentialBackoffRetryStrategy,
                     s_throttlingExceptions,

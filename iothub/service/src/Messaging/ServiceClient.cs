@@ -47,7 +47,6 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class ServiceClient : IDisposable
     {
-        private const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
@@ -420,38 +419,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets service statistics for the IoT hub. This call is made over HTTP.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
-        public virtual Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
-
-            try
-            {
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-                {
-                    { HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new IotHubNotFoundException(_iotHubName)) }
-                };
-
-                return _httpClientHelper.GetAsync<ServiceStatistics>(GetStatisticsUri(), errorMappingOverrides, null, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
-            }
-        }
-
-        /// <summary>
         /// Interactively invokes a method on a device.
         /// Additional 15s is added to the timeout in cloudToDeviceMethod to account for time taken to wire a request
         /// </summary>
@@ -669,11 +636,6 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentException("Negative timeout");
             }
-        }
-
-        private static Uri GetStatisticsUri()
-        {
-            return new Uri(StatisticsUriFormat, UriKind.Relative);
         }
 
         private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)

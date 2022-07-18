@@ -149,8 +149,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
         /// <returns>An instance of JobProperties</returns>
         public static JobProperties CreateForImportJob(
-            string inputBlobContainerUri,
-            string outputBlobContainerUri,
+            Uri inputBlobContainerUri,
+            Uri outputBlobContainerUri,
             string inputBlobName = null,
             StorageAuthenticationType? storageAuthenticationType = null,
             ManagedIdentity identity = null)
@@ -158,8 +158,8 @@ namespace Microsoft.Azure.Devices
             return new JobProperties
             {
                 Type = JobType.ImportDevices,
-                InputBlobContainerUri = inputBlobContainerUri,
-                OutputBlobContainerUri = outputBlobContainerUri,
+                InputBlobContainerUri = inputBlobContainerUri.ToString(),
+                OutputBlobContainerUri = outputBlobContainerUri.ToString(),
                 InputBlobName = inputBlobName,
                 StorageAuthenticationType = storageAuthenticationType,
                 Identity = identity,
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
         /// <returns>An instance of JobProperties</returns>
         public static JobProperties CreateForExportJob(
-            string outputBlobContainerUri,
+            Uri outputBlobContainerUri,
             bool excludeKeysInExport,
             string outputBlobName = null,
             StorageAuthenticationType? storageAuthenticationType = null,
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices
             return new JobProperties
             {
                 Type = JobType.ExportDevices,
-                OutputBlobContainerUri = outputBlobContainerUri,
+                OutputBlobContainerUri = outputBlobContainerUri.ToString(),
                 ExcludeKeysInExport = excludeKeysInExport,
                 OutputBlobName = outputBlobName,
                 StorageAuthenticationType = storageAuthenticationType,

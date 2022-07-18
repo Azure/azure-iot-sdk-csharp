@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains device registry statistics that can be retrieved from IotHub.
+    /// The device registry statistics that can be retrieved from IotHub.
     /// </summary>
     public class RegistryStatistics
     {

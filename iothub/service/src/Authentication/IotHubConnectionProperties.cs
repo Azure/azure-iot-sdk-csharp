@@ -18,6 +18,13 @@ namespace Microsoft.Azure.Devices
         private const string HostNameSeparator = ".";
         private const string HttpsEndpointPrefix = "https";
 
+        /// <summary>
+        /// Constructor for mocking purposes only.
+        /// </summary>
+        protected IotHubConnectionProperties()
+        {
+        }
+
         protected IotHubConnectionProperties(string hostName)
         {
             if (string.IsNullOrWhiteSpace(hostName))

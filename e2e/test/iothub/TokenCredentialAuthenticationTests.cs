@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
@@ -25,23 +26,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
 
         [LoggedTestMethod]
-        public async Task RegistryManager_Http_TokenCredentialAuth_Success()
+        public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var registryManager = RegistryManager.Create(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 
             var device = new Device(Guid.NewGuid().ToString());
 
             // act
-            Device createdDevice = await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
+            Device createdDevice = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
 
             // assert
             Assert.IsNotNull(createdDevice);
 
             // cleanup
-            await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
+            await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

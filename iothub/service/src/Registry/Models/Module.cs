@@ -14,12 +14,12 @@ namespace Microsoft.Azure.Devices
         "Naming",
         "CA1716:Identifiers should not match keywords",
         Justification = "Cannot rename public facing types since they are considered behavior changes.")]
-    public class Module : IETagHolder
+    public class Module
     {
         /// <summary>
-        /// Creates a new instance of <see cref="Module"/>
+        /// Creates a new instance of this class. For serialization purposes only.
         /// </summary>
-        public Module()
+        internal Module()
         {
         }
 
@@ -30,10 +30,11 @@ namespace Microsoft.Azure.Devices
         /// <param name="moduleId">Module identifier</param>
         public Module(string deviceId, string moduleId)
         {
+            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+            Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+
             Id = moduleId;
             DeviceId = deviceId;
-            ConnectionState = DeviceConnectionState.Disconnected;
-            LastActivityTime = ConnectionStateUpdatedTime = DateTime.MinValue;
         }
 
         /// <summary>
@@ -65,13 +66,13 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "connectionState")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState ConnectionState { get; set; }
+        public DeviceConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Time when the <see cref="ConnectionState"/> was last updated
         /// </summary>
         [JsonProperty(PropertyName = "connectionStateUpdatedTime")]
-        public DateTime ConnectionStateUpdatedTime { get; set; }
+        public DateTime ConnectionStateUpdatedTime { get; internal set; }
 
         /// <summary>
         /// Time when the <see cref="Module"/> was last active
