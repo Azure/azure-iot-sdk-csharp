@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="propertyName">The property to get.</param>
         /// <param name="writableClientProperty">When this method returns true, this contains the value of the root-level property.
-        /// When this method returns false, this contains an empty <see cref="WritableClientProperty"/>.</param>
+        /// When this method returns false, this is <c>null</c>.</param>
         /// <returns><c>true</c> if a root-level property with the specified key was found; otherwise, <c>false</c>.</returns>
         public bool TryGetWritableClientProperty(string propertyName, out WritableClientProperty writableClientProperty)
         {
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="componentName">The component which holds the required property.</param>
         /// <param name="propertyName">The property to get.</param>
         /// <param name="writableClientProperty">When this method returns true, this contains the value of the component-level property.
-        /// When this method returns false, this contains an empty <see cref="WritableClientProperty"/>.</param>
+        /// When this method returns false, this is <c>null</c>.</param>
         /// <returns><c>true</c> if a component-level property with the specified key was found; otherwise, <c>false</c>.</returns>
         public bool TryGetWritableClientProperty(string componentName, string propertyName, out WritableClientProperty writableClientProperty)
         {
