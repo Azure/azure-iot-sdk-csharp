@@ -49,6 +49,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered module with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> CreateAsync(Module module, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -57,6 +67,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNull(module, nameof(module));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -85,6 +97,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved module identity.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -94,6 +116,8 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
                 Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -120,6 +144,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> SetAsync(Module module, CancellationToken cancellationToken = default)
         {
             return await SetAsync(module, false, cancellationToken);
@@ -138,6 +172,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Module> SetAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -146,6 +190,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNull(module, nameof(module));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (string.IsNullOrWhiteSpace(module.ETag) && !forceUpdate)
                 {
@@ -179,6 +225,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
@@ -201,6 +257,16 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(Module module, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -214,6 +280,8 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
                 HttpMessageHelper2.InsertEtag(request, module.ETag);

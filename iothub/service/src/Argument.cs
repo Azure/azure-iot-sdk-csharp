@@ -66,5 +66,22 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentException("Collection must have at least one entry", argumentName);
             }
         }
+
+        /// <summary>
+        /// Throws if the provided URI argument is null or empty.
+        /// </summary>
+        /// <param name="argument">The argument to check if it is null or empty.</param>
+        /// <param name="argumentName">The name of the argument</param>
+        /// <exception cref="ArgumentNullException">Thrown if the argument is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the argument is empty.</exception>
+        internal static void RequireNotNullOrEmpty(Uri argument, string argumentName)
+        {
+            if (argument == null)
+            {
+                throw new ArgumentNullException(argumentName);
+            }
+
+            RequireNotNullOrEmpty(argument.ToString(), argumentName);
+        }
     }
 }

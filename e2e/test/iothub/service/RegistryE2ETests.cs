@@ -574,36 +574,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        // Create a service client that uses each service API version and try a basic registry operation
-        // in order to confirm that the service API version works.
-        [LoggedTestMethod]
-        public async Task DevicesClient_ServiceApiVersionsAllWork()
-        {
-            foreach (IotHubServiceClientOptions.ServiceVersion serviceVersion in Enum.GetValues(typeof(IotHubServiceClientOptions.ServiceVersion)))
-            {
-                IotHubServiceClientOptions options = new IotHubServiceClientOptions()
-                {
-                    Version = serviceVersion
-                };
-
-                using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-                string deviceId = Guid.NewGuid().ToString();
-
-                try
-                {
-                    await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    throw new AssertFailedException($"Could not make a service request with service API version {serviceVersion}", e);
-                }
-                finally
-                {
-                    await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-                }
-            }
-        }
-
         private static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)
         {
             if (deviceId == null)

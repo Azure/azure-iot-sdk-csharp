@@ -57,6 +57,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered device with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Device> CreateAsync(Device device, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -65,6 +75,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNull(device, nameof(device));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -92,6 +104,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved device identity.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Device> GetAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -100,6 +122,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -126,6 +150,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Device> SetAsync(Device device, CancellationToken cancellationToken = default)
         {
             return await SetAsync(device, false, cancellationToken);
@@ -144,6 +178,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<Device> SetAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -152,6 +196,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNull(device, nameof(device));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (string.IsNullOrWhiteSpace(device.ETag) && !forceUpdate)
                 {
@@ -185,6 +231,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
@@ -206,6 +262,16 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(Device device, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -219,6 +285,8 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
                 HttpMessageHelper2.InsertEtag(request, device.ETag);
@@ -250,6 +318,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device or twin is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -294,6 +372,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The modules that are registered on the specified device.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<IEnumerable<Module>> GetModulesAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -302,6 +390,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -333,6 +423,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> CreateAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -364,6 +464,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             return await SetAsync(devices, false, cancellationToken);
@@ -382,6 +492,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -414,6 +534,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             return await DeleteAsync(devices, false, cancellationToken);
@@ -432,6 +562,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, bool forceDelete, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -464,12 +604,27 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task ExportAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Exporting registry", nameof(ExportAsync));
             try
             {
+                Argument.RequireNotNullOrEmpty(storageAccountConnectionString, nameof(storageAccountConnectionString));
+                Argument.RequireNotNullOrEmpty(containerName, nameof(containerName));
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var payload = new ExportImportRequest
                 {
                     ContainerName = containerName,
@@ -501,6 +656,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task ImportAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -508,6 +673,11 @@ namespace Microsoft.Azure.Devices
 
             try
             {
+                Argument.RequireNotNullOrEmpty(storageAccountConnectionString, nameof(storageAccountConnectionString));
+                Argument.RequireNotNullOrEmpty(containerName, nameof(containerName));
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var payload = new ExportImportRequest
                 {
                     ContainerName = containerName,
@@ -539,8 +709,20 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided container URI is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, bool excludeKeys, CancellationToken cancellationToken = default)
         {
+            Argument.RequireNotNullOrEmpty(exportBlobContainerUri, nameof(exportBlobContainerUri));
+
             return ExportAsync(
                 JobProperties.CreateForExportJob(
                     exportBlobContainerUri,
@@ -558,8 +740,20 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided container URI or blob name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the output blob name is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken = default)
         {
+            Argument.RequireNotNullOrEmpty(exportBlobContainerUri, nameof(exportBlobContainerUri));
+
             return ExportAsync(
                 JobProperties.CreateForExportJob(
                     exportBlobContainerUri,
@@ -576,6 +770,16 @@ namespace Microsoft.Azure.Devices
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ExportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNull(jobParameters, nameof(jobParameters));
@@ -609,8 +813,21 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, CancellationToken cancellationToken = default)
         {
+            Argument.RequireNotNullOrEmpty(importBlobContainerUri, nameof(importBlobContainerUri));
+            Argument.RequireNotNullOrEmpty(outputBlobContainerUri, nameof(outputBlobContainerUri));
+
             return ImportAsync(
                JobProperties.CreateForImportJob(
                    importBlobContainerUri,
@@ -628,8 +845,21 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null or when the input blob name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided input blob name is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken = default)
         {
+            Argument.RequireNotNullOrEmpty(importBlobContainerUri, nameof(importBlobContainerUri));
+            Argument.RequireNotNullOrEmpty(outputBlobContainerUri, nameof(outputBlobContainerUri));
+
             return ImportAsync(
                JobProperties.CreateForImportJob(
                    importBlobContainerUri,
@@ -646,14 +876,27 @@ namespace Microsoft.Azure.Devices
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ImportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             Argument.RequireNotNull(jobParameters, nameof(jobParameters));
 
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportAsync));
+
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 jobParameters.Type = JobType.ImportDevices;
                 return CreateJobAsync(jobParameters, cancellationToken);
             }
@@ -678,6 +921,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the job specified by the provided jobId.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided job Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<JobProperties> GetJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -686,6 +939,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNull(jobId, nameof(jobId));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -710,6 +965,16 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -717,6 +982,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -742,6 +1009,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided job Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -750,6 +1027,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNull(jobId, nameof(jobId));
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
                 HttpMessageHelper2.InsertEtag(request, jobId);
@@ -774,6 +1053,16 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registry statistics for you Iot hub.</returns>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<RegistryStatistics> GetRegistryStatisticsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -781,6 +1070,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDeviceStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -804,6 +1095,16 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -811,6 +1112,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetServiceStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -934,6 +1237,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
@@ -954,6 +1259,8 @@ namespace Microsoft.Azure.Devices
 
         private async Task<JobProperties> CreateJobAsync(JobProperties jobProperties, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetCreateJobsUri(), _credentialProvider, jobProperties);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);

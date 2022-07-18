@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
+        private const string ApiVersion = "2021-04-12";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -51,7 +52,7 @@ namespace Microsoft.Azure.Devices
             _credentialProvider = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, options.GetVersionString());
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
 
             InitializeSubclients();
         }
@@ -84,7 +85,7 @@ namespace Microsoft.Azure.Devices
             _credentialProvider = new IotHubTokenCrendentialProperties(hostName, credential);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, options.GetVersionString());
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
 
             InitializeSubclients();
         }
@@ -116,7 +117,7 @@ namespace Microsoft.Azure.Devices
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
-            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, options.GetVersionString());
+            _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
 
             InitializeSubclients();
         }
