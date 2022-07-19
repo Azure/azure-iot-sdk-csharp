@@ -50,43 +50,6 @@ namespace Microsoft.Azure.Devices.Client
         internal PayloadConvention Convention { get; set; }
 
         /// <summary>
-        /// Determines whether the specified root-level property is present in the received writable property update request.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
-        public bool Contains(string propertyName)
-        {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            return GetMatches(null, propertyName).Any();
-        }
-
-        /// <summary>
-        /// Determines whether the specified component-level property is present in the received writable property update request.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <param name="componentName">The component which holds the required property.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        public bool Contains(string componentName, string propertyName)
-        {
-            if (componentName == null)
-            {
-                throw new ArgumentNullException(nameof(componentName));
-            }
-
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            return GetMatches(componentName, propertyName).Any();
-        }
-
-        /// <summary>
         /// Gets the value of a root-level property as a <see cref="WritableClientProperty"/>.
         /// </summary>
         /// <remarks>
@@ -96,8 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
         /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// <para>
-        /// To retrieve the value of the root-level writable property update request see <see cref="TryGetValue{T}(string, out T)"/>
-        /// or <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
+        /// To retrieve the value of the root-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
         /// </para>
         /// </remarks>
         /// <param name="propertyName">The property to get.</param>
@@ -114,45 +76,13 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            if (Contains(propertyName))
+            IEnumerable<WritableClientProperty> matches = GetMatches(null, propertyName);
+            if (matches.Any())
             {
-                IEnumerable<WritableClientProperty> matches = GetMatches(null, propertyName);
 
                 // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
                 writableClientProperty = matches.First();
                 return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the value of a root-level property.
-        /// </summary>
-        /// <remarks>
-        /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
-        /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object
-        /// that you can add to a <see cref="ClientPropertyCollection"/> using
-        /// <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// (or corresponding method on the <see cref="ModuleClient"/>).
-        /// </remarks>
-        /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
-        /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">When this method returns true, this contains the value of the root-level property.
-        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
-        /// <returns><c>true</c> if a root-level property of type <c>T</c> with the specified key was found; otherwise, <c>false</c>.</returns>
-        public bool TryGetValue<T>(string propertyName, out T propertyValue)
-        {
-            propertyValue = default;
-
-            if (TryGetWritableClientProperty(propertyName, out WritableClientProperty writableClientProperty))
-            {
-                // If the object is of type T or can be cast or converted to type T, go ahead and return it.
-                if (writableClientProperty.TryGetValue(out propertyValue))
-                {
-                    return true;
-                }
             }
 
             return false;
@@ -168,8 +98,7 @@ namespace Microsoft.Azure.Devices.Client
         /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
         /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// <para>
-        /// To retrieve the value of the component-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>
-        /// or <see cref="TryGetValue{T}(string, string, out T)"/>.
+        /// To retrieve the value of the component-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
         /// </para>
         /// </remarks>
         /// <param name="componentName">The component which holds the required property.</param>
@@ -188,46 +117,13 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            if (Contains(componentName, propertyName))
+            IEnumerable<WritableClientProperty> matches = GetMatches(componentName, propertyName);
+            if (matches.Any())
             {
-                IEnumerable<WritableClientProperty> matches = GetMatches(componentName, propertyName);
 
                 // There will only be a single entry for a specific property name, so we can safely return the first element in the list.
                 writableClientProperty = matches.First();
                 return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the value of a component-level property.
-        /// </summary>
-        /// <remarks>
-        /// See <see cref="TryGetWritableClientProperty(string, out WritableClientProperty)"/> to get a <see cref="WritableClientProperty"/> object
-        /// which has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to help you build the writable property acknowledgement object
-        /// that you can add to a <see cref="ClientPropertyCollection"/> using
-        /// <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// (or corresponding method on the <see cref="ModuleClient"/>).
-        /// </remarks>
-        /// <typeparam name="T">The type to cast the <paramref name="propertyValue"/> to.</typeparam>
-        /// <param name="componentName">The component which holds the required property.</param>
-        /// <param name="propertyName">The property to get.</param>
-        /// <param name="propertyValue">When this method returns true, this contains the value of the component-level property.
-        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
-        /// <returns><c>true</c> if a component-level property of type <c>T</c> with the specified key was found; otherwise, <c>false</c>.</returns>
-        public bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue)
-        {
-            propertyValue = default;
-
-            if (TryGetWritableClientProperty(componentName, propertyName, out WritableClientProperty writableClientProperty))
-            {
-                // If the object is of type T or can be cast or converted to type T, go ahead and return it.
-                if (writableClientProperty.TryGetValue(out propertyValue))
-                {
-                    return true;
-                }
             }
 
             return false;

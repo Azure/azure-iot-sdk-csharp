@@ -257,8 +257,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
 
             // Validate the updated properties from the device-client
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue(ComponentName, propName, out T propFromCollection);
-            isPropertyPresent.Should().BeTrue();
+
+            clientProperties.WritablePropertyRequests.TryGetWritableClientProperty(ComponentName, propName, out WritableClientProperty writableClientProperty).Should().BeTrue();
+            writableClientProperty.TryGetValue(out T propFromCollection).Should().BeTrue();
             propFromCollection.Should().BeEquivalentTo(propValue);
 
             // Validate the updated twin from the service-client
@@ -290,16 +291,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                     {
                         try
                         {
-                            bool isPropertyPresent = writableProperties.TryGetValue(ComponentName, propName, out T propertyFromCollection);
-
-                            isPropertyPresent.Should().BeTrue();
+                            writableProperties.TryGetWritableClientProperty(ComponentName, propName, out WritableClientProperty writableClientProperty).Should().BeTrue();
+                            writableClientProperty.TryGetValue(out T propertyFromCollection).Should().BeTrue();
                             propertyFromCollection.Should().BeEquivalentTo(propValue);
 
                             var writablePropertyAcks = new ClientPropertyCollection();
-                            foreach (WritableClientProperty writableProperty in writableProperties)
-                            {
-                                writablePropertyAcks.AddWritableClientPropertyAcknowledgement(writableProperty.AcknowledgeWith(CommonClientResponseCodes.OK));
-                            }
+                            writablePropertyAcks.AddWritableClientPropertyAcknowledgement(writableClientProperty.AcknowledgeWith(CommonClientResponseCodes.OK));
 
                             await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
                         }
@@ -323,8 +320,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
 
             // Validate that the writable property update request was received
-            bool isWritablePropertyRequestPresent = clientProperties.WritablePropertyRequests.TryGetValue(ComponentName, propName, out T writablePropertyRequest);
-            isWritablePropertyRequestPresent.Should().BeTrue();
+            clientProperties.WritablePropertyRequests.TryGetWritableClientProperty(ComponentName, propName, out WritableClientProperty writableClientProperty).Should().BeTrue();
+            writableClientProperty.TryGetValue(out T writablePropertyRequest).Should().BeTrue();
             writablePropertyRequest.Should().BeEquivalentTo(propValue);
 
             // Validate that the writable property update request was acknowledged
@@ -363,8 +360,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
-            bool isPropertyPresent = clientProperties.WritablePropertyRequests.TryGetValue(ComponentName, propName, out string propFromCollection);
-            isPropertyPresent.Should().BeTrue();
+
+            clientProperties.WritablePropertyRequests.TryGetWritableClientProperty(ComponentName, propName, out WritableClientProperty writableClientProperty).Should().BeTrue();
+            writableClientProperty.TryGetValue(out string propFromCollection).Should().BeTrue();
             propFromCollection.Should().Be(propValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);

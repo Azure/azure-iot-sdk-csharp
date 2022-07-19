@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
@@ -181,15 +182,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 .SubscribeToWritablePropertyUpdateRequestsAsync(
                     patch =>
                     {
-                        _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty: {patch}.");
+                        _logger.Trace($"{nameof(SetClientPropertyUpdateCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} callback property: WritableProperty  received count: {patch.Count()}.");
 
                         try
                         {
-                            bool isPropertyPresent = componentName == null
-                                ? patch.TryGetValue(expectedPropName, out T propertyFromCollection)
-                                : patch.TryGetValue(componentName, expectedPropName, out propertyFromCollection);
+                            WritableClientProperty writableClientProperty;
+                            if (componentName == null)
+                            {
+                                patch.TryGetWritableClientProperty(expectedPropName, out writableClientProperty).Should().BeTrue();
+                            }
+                            else
+                            {
+                                patch.TryGetWritableClientProperty(componentName, expectedPropName, out writableClientProperty).Should().BeTrue();
+                            }
 
-                            isPropertyPresent.Should().BeTrue();
+                            writableClientProperty.TryGetValue(out T propertyFromCollection).Should().BeTrue();
                             propertyFromCollection.Should().BeEquivalentTo((T)ExpectedClientPropertyValue);
                         }
                         catch (Exception ex)
