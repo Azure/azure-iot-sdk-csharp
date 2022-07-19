@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -61,13 +63,13 @@ namespace Microsoft.Azure.Devices
         /// The content of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "content", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationContent Content { get; set; } = new ConfigurationContent();
+        public ConfigurationContent Content { get; set; }
 
         /// <summary>
         /// Gets the content type for configuration
         /// </summary>
         [JsonProperty(PropertyName = "contentType")]
-        public string ContentType { get; }
+        public string ContentType { get; internal set; }
 
         /// <summary>
         /// The query used to define the targeted devices or modules.
@@ -100,18 +102,28 @@ namespace Microsoft.Azure.Devices
         /// The system metrics computed by the IoT hub that cannot be customized.
         /// </summary>
         [JsonProperty(PropertyName = "systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics SystemMetrics { get; internal set; } = new ConfigurationMetrics();
+        public ConfigurationMetrics SystemMetrics { get; set; }
 
         /// <summary>
         /// The custom metrics specified by the developer as queries against twin reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "metrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics Metrics { get; set; } = new ConfigurationMetrics();
+        public ConfigurationMetrics Metrics { get; set; }
 
         /// <summary>
         /// The ETag of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "etag", NullValueHandling = NullValueHandling.Ignore)]
         public string ETag { get; set; }
+
+        /// <summary>
+        /// For use in serialization.
+        /// </summary>
+        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool ShouldSerializeLabels()
+        {
+            return Labels != null & Labels.Any();
+        }
     }
 }

@@ -29,8 +29,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 return new ClientSecretCredential(
                     GetValue("MSFT_TENANT_ID"),
-                    GetValue("IOTHUB_CLIENT_ID"),
-                    GetValue("IOTHUB_CLIENT_SECRET"));
+                    GetValue("E2E_TEST_AAD_APP_CLIENT_ID"),
+                    GetValue("E2E_TEST_AAD_APP_CLIENT_SECRET"));
             }
 
             public static string GetIotHubSharedAccessSignature(TimeSpan timeToLive)
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static X509Certificate2 GetCertificateWithPrivateKey()
             {
-                const string hubPfxCert = "IOTHUB_X509_PFX_CERTIFICATE";
+                const string hubPfxCert = "IOTHUB_X509_DEVICE_PFX_CERTIFICATE";
                 X509Certificate2 cert = GetBase64EncodedCertificate(hubPfxCert, defaultValue: string.Empty);
                 Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubPfxCert} has expired.");
                 return cert;
@@ -55,33 +55,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static X509Certificate2 GetChainDeviceCertificateWithPrivateKey()
             {
-                const string hubPfxCert = "HUB_CHAIN_DEVICE_PFX_CERTIFICATE";
+                const string hubPfxCert = "IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE";
                 X509Certificate2 cert = GetBase64EncodedCertificate(hubPfxCert, defaultValue: string.Empty);
                 Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubPfxCert} has expired.");
-                return cert;
-            }
-
-            public static X509Certificate2 GetRootCACertificate()
-            {
-                const string hubCert = "HUB_CHAIN_ROOT_CA_CERTIFICATE";
-                X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
-                return cert;
-            }
-
-            public static X509Certificate2 GetIntermediate1Certificate()
-            {
-                const string hubCert = "HUB_CHAIN_INTERMEDIATE1_CERTIFICATE";
-                X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
-                return cert;
-            }
-
-            public static X509Certificate2 GetIntermediate2Certificate()
-            {
-                const string hubCert = "HUB_CHAIN_INTERMEDIATE2_CERTIFICATE";
-                X509Certificate2 cert = GetBase64EncodedCertificate(hubCert);
-                Assert.IsTrue(cert.NotAfter > DateTime.UtcNow, $"The X509 cert from {hubCert} has expired.");
                 return cert;
             }
 
@@ -89,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
 
-            public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
+            public static string ProxyServerAddress => GetValue("PROXY_SERVER_ADDRESS");
 
             /// <summary>
             /// A proxy server that should not exist (on local host)

@@ -33,8 +33,6 @@ namespace Microsoft.Azure.Devices.Common
             return rawTicks;
         }
 
-
-
         public bool Equals(Timestamp other)
         {
             return _timestamp == other._timestamp;
@@ -58,55 +56,6 @@ namespace Microsoft.Azure.Devices.Common
         public int CompareTo(Timestamp other)
         {
             return _timestamp.CompareTo(other._timestamp);
-        }
-
-        public static bool operator ==(Timestamp t1, Timestamp t2)
-        {
-            return t1._timestamp == t2._timestamp;
-        }
-
-        public static bool operator !=(Timestamp t1, Timestamp t2)
-        {
-            return t1._timestamp != t2._timestamp;
-        }
-
-        public static bool operator >(Timestamp t1, Timestamp t2)
-        {
-            return t1._timestamp > t2._timestamp;
-        }
-
-        public static bool operator <(Timestamp t1, Timestamp t2)
-        {
-            return t1._timestamp < t2._timestamp;
-        }
-
-        public static bool operator >=(Timestamp t1, Timestamp t2)
-        {
-            return t1._timestamp >= t2._timestamp;
-        }
-
-        public static bool operator <=(Timestamp t1, Timestamp t2)
-        {
-            return t1._timestamp <= t2._timestamp;
-        }
-
-        public static Timestamp operator +(Timestamp t, TimeSpan duration)
-        {
-            long timestamp = (long)(t._timestamp + duration.Ticks / s_tickFrequency);
-            return new Timestamp(timestamp);
-        }
-
-        public static Timestamp operator -(Timestamp t, TimeSpan duration)
-        {
-            long timestamp = (long)(t._timestamp - duration.Ticks / s_tickFrequency);
-            return new Timestamp(timestamp);
-        }
-
-        public static TimeSpan operator -(Timestamp t1, Timestamp t2)
-        {
-            long rawTicks = t1._timestamp - t2._timestamp;
-            long ticks = ConvertRawTicksToTicks(rawTicks);
-            return new TimeSpan(ticks);
         }
     }
 }

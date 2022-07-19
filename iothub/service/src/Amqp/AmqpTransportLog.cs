@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {

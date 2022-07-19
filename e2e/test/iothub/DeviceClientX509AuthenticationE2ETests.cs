@@ -10,7 +10,6 @@ using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Messaging;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
 
@@ -151,9 +150,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             var chainCerts = new X509Certificate2Collection
             {
-                TestConfiguration.IoTHub.GetRootCACertificate(),
-                TestConfiguration.IoTHub.GetIntermediate1Certificate(),
-                TestConfiguration.IoTHub.GetIntermediate2Certificate()
+                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
                 TestConfiguration.IoTHub.X509ChainDeviceName,
@@ -178,9 +177,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             // arrange
             var chainCerts = new X509Certificate2Collection
             {
-                TestConfiguration.IoTHub.GetRootCACertificate(),
-                TestConfiguration.IoTHub.GetIntermediate1Certificate(),
-                TestConfiguration.IoTHub.GetIntermediate2Certificate()
+                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
                 TestConfiguration.IoTHub.X509ChainDeviceName,

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -212,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return message;
         }
 
-        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));

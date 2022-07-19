@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class CombinedClientOperationsPoolAmqpTests : E2EMsTestBase
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
-        private readonly string _devicePrefix = $"E2E_{nameof(CombinedClientOperationsPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Message msg = msgSent.Item1;
                 string payload = msgSent.Item2;
 
-                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger);
+                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger);
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
                 // Invoke direct methods

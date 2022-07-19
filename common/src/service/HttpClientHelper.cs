@@ -15,10 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
-
-using static Microsoft.Azure.Devices.Shared.HttpMessageHelper;
 
 namespace Microsoft.Azure.Devices
 {
@@ -170,7 +167,7 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-                        SetHttpRequestMessageContent(requestMsg, entity);
+                        HttpMessageHelper.SetHttpRequestMessageContent(requestMsg, entity);
 
                         return Task.FromResult(0);
                     },
@@ -195,7 +192,7 @@ namespace Microsoft.Azure.Devices
                     new Uri(_baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
-                        SetHttpRequestMessageContent<T>(requestMsg, entity);
+                        HttpMessageHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
@@ -219,7 +216,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, operationType);
-                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    HttpMessageHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -245,7 +242,7 @@ namespace Microsoft.Azure.Devices
                 {
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
-                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    HttpMessageHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -265,7 +262,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
-                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    HttpMessageHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -287,7 +284,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
-                    SetHttpRequestMessageContent<T>(requestMsg, entity);
+                    HttpMessageHelper.SetHttpRequestMessageContent<T>(requestMsg, entity);
 
                     return Task.FromResult(0);
                 },
@@ -873,15 +870,9 @@ namespace Microsoft.Azure.Devices
 
         internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
-#if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
-            // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
-            var httpMessageHandler = new SocketsHttpHandler();
-            httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
-#else
             var httpMessageHandler = new HttpClientHandler();
             httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
-#endif
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {

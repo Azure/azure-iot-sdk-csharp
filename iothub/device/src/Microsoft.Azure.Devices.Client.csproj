@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -14,6 +13,7 @@
     <DefaultItemExcludes>ModernDotNet/**;$(DefaultItemExcludes)</DefaultItemExcludes>
 
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.41.0</Version>
+    <Version>2.0.0-preview001</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
-    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -72,16 +72,8 @@
     </Compile>
   </ItemGroup>
 
-  <!-- All the "new" .NET targets -->
   <ItemGroup>
-    <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
-    <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpBufferedStream.cs" />
-    <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
-    <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+    <ProjectReference Include="..\..\..\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -90,15 +82,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="MQTTnet" Version="4.0.0.167" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Reference Include="System.Web" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />

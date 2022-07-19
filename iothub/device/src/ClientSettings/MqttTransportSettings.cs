@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Shared;
+using DotNetty.Codecs.Mqtt.Packets;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -17,9 +17,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly TransportType _transportType;
 
         private const bool DefaultCleanSession = false;
+        private const bool DefaultDeviceReceiveAckCanTimeout = false;
         private const bool DefaultHasWill = false;
+        private const bool DefaultMaxOutboundRetransmissionEnforced = false;
         private const int DefaultKeepAliveInSeconds = 300;
         private const int DefaultMaxPendingInboundMessages = 50;
+        private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
+        private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
 
         // The CONNACK timeout has been chosen to be 60 seconds to be in alignment with the service implemented timeout for processing connection requests.
         private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(60);
@@ -58,6 +62,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             HasWill = DefaultHasWill;
             KeepAliveInSeconds = DefaultKeepAliveInSeconds;
             MaxPendingInboundMessages = DefaultMaxPendingInboundMessages;
+            PublishToServerQoS = DefaultPublishToServerQoS;
+            ReceivingQoS = DefaultReceivingQoS;
+            WillMessage = null;
             DefaultReceiveTimeout = s_defaultReceiveTimeout;
         }
 
@@ -75,10 +82,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
+        /// The QoS to be used when sending packets to service.
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </summary>
+        public QualityOfService PublishToServerQoS { get; set; }
+
+        /// <summary>
+        /// The QoS to be used when subscribing to receive packets from the service.
+        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// </summary>
+        public QualityOfService ReceivingQoS { get; set; }
+
+        /// <summary>
         /// The maximum no. of inbound messages that are read from the channel.
         /// The default value is 50.
         /// </summary>
-        public int MaxPendingInboundMessages { get; set; } //TODO remove this?
+        public int MaxPendingInboundMessages { get; set; }
 
         /// <summary>
         /// The time to wait for receiving an acknowledgment for a CONNECT packet.
@@ -91,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// To know more about IoT hub's throttling limits and traffic shaping feature, see
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles"/>.
         /// </remarks>
-        public TimeSpan ConnectArrivalTimeout { get; set; } //TODO remove this? cancellation token support is already in place
+        public TimeSpan ConnectArrivalTimeout { get; set; }
 
         /// <summary>
         /// Flag to specify if a subscription should persist across different sessions. The default value is false.
@@ -113,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
-        public int KeepAliveInSeconds { get; set; } //TODO convert to timespan
+        public int KeepAliveInSeconds { get; set; }
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

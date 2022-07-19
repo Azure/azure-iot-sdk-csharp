@@ -147,6 +147,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                 Items = new string[] { bodyString };
                             }
                         }
+                        catch (JsonSerializationException)
+                        {
+                            Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
+                        }
                         catch (JsonReaderException)
                         {
                             Items = new string[] { bodyString };

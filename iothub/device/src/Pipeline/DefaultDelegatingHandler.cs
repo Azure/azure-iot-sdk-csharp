@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -81,10 +80,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler.WaitForTransportClosedAsync();
         }
 
-        public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public virtual Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler.ReceiveAsync(cancellationToken);
+            return InnerHandler.ReceiveMessageAsync(cancellationToken);
         }
 
         public virtual Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)

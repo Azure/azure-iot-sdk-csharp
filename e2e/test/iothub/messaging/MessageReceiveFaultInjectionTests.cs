@@ -376,7 +376,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 }
             }
 
@@ -384,7 +385,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 (Message message, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, message, payload, Logger).ConfigureAwait(false);
+                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(transport, deviceClient, testDevice.Id, message, payload, Logger).ConfigureAwait(false);
             }
 
             Task CleanupOperationAsync()
@@ -436,16 +437,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 testDeviceCallbackHandler.ExpectedMessageSentByService = message;
                 await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 
-                Client.Message receivedMessage = await deviceClient.ReceiveAsync(timeout).ConfigureAwait(false);
+                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
                 receivedMessage.Should().BeNull();
             }
 
-            Task CleanupOperationAsync()
+            async Task CleanupOperationAsync()
             {
-                serviceClient.CloseAsync();
+                await serviceClient.CloseAsync();
                 testDeviceCallbackHandler?.Dispose();
-                return Task.FromResult(true);
             }
 
             await FaultInjection

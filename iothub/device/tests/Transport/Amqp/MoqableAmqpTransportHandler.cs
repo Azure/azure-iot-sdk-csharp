@@ -17,22 +17,22 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         internal MoqableAmqpTransportHandler(
-            PipelineContext context, 
-            IotHubConnectionString connectionString, 
-            AmqpTransportSettings transportSettings, 
-            Func<MethodRequestInternal, Task> onMethodCallback = null, 
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null, 
-            Func<string, Message, Task> onModuleMessageReceivedCallback = null, 
-            Func<Message, Task> onDeviceMessageReceivedCallback = null) 
+            PipelineContext context,
+            IotHubConnectionString connectionString,
+            AmqpTransportSettings transportSettings,
+            Func<MethodRequestInternal, Task> onMethodCallback = null,
+            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
+            Func<string, Message, Task> onModuleMessageReceivedCallback = null,
+            Func<Message, Task> onDeviceMessageReceivedCallback = null)
             : base(
-                  context, 
-                  connectionString, 
-                  transportSettings, 
-                  onMethodCallback, 
-                  onDesiredStatePatchReceivedCallback, 
-                  onModuleMessageReceivedCallback, 
+                  context,
+                  connectionString,
+                  transportSettings,
+                  onMethodCallback,
+                  onDesiredStatePatchReceivedCallback,
+                  onModuleMessageReceivedCallback,
                   onDeviceMessageReceivedCallback)
-        {  
+        {
             _amqpUnit = new MoqableAmqpUnit();
         }
     }

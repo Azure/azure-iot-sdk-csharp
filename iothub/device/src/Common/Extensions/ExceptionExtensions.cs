@@ -45,11 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             }
         }
 
-        public static IEnumerable<TException> Unwind<TException>(this Exception exception)
-        {
-            return exception.Unwind().OfType<TException>();
-        }
-
         public static Exception PrepareForRethrow(this Exception exception)
         {
             Fx.Assert(exception != null, "The specified Exception is null.");
@@ -85,12 +80,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             return exception;
         }
 
-        public static Exception DisablePrepareForRethrow(this Exception exception)
-        {
-            exception.Data[AsyncResult.DisablePrepareForRethrow] = string.Empty;
-            return exception;
-        }
-
         public static string ToStringSlim(this Exception exception)
         {
             // exception.Data is empty collection by default.
@@ -120,14 +109,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             return exception.ToString();
         }
 
-        public static string GetReferenceCode(this Exception exception)
-        {
-            return exception.Data != null
-                && exception.Data.Contains(ExceptionIdentifierName)
-                    ? (string)exception.Data[ExceptionIdentifierName]
-                    : null;
-        }
-
         private static bool ShouldPrepareForRethrow(Exception exception)
         {
             while (exception != null)
@@ -154,20 +135,6 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             if (argumentValue == null)
             {
                 string errorMessage = $"The parameter named {argumentName} can't be null.";
-                throw new ArgumentNullException(argumentName, errorMessage);
-            }
-        }
-
-        /// <summary>
-        /// Throw ArgumentNullException if the value is null reference, empty, or white space.
-        /// </summary>
-        /// <param name="argumentValue">The argument value.</param>
-        /// <param name="argumentName">The argument name.</param>
-        public static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
-        {
-            if (string.IsNullOrWhiteSpace(argumentValue))
-            {
-                string errorMessage = $"The parameter named {argumentName} can't be null, empty, or white space.";
                 throw new ArgumentNullException(argumentName, errorMessage);
             }
         }

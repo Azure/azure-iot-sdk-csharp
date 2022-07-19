@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
@@ -149,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private async Task CompleteMessageAsync(Client.Message message)
         {
-            await _deviceClient.CompleteAsync(message).ConfigureAwait(false);
+            await _deviceClient.CompleteMessageAsync(message).ConfigureAwait(false);
         }
 
         public async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)

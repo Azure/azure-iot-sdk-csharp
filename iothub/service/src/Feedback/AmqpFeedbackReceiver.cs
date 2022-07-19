@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Extensions;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {
@@ -131,7 +130,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.AcceptedOutcome,
-                true,
+                false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
@@ -141,7 +140,7 @@ namespace Microsoft.Azure.Devices
                 _faultTolerantReceivingLink,
                 feedback.LockToken,
                 AmqpConstants.ReleasedOutcome,
-                true,
+                false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 

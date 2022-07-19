@@ -33,13 +33,6 @@ namespace Microsoft.Azure.Devices
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
-#if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
-                // SocketsHttpHandler is only available in netcore2.1 and onwards
-                case SocketsHttpHandler socketsHttpHandler:
-                    socketsHttpHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-                    socketsHttpHandler.PooledConnectionLifetime = TimeSpan.FromMilliseconds(connectionLeaseTimeoutMilliseconds);
-                    break;
-#endif
             }
         }
     }

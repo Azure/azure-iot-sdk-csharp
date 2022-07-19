@@ -14,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -210,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 "Device twins are not supported over HTTP; they are only supported over the MQTT and AMQP protocols.");
         }
 
-        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -288,7 +287,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             else
             {
                 using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
-                return await ReceiveAsync(cts.Token).ConfigureAwait(false);
+                return await ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
             }
         }
 

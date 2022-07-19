@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class AuthenticationWithTokenRefreshDisposalTests : E2EMsTestBase
     {
         public static readonly TimeSpan MaxWaitTime = TimeSpan.FromSeconds(10);
-        private readonly string _devicePrefix = $"E2E_{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
+        private readonly string _devicePrefix = $"{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Amqp()
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
-            var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+            var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
             using var message1 = new Client.Message();
             await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
             await deviceClient.CloseAsync();
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Perform the same steps again, reusing the previously created authentication method instance.
             // Since the default behavior is to dispose AuthenticationWithTokenRefresh authentication method on DeviceClient disposal,
             // this should now throw an ObjectDisposedException.
-            var deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+            var deviceClient2 = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
             using var message2 = new Client.Message();
 
             Func<Task> act = async () => await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
-            var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+            var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
             using var message1 = new Client.Message();
             await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
             await deviceClient.CloseAsync();
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Perform the same steps again, reusing the previously created authentication method instance to ensure
             // that the SDK did not dispose the user supplied authentication method instance.
-            var deviceClient2 = DeviceClient.Create(testDevice.IoTHubHostName, authenticationMethod, transport);
+            var deviceClient2 = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
             using var message2 = new Client.Message();
             await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
             await deviceClient2.CloseAsync();
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             for (int i = 0; i < devicesCount; i++)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope - the client instance is disposed during the course of the test.
-                var deviceClient = DeviceClient.Create(testDevices[i].IoTHubHostName, authenticationMethods[i], new ITransportSettings[] { amqpTransportSettings });
+                var deviceClient = DeviceClient.Create(testDevices[i].IotHubHostName, authenticationMethods[i], new ITransportSettings[] { amqpTransportSettings });
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope - the client instance is disposed at the end of the test.
                 var deviceClient = DeviceClient.Create(
-                    testDevices[i].IoTHubHostName,
+                    testDevices[i].IotHubHostName,
                     authenticationMethods[i],
                     new ITransportSettings[]
                     {

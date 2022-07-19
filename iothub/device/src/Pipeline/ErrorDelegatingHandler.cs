@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -47,9 +46,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
         }
 
-        public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.ReceiveMessageAsync(cancellationToken));
         }
 
         public override Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)

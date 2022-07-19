@@ -39,11 +39,6 @@ namespace Microsoft.Azure.Devices.Client
                 return (slot >> HiShift) - slot + 1 & LoMask;
             }
 
-            public static int IncrementLo(int slot)
-            {
-                return slot + 1 & LoMask | slot & HiMask;
-            }
-
             // This method is only valid if you already know that (gate & HiBits) != 0.
             public static bool IsComplete(int gate)
             {
@@ -241,120 +236,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return queued;
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "calls into ScheduledOverlapped to post it, touches slots, may be called outside of user context")]
-        [SecurityCritical]
-        private void CompletionCallback(out Action<object> callback, out object state)
-        {
-            int slot = _headTail;
-            int slotLowPri;
-
-            while (true)
-            {
-                Fx.Assert(Bits.Count(slot) != -1, "CompletionCallback called on idle IOTS!");
-
-                bool wasEmpty = Bits.Count(slot) == 0;
-                if (wasEmpty)
-                {
-                    // We're about to set this to idle. First check the low-priority queue. This alone doesn't
-                    // guarantee we service all the low-pri items - there hasn't even been an Interlocked yet. But
-                    // we take care of that later.
-                    slotLowPri = _headTailLowPri;
-                    while (Bits.CountNoIdle(slotLowPri) != 0)
-                    {
-                        if (slotLowPri == (slotLowPri = Interlocked.CompareExchange(
-                            ref _headTailLowPri,
-                            Bits.IncrementLo(slotLowPri),
-                            slotLowPri)))
-                        {
-                            overlapped.Post(this);
-                            _slotsLowPri[slotLowPri & SlotMaskLowPri].DequeueWorkItem(out callback, out state);
-                            return;
-                        }
-                    }
-                }
-
-                if (slot == (slot = Interlocked.CompareExchange(ref _headTail, Bits.IncrementLo(slot), slot)))
-                {
-                    if (!wasEmpty)
-                    {
-                        overlapped.Post(this);
-                        _slots[slot & SlotMask].DequeueWorkItem(out callback, out state);
-                        return;
-                    }
-
-                    // We just set the IOThreadScheduler to idle. Check if a low-priority item got added in the
-                    // interim.
-                    // Interlocked calls create a thread barrier, so this read will give us the value of
-                    // headTailLowPri at the time of the interlocked that set us to idle, or later. The invariant
-                    // here is that either the low-priority queue was empty at some point after we set the IOTS to
-                    // idle (so that the next enqueue will notice, and issue a Post), or that the IOTS was unidle at
-                    // some point after we set it to idle (so that the next attempt to go idle will verify that the
-                    // low-priority queue is empty).
-                    slotLowPri = _headTailLowPri;
-
-                    if (Bits.CountNoIdle(slotLowPri) != 0)
-                    {
-                        // Whoops, go back from being idle (unless someone else already did). If we go back, start
-                        // over. (We still owe a Post.)
-                        slot = Bits.IncrementLo(slot);
-                        if (slot == Interlocked.CompareExchange(ref _headTail, slot + Bits.HiOne, slot))
-                        {
-                            slot += Bits.HiOne;
-                            continue;
-                        }
-
-                        // We know that there's a low-priority work item. But we also know that the IOThreadScheduler
-                        // wasn't idle. It's best to let it take care of itself, since according to this method, we
-                        // just set the IOThreadScheduler to idle so shouldn't take on any tasks.
-                    }
-
-                    break;
-                }
-            }
-
-            callback = null;
-            state = null;
-            return;
-        }
-
-        [Fx.Tag.SecurityNote(Critical = "touches slots, may be called outside of user context")]
-        [SecurityCritical]
-        private bool TryCoalesce(out Action<object> callback, out object state)
-        {
-            int slot = _headTail;
-            int slotLowPri;
-            while (true)
-            {
-                if (Bits.Count(slot) > 0)
-                {
-                    if (slot == (slot = Interlocked.CompareExchange(ref _headTail, Bits.IncrementLo(slot), slot)))
-                    {
-                        _slots[slot & SlotMask].DequeueWorkItem(out callback, out state);
-                        return true;
-                    }
-                    continue;
-                }
-
-                slotLowPri = _headTailLowPri;
-                if (Bits.CountNoIdle(slotLowPri) > 0)
-                {
-                    if (slotLowPri == (slotLowPri = Interlocked.CompareExchange(ref _headTailLowPri, Bits.IncrementLo(slotLowPri), slotLowPri)))
-                    {
-                        _slotsLowPri[slotLowPri & SlotMaskLowPri].DequeueWorkItem(out callback, out state);
-                        return true;
-                    }
-                    slot = _headTail;
-                    continue;
-                }
-
-                break;
-            }
-
-            callback = null;
-            state = null;
-            return false;
         }
 
         private int SlotMask

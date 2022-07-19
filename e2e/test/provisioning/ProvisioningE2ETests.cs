@@ -11,13 +11,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Authentication;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Provisioning.ProvisioningServiceClientE2ETests;
 
@@ -36,26 +35,29 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private const string InvalidGlobalAddress = "httpbin.org";
         private static readonly string s_globalDeviceEndpoint = TestConfiguration.Provisioning.GlobalDeviceEndpoint;
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
-        private static readonly X509Certificate2 s_groupEnrollmentCertificate = TestConfiguration.Provisioning.GetGroupEnrollmentCertificate();
+        private static readonly string s_certificatePassword = TestConfiguration.Provisioning.CertificatePassword;
+
+        private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
+        private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
         private readonly VerboseTestLogger _verboseLog = VerboseTestLogger.GetInstance();
 
-        private static DirectoryInfo s_dpsClientCertificateFolder;
-        private static DirectoryInfo s_selfSignedCertificatesFolder;
-
-        public enum EnrollmentType
-        {
-            Individual,
-            Group,
-        }
+        private static DirectoryInfo s_x509CertificatesFolder;
+        private static string s_intermediateCertificateSubject;
 
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            s_dpsClientCertificateFolder = Directory.CreateDirectory("DpsClientCertificates");
-            s_selfSignedCertificatesFolder = s_dpsClientCertificateFolder.CreateSubdirectory("SelfSignedCertificates");
+            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningE2ETests)}-{Guid.NewGuid()}");
+
+            // Extract the public certificate and private key information from the intermediate certificate pfx file.
+            // These keys will be used to sign the test leaf device certificates.
+            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
+                TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
+                s_certificatePassword,
+                s_x509CertificatesFolder);
         }
 
         [LoggedTestMethod]
@@ -384,51 +386,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         #endregion CustomAllocationDefinition tests
 
         [LoggedTestMethod]
-        public async Task DPS_Registration_Mqtt_SymmetricKey_IndividualEnrollment_TimeSpanTimeoutRespected()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return; // expected exception was thrown, so exit the test
-            }
-
-            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
-        }
-
-        [LoggedTestMethod]
-        public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_TimeSpanTimeoutRespected()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return; // expected exception was thrown, so exit the test
-            }
-
-            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
-        }
-
-        [LoggedTestMethod]
-        public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_TimeSpanTimeoutRespected()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, TimeSpan.Zero).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return; // expected exception was thrown, so exit the test
-            }
-
-            throw new AssertFailedException("Expected an OperationCanceledException to be thrown since the timeout was set to TimeSpan.Zero");
-        }
-
-        [LoggedTestMethod]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Http_Tpm_InvalidRegistrationId_RegisterFail()
         {
@@ -582,16 +539,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             Client.TransportType transportType,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
-            TimeSpan timeout)
-        {
-            //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(transportType, attestationType, enrollmentType, false, null, AllocationPolicy.Hashed, null, null, null, timeout, s_proxyServerAddress).ConfigureAwait(false);
-        }
-
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            Client.TransportType transportType,
-            AttestationMechanismType attestationType,
-            EnrollmentType? enrollmentType,
             bool setCustomProxy,
             string proxyServerAddress = null)
         {
@@ -606,7 +553,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null,
                     null,
                     null,
-                    TimeSpan.MaxValue,
                     proxyServerAddress)
                 .ConfigureAwait(false);
         }
@@ -631,7 +577,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null,
                     iothubs,
                     capabilities,
-                    TimeSpan.MaxValue,
                     proxyServerAddress)
                 .ConfigureAwait(false);
         }
@@ -644,14 +589,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iothubs,
+            IList<string> iothubs,
             Devices.Provisioning.Service.DeviceCapabilities deviceCapabilities,
-            TimeSpan timeout,
             string proxyServerAddress = null)
         {
-            string groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = null;
+            if (enrollmentType == EnrollmentType.Group)
+            {
+                if (attestationType == AttestationMechanismType.X509)
+                {
+                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
+                }
+                else
+                {
+                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+                }
+            }
+
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType);
-            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
+            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -673,13 +629,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
-                security,
+                auth,
                 transport);
 
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
             DeviceRegistrationResult result = null;
-            Client.IAuthenticationMethod auth = null;
+            Client.IAuthenticationMethod authMethod = null;
 
             Logger.Trace($"ProvisioningDeviceClient RegisterAsync for group {groupId} . . . ");
 
@@ -691,9 +647,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     try
                     {
-                        result = timeout != TimeSpan.MaxValue
-                            ? await provClient.RegisterAsync(timeout).ConfigureAwait(false)
-                            : await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                        result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                         break;
                     }
                     // Catching all ProvisioningTransportException as the status code is not the same for Mqtt, Amqp and Http.
@@ -709,31 +663,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // The certificate instance referenced in the DeviceAuthenticationWithX509Certificate instance is common for all tests in this class. It is disposed during class cleanup.
-                auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
+                authMethod = CreateAuthenticationMethodFromAuthProvider(auth, result.DeviceId);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                await ConfirmRegisteredDeviceWorksAsync(result, auth, transportType, false).ConfigureAwait(false);
-                await ConfirmExpectedDeviceCapabilitiesAsync(result, auth, deviceCapabilities).ConfigureAwait(false);
+                await ConfirmRegisteredDeviceWorksAsync(result, authMethod, transportType, false).ConfigureAwait(false);
+                await ConfirmExpectedDeviceCapabilitiesAsync(result, authMethod, deviceCapabilities).ConfigureAwait(false);
             }
             finally
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                if (attestationType == AttestationMechanismType.X509
+                    && enrollmentType == EnrollmentType.Group)
                 {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
-                if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
+                if (authMethod is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                    publicPrivateCertificate?.Dispose();
+                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    deviceCertificate?.Dispose();
                 }
 
-                if (auth != null && auth is IDisposable disposableAuth)
+                if (authMethod != null && authMethod is IDisposable disposableAuth)
                 {
                     disposableAuth?.Dispose();
                 }
@@ -755,7 +710,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             string closeHostName = IotHubConnectionStringBuilder.Create(TestConfiguration.IoTHub.ConnectionString).HostName;
 
-            ICollection<string> iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
+            var iotHubsToProvisionTo = new List<string>() { closeHostName, TestConfiguration.Provisioning.FarAwayIotHubHostName };
             string expectedDestinationHub = "";
             if (closeHostName.Length > TestConfiguration.Provisioning.FarAwayIotHubHostName.Length)
             {
@@ -788,7 +743,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
-            ICollection<string> iotHubsToProvisionTo,
+            IList<string> iotHubsToProvisionTo,
             string expectedDestinationHub,
             string proxyServerAddress = null)
         {
@@ -802,7 +757,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             };
 
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
-            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
+            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -821,7 +776,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
-                security,
+                auth,
                 transport);
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
@@ -838,20 +793,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
+                if (attestationType == AttestationMechanismType.X509
+                    && enrollmentType == EnrollmentType.Group)
                 {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
-                if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
+                if (auth is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                    publicPrivateCertificate?.Dispose();
+                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    deviceCertificate?.Dispose();
                 }
             }
             catch (Exception ex)
@@ -863,11 +819,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
-            using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
+            using AuthenticationProvider auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
-                security,
+                auth,
                 transport);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
@@ -892,7 +848,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
-            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
+            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -905,7 +861,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var provClient = ProvisioningDeviceClient.Create(
                 s_globalDeviceEndpoint,
                 InvalidIdScope,
-                security,
+                auth,
                 transport);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
@@ -921,18 +877,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
                 {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
-                if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
+                if (auth is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                    publicPrivateCertificate?.Dispose();
+                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    deviceCertificate?.Dispose();
                 }
             }
         }
@@ -944,7 +900,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = "")
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
-            using SecurityProvider security = await CreateSecurityProviderFromNameAsync(
+            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                         attestationType,
                         enrollmentType,
                         groupId,
@@ -957,7 +913,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             var provClient = ProvisioningDeviceClient.Create(
                 InvalidGlobalAddress,
                 TestConfiguration.Provisioning.IdScope,
-                security,
+                auth,
                 transport);
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
@@ -976,18 +932,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (attestationType == AttestationMechanismType.X509 && enrollmentType == EnrollmentType.Group)
                 {
-                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()} is currently hardcoded - do not delete.");
+                    Logger.Trace($"The test enrollment type {attestationType}-{enrollmentType} with group Id {groupId} is currently hardcoded - do not delete.");
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {security.GetRegistrationID()}.");
-                    await DeleteCreatedEnrollmentAsync(enrollmentType, security, groupId).ConfigureAwait(false);
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
-                if (security is SecurityProviderX509 x509Security && enrollmentType == EnrollmentType.Individual)
+                if (auth is AuthenticationProviderX509 x509Auth)
                 {
-                    X509Certificate2 publicPrivateCertificate = x509Security.GetAuthenticationCertificate();
-                    publicPrivateCertificate?.Dispose();
+                    X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
+                    deviceCertificate?.Dispose();
                 }
             }
         }
@@ -1061,17 +1017,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        private async Task<SecurityProvider> CreateSecurityProviderFromNameAsync(
+        private async Task<AuthenticationProvider> CreateAuthProviderFromNameAsync(
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             string groupId,
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
             CustomAllocationDefinition customAllocationDefinition,
-            ICollection<string> iothubs,
+            IList<string> iothubs,
             Devices.Provisioning.Service.DeviceCapabilities capabilities = null)
         {
-            _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromNameAsync)}({attestationType})");
+            _verboseLog.WriteLine($"{nameof(CreateAuthProviderFromNameAsync)}({attestationType})");
 
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
@@ -1091,7 +1047,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         capabilities,
                         Logger).ConfigureAwait(false);
 
-                    return new SecurityProviderTpmSimulator(tpmEnrollment.RegistrationId);
+                    return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
                 case AttestationMechanismType.X509:
                     X509Certificate2 certificate = null;
@@ -1099,14 +1055,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
-                            X509Certificate2Generator.GenerateSelfSignedCertificates(registrationId, s_selfSignedCertificatesFolder, Logger);
+                            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(registrationId, s_x509CertificatesFolder, Logger);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                            // This certificate is used for authentication with IoT hub, it is disposed at the end of the test method.
-                            X509Certificate2 publicPrivateCertificate = ProvisioningE2ETests.CreateX509CertificateWithPublicPrivateKey(registrationId);
+                            // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
+                            // It is disposed when the caller to this method is disposed, at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                            using (X509Certificate2 publicCertificate = ProvisioningE2ETests.CreateX509CertificateWithPublicKey(registrationId))
+                            using (X509Certificate2 publicCertificate = X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder))
                             {
                                 IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
                                     provisioningServiceClient,
@@ -1123,24 +1080,44 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                 x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
                             }
 
-                            return new SecurityProviderX509Certificate(publicPrivateCertificate);
+                            break;
 
                         case EnrollmentType.Group:
-                            certificate = s_groupEnrollmentCertificate;
-                            collection = TestConfiguration.Provisioning.GetGroupEnrollmentChain();
+                            // The X509 enrollment group has been hardcoded for the purpose of E2E tests and the root certificate has been verified on DPS.
+                            // Each device identity provisioning through the above enrollment group is created on-demand.
+
+                            X509Certificate2Helper.GenerateIntermediateCertificateSignedCertificateFiles(
+                                registrationId,
+                                s_intermediateCertificateSubject,
+                                s_x509CertificatesFolder,
+                                Logger);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                            // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
+                            // It is disposed when the caller to this method is disposed, at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                            collection = new X509Certificate2Collection
+                            {
+                                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
+                                X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder)
+                            };
                             break;
 
                         default:
                             throw new NotSupportedException($"Unknown X509 type: '{enrollmentType}'");
                     }
 
-                    return new SecurityProviderX509Certificate(certificate, collection);
+                    return new AuthenticationProviderX509Certificate(certificate, collection);
 
                 case AttestationMechanismType.SymmetricKey:
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Group:
-                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(
+                            EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroupAsync(
                                     provisioningServiceClient,
                                     AttestationMechanismType.SymmetricKey,
                                     groupId,
@@ -1160,7 +1137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             string primaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(primaryKeyEnrollmentGroup), registrationIdSymmetricKey);
                             string secondaryKeyIndividual = ComputeDerivedSymmetricKey(Convert.FromBase64String(secondaryKeyEnrollmentGroup), registrationIdSymmetricKey);
 
-                            return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
+                            return new AuthenticationProviderSymmetricKey(registrationIdSymmetricKey, primaryKeyIndividual, secondaryKeyIndividual);
 
                         case EnrollmentType.Individual:
                             IndividualEnrollment symmetricKeyEnrollment = await CreateIndividualEnrollmentAsync(
@@ -1181,7 +1158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             registrationIdSymmetricKey = symmetricKeyEnrollment.RegistrationId;
                             string primaryKey = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKey = symmetricKeyAttestation.SecondaryKey;
-                            return new SecurityProviderSymmetricKey(registrationIdSymmetricKey, primaryKey, secondaryKey);
+                            return new AuthenticationProviderSymmetricKey(registrationIdSymmetricKey, primaryKey, secondaryKey);
 
                         default:
                             throw new NotSupportedException("Unrecognized enrollment type");
@@ -1190,32 +1167,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     throw new NotSupportedException("Unrecognized attestation type");
             }
 
-            throw new NotSupportedException($"Unknown security type: '{attestationType}'.");
+            throw new NotSupportedException($"Unknown attestation type: '{attestationType}'.");
         }
 
-        private Client.IAuthenticationMethod CreateAuthenticationMethodFromSecurityProvider(
-            SecurityProvider provisioningSecurity,
+        private Client.IAuthenticationMethod CreateAuthenticationMethodFromAuthProvider(
+            AuthenticationProvider provisioningAuth,
             string deviceId)
         {
-            _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromSecurityProvider)}({deviceId})");
+            _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromAuthProvider)}({deviceId})");
 
             Client.IAuthenticationMethod auth;
-            if (provisioningSecurity is SecurityProviderTpm tpmSecurity)
+            if (provisioningAuth is AuthenticationProviderTpm tpmAuth)
             {
-                auth = new DeviceAuthenticationWithTpm(deviceId, tpmSecurity);
+                auth = new DeviceAuthenticationWithTpm(deviceId, tpmAuth);
             }
-            else if (provisioningSecurity is SecurityProviderX509 x509Security)
+            else if (provisioningAuth is AuthenticationProviderX509 x509Auth)
             {
-                X509Certificate2 cert = x509Security.GetAuthenticationCertificate();
+                X509Certificate2 cert = x509Auth.GetAuthenticationCertificate();
                 auth = new DeviceAuthenticationWithX509Certificate(deviceId, cert);
             }
-            else if (provisioningSecurity is SecurityProviderSymmetricKey symmetricKeySecurity)
+            else if (provisioningAuth is AuthenticationProviderSymmetricKey symmetricKeyAuth)
             {
-                auth = new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, symmetricKeySecurity.GetPrimaryKey());
+                auth = new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, symmetricKeyAuth.GetPrimaryKey());
             }
             else
             {
-                throw new NotSupportedException($"Unknown provisioningSecurity type.");
+                throw new NotSupportedException($"Unknown provisioning auth type.");
             }
 
             return auth;
@@ -1238,36 +1215,62 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 if (PayloadJsonData != null)
                 {
-                    Assert.IsNotNull(result.JsonPayload);
-                    Assert.AreEqual(PayloadJsonData, result.JsonPayload);
+                    Assert.IsNotNull(result.Payload);
+                    Assert.AreEqual(PayloadJsonData, result.Payload.ToString());
                 }
                 else
                 {
 #pragma warning disable CS0162 // Unreachable code detected
-                    Assert.IsNull(result.JsonPayload);
+                    Assert.IsNull(result.Payload);
 #pragma warning restore CS0162 // Unreachable code detected
                 }
             }
             else
             {
-                Assert.IsNull(result.JsonPayload);
+                Assert.IsNull(result.Payload);
             }
         }
 
         public static async Task DeleteCreatedEnrollmentAsync(
             EnrollmentType? enrollmentType,
-            SecurityProvider security,
-            string groupId = "")
+            AuthenticationProvider authProvider,
+            string groupId,
+            MsTestLogger logger)
         {
             using ProvisioningServiceClient dpsClient = CreateProvisioningService();
 
-            if (enrollmentType == EnrollmentType.Individual)
+            try
             {
-                await dpsClient.DeleteIndividualEnrollmentAsync(security.GetRegistrationID()).ConfigureAwait(false);
+                if (enrollmentType == EnrollmentType.Individual)
+                {
+                    await RetryOperationHelper
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationID()).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            logger)
+                        .ConfigureAwait(false);
+                }
+                else if (enrollmentType == EnrollmentType.Group)
+                {
+                    await RetryOperationHelper
+                        .RetryOperationsAsync(
+                            async () =>
+                            {
+                                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                            },
+                            s_provisioningServiceRetryPolicy,
+                            s_retryableExceptions,
+                            logger)
+                        .ConfigureAwait(false);
+                }
             }
-            else if (enrollmentType == EnrollmentType.Group)
+            catch (Exception ex)
             {
-                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                Console.WriteLine($"Cleanup of enrollment failed due to {ex}.");
             }
         }
 
@@ -1303,25 +1306,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
         }
 
-        private static X509Certificate2 CreateX509CertificateWithPublicKey(string registrationId)
-        {
-            return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.crt");
-        }
-
-        private static X509Certificate2 CreateX509CertificateWithPublicPrivateKey(string registrationId)
-        {
-            return new X509Certificate2($"{s_selfSignedCertificatesFolder}\\{registrationId}.pfx", TestConfiguration.Provisioning.CertificatePassword);
-        }
-
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-            s_groupEnrollmentCertificate?.Dispose();
-
             // Delete all the test client certificates created
             try
             {
-                s_dpsClientCertificateFolder.Delete(true);
+                s_x509CertificatesFolder.Delete(true);
             }
             catch (Exception)
             {

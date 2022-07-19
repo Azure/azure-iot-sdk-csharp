@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Extensions added to simplify the usage of <see cref="Stream"/> APIs based on the .NET implementation used.
@@ -14,11 +14,7 @@ namespace Microsoft.Azure.Devices.Shared
     {
         internal static async Task WriteToStreamAsync(this Stream stream, byte[] requestBytes, CancellationToken cancellationToken)
         {
-#if NET472 || NETSTANDARD2_0
             await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);
-#else
-            await stream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
-#endif
         }
     }
 }

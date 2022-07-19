@@ -10,7 +10,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices
 {
     [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Conflicts with DotNetty.Common.Internal.Logging")]
     internal sealed partial class Logging : EventSource
@@ -305,24 +305,6 @@ namespace Microsoft.Azure.Devices.Shared
             Debug.Fail(Format(formattableString), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
 
-        /// <summary>Logs a fatal error and raises an assert.</summary>
-        /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
-        /// <param name="message">The message to be logged.</param>
-        /// <param name="memberName">The calling member.</param>
-        [NonEvent]
-        public static void Fail(object thisOrContextObject, object message, [CallerMemberName] string memberName = null)
-        {
-            // Don't call DebugValidateArg on args, as we expect Fail to be used in assert/failure situations
-            // that should never happen in production, and thus we don't care about extra costs.
-
-            if (IsEnabled)
-            {
-                Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(message).ToString());
-            }
-
-            Debug.Fail(Format(message).ToString(), $"{IdOf(thisOrContextObject)}.{memberName}");
-        }
-
         [Event(CriticalFailureEventId, Level = EventLevel.Critical, Keywords = Keywords.Debug)]
         private void CriticalFailure(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(CriticalFailureEventId, thisOrContextObject, memberName ?? MissingMember, message);
@@ -610,124 +592,6 @@ namespace Microsoft.Azure.Devices.Shared
 
                     descrs[3].DataPointer = (IntPtr)arg3Ptr;
                     descrs[3].Size = bufferLength;
-
-                    WriteEventCore(eventId, numEventDatas, descrs);
-                }
-            }
-        }
-
-        [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, int arg2, int arg3, int arg4)
-        {
-            if (IsEnabled())
-            {
-                arg1 ??= "";
-
-                fixed (char* arg1Ptr = arg1)
-                {
-                    const int numEventDatas = 4;
-                    EventData* descrs = stackalloc EventData[numEventDatas];
-
-                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
-                    descrs[0].Size = (arg1.Length + 1) * sizeof(char);
-
-                    descrs[1].DataPointer = (IntPtr)(&arg2);
-                    descrs[1].Size = sizeof(int);
-
-                    descrs[2].DataPointer = (IntPtr)(&arg3);
-                    descrs[2].Size = sizeof(int);
-
-                    descrs[3].DataPointer = (IntPtr)(&arg4);
-                    descrs[3].Size = sizeof(int);
-
-                    WriteEventCore(eventId, numEventDatas, descrs);
-                }
-            }
-        }
-
-        [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, int arg2, string arg3)
-        {
-            if (IsEnabled())
-            {
-                arg1 ??= "";
-                arg3 ??= "";
-
-                fixed (char* arg1Ptr = arg1)
-                fixed (char* arg3Ptr = arg3)
-                {
-                    const int numEventDatas = 3;
-                    EventData* descrs = stackalloc EventData[numEventDatas];
-
-                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
-                    descrs[0].Size = (arg1.Length + 1) * sizeof(char);
-
-                    descrs[1].DataPointer = (IntPtr)(&arg2);
-                    descrs[1].Size = sizeof(int);
-
-                    descrs[2].DataPointer = (IntPtr)arg3Ptr;
-                    descrs[2].Size = (arg3.Length + 1) * sizeof(char);
-
-                    WriteEventCore(eventId, numEventDatas, descrs);
-                }
-            }
-        }
-
-        [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, string arg2, int arg3)
-        {
-            if (IsEnabled())
-            {
-                arg1 ??= "";
-                arg2 ??= "";
-
-                fixed (char* arg1Ptr = arg1)
-                fixed (char* arg2Ptr = arg2)
-                {
-                    const int numEventDatas = 3;
-                    EventData* descrs = stackalloc EventData[numEventDatas];
-
-                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
-                    descrs[0].Size = (arg1.Length + 1) * sizeof(char);
-
-                    descrs[1].DataPointer = (IntPtr)arg2Ptr;
-                    descrs[1].Size = (arg2.Length + 1) * sizeof(char);
-
-                    descrs[2].DataPointer = (IntPtr)(&arg3);
-                    descrs[2].Size = sizeof(int);
-
-                    WriteEventCore(eventId, numEventDatas, descrs);
-                }
-            }
-        }
-
-        [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, string arg2, string arg3, int arg4)
-        {
-            if (IsEnabled())
-            {
-                arg1 ??= "";
-                arg2 ??= "";
-                arg3 ??= "";
-
-                fixed (char* arg1Ptr = arg1)
-                fixed (char* arg2Ptr = arg2)
-                fixed (char* arg3Ptr = arg3)
-                {
-                    const int numEventDatas = 4;
-                    EventData* descrs = stackalloc EventData[numEventDatas];
-
-                    descrs[0].DataPointer = (IntPtr)arg1Ptr;
-                    descrs[0].Size = (arg1.Length + 1) * sizeof(char);
-
-                    descrs[1].DataPointer = (IntPtr)arg2Ptr;
-                    descrs[1].Size = (arg2.Length + 1) * sizeof(char);
-
-                    descrs[2].DataPointer = (IntPtr)arg3Ptr;
-                    descrs[2].Size = (arg3.Length + 1) * sizeof(char);
-
-                    descrs[3].DataPointer = (IntPtr)(&arg4);
-                    descrs[3].Size = sizeof(int);
 
                     WriteEventCore(eventId, numEventDatas, descrs);
                 }

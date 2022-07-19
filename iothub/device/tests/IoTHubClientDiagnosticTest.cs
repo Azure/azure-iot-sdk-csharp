@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Web;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
+    using Microsoft.Azure.Devices.Client.Utilities;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

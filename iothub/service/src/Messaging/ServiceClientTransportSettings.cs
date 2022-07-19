@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Net;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {
@@ -64,7 +63,7 @@ namespace Microsoft.Azure.Devices
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// Methods such as <see cref="ServiceClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property.
+        /// Methods such as <see cref="DevicesClient.GetServiceStatisticsAsync(System.Threading.CancellationToken)"/> are executed over HTTP and not AMQP. This setting will ensure those methods are executed over the specified proxy. This setting is to be used in conjunction with the <see cref="AmqpProxy"/> property.
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
@@ -96,12 +95,12 @@ namespace Microsoft.Azure.Devices
         public IWebProxy HttpProxy { get; set; }
 
         /// <summary>
-        /// How long, in milliseconds, a given cached TCP connection created by this client's HTTP layer will live before being closed. 
+        /// How long, in milliseconds, a given cached TCP connection created by this client's HTTP layer will live before being closed.
         /// If this value is set to any negative value, the connection lease will be infinite. If this value is set to 0, then the TCP connection will close after
         /// each HTTP request and a new TCP connection will be opened upon the next request.
         /// </summary>
         /// <remarks>
-        /// By closing cached TCP connections and opening a new one upon the next request, the underlying HTTP client has a chance to do a DNS lookup 
+        /// By closing cached TCP connections and opening a new one upon the next request, the underlying HTTP client has a chance to do a DNS lookup
         /// to validate that it will send the requests to the correct IP address. While it is atypical for a given IoT hub to change its IP address, it does
         /// happen when a given IoT hub fails over into a different region. Because of that, users who expect to failover their IoT hub at any point
         /// are advised to set this value to a value of 0 or greater. Larger values will make better use of caching to save network resources over time,

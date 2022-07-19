@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
@@ -250,11 +249,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
-        }
-
-        internal IDeviceIdentity GetDeviceIdentityOfAuthenticationProvider()
-        {
-            return _deviceIdentity;
         }
 
         internal bool IsEmpty()

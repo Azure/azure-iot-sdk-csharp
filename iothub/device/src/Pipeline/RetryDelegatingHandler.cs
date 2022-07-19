@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -156,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -168,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            return await base.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                            return await base.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
