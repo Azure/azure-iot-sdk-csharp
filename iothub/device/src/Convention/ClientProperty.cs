@@ -25,10 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string PropertyName { get; internal set; }
 
-        /// <summary>
-        /// The value of the property reported.
-        /// </summary>
-        public object Value { get; internal set; }
+        internal object Value { get; set; }
 
         internal PayloadConvention Convention { get; set; }
 

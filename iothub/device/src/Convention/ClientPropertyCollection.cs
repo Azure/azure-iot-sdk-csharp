@@ -228,39 +228,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Determines whether the specified root-level property is present in the client reported property collection.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
-        public bool Contains(string propertyName)
-        {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            return GetMatches(null, propertyName).Any();
-        }
-
-        /// <summary>
-        /// Determines whether the specified component-level property is present in the client reported property collection.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <param name="componentName">The component which holds the required property.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> is <c>null</c>.</exception>
-        public bool Contains(string componentName, string propertyName)
-        {
-            if (componentName == null)
-            {
-                throw new ArgumentNullException(nameof(componentName));
-            }
-
-            return GetMatches(componentName, propertyName).Any();
-        }
-
-        /// <summary>
         /// Gets the value of a root-level property.
         /// </summary>
         /// <remarks>
@@ -282,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            return Contains(propertyName)
+            return GetMatches(null, propertyName).Any()
                 && TryGetPropertyValue(null, propertyName, out propertyValue);
         }
 
@@ -311,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            return Contains(componentName, propertyName)
+            return GetMatches(componentName, propertyName).Any()
                 && TryGetPropertyValue(componentName, propertyName, out propertyValue);
         }
 
