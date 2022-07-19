@@ -652,50 +652,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_ContainsWithNullPropertyNameThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddRootProperty("abc", 123);
-
-            // act
-            Action testAction = () => testPropertyCollection.Contains(null);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_ContainsWithNullComponentNameThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddComponentProperty("component", "abc", 123);
-
-            // act
-            Action testAction = () => testPropertyCollection.Contains(null, "abc");
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_ContainsWithComponentAndNullPropertyNameThrows()
-        {
-            // arrange
-            var testPropertyCollection = new ClientPropertyCollection();
-            
-            // This operation will result in service removing the component "testComponent" from the client properties.
-            testPropertyCollection.AddComponentProperty("component", null, 123);
-
-            // act
-            bool isPresent = testPropertyCollection.Contains("component", null);
-
-            // assert
-            isPresent.Should().BeTrue();
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_TryGetValueWithNullPropertyNameReturnsFalse()
         {
             // arrange
@@ -707,6 +663,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             isPresent.Should().BeFalse();
+            value.Should().BeNull();
         }
 
         [TestMethod]
@@ -721,6 +678,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             isPresent.Should().BeFalse();
+            value.Should().BeNull();
         }
 
         [TestMethod]
@@ -728,13 +686,29 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             var testPropertyCollection = new ClientPropertyCollection();
-            testPropertyCollection.AddComponentProperty("component", "abc", 123);
+            testPropertyCollection.AddComponentProperty("component1", "abc", 123);
 
             // act
-            bool isPresent = testPropertyCollection.TryGetValue("component", null, out object value);
+            bool isPresent = testPropertyCollection.TryGetValue("component1", null, out object value);
 
             // assert
             isPresent.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void ClientPropertyCollection_TryGetValueWithComponentAndNullPropertyReturnsTrue()
+        {
+            // arrange
+            var testPropertyCollection = new ClientPropertyCollection();
+            testPropertyCollection.AddComponentProperty("component1", "abc", 123);
+            testPropertyCollection.AddComponentProperty("component2", null, null); // This is an operation to remove the component at service-end
+
+            // act
+            bool isPresent = testPropertyCollection.TryGetValue("component2", null, out object value);
+
+            // assert
+            isPresent.Should().BeTrue();
+            value.Should().BeNull();
         }
     }
 }
