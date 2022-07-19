@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -15,7 +14,6 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Shared;
 using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Client;
@@ -39,33 +37,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // Topic names for receiving cloud-to-device messages.
 
-        private const string DeviceBoundMessagesTopicPrefix = "devices/{0}/messages/devicebound/";
-        private const string DeviceBoundMessagesTopic = DeviceBoundMessagesTopicPrefix + "#";
+        private const string DeviceBoundMessagesTopicFormat = "devices/{0}/messages/devicebound/";
         private string deviceBoundMessagesTopic;
-        private string deviceBoundMessagesTopicPrefix;
 
         // Topic names for enabling input events on edge Modules.
 
-        private const string ReceiveEdgeModuleInputEventsTopicPrefix = "devices/{0}/modules/{1}/inputs/";
-        private const string ReceiveEdgeModuleInputEventsTopic = ReceiveEdgeModuleInputEventsTopicPrefix + "#";
-        private string receiveEdgeModuleInputEventsTopicPrefix;
-        private string receiveEdgeModuleInputEventsTopic;
+        private const string EdgeModuleInputEventsTopicFormat = "devices/{0}/modules/{1}/inputs/";
+        private string edgeModuleInputEventsTopic;
 
         // Topic names for enabling events on non-edge Modules.
 
-        private const string ReceiveModuleEventMessageTopicPrefix = "devices/{0}/modules/{1}/";
-        private const string ReceiveModuleEventMessageTopic = ReceiveModuleEventMessageTopicPrefix + "#";
-        private string receiveModuleEventMessageTopic;
-        private string receiveModuleEventMessageTopicPrefix;
+        private const string ModuleEventMessageTopicFormat = "devices/{0}/modules/{1}/";
+        private string moduleEventMessageTopic;
 
         // Topic names for retrieving a device's twin properties.
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request Id.
         // The service then sends a response message containing the device twin data on topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request Id as the request.
 
-        private const string TwinResponseTopicPrefix = "$iothub/twin/res/";
-        private const string TwinResponseTopic = TwinResponseTopicPrefix + "#";
-        private const string TwinGetTopic = "$iothub/twin/GET/?$rid={0}";
+        private const string TwinResponseTopic = "$iothub/twin/res/";
+        private const string TwinGetTopicFormat = "$iothub/twin/GET/?$rid={0}";
         private const string TwinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled);
 
@@ -73,12 +64,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // The client then sends a message containing the twin update to "$iothub/twin/PATCH/properties/reported/?$rid={request id}", with a populated value for request Id.
         // The service then sends a response message containing the new ETag value for the reported properties collection on the topic "$iothub/twin/res/{status}/?$rid={request id}", using the same request Id as the request.
-        private const string TwinReportedPropertiesPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
+        private const string TwinReportedPropertiesPatchTopicFormat = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
 
         // Topic names for receiving twin desired property update notifications.
 
-        private const string TwinDesiredPropertiesPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
-        private const string TwinDesiredPropertiesPatchTopic = TwinDesiredPropertiesPatchTopicPrefix + "#";
+        private const string TwinDesiredPropertiesPatchTopic = "$iothub/twin/PATCH/properties/desired/";
 
         // Topic name for responding to direct methods.
         // The client first subscribes to "$iothub/methods/POST/#".
@@ -98,10 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<MethodRequestInternal, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
-        private readonly Func<Message, Task> _deviceMessageReceivedListener; //TODO why do we have this and a manual Receive() call for handling messages?
-
-        // By default, BlockingCollection is FIFO
-        private readonly BlockingCollection<Message> receivedCloudToDeviceMessages = new BlockingCollection<Message>();
+        private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
         private readonly Dictionary<string, MqttApplicationMessageReceivedEventArgs> messagesToAcknowledge = new Dictionary<string, MqttApplicationMessageReceivedEventArgs>();
 
@@ -115,7 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly List<string> inProgressUpdateReportedPropertiesRequests = new List<string>();
         private readonly List<string> inProgressGetTwinRequests = new List<string>();
 
-        private bool isSubscribedToCloudToDeviceMessages;
         private bool isSubscribedToDesiredPropertyPatches;
         private bool isSubscribedToTwinResponses;
 
@@ -223,15 +209,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             deviceToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, DeviceToCloudMessagesTopicFormat, deviceId);
             moduleToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, ModuleToCloudMessagesTopicFormat, deviceId, moduleId);
-
-            deviceBoundMessagesTopicPrefix = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicPrefix, deviceId);
-            deviceBoundMessagesTopic = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopic, deviceId);
-
-            receiveModuleEventMessageTopicPrefix = string.Format(CultureInfo.InvariantCulture, ReceiveModuleEventMessageTopicPrefix, deviceId, moduleId);
-            receiveModuleEventMessageTopic = string.Format(CultureInfo.InvariantCulture, ReceiveModuleEventMessageTopic, deviceId, moduleId);
-
-            receiveEdgeModuleInputEventsTopic = string.Format(CultureInfo.InvariantCulture, ReceiveEdgeModuleInputEventsTopic, deviceId, moduleId);
-            receiveEdgeModuleInputEventsTopicPrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEdgeModuleInputEventsTopicPrefix, deviceId, moduleId);
+            deviceBoundMessagesTopic = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicFormat, deviceId);
+            moduleEventMessageTopic = string.Format(CultureInfo.InvariantCulture, ModuleEventMessageTopicFormat, deviceId, moduleId);
+            edgeModuleInputEventsTopic = string.Format(CultureInfo.InvariantCulture, EdgeModuleInputEventsTopicFormat, deviceId, moduleId);
 
             var mqttFactory = new MqttFactory(new MqttLogger());
 
@@ -323,8 +303,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
             mqttClient.DisconnectedAsync += HandleDisconnection;
-
-            isSubscribedToCloudToDeviceMessages = false;
         }
 
         private bool certificateValidationHandler(MqttClientCertificateValidationEventArgs args)
@@ -450,25 +428,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await Task.WhenAll(sendTasks);
         }
 
-        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
-        {
-            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-            return await ReceiveAsync(cts.Token);
-        }
-
-        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (!isSubscribedToCloudToDeviceMessages)
-            {
-                await SubscribeAsync(deviceBoundMessagesTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
-                isSubscribedToCloudToDeviceMessages = true;
-            }
-
-            return receivedCloudToDeviceMessages.Take(cancellationToken);
-        }
-
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             await SubscribeAsync(DirectMethodsSubscriptionTopicFormat, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
@@ -501,7 +460,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             await SubscribeAsync(deviceBoundMessagesTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
-            isSubscribedToCloudToDeviceMessages = true;
         }
 
         public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
@@ -519,11 +477,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (isAnEdgeModule)
             {
-                await SubscribeAsync(receiveEdgeModuleInputEventsTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+                await SubscribeAsync(edgeModuleInputEventsTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
             }
             else
             {
-                await SubscribeAsync(receiveModuleEventMessageTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+                await SubscribeAsync(moduleEventMessageTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
             }
 
             isSubscribedToDesiredPropertyPatches = true;
@@ -531,7 +489,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(receiveModuleEventMessageTopic, cancellationToken);
+            await UnsubscribeAsync(moduleEventMessageTopic, cancellationToken);
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
@@ -564,7 +522,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = Guid.NewGuid().ToString();
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(TwinGetTopic.FormatInvariant(requestId))
+                .WithTopic(TwinGetTopicFormat.FormatInvariant(requestId))
                 .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
                 .Build();
 
@@ -612,7 +570,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             string requestId = Guid.NewGuid().ToString();
-            string topic = string.Format(TwinReportedPropertiesPatchTopic, requestId);
+            string topic = string.Format(TwinReportedPropertiesPatchTopicFormat, requestId);
 
             string body = JsonConvert.SerializeObject(reportedProperties);
 
@@ -696,7 +654,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             base.Dispose(disposing);
             mqttClient?.Dispose();
-            receivedCloudToDeviceMessages?.Dispose();
             receivedTwins?.Clear();
             _getTwinSemaphore?.Dispose();
             _reportedPropertyUpdateResponsesSemaphore?.Dispose();
@@ -719,7 +676,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task SubscribeAsync(string topic, MqttClientSubscribeResultCode expectedQoS, CancellationToken cancellationToken)
         {
             MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter(topic)
+                .WithTopicFilter(topic + "#") // for example, "devices/myDevice/messages/events/#". "#" postfix means to listen for all events on this channel
                 .Build();
 
             MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken);
@@ -804,15 +761,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             receivedEventArgs.AutoAcknowledge = false;
             string topic = receivedEventArgs.ApplicationMessage.Topic;
-            if (topic.StartsWith(deviceBoundMessagesTopicPrefix))
+            if (topic.StartsWith(deviceBoundMessagesTopic))
             {
                 await HandleReceivedCloudToDeviceMessage(receivedEventArgs);
             }
-            else if (topic.StartsWith(TwinDesiredPropertiesPatchTopicPrefix))
+            else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic))
             {
                 HandleReceivedDesiredPropertiesUpdateRequest(receivedEventArgs);
             }
-            else if (topic.StartsWith(TwinResponseTopicPrefix))
+            else if (topic.StartsWith(TwinResponseTopic))
             {
                 HandleTwinResponse(receivedEventArgs);
             }
@@ -820,8 +777,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
-            else if (topic.StartsWith(receiveModuleEventMessageTopicPrefix)
-                || topic.StartsWith(receiveEdgeModuleInputEventsTopicPrefix))
+            else if (topic.StartsWith(moduleEventMessageTopic)
+                || topic.StartsWith(edgeModuleInputEventsTopic))
             {
                 // This works regardless of if the event is on a particular Edge module input or if
                 // the module is not an Edge module.
@@ -829,8 +786,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                //TODO log warn
-                return;
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Received an MQTT message on unexpected topic {topic}. Ignoring message.");
             }
         }
 
@@ -845,8 +802,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // save the received mqtt message instance so that it can be completed later
             messagesToAcknowledge[receivedCloudToDeviceMessage.LockToken] = receivedEventArgs;
 
-            //TODO not sure what the preference here is, but I'd rather expose it through the callback than through
-            // receiveAsync() calls
             if (_deviceMessageReceivedListener != null)
             {
                 await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
@@ -854,7 +809,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                receivedCloudToDeviceMessages.Add(receivedCloudToDeviceMessage);
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Received a cloud to device message while user's callback for handling them was null. Disposing message.");
+
+                receivedCloudToDeviceMessage.Dispose();
             }
         }
 

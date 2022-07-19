@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.Tracing;
-using Microsoft.Azure.Devices.Shared;
 using MQTTnet.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
