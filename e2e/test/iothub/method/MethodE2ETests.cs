@@ -555,7 +555,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendMethodAndRespondAsync(
+            Client.TransportType transport,
+            Func<ModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
+            TimeSpan responseTimeout = default,
+            ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
             var options = new ClientOptions { TransportType = transport };
@@ -565,7 +569,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             await Task
                 .WhenAll(
-                    ServiceSendMethodAndVerifyResponseAsync(testModule.DeviceId, testModule.Id, MethodName, DeviceResponseJson, ServiceRequestJson, Logger, responseTimeout, serviceClientTransportSettings),
+                    ServiceSendMethodAndVerifyResponseAsync(
+                        testModule.DeviceId,
+                        testModule.Id,
+                        MethodName,
+                        DeviceResponseJson,
+                        ServiceRequestJson,
+                        Logger,
+                        responseTimeout,
+                        serviceClientTransportSettings),
                     methodReceivedTask)
                 .ConfigureAwait(false);
 
