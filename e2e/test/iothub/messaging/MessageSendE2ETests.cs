@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt });
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -344,17 +344,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+            var options = new ClientOptions { TransportType = transport };
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAsync(deviceClient, testDevice.Id, Logger, messageSize).ConfigureAwait(false);
+            await SendSingleMessageAsync(deviceClient, Logger, messageSize).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendBatchMessages(TestDeviceType type, Client.TransportType transport)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
+            var options = new ClientOptions { TransportType = transport };
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await SendBatchMessagesAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
@@ -367,7 +369,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAsync(deviceClient, testDevice.Id, Logger, messageSize).ConfigureAwait(false);
+            await SendSingleMessageAsync(deviceClient, Logger, messageSize).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -381,7 +383,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, string deviceId, MsTestLogger logger, int messageSize = 0)
+        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
         {
             Client.Message testMessage;
 

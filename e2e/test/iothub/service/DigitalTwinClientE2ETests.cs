@@ -39,9 +39,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // Create a device client instance over Mqtt, initializing it with the "Thermostat" model which has only a root component.
                 var options = new ClientOptions
                 {
+                    TransportType = Client.TransportType.Mqtt,
                     ModelId = ThermostatModelId,
                 };
-                using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt, options);
+                using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
                 // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -113,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 {
                     ModelId = TemperatureControllerModelId,
                 };
-                using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt, options);
+                using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
                 // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
                 await deviceClient.OpenAsync().ConfigureAwait(false);

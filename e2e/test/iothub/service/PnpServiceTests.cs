@@ -35,9 +35,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new ClientOptions
             {
+                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = TestModelId,
             };
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Mqtt_Tcp_Only, options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
@@ -64,12 +65,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new ClientOptions
             {
+                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = TestModelId,
             };
             string hostName = HostNameHelper.GetHostName(TestConfiguration.IoTHub.ConnectionString);
             X509Certificate2 authCertificate = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
             using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, authCertificate);
-            using var deviceClient = DeviceClient.Create(hostName, auth, Client.TransportType.Mqtt_Tcp_Only, options);
+            using var deviceClient = DeviceClient.Create(hostName, auth, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
@@ -102,9 +104,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Send model ID with MQTT connect packet to make the module plug and play.
             var options = new ClientOptions
             {
+                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = TestModelId,
             };
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, Client.TransportType.Mqtt_Tcp_Only, options);
+            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Act

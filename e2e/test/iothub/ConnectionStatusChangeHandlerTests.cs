@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            Client.TransportType protocol, Func<IotHubServiceClient, string, Task> registryManagerOperation)
+            Client.TransportType transportType, Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
@@ -117,7 +117,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStatusChangeReason? statusChangeReason = null;
             int deviceDisabledReceivedCount = 0;
 
-            using (var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, protocol))
+            var options = new ClientOptions { TransportType = transportType };
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, options))
             {
                 ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
                 {

@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
-            var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
+            var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, new ClientOptions { TransportType = transport });
             using var message1 = new Client.Message();
             await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
             await deviceClient.CloseAsync();
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Perform the same steps again, reusing the previously created authentication method instance.
             // Since the default behavior is to dispose AuthenticationWithTokenRefresh authentication method on DeviceClient disposal,
             // this should now throw an ObjectDisposedException.
-            var deviceClient2 = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
+            var deviceClient2 = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, new ClientOptions { TransportType = transport });
             using var message2 = new Client.Message();
 
             Func<Task> act = async () => await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
 
             // Create an instance of the device client, send a test message and then close and dispose it.
-            var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
+            var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, new ClientOptions { TransportType = transport });
             using var message1 = new Client.Message();
             await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
             await deviceClient.CloseAsync();
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Perform the same steps again, reusing the previously created authentication method instance to ensure
             // that the SDK did not dispose the user supplied authentication method instance.
-            var deviceClient2 = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, transport);
+            var deviceClient2 = DeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, new ClientOptions { TransportType = transport });
             using var message2 = new Client.Message();
             await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
             await deviceClient2.CloseAsync();

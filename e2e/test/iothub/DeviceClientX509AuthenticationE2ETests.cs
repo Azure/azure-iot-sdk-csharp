@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
-                DeviceTransportType.Mqtt_Tcp_Only);
+                new ClientOptions { TransportType = DeviceTransportType.Mqtt_Tcp_Only });
 
             // act
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
-                DeviceTransportType.Amqp_Tcp_Only);
+                new ClientOptions { TransportType = DeviceTransportType.Amqp_Tcp_Only });
 
             // act
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(new[] { transportSetting });
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
+            await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+            using var deviceClient = DeviceClient.Create(_hostName, auth, new ClientOptions { TransportType = transportType });
 
             try
             {
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
+            using var deviceClient = DeviceClient.Create(_hostName, auth, new ClientOptions { TransportType = transportType });
 
             for (int i = 0; i < 2; i++)
             {

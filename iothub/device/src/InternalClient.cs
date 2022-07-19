@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
                 ProductInfo = _productInfo,
-                ClientOptions = options
+                ClientOptions = options,
             };
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
