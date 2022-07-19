@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
         /// (or using the component-level overloads on <see cref="WritableClientPropertyCollection"/>).
         /// </para>
         /// <para>
-        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
+        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
         /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
         /// and report it to service via <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.

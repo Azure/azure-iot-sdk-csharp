@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <remarks>
     /// A writable property update request should be acknowledged by the device or module by sending a reported property.
-    /// This type contains a convenience method <see cref="AcknowledgeWith(int, string)"/> to format the reported property as per IoT Plug and Play convention.
+    /// This type contains a convenience method <see cref="CreateAcknowledgement(int, string)"/> to format the reported property as per IoT Plug and Play convention.
     /// For more details see <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/>.
     /// </remarks>
     public class WritableClientProperty
@@ -39,17 +39,16 @@ namespace Microsoft.Azure.Devices.Client
         private PayloadConvention Convention { get; set; }
 
         /// <summary>
-        /// Creates a writable property update acknowledgement that contains the requested property name, property value, component name (if applicable) and version.
+        /// Creates a writable property update acknowledgement that contains the requested property name, the service requested property value,
+        /// component name (if applicable) and version.
         /// </summary>
         /// <remarks>
         /// Create a <see cref="ClientPropertyCollection"/> and use <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// to add this payload to your client properties to be reported back to the service using 
+        /// to add this acknowledgement to your client properties to be reported back to the service using 
         /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
         /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// <para>
-        /// To construct a writable property update payload with custom value and version number, use
-        /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(object, int, long, string)"/> from
-        /// <see cref="DeviceClient.PayloadConvention"/> to create a <see cref="WritableClientPropertyAcknowledgement"/>.
+        /// To construct a writable property update acknowledgement with a custom property value, see <see cref="CreateAcknowledgement(object, int, string)"/>.
         /// </para>
         /// <para>
         /// See <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/> for more details.
@@ -58,13 +57,43 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="statusCode">An acknowledgment code that uses an HTTP status code.</param>
         /// <param name="description">An optional acknowledgment description.</param>
         /// <returns>A writable property update acknowledegement to be reported back to the service.</returns>
-        public WritableClientPropertyAcknowledgement AcknowledgeWith(int statusCode, string description = default)
+        public WritableClientPropertyAcknowledgement CreateAcknowledgement(int statusCode, string description = default)
         {
             return new WritableClientPropertyAcknowledgement
             {
                 ComponentName = ComponentName,
                 PropertyName = PropertyName,
                 Payload = Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(Value, statusCode, Version, description),
+            };
+        }
+
+        /// <summary>
+        /// Creates a writable property update acknowledgement that contains the requested property name, a custom property value,
+        /// component name (if applicable) and version.
+        /// </summary>
+        /// <remarks>
+        /// Create a <see cref="ClientPropertyCollection"/> and use <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+        /// to add this acknowledgement to your client properties to be reported back to the service using 
+        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// <para>
+        /// To construct a writable property update acknowledgement with the service requested property update value, see <see cref="CreateAcknowledgement(int, string)"/>.
+        /// </para>
+        /// <para>
+        /// See <see href="https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties"/> for more details.
+        /// </para>
+        /// </remarks>
+        /// <param name="customValue">A custom value for the property update request received.</param>
+        /// <param name="statusCode">An acknowledgment code that uses an HTTP status code.</param>
+        /// <param name="description">An optional acknowledgment description.</param>
+        /// <returns>A writable property update acknowledegement to be reported back to the service.</returns>
+        public WritableClientPropertyAcknowledgement CreateAcknowledgement(object customValue, int statusCode, string description = default)
+        {
+            return new WritableClientPropertyAcknowledgement
+            {
+                ComponentName = ComponentName,
+                PropertyName = PropertyName,
+                Payload = Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(customValue, statusCode, Version, description),
             };
         }
 

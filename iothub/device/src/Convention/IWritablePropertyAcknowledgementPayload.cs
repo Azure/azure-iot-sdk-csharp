@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     /// The interface that defines the structure of a writable property payload.
     /// </summary>
     /// <remarks>
-    /// This is used by <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create a writable property acknowledgement payload.
+    /// This is used by <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/> to create a writable property acknowledgement payload.
     /// This interface is used to allow extension to use a different set of attributes for serialization.
     /// For example our default implementation found in <see cref="NewtonsoftJsonWritablePropertyAcknowledgementPayload"/> is based on <see cref="Newtonsoft.Json"/> serializer attributes.
     /// </remarks>

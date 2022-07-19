@@ -189,19 +189,22 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Adds or updates a writable property acknowledgement value to the collection.
+        /// Adds or updates a writable property update acknowledgement to the collection.
+        /// The writable property update acknowledgement contains the requested property name, property value, component name (if applicable) and version.
         /// </summary>
         /// <remarks>
         /// Use this as part of the writable property flow to respond to a writable property update.
         /// <para>
         /// If responding with the service requested property value and version, you can use the convenience method
-        /// <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
-        /// To construct a writable property update payload with custom value and version number, use
+        /// <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/> to create this acknowledgement.
+        /// If responding with a custom property value and the service requested version, you can use the convenience method
+        /// <see cref="WritableClientProperty.CreateAcknowledgement(object, int, string)"/> to create this acknowledgement.
+        /// To construct a writable property update acknowledgement with custom value and version number, use
         /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(object, int, long, string)"/> from
         /// <see cref="DeviceClient.PayloadConvention"/> to create a <see cref="WritableClientPropertyAcknowledgement"/>.
         /// </para>
         /// </remarks>
-        /// <param name="writableClientPropertyAcknowledgement">The writable property update acknowledgement payload.</param>
+        /// <param name="writableClientPropertyAcknowledgement">The writable property update acknowledgement.</param>
         /// <exception cref="ArgumentNullException"><paramref name="writableClientPropertyAcknowledgement"/> is <c>null</c>.</exception>
         public void AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement writableClientPropertyAcknowledgement)
         {

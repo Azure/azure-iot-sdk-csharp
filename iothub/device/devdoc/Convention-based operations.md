@@ -146,7 +146,8 @@ public class WritableClientProperty {
     public string ComponentName { get; internal set; }
     public string PropertyName { get; internal set; }
     public bool TryGetValue<T>(out T propertyValue);
-    public WritableClientPropertyAcknowledgement AcknowledgeWith(int statusCode, string description = null);
+    public WritableClientPropertyAcknowledgement CreateAcknowledgement(int statusCode, string description = null);
+    public WritableClientPropertyAcknowledgement CreateAcknowledgement(object customValue, int statusCode, string description = null);
 }
 
 public interface IWritablePropertyAcknowledgementValue {

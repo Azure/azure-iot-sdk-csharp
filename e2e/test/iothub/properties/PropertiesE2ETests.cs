@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                             propertyFromCollection.Should().BeEquivalentTo(propValue);
 
                             var writablePropertyAcks = new ClientPropertyCollection();
-                            writablePropertyAcks.AddWritableClientPropertyAcknowledgement(writableClientProperty.AcknowledgeWith(CommonClientResponseCodes.OK));
+                            writablePropertyAcks.AddWritableClientPropertyAcknowledgement(writableClientProperty.CreateAcknowledgement(CommonClientResponseCodes.OK));
 
                             await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
                         }
