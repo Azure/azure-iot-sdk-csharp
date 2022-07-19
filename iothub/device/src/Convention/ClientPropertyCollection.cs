@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Use this as part of the writable property flow to respond to a writable property update.
         /// <para>
-        /// If responding with the service requested property value and version, you can use the convenience method
+        /// If accepting the service requested property value and version, you can use the convenience method
         /// <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/> to create this acknowledgement.
         /// If responding with a custom property value and the service requested version, you can use the convenience method
         /// <see cref="WritableClientProperty.CreateAcknowledgement(object, int, string)"/> to create this acknowledgement.

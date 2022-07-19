@@ -59,12 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A writable property update acknowledegement to be reported back to the service.</returns>
         public WritableClientPropertyAcknowledgement CreateAcknowledgement(int statusCode, string description = default)
         {
-            return new WritableClientPropertyAcknowledgement
-            {
-                ComponentName = ComponentName,
-                PropertyName = PropertyName,
-                Payload = Convention.PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(Value, statusCode, Version, description),
-            };
+            return CreateAcknowledgement(Value, statusCode, description);
         }
 
         /// <summary>
