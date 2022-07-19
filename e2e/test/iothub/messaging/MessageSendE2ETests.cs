@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -35,62 +34,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
         private static string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
-
-        [LoggedTestMethod]
-        public async Task perfTestMqtt()
-        {
-            int messageCount = 1000;
-            int messageSize = 1024;
-            await perfTest(Client.TransportType.Mqtt, messageCount, messageSize);
-            var proc = Process.GetCurrentProcess();
-            var mem = proc.WorkingSet64;
-            var cpu = proc.TotalProcessorTime;
-            Console.WriteLine($"MQTT_WS test process for {messageCount} messages of size {messageSize / 1000.0} kb used working set (0:{mem / 1024.0}) K of working set and CPU (1:{cpu.TotalMilliseconds}) msec");
-        }
-
-        [LoggedTestMethod]
-        public async Task perfTestMqttWs()
-        {
-            int messageCount = 1000;
-            int messageSize = 1024;
-            await perfTest(Client.TransportType.Mqtt_WebSocket_Only, messageCount, messageSize);
-            var proc = Process.GetCurrentProcess();
-            var mem = proc.WorkingSet64;
-            var cpu = proc.TotalProcessorTime;
-            Console.WriteLine($"MQTT test process for ${messageCount} messages of size ${messageSize} used working set (0:${mem / 1024.0}) K of working set and CPU (1:${cpu.TotalMilliseconds}) msec");
-        }
-
-        public async Task perfTest(Client.TransportType transportType, int messageCount, int messageSize)
-        {
-            using var testDevice = await TestDevice.GetTestDeviceAsync(Logger, "timsTestDevice");
-
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportType);
-
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
-            Task[] sendTasks = new Task[messageCount];
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            for (int i = 0; i < messageCount; i++)
-            {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                var message = new Client.Message(new byte[messageSize]);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                sendTasks[i] = deviceClient.SendEventAsync(message);
-            }
-
-            await Task.WhenAll(sendTasks);
-            stopwatch.Stop();
-
-            Debug.WriteLine("Protocol: " + transportType);
-            Debug.WriteLine("Message size: " + messageSize);
-            Debug.WriteLine("Total messages sent: " + messageCount);
-            Debug.WriteLine("Total millis: " + stopwatch.ElapsedMilliseconds);
-
-            double messagesPerSecond = 1000.0 * messageCount / stopwatch.ElapsedMilliseconds;
-            Debug.WriteLine("Messages per second: " + messagesPerSecond);
-        }
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_Amqp()
