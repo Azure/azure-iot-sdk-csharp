@@ -40,13 +40,14 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Creates a writable property update acknowledgement that contains the requested property name, the service requested property value,
-        /// component name (if applicable) and version.
+        /// component name (if applicable), the service requested version and an optional description.
+        /// This acknowledgement should be reported back to the service using
+        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </summary>
         /// <remarks>
         /// Create a <see cref="ClientPropertyCollection"/> and use <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// to add this acknowledgement to your client properties to be reported back to the service using 
-        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
-        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// to add this acknowledgement to your client properties to be reported back to service.
         /// <para>
         /// To construct a writable property update acknowledgement with a custom property value, see <see cref="CreateAcknowledgement(object, int, string)"/>.
         /// </para>
@@ -64,13 +65,14 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Creates a writable property update acknowledgement that contains the requested property name, a custom property value,
-        /// component name (if applicable) and version.
+        /// component name (if applicable), the service requested version and an optional description.
+        /// This acknowledgement should be reported back to the service using
+        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </summary>
         /// <remarks>
         /// Create a <see cref="ClientPropertyCollection"/> and use <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// to add this acknowledgement to your client properties to be reported back to the service using 
-        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
-        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// to add this acknowledgement to your client properties to be reported back to service.
         /// <para>
         /// To construct a writable property update acknowledgement with the service requested property update value, see <see cref="CreateAcknowledgement(int, string)"/>.
         /// </para>
