@@ -127,8 +127,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // assert
             isWritablePropertyRetrieved.Should().BeFalse();
             writableClientProperty.Should().BeNull();
-
-            writableClientProperty.TryGetValue(out object value).Should().BeTrue();
         }
 
         [TestMethod]
