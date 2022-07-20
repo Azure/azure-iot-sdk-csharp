@@ -675,8 +675,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task SubscribeAsync(string topic, MqttClientSubscribeResultCode expectedQoS, CancellationToken cancellationToken)
         {
+            // "#" postfix is a multi-level wildcard in MQTT. When a client subscribes to a topic with a
+            // multi-level wildcard, it receives all messages of a topic that begins with the pattern
+            // before the wildcard character, no matter how long or deep the topic is.
+            string fullTopic = topic + "#";
+
             MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter(topic + "#") // for example, "devices/myDevice/messages/events/#". "#" postfix means to listen for all events on this channel
+                .WithTopicFilter(fullTopic)
                 .Build();
 
             MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken);
@@ -684,13 +689,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (subscribeResults == null || subscribeResults.Items == null)
             {
                 //TODO
-                throw new Exception("Failed to subscribe to topic " + topic);
+                throw new Exception("Failed to subscribe to topic " + fullTopic);
             }
 
             // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
             foreach (MqttClientSubscribeResultItem subscribeResult in subscribeResults.Items)
             {
-                if (!subscribeResult.TopicFilter.Topic.Equals(topic))
+                if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
                 {
                     throw new Exception("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
                 }
@@ -698,13 +703,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (subscribeResult.ResultCode != expectedQoS)
                 {
                     //TODO
-                    throw new Exception("Failed to subscribe to topic " + topic + " with reason " + subscribeResult.ResultCode);
+                    throw new Exception("Failed to subscribe to topic " + fullTopic + " with reason " + subscribeResult.ResultCode);
                 }
 
                 return;
             }
 
-            throw new Exception("Service did not acknowledge the subscription request for topic " + topic);
+            throw new Exception("Service did not acknowledge the subscription request for topic " + fullTopic);
         }
 
         private async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
