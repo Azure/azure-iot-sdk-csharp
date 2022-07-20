@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             _transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
             _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
-            _options = options;
+            _options = options ?? new();
         }
 
         /// <summary>
@@ -94,8 +94,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
                 ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
 
-                TimeSpan sasTokenTimeToLive = _options?.SasTokenTimeToLive ?? default;
-                int sasTokenRenewalBuffer = _options?.SasTokenRenewalBuffer ?? default;
+                TimeSpan sasTokenTimeToLive = _options.SasTokenTimeToLive;
+                int sasTokenRenewalBuffer = _options.SasTokenRenewalBuffer;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
                 // Since the sdk creates the instance of disposable ModuleAuthenticationWithHsm, the sdk needs to dispose it once the client is disposed.
@@ -109,9 +109,10 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 {
                     IList<X509Certificate2> certs = await _trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
                     certificateValidator = GetCertificateValidator(certs);
+                    _options.GatewayHostName = gateway;
                 }
 
-                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod, _options), certificateValidator);
+                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, authMethod, _options), certificateValidator);
             }
         }
 
@@ -142,9 +143,9 @@ namespace Microsoft.Azure.Devices.Client.Edge
             return ClientFactory.CreateFromConnectionString(connectionString, _transportSettings, options);
         }
 
-        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod, ClientOptions options)
+        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, IAuthenticationMethod authMethod, ClientOptions options)
         {
-            return ClientFactory.Create(hostname, gateway, authMethod, _transportSettings, options);
+            return ClientFactory.Create(hostname, authMethod, _transportSettings, options);
         }
 
         private static string GetValueFromEnvironment(IDictionary envVariables, string variableName)

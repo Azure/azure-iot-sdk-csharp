@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
-        private static readonly Regex s_deviceIdParameterRegex = new Regex(
+        private static readonly Regex s_deviceIdParameterRegex = new(
             DeviceIdParameterPattern,
             RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
 
@@ -31,23 +31,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>InternalClient</returns>
         internal static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
-        {
-            return Create(hostname, null, authenticationMethod, options);
-        }
-
-        /// <summary>
-        /// Create a InternalClient from individual parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient Create(
-            string hostname,
-            string gatewayHostname,
-            IAuthenticationMethod authenticationMethod,
-            ClientOptions options = default)
         {
             if (hostname == null)
             {
@@ -78,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
+            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, options.GatewayHostName, authenticationMethod);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
@@ -135,25 +118,6 @@ namespace Microsoft.Azure.Devices.Client
             ITransportSettings[] transportSettings,
             ClientOptions options = default)
         {
-            return Create(hostname, null, authenticationMethod, transportSettings, options);
-        }
-
-        /// <summary>
-        /// Create a InternalClient from individual parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient Create(
-            string hostname,
-            string gatewayHostname,
-            IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings,
-            ClientOptions options = default)
-        {
             if (hostname == null)
             {
                 throw new ArgumentNullException(nameof(hostname));
@@ -164,7 +128,12 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(authenticationMethod));
             }
 
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
+            if (options == default)
+            {
+                options = new();
+            }
+
+            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, options.GatewayHostName, authenticationMethod);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);

@@ -55,23 +55,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create a disposable, AMQP DeviceClient from the specified parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(
-            string hostname,
-            string gatewayHostname,
-            IAuthenticationMethod authenticationMethod,
-            ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, options));
-        }
-
-        /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
@@ -83,21 +66,6 @@ namespace Microsoft.Azure.Devices.Client
             ITransportSettings[] transportSettings, ClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings, options));
-        }
-
-        /// <summary>
-        /// Creates a disposable DeviceClient from the specified parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportSettings, options));
         }
 
         /// <summary>
