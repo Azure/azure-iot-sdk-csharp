@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     /// An optional, helper class for constructing a writable property payload.
     /// </summary>
     /// <remarks>
-    /// This is used by <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create a writable property acknowledgement payload.
+    /// This is used by <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/> to create a writable property acknowledgement payload.
     /// This helper class will only work with <see cref="Newtonsoft.Json"/>.
     /// It uses <see cref="Newtonsoft.Json"/> based <see cref="JsonPropertyAttribute"/> to define the JSON property names.
     /// </remarks>

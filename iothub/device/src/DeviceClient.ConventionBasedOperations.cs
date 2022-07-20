@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
         /// (or using the component-level overloads on <see cref="WritableClientPropertyCollection"/>).
         /// </para>
         /// <para>
-        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/>
+        /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
         /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
         /// and report it to service via <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
@@ -130,12 +130,27 @@ namespace Microsoft.Azure.Devices.Client
         ///         var propertiesToBeUpdated = new ClientPropertyCollection();
         ///         foreach (WritableClientProperty writableProperty in writableProperties)
         ///         {
-        ///             if (writableProperty.PropertyName == "samplePropertyName" &amp;&amp; writableProperty.TryGetValue(out int propertyValue))
+        ///             if (writableProperty.ComponentName == null
+        ///                 &amp;&amp; writableProperty.PropertyName == "sampleRootPropertyName"
+        ///                 &amp;&amp; writableProperty.TryGetValue(out int intPropertyValue))
         ///             {
-        ///                 // Process "samplePropertyName"
+        ///                 // Process "sampleRootPropertyName" under the root-component
         ///
         ///                 propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
-        ///                     writableProperty.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///                     writableProperty.CreateAcknowledgement(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///             }
+        ///             else if (writableProperty.ComponentName == "sampleComponentName"
+        ///                 &amp;&amp; writableProperty.PropertyName == "sampleComponentPropertyName"
+        ///                 &amp;&amp; writableProperty.TryGetValue(out CustomType customTypePropertyValue))
+        ///             {
+        ///                 // Process "sampleComponentPropertyName" under the component "sampleComponentName"
+        ///
+        ///                 propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
+        ///                     writableProperty.CreateAcknowledgement(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///             }
+        ///             else if (...)
+        ///             {
+        ///                 // Process rest of the writable property update requests
         ///             }
         ///         }
         ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
@@ -149,16 +164,29 @@ namespace Microsoft.Azure.Devices.Client
         ///     async (writableProperties) =>
         ///     {
         ///         var propertiesToBeUpdated = new ClientPropertyCollection();
-        ///         if (writableProperties.TryGetWritableClientProperty("samplePropertyName", out WritableClientProperty propertyUpdateRequested))
-        ///         {
-        ///             if (propertyUpdateRequested.TryGetValue(out int propertyValue))
-        ///             {
-        ///                 // Process "samplePropertyName"
+        ///         WritableClientProperty propertyUpdateRequested;
         ///
-        ///                 propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
-        ///                     propertyUpdateRequested.AcknowledgeWith(CommonClientResponseCodes.OK, "The operation completed successfully."));
-        ///             }
+        ///         if (writableProperties.TryGetWritableClientProperty("sampleRootPropertyName", out propertyUpdateRequested)
+        ///             &amp;&amp; propertyUpdateRequested.TryGetValue(out int intPropertyValue))
+        ///         {
+        ///             // Process "sampleRootPropertyName" under the root-component
+        ///
+        ///             propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
+        ///                 propertyUpdateRequested.CreateAcknowledgement(CommonClientResponseCodes.OK, "The operation completed successfully."));
         ///         }
+        ///         if (writableProperties.TryGetWritableClientProperty("sampleComponentName", "sampleComponentPropertyName", out propertyUpdateRequested)
+        ///             &amp;&amp; propertyUpdateRequested.TryGetValue(out CustomType customTypePropertyValue))
+        ///         {
+        ///             // Process "sampleComponentPropertyName" under the component "sampleComponentName"
+        ///
+        ///             propertiesToBeUpdated.AddWritableClientPropertyAcknowledgement(
+        ///                 propertyUpdateRequested.CreateAcknowledgement(CommonClientResponseCodes.OK, "The operation completed successfully."));
+        ///         }
+        ///         if (...)
+        ///         {
+        ///             // Process rest of the writable property update requests
+        ///         }
+        ///
         ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         ///     },
         ///     cancellationToken);

@@ -189,19 +189,22 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Adds or updates a writable property acknowledgement value to the collection.
+        /// Adds or updates a writable property update acknowledgement to the collection.
+        /// The writable property update acknowledgement contains the requested property name, property value, component name (if applicable) and version.
         /// </summary>
         /// <remarks>
         /// Use this as part of the writable property flow to respond to a writable property update.
         /// <para>
-        /// If responding with the service requested property value and version, you can use the convenience method
-        /// <see cref="WritableClientProperty.AcknowledgeWith(int, string)"/> to create this acknowledgement payload.
-        /// To construct a writable property update payload with custom value and version number, use
+        /// If accepting the service requested property value and version, you can use the convenience method
+        /// <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/> to create this acknowledgement.
+        /// If responding with a custom property value and the service requested version, you can use the convenience method
+        /// <see cref="WritableClientProperty.CreateAcknowledgement(object, int, string)"/> to create this acknowledgement.
+        /// To construct a writable property update acknowledgement with custom value and version number, use
         /// <see cref="PayloadSerializer.CreateWritablePropertyAcknowledgementPayload(object, int, long, string)"/> from
         /// <see cref="DeviceClient.PayloadConvention"/> to create a <see cref="WritableClientPropertyAcknowledgement"/>.
         /// </para>
         /// </remarks>
-        /// <param name="writableClientPropertyAcknowledgement">The writable property update acknowledgement payload.</param>
+        /// <param name="writableClientPropertyAcknowledgement">The writable property update acknowledgement.</param>
         /// <exception cref="ArgumentNullException"><paramref name="writableClientPropertyAcknowledgement"/> is <c>null</c>.</exception>
         public void AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement writableClientPropertyAcknowledgement)
         {
@@ -228,39 +231,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Determines whether the specified root-level property is present in the client reported property collection.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <c>null</c>.</exception>
-        public bool Contains(string propertyName)
-        {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            return GetMatches(null, propertyName).Any();
-        }
-
-        /// <summary>
-        /// Determines whether the specified component-level property is present in the client reported property collection.
-        /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <param name="componentName">The component which holds the required property.</param>
-        /// <returns><c>true</c> if the specified property is present; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="componentName"/> is <c>null</c>.</exception>
-        public bool Contains(string componentName, string propertyName)
-        {
-            if (componentName == null)
-            {
-                throw new ArgumentNullException(nameof(componentName));
-            }
-
-            return GetMatches(componentName, propertyName).Any();
-        }
-
-        /// <summary>
         /// Gets the value of a root-level property.
         /// </summary>
         /// <remarks>
@@ -282,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            return Contains(propertyName)
+            return GetMatches(null, propertyName).Any()
                 && TryGetPropertyValue(null, propertyName, out propertyValue);
         }
 
@@ -311,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            return Contains(componentName, propertyName)
+            return GetMatches(componentName, propertyName).Any()
                 && TryGetPropertyValue(componentName, propertyName, out propertyValue);
         }
 

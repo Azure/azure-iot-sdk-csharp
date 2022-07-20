@@ -37,7 +37,7 @@ public abstract class PayloadSerializer {
     public abstract string SerializeToString(object objectToSerialize);
     public abstract T DeserializeToType<T>(string stringToDeserialize);
     public abstract T ConvertFromJsonObject<T>(object jsonObjectToConvert);
-    public abstract IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = null);
+    public abstract IWritablePropertyAcknowledgementPayload CreateWritablePropertyAcknowledgementPayload(object value, int statusCode, long version, string description = null);
 }
 
 public sealed class DefaultPayloadConvention : PayloadConvention {
@@ -58,7 +58,7 @@ public class NewtonsoftJsonPayloadSerializer : PayloadSerializer {
     public override string SerializeToString(object objectToSerialize);
     public override T DeserializeToType<T>(string stringToDeserialize);
     public override T ConvertFromJsonObject<T>(object objectToConvert);
-    public override IWritablePropertyAcknowledgementValue CreateWritablePropertyAcknowledgementValue(object value, int statusCode, long version, string description = null);
+    public override IWritablePropertyAcknowledgementPayload CreateWritablePropertyAcknowledgementPayload(object value, int statusCode, long version, string description = null);
 }
 
 public static class ConventionBasedConstants {
@@ -114,37 +114,40 @@ public class ClientProperties {
     public WritableClientPropertyCollection WritablePropertyRequests { get; }
 }
 
-public class ClientPropertyCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
+public class ClientPropertyCollection : IEnumerable, IEnumerable<ClientProperty> {
     public ClientPropertyCollection();
-    public long Version { get; private set; }
     public virtual object this[string key] { get; set; }
-    public virtual void Add(string key, object value);
+    public long Version { get; private set; }
     public void AddRootProperty(string propertyName, object propertyValue);
     public void AddComponentProperty(string componentName, string propertyName, object propertyValue);
-    public bool Contains(string propertyName);
-    public bool Contains(string componentName, string propertyName);
+    public void AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement writableClientPropertyAcknowledgement);
     public bool TryGetValue<T>(string propertyName, out T propertyValue);
     public bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
+    public string GetSerializedString();
+    public IEnumerator<ClientProperty> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
-public class WritableClientPropertyCollection : IEnumerable, IEnumerable<KeyValuePair<string, object>> {
+public class ClientProperty {
+    public string ComponentName { get; internal set; }
+    public string PropertyName { get; internal set; }
+    public bool TryGetValue<T>(out T propertyValue);
+}
+
+public class WritableClientPropertyCollection : IEnumerable, IEnumerable<WritableClientProperty> {
     public long Version { get; private set; }
-    public bool Contains(string propertyName);
-    public bool Contains(string componentName, string propertyName);
-    public bool TryGetValue<T>(string propertyName, out T propertyValue);
-    public bool TryGetValue<T>(string componentName, string propertyName, out T propertyValue);
-    public bool TryGetWritableClientProperty(string propertyName, out WritableClientProperty propertyValue);
-    public bool TryGetWritableClientProperty(string componentName, string propertyName, out WritableClientProperty propertyValue);
-    public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
+    public bool TryGetWritableClientProperty(string propertyName, out WritableClientProperty writableClientProperty);
+    public bool TryGetWritableClientProperty(string componentName, string propertyName, out WritableClientProperty writableClientProperty);
+    public IEnumerator<WritableClientProperty> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
 public class WritableClientProperty {
-    public object Value { get; internal set; }
-    public IWritablePropertyAcknowledgementValue AcknowledgeWith(int statusCode, string description = null);
+    public string ComponentName { get; internal set; }
+    public string PropertyName { get; internal set; }
     public bool TryGetValue<T>(out T propertyValue);
+    public WritableClientPropertyAcknowledgement CreateAcknowledgement(int statusCode, string description = null);
+    public WritableClientPropertyAcknowledgement CreateAcknowledgement(object customValue, int statusCode, string description = null);
 }
 
 public interface IWritablePropertyAcknowledgementValue {
@@ -154,12 +157,19 @@ public interface IWritablePropertyAcknowledgementValue {
     string AckDescription { get; set; }
 }
 
-public sealed class NewtonsoftJsonWritablePropertyAcknowledgementValue : IWritablePropertyAcknowledgementValue {
-    public NewtonsoftJsonWritablePropertyAcknowledgementValue(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
+public sealed class NewtonsoftJsonWritablePropertyAcknowledgementPayload : IWritablePropertyAcknowledgementPayload {
+    public NewtonsoftJsonWritablePropertyAcknowledgementPayload(object propertyValue, int ackCode, long ackVersion, string ackDescription = null);
     public object Value { get; set; }
     public int AckCode { get; set; }
     public long AckVersion { get; set; }
     public string AckDescription { get; set; }
+}
+
+public class WritableClientPropertyAcknowledgement {
+    public WritableClientPropertyAcknowledgement();
+    public string ComponentName { get; set; }
+    public string PropertyName { get; set; }
+    public IWritablePropertyAcknowledgementPayload Payload { get; set; }
 }
 
 public class ClientPropertiesUpdateResponse {
@@ -192,10 +202,11 @@ public class TelemetryCollection : IEnumerable, IEnumerable<KeyValuePair<string,
     public void Add(IDictionary<string, object> telemetryValues);
     public void Add(string telemetryName, object telemetryValue);
     public bool Contains(string key);
+    public bool TryGetValue<T>(string telemetryKey, out T telemetryValue);
+    public string GetSerializedString();
+    public void ClearCollection();
     public IEnumerator<KeyValuePair<string, object>> GetEnumerator();
     IEnumerator System.Collections.IEnumerable.GetEnumerator();
-    public bool TryGetValue<T>(string telemetryKey, out T telemetryValue);
-    public void ClearCollection();
 }
 
 public sealed class TelemetryMessage : MessageBase {
@@ -222,9 +233,9 @@ public Task SubscribeToCommandsAsync(Func<CommandRequest, Task<CommandResponse>>
 public class CommandRequest {
     public string CommandName { get; }
     public string ComponentName { get; }
-    public T GetPayload<T>();
-    public ReadOnlyCollection<byte> GetPayloadAsBytes();
+    public bool TryGetPayload<T>(out T payload);
     public string GetPayloadAsString();
+    public ReadOnlyCollection<byte> GetPayloadAsBytes();
 }
 
 public sealed class CommandResponse {

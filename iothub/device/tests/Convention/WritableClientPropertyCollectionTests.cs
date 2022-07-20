@@ -59,26 +59,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_TryGetValueShouldReturnTrueIfPropertyFound()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { StringPropertyName, StringPropertyValue },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(StringPropertyName, out string outStringValue);
-
-            // assert
-            isValueRetrieved.Should().BeTrue();
-            outStringValue.Should().Be(StringPropertyValue);
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_TryGetWritableClientPropertyWithComponentShouldReturnTrueIfPropertyFound()
         {
             // arrange
@@ -105,31 +85,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnTrueIfPropertyFound()
-        {
-            // arrange
-            var props = new Dictionary<string, object> 
-            {
-                { ComponentName, new Dictionary<string, object>
-                    {
-                        { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
-                        { StringPropertyName, StringPropertyValue },
-                    }
-                },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(ComponentName, StringPropertyName, out string outStringValue);
-
-            // assert
-            isValueRetrieved.Should().BeTrue();
-            outStringValue.Should().Be(StringPropertyValue);
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_TryGetWritableClientPropertyShouldReturnFalseIfPropertyNotFound()
         {
             // arrange
@@ -147,26 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // assert
             isWritablePropertyRetrieved.Should().BeFalse();
             writableClientProperty.Should().BeNull();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_TryGetValueShouldReturnFalseIfPropertyNotFound()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { StringPropertyName, StringPropertyValue },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(IntPropertyName, out object outStringValue);
-
-            // assert
-            isValueRetrieved.Should().BeFalse();
-            outStringValue.Should().Be(default);
         }
 
         [TestMethod]
@@ -195,31 +130,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfPropertyNotFound()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { ComponentName, new Dictionary<string, object>
-                    {
-                        { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
-                        { ObjectPropertyName, s_objectPropertyValue }
-                    }
-                },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(ComponentName, IntPropertyName, out object outCustomValue);
-
-            // assert
-            isValueRetrieved.Should().BeFalse();
-            outCustomValue.Should().Be(default);
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_TryGetValueShouldReturnFalseIfValueCouldNotBeDeserialized()
         {
             // arrange
@@ -232,7 +142,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
 
             // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(StringPropertyName, out int outIntValue);
+            bool isWritablePropertyRetrieved = writableClientProperties.TryGetWritableClientProperty(StringPropertyName, out WritableClientProperty writableClientProperty);
+
+            // assert
+            isWritablePropertyRetrieved.Should().BeTrue();
+
+            // act
+            bool isValueRetrieved = writableClientProperty.TryGetValue(out int outIntValue);
 
             // assert
             isValueRetrieved.Should().BeFalse();
@@ -257,7 +173,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
 
             // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(ComponentName, ObjectPropertyName, out int outIntValue);
+            bool isWritablePropertyRetrieved = writableClientProperties.TryGetWritableClientProperty(ComponentName, ObjectPropertyName, out WritableClientProperty writableClientProperty);
+
+            // assert
+            isWritablePropertyRetrieved.Should().BeTrue();
+
+            // act
+            bool isValueRetrieved = writableClientProperty.TryGetValue(out int outIntValue);
 
             // assert
             isValueRetrieved.Should().BeFalse();
@@ -292,96 +214,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_TryGetValueWithComponentShouldReturnFalseIfNotAComponent()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { StringPropertyName, StringPropertyValue },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            string incorrectlyMappedComponentName = MapPropertyName;
-            string incorrectlyMappedComponentPropertyName = "key1";
-
-
-            // act
-            bool isValueRetrieved = writableClientProperties.TryGetValue(incorrectlyMappedComponentName, incorrectlyMappedComponentPropertyName, out object propertyValue);
-
-            isValueRetrieved.Should().BeFalse();
-            propertyValue.Should().Be(default);
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_ContainsWithNullPropertyNameThrows()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { IntPropertyName, IntPropertyValue },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            Action testAction = () => writableClientProperties.Contains(null);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_ContainsWithNullComponentNameThrows()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { ComponentName, new Dictionary<string, object>
-                    {
-                        { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
-                        { IntPropertyName, IntPropertyValue },
-                    }
-                },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            Action testAction = () => writableClientProperties.Contains(null, IntPropertyName);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_ContainsWithComponentAndNullPropertyNameThrows()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { ComponentName, new Dictionary<string, object>
-                    {
-                        { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
-                        { IntPropertyName, IntPropertyValue },
-                    }
-                },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            Action testAction = () => writableClientProperties.Contains(ComponentName, null);
-
-            // assert
-            testAction.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_TryGetWritableClientPropertyWithNullPropertyNameReturnsFalse()
         {
             // arrange
@@ -399,26 +231,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // assert
             isPresent.Should().BeFalse();
             value.Should().BeNull();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_TryGetValueWithNullPropertyNameReturnsFalse()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { IntPropertyName, IntPropertyValue },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isPresent = writableClientProperties.TryGetValue(null, out object value);
-
-            // assert
-            isPresent.Should().BeFalse();
-            value.Should().Be(default);
         }
 
         [TestMethod]
@@ -447,31 +259,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public void ClientPropertyCollection_TryGetValueWithNullComponentNameReturnsFalse()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { ComponentName, new Dictionary<string, object>
-                    {
-                        { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
-                        { IntPropertyName, IntPropertyValue },
-                    }
-                },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isPresent = writableClientProperties.TryGetValue(null, IntPropertyName, out object value);
-
-            // assert
-            isPresent.Should().BeFalse();
-            value.Should().Be(default);
-        }
-
-        [TestMethod]
         public void ClientPropertyCollection_TryGetWritableClientPropertyWithComponentAndNullPropertyNameReturnsFalse()
         {
             // arrange
@@ -494,31 +281,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // assert
             isPresent.Should().BeFalse();
             value.Should().BeNull();
-        }
-
-        [TestMethod]
-        public void ClientPropertyCollection_TryGetValueWithComponentAndNullPropertyNameReturnsFalse()
-        {
-            // arrange
-            var props = new Dictionary<string, object>
-            {
-                { ComponentName, new Dictionary<string, object>
-                    {
-                        { ConventionBasedConstants.ComponentIdentifierKey, ConventionBasedConstants.ComponentIdentifierValue },
-                        { IntPropertyName, IntPropertyValue },
-                    }
-                },
-                { VersionName, 2 },
-            };
-            var writableRequest = ConvertToServiceUpdateRequestedDictionary(props);
-            var writableClientProperties = new WritableClientPropertyCollection(writableRequest, DefaultPayloadConvention.Instance);
-
-            // act
-            bool isPresent = writableClientProperties.TryGetValue(ComponentName, null, out object value);
-
-            // assert
-            isPresent.Should().BeFalse();
-            value.Should().Be(default);
         }
 
         // The service update requested properties are always deserialized into a dictionary using Newtonsoft.Json.
