@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringEmptyConnectionStringExceptionTest()
         {
             string connectionString = "";

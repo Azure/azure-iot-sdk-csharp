@@ -957,17 +957,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 case Client.TransportType.Amqp:
                 case Client.TransportType.Amqp_Tcp_Only:
-                    return new ProvisioningTransportHandlerAmqp(Microsoft.Azure.Devices.Provisioning.Client.TransportFallbackType.TcpOnly);
+                    return new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly);
 
                 case Client.TransportType.Amqp_WebSocket_Only:
-                    return new ProvisioningTransportHandlerAmqp(Microsoft.Azure.Devices.Provisioning.Client.TransportFallbackType.WebSocketOnly);
+                    return new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly);
 
                 case Client.TransportType.Mqtt:
                 case Client.TransportType.Mqtt_Tcp_Only:
-                    return new ProvisioningTransportHandlerMqtt(Microsoft.Azure.Devices.Provisioning.Client.TransportFallbackType.TcpOnly);
+                    return new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly);
 
                 case Client.TransportType.Mqtt_WebSocket_Only:
-                    return new ProvisioningTransportHandlerMqtt(Microsoft.Azure.Devices.Provisioning.Client.TransportFallbackType.WebSocketOnly);
+                    return new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly);
             }
 
             throw new NotSupportedException($"Unknown transport: '{transportType}'.");
@@ -980,10 +980,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
-            Client.TransportType transportProtocol,
+            Client.TransportType transportType,
             bool sendReportedPropertiesUpdate)
         {
-            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol);
+            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions { TransportType = transportType });
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
