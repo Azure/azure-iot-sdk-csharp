@@ -16,6 +16,11 @@ namespace Microsoft.Azure.Devices.Client
         public TransportType TransportType { get; set; } = TransportType.Amqp;
 
         /// <summary>
+        /// The fully-qualified DNS host name of a gateway to connect through.
+        /// </summary>
+        public string GatewayHostName { get; set; }
+
+        /// <summary>
         /// The DTDL model Id associated with the device or module client instance.
         /// </summary>
         /// This feature is currently supported only over MQTT and AMQP transports.

@@ -74,41 +74,49 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void DeviceClient_ParamsHostNameGatewayAuthMethod_Works()
         {
             string hostName = "acme.azure-devices.net";
-            string gatewayHostname = "gateway.acme.azure-devices.net";
+            string gatewayHostName = "gateway.acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
 
-            using var deviceClient = DeviceClient.Create(hostName, gatewayHostname, authMethod);
+            var options = new ClientOptions { GatewayHostName = gatewayHostName };
+            using var deviceClient = DeviceClient.Create(hostName, authMethod, options);
         }
 
         [TestMethod]
         public void DeviceClient_ParamsHostNameGatewayAuthMethodTransport_Works()
         {
             string hostName = "acme.azure-devices.net";
-            string gatewayHostname = "gateway.acme.azure-devices.net";
+            string gatewayHostName = "gateway.acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
 
-            using var deviceClient = DeviceClient.Create(
-                hostName,
-                gatewayHostname,
-                authMethod,
-                new ClientOptions { TransportType = TransportType.Amqp_WebSocket_Only });
+            var options = new ClientOptions
+            {
+                TransportType = TransportType.Amqp_WebSocket_Only,
+                GatewayHostName = gatewayHostName,
+            };
+
+            using var deviceClient = DeviceClient.Create(hostName, authMethod, options);
         }
 
         [TestMethod]
         public void DeviceClient_ParsmHostNameGatewayAuthMethodTransportArray_Works()
         {
             string hostName = "acme.azure-devices.net";
-            string gatewayHostname = "gateway.acme.azure-devices.net";
+            string gatewayHostName = "gateway.acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
+
+            var options = new ClientOptions
+            {
+                GatewayHostName = gatewayHostName,
+            };
 
             using var deviceClient = DeviceClient.Create(
                 hostName,
-                gatewayHostname,
                 authMethod,
                 new ITransportSettings[]
                 {
                     new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                });
+                },
+                options);
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.

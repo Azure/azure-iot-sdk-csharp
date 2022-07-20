@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 HostName = hostname,
                 GatewayHostName = gatewayHostname,
-                AuthenticationMethod = authenticationMethod
+                AuthenticationMethod = authenticationMethod,
             };
 
             iotHubConnectionStringBuilder.Validate();
@@ -108,24 +108,23 @@ namespace Microsoft.Azure.Devices.Client
             string iotHubConnectionString,
             IAuthenticationMethod authenticationMethod)
         {
-            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder
+            var csBuilder = new IotHubConnectionStringBuilder
             {
                 HostName = "TEMP.HUB",
             };
 
             if (authenticationMethod == null)
             {
-                iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
-                iotHubConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(
-                    iotHubConnectionStringBuilder);
+                csBuilder.Parse(iotHubConnectionString);
+                csBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(csBuilder);
             }
             else
             {
-                iotHubConnectionStringBuilder.AuthenticationMethod = authenticationMethod;
-                iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
+                csBuilder.AuthenticationMethod = authenticationMethod;
+                csBuilder.Parse(iotHubConnectionString);
             }
 
-            return iotHubConnectionStringBuilder;
+            return csBuilder;
         }
 
         /// <summary>
