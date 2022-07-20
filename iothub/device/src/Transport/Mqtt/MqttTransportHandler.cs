@@ -75,9 +75,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The service sends method requests to the topic "$iothub/methods/POST/{method name}/?$rid={request id}".
         // The client responds to the direct method invocation by sending a message to the topic "$iothub/methods/res/{status}/?$rid={request id}", using the same request Id as the request.
 
-        private const string DirectMethodsReceivingTopicFormat = "$iothub/methods/POST/";
-        private const string DirectMethodsSubscriptionTopicFormat = "$iothub/methods/POST/#";
-        private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
+        private const string DirectMethodsRequestTopic = "$iothub/methods/POST/";
+        private const string DirectMethodsResponseTopicFormat = "$iothub/methods/res/{0}/?$rid={1}";
 
         private const string DeviceClientTypeParam = "DeviceClientType";
 
@@ -430,17 +429,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(DirectMethodsSubscriptionTopicFormat, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+            await SubscribeAsync(DirectMethodsRequestTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(DirectMethodsSubscriptionTopicFormat, cancellationToken);
+            await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken);
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
-            var topic = MethodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
+            var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
@@ -678,6 +677,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // "#" postfix is a multi-level wildcard in MQTT. When a client subscribes to a topic with a
             // multi-level wildcard, it receives all messages of a topic that begins with the pattern
             // before the wildcard character, no matter how long or deep the topic is.
+            //
+            // This is important to add here because topic strings will contain key-value pairs for metadata about
+            // each message. For instance, a cloud to device message sent by the service with a correlation
+            // id of "1" would have a topic like:
+            // "devices/myDevice/messages/devicebound/?$cid=1"
             string fullTopic = topic + "#";
 
             MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
@@ -778,7 +782,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 HandleTwinResponse(receivedEventArgs);
             }
-            else if (topic.StartsWith(DirectMethodsReceivingTopicFormat))
+            else if (topic.StartsWith(DirectMethodsRequestTopic))
             {
                 await HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
