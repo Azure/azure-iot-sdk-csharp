@@ -14,15 +14,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class ClientFactory
     {
-        private const string DeviceId = "DeviceId";
-        private const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-
-        private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-
-        private static readonly Regex s_deviceIdParameterRegex = new(
-            DeviceIdParameterPattern,
-            RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
-
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
         /// </summary>
