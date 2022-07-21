@@ -40,7 +40,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Constructor for a module client to be created from an <see cref="InternalClient"/>.
         /// </summary>
         /// <param name="internalClient">The internal client to use for the commands.</param>
-        internal ModuleClient(InternalClient internalClient) : this(internalClient, NullCertificateValidator.Instance)
+        internal ModuleClient(InternalClient internalClient)
+            : this(internalClient, NullCertificateValidator.Instance)
         {
         }
 
