@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -94,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Dictionary<string, GetTwinResponse> getTwinResponses = new Dictionary<string, GetTwinResponse>();
         private SemaphoreSlim _getTwinSemaphore = new SemaphoreSlim(0);
 
-        private readonly Dictionary<string, int> reportedPropertyUpdateResponses = new Dictionary<string, int>();
+        private readonly Dictionary<string, PatchTwinResponse> reportedPropertyUpdateResponses = new Dictionary<string, PatchTwinResponse>();
         private SemaphoreSlim _reportedPropertyUpdateResponsesSemaphore = new SemaphoreSlim(0);
 
         private readonly List<string> inProgressUpdateReportedPropertiesRequests = new List<string>();
@@ -225,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             productInfo = context.ProductInfo;
             clientOptions = context.ClientOptions;
 
-            if (settings.GetTransportType() == TransportType.Mqtt_WebSocket_Only) //TODO fallbacks?
+            if (settings.GetTransportType() == TransportType.Mqtt_WebSocket_Only)
             {
                 var uri = "wss://" + hostName + "/$iothub/websocket";
                 mqttClientOptionsBuilder.WithWebSocketServer(uri);
@@ -238,7 +239,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     if (proxy.Credentials != null)
                     {
-                        //TODO is "Basic" the correct authenticationType here?
                         NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, "Basic");
                         string username = credentials.UserName;
                         string password = credentials.Password;
@@ -541,7 +541,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _getTwinSemaphore.Wait(cancellationToken);
             }
 
-            getTwinResponses.Remove(requestId, out GetTwinResponse getTwinResponse);
+            GetTwinResponse getTwinResponse = getTwinResponses[requestId];
+            getTwinResponses.Remove(requestId);
             int getTwinStatus = getTwinResponse.Status;
 
             if (getTwinStatus != 200)
@@ -589,22 +590,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _reportedPropertyUpdateResponsesSemaphore.Wait(cancellationToken);
             }
 
-            if (reportedPropertyUpdateResponses.ContainsKey(requestId))
+            PatchTwinResponse patchTwinResponse = reportedPropertyUpdateResponses[requestId];
+            reportedPropertyUpdateResponses.Remove(requestId);
+            if (patchTwinResponse.Status != 204)
             {
-                int status = reportedPropertyUpdateResponses[requestId];
-                if (status != 204)
-                {
-                    throw ExceptionHandlingHelper.GetExceptionFromStatusCode(status, "Failed to send twin patch");
-                }
+                throw ExceptionHandlingHelper.GetExceptionFromStatusCode(patchTwinResponse.Status, "Failed to send twin patch");
+            }
 
-                //TODO shouldn't there be a new reported properties version here?
-                // if the status is 204, then just return without throwing since the operation was successful
-            }
-            else
-            {
-                //TODO
-                throw new ThreadStateException("TODO");
-            }
+            //TODO new twin version should be returned here, but API surface doesn't currently allow it
+            //return patchTwinResponse.Version;
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -683,8 +677,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (subscribeResults == null || subscribeResults.Items == null)
             {
-                //TODO
-                throw new Exception("Failed to subscribe to topic " + fullTopic);
+                throw new IotHubCommunicationException("Failed to subscribe to topic " + fullTopic);
             }
 
             // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
@@ -692,13 +685,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
                 {
-                    throw new Exception("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
+                    throw new IotHubCommunicationException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
                 }
 
                 return;
             }
 
-            throw new Exception("Service did not acknowledge the subscription request for topic " + fullTopic);
+            throw new IotHubCommunicationException("Service did not acknowledge the subscription request for topic " + fullTopic);
         }
 
         private async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
@@ -709,16 +702,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttClientUnsubscribeResult unsubscribeResults = await mqttClient.UnsubscribeAsync(unsubscribeOptions, cancellationToken);
 
-            if (unsubscribeResults == null || unsubscribeResults.Items == null)
+            if (unsubscribeResults == null || unsubscribeResults.Items == null || unsubscribeResults.Items.Count != 1)
             {
-                //TODO
-                throw new Exception("Failed to unsubscribe to topic " + topic);
-            }
-
-            if (unsubscribeResults.Items.Count != 1)
-            {
-                //TODO
-                throw new Exception("Failed to unsubscribe from topic " + topic);
+                throw new IotHubCommunicationException("Failed to unsubscribe to topic " + topic);
             }
 
             // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
@@ -726,19 +712,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (!unsubscribeResult.TopicFilter.Equals(topic))
                 {
-                    throw new Exception("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter);
+                    throw new IotHubCommunicationException("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter);
                 }
 
                 if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
                 {
                     //TODO
-                    throw new Exception("Failed to unsubscribe to topic " + topic + " with reason " + unsubscribeResult.ResultCode);
+                    throw new Exception("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode);
                 }
 
                 return;
             }
 
-            throw new Exception("Service did not acknowledge the unsubscribe request for topic " + topic);
+            throw new IotHubCommunicationException("Service did not acknowledge the unsubscribe request for topic " + topic);
         }
 
         private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
@@ -769,7 +755,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else if (topic.StartsWith(DirectMethodsRequestTopic))
             {
-                await HandleReceivedDirectMethodRequest(receivedEventArgs);
+                HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(moduleEventMessageTopic)
                 || topic.StartsWith(edgeModuleInputEventsTopic))
@@ -793,7 +779,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             PopulateMessagePropertiesFromPacket(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
-            // save the received mqtt message instance so that it can be completed later
+            // Save the received mqtt message instance so that it can be completed later
             messagesToAcknowledge[receivedCloudToDeviceMessage.LockToken] = receivedEventArgs;
 
             if (_deviceMessageReceivedListener != null)
@@ -810,8 +796,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private async Task HandleReceivedDirectMethodRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
+        private void HandleReceivedDirectMethodRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            receivedEventArgs.AutoAcknowledge = true;
+
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
             using var receivedDirectMethod = new Message(payload);
@@ -822,11 +810,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             using var methodRequest = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), new MemoryStream(receivedEventArgs.ApplicationMessage.Payload), CancellationToken.None);
 
-            //TODO do this on another thread, right? Maybe don't await this?
-            await _methodListener.Invoke(methodRequest).ConfigureAwait(false);
-
-            //TODO here or later?
-            receivedEventArgs.AutoAcknowledge = true;
+            // Deliberately not awaiting on this async call so that the user's direct method handler can run independently of this thread
+            _methodListener.Invoke(methodRequest).ConfigureAwait(false);
         }
 
         private void HandleReceivedDesiredPropertiesUpdateRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
@@ -843,7 +828,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status))
+            if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out int version))
             {
                 byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
@@ -884,7 +869,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     // This received message is in response to an update reported properties request.
                     inProgressUpdateReportedPropertiesRequests.Remove(receivedRequestId);
-                    reportedPropertyUpdateResponses[receivedRequestId] = status;
+                    reportedPropertyUpdateResponses[receivedRequestId] = new PatchTwinResponse(status, version);
                     _reportedPropertyUpdateResponsesSemaphore.Release();
                 }
             }
@@ -990,18 +975,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return msg;
         }
 
-        private bool ParseResponseTopic(string topicName, out string rid, out int status)
+        private bool ParseResponseTopic(string topicName, out string rid, out int status, out int version)
         {
+            rid = "";
+            status = 500;
+            version = 0;
+
             Match match = _twinResponseTopicRegex.Match(topicName);
             if (match.Success)
             {
                 status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
+
+                NameValueCollection queryStringKeyValuePairs = HttpUtility.ParseQueryString(match.Groups[2].Value);
+                rid = queryStringKeyValuePairs.Get("$rid");
+
+                if (status == 204)
+                {
+                    // This query string key-value pair is only expected in a successful patch twin response message.
+                    // Get twin requests will contain the twin version in the payload instead.
+                    version = int.Parse(queryStringKeyValuePairs.Get("$version"));
+                }
+
                 return true;
             }
 
-            rid = "";
-            status = 500;
             return false;
         }
     }
