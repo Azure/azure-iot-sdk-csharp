@@ -11,8 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     internal interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
     {
         // Transport state.
-        Task OpenAsync(TimeoutHelper timeoutHelper);
-
         Task OpenAsync(CancellationToken cancellationToken);
 
         Task CloseAsync(CancellationToken cancellationToken);
@@ -29,8 +27,6 @@ namespace Microsoft.Azure.Devices.Client
         // Telemetry downlink for devices.
         Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken);
 
-        Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper);
-
         Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
 
         // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
@@ -39,11 +35,11 @@ namespace Microsoft.Azure.Devices.Client
 
         Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
 
-        Task RejectAsync(string lockToken, CancellationToken cancellationToken);
+        Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken);
 
-        Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
+        Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken);
 
-        Task CompleteAsync(string lockToken, CancellationToken cancellationToken);
+        Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken);
 
         // Edge Modules and Module Twins have different links to be used for the same function when communicating over AMQP
         // We are setting the flag on these methods since the decision should be made at the transport layer and not at the

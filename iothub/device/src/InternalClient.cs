@@ -465,7 +465,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await InnerHandler.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client
             // expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
-                await InnerHandler.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -547,7 +547,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await InnerHandler.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -1196,7 +1196,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    handler = handler.InnerHandler as DefaultDelegatingHandler;
+                    handler = handler.NextHandler as DefaultDelegatingHandler;
                 }
             }
 

@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices
 {
     internal sealed class IotHubConnection : IDisposable
     {
-        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
+        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
-        private static readonly Lazy<bool> s_shouldDisableServerCertificateValidation = new Lazy<bool>(InitializeDisableServerCertificateValidation);
+        private static readonly Lazy<bool> s_shouldDisableServerCertificateValidation = new(InitializeDisableServerCertificateValidation);
         internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
         internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
@@ -55,7 +55,8 @@ namespace Microsoft.Azure.Devices
 
         public Task OpenAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, nameof(OpenAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, timeout, nameof(OpenAsync));
 
             try
             {
@@ -63,13 +64,15 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, timeout, nameof(OpenAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, timeout, nameof(OpenAsync));
             }
         }
 
         public Task CloseAsync()
         {
-            Logging.Enter(this, nameof(CloseAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(CloseAsync));
 
             try
             {
@@ -77,13 +80,15 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, nameof(CloseAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(CloseAsync));
             }
         }
 
         public async Task<SendingAmqpLink> CreateSendingLinkAsync(string path, TimeSpan timeout)
         {
-            Logging.Enter(this, path, timeout, nameof(CreateSendingLinkAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, path, timeout, nameof(CreateSendingLinkAsync));
 
             try
             {
@@ -108,7 +113,8 @@ namespace Microsoft.Azure.Devices
 
                 SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
 
-                Logging.Info(this, $"Creating sending link with target={linkSettings.Target}, link name={linkSettings.LinkName}, total link creadit={linkSettings.TotalLinkCredit}");
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Creating sending link with target={linkSettings.Target}, link name={linkSettings.LinkName}, total link creadit={linkSettings.TotalLinkCredit}");
 
                 var link = new SendingAmqpLink(linkSettings);
                 link.AttachTo(session);
@@ -119,7 +125,8 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, path, timeout, nameof(CreateSendingLinkAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, path, timeout, nameof(CreateSendingLinkAsync));
             }
         }
 
@@ -168,11 +175,13 @@ namespace Microsoft.Azure.Devices
 
         public void CloseLink(AmqpLink link)
         {
-            Logging.Enter(this, link.Name, nameof(CloseAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, link.Name, nameof(CloseAsync));
 
             link.SafeClose();
 
-            Logging.Exit(this, link.Name, nameof(CloseAsync));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, link.Name, nameof(CloseAsync));
         }
 
         public static bool OnRemoteCertificateValidation(
@@ -182,8 +191,8 @@ namespace Microsoft.Azure.Devices
             SslPolicyErrors sslPolicyErrors)
         {
             return sslPolicyErrors == SslPolicyErrors.None
-                || (s_shouldDisableServerCertificateValidation.Value
-                    && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch);
+                || s_shouldDisableServerCertificateValidation.Value
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch;
         }
 
         public static ArraySegment<byte> GetNextDeliveryTag(ref int deliveryTag)
@@ -228,7 +237,8 @@ namespace Microsoft.Azure.Devices
 
         private async Task<AmqpSession> CreateSessionAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, nameof(CreateSessionAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, timeout, nameof(CreateSessionAsync));
 
             TransportBase transport = null;
 
@@ -254,7 +264,8 @@ namespace Microsoft.Azure.Devices
                     }
                     catch (Exception e) when (!(e is AuthenticationException))
                     {
-                        Logging.Error(this, e, nameof(CreateSessionAsync));
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, e, nameof(CreateSessionAsync));
 
                         if (Fx.IsFatal(e))
                         {
@@ -273,7 +284,8 @@ namespace Microsoft.Azure.Devices
                     }
                 }
 
-                Logging.Info(this, $"Initialized {nameof(TransportBase)}, ws={_useWebSocketOnly}");
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Initialized {nameof(TransportBase)}, ws={_useWebSocketOnly}");
 
                 var amqpConnectionSettings = new AmqpConnectionSettings
                 {
@@ -285,7 +297,8 @@ namespace Microsoft.Azure.Devices
                 var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
                 await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
-                Logging.Info(this, $"{nameof(AmqpConnection)} opened.");
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"{nameof(AmqpConnection)} opened.");
 
                 var sessionSettings = new AmqpSessionSettings
                 {
@@ -297,7 +310,8 @@ namespace Microsoft.Azure.Devices
                     AmqpSession amqpSession = amqpConnection.CreateSession(sessionSettings);
                     await amqpSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
-                    Logging.Info(this, $"{nameof(AmqpSession)} opened.");
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(AmqpSession)} opened.");
 
                     // This adds itself to amqpConnection.Extensions
                     var cbsLink = new AmqpCbsLink(amqpConnection);
@@ -306,7 +320,8 @@ namespace Microsoft.Azure.Devices
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    Logging.Error(this, ex, nameof(CreateSessionAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, ex, nameof(CreateSessionAsync));
 
                     _clientWebSocketTransport?.Dispose();
                     _clientWebSocketTransport = null;
@@ -322,23 +337,27 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, timeout, nameof(CreateSessionAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, timeout, nameof(CreateSessionAsync));
             }
         }
 
         private void CloseConnection(AmqpSession amqpSession)
         {
-            Logging.Enter(this, nameof(CloseConnection));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(CloseConnection));
 
             // Closing the connection also closes any sessions.
             amqpSession.Connection.SafeClose();
 
-            Logging.Exit(this, nameof(CloseConnection));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(CloseConnection));
         }
 
         private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
         {
-            Logging.Enter(this, websocketUri, timeout, nameof(CreateClientWebSocketAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, websocketUri, timeout, nameof(CreateClientWebSocketAsync));
 
             try
             {
@@ -356,13 +375,15 @@ namespace Microsoft.Azure.Devices
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
                     }
                 }
                 catch (PlatformNotSupportedException)
                 {
                     // .NET Core 2.0 doesn't support proxy. Ignore this setting.
-                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
                 using (var cancellationTokenSource = new CancellationTokenSource(timeout))
@@ -374,13 +395,15 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, websocketUri, timeout, nameof(CreateClientWebSocketAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, websocketUri, timeout, nameof(CreateClientWebSocketAsync));
             }
         }
 
         private static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, TimeSpan timeout)
         {
-            Logging.Enter(webSocketUri, timeout, nameof(CreateLegacyClientWebSocketAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(webSocketUri, timeout, nameof(CreateLegacyClientWebSocketAsync));
 
             try
             {
@@ -392,26 +415,31 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(webSocketUri, timeout, nameof(CreateLegacyClientWebSocketAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(webSocketUri, timeout, nameof(CreateLegacyClientWebSocketAsync));
             }
         }
 
         private async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
-            Logging.Enter(this, timeout, nameof(CreateClientWebSocketTransportAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, timeout, nameof(CreateClientWebSocketTransportAsync));
 
             try
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
-                var websocketUri = new Uri($"{ WebSocketConstants.Scheme }{ Credential.HostName}:{ WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{Credential.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
 
-                Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
+
                 ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 return new ClientWebSocketTransport(websocket, null, null);
             }
             finally
             {
-                Logging.Exit(this, timeout, nameof(CreateClientWebSocketTransportAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, timeout, nameof(CreateClientWebSocketTransportAsync));
             }
         }
 
@@ -423,7 +451,8 @@ namespace Microsoft.Azure.Devices
             amqpTransportProvider.Versions.Add(s_amqpVersion_1_0_0);
             amqpSettings.TransportProviders.Add(amqpTransportProvider);
 
-            Logging.Info(s_amqpVersion_1_0_0, nameof(CreateAmqpSettings));
+            if (Logging.IsEnabled)
+                Logging.Info(s_amqpVersion_1_0_0, nameof(CreateAmqpSettings));
 
             return amqpSettings;
         }
@@ -434,7 +463,8 @@ namespace Microsoft.Azure.Devices
             linkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeSpan.TotalMilliseconds);
             linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, clientVersion);
 
-            Logging.Info(clientVersion, nameof(SetLinkSettingsCommonProperties));
+            if (Logging.IsEnabled)
+                Logging.Info(clientVersion, nameof(SetLinkSettingsCommonProperties));
 
             return linkSettings;
         }
@@ -454,14 +484,16 @@ namespace Microsoft.Azure.Devices
                 CertificateValidationCallback = OnRemoteCertificateValidation
             };
 
-            Logging.Info($"host={tcpTransportSettings.Host}, port={tcpTransportSettings.Port}", nameof(CreateTlsTransportSettings));
+            if (Logging.IsEnabled)
+                Logging.Info($"host={tcpTransportSettings.Host}, port={tcpTransportSettings.Port}", nameof(CreateTlsTransportSettings));
 
             return tlsTransportSettings;
         }
 
         private static async Task OpenLinkAsync(AmqpObject link, TimeSpan timeout)
         {
-            Logging.Enter(link, link.State, timeout, nameof(OpenLinkAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(link, link.State, timeout, nameof(OpenLinkAsync));
 
             try
             {
@@ -472,7 +504,8 @@ namespace Microsoft.Azure.Devices
                 }
                 catch (Exception exception)
                 {
-                    Logging.Error(link, exception, nameof(OpenLinkAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(link, exception, nameof(OpenLinkAsync));
 
                     if (exception.IsFatal())
                     {
@@ -486,13 +519,15 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(link, link.State, timeout, nameof(OpenLinkAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(link, link.State, timeout, nameof(OpenLinkAsync));
             }
         }
 
         private async Task SendCbsTokenAsync(AmqpCbsLink cbsLink, TimeSpan timeout)
         {
-            Logging.Enter(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
 
             string audience = Credential.AmqpEndpoint.AbsoluteUri;
             string resource = Credential.AmqpEndpoint.AbsoluteUri;
@@ -507,12 +542,14 @@ namespace Microsoft.Azure.Devices
                 .ConfigureAwait(false);
             ScheduleTokenRefresh(expiresAtUtc);
 
-            Logging.Exit(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
         }
 
         private async void OnRefreshTokenAsync()
         {
-            Logging.Enter(this, nameof(OnRefreshTokenAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(OnRefreshTokenAsync));
 
             if (_faultTolerantSession.TryGetOpenedObject(out AmqpSession amqpSession)
                 && amqpSession != null
@@ -527,7 +564,8 @@ namespace Microsoft.Azure.Devices
                     }
                     catch (Exception ex)
                     {
-                        Logging.Error(this, ex, nameof(OnRefreshTokenAsync));
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, ex, nameof(OnRefreshTokenAsync));
 
                         if (Fx.IsFatal(ex))
                         {
@@ -539,12 +577,14 @@ namespace Microsoft.Azure.Devices
                 }
             }
 
-            Logging.Exit(this, nameof(OnRefreshTokenAsync));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, nameof(OnRefreshTokenAsync));
         }
 
         private void ScheduleTokenRefresh(DateTime expiresAtUtc)
         {
-            Logging.Enter(this, expiresAtUtc, nameof(ScheduleTokenRefresh));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, expiresAtUtc, nameof(ScheduleTokenRefresh));
 
             try
             {
@@ -559,11 +599,13 @@ namespace Microsoft.Azure.Devices
                     _refreshTokenTimer.Set(timeFromNow);
                 }
 
-                Logging.Info(this, timeFromNow, nameof(ScheduleTokenRefresh));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, timeFromNow, nameof(ScheduleTokenRefresh));
             }
             finally
             {
-                Logging.Exit(this, expiresAtUtc, nameof(ScheduleTokenRefresh));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, expiresAtUtc, nameof(ScheduleTokenRefresh));
             }
         }
     }

@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerCompleteAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteMessageAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -554,18 +554,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        public async Task MqttTransportHandler_ReceiveAsync_ThrowsWithSmallTimeout()
-        {
-            await TestReceiveOperationThrowsBasedOnTimeout(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task MqttTransportHandler_ReceiveAsync_ThrowsWithBigTimeout()
-        {
-            await TestReceiveOperationThrowsBasedOnTimeout(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task MqttTransportHandler_EnableReceiveMessageAsync_SubscribesSuccessfully()
         {
             // arrange
@@ -630,31 +618,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             catch (OperationCanceledException) { }
         }
 
-        private async Task TestReceiveOperationThrowsBasedOnTimeout(TimeSpan timeSpan)
-        {
-            // arrange
-            var sw = new Stopwatch();
-            var timeout = new TimeoutHelper(timeSpan);
-            string expectedTopicFilter = "devices/FakeDevice/messages/devicebound/#";
-            var mockTransport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-            channel
-                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter)))
-                .Returns(x => { return TaskHelpers.CompletedTask; });
-            await mockTransport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-
-            // act
-            Func<Task> act = async () =>
-            {
-                sw.Start();
-                await mockTransport.ReceiveAsync(timeout).ConfigureAwait(false);
-            };
-
-            // assert
-            act.Should().Throw<OperationCanceledException>();
-            sw.Stop();
-            sw.Elapsed.Should().BeLessOrEqualTo(timeSpan + ReceiveTimeoutBuffer, "ReceiveAsync should throw within the timeout specified.");
-        }
-
         private MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, string connectionString = DummyConnectionString)
         {
             var channelMock = Substitute.For<IChannel>();
@@ -681,7 +644,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
-            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), null);
+            return new MqttTransportHandler(
+                new PipelineContext(),
+                IotHubConnectionStringExtensions.Parse(connectionString),
+                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
+                null);
         }
     }
 }

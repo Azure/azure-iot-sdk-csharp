@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
+
 namespace Microsoft.Azure.Devices.Client.Test
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Transport;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using NSubstitute;
-
     [TestClass]
     [TestCategory("Unit")]
     public class ProtocolRoutingDelegatingHandlerTests
@@ -20,15 +21,15 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             var amqpTransportSettings = Substitute.For<ITransportSettings>();
             var mqttTransportSettings = Substitute.For<ITransportSettings>();
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            var nextHandler = Substitute.For<IDelegatingHandler>();
+            nextHandler.OpenAsync(CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
             contextMock.TransportSettingsArray = new[] { amqpTransportSettings, mqttTransportSettings };
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
-            sut.ContinuationFactory = (ctx, inner) => innerHandler;
+            sut.ContinuationFactory = (ctx, next) => nextHandler;
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-            await innerHandler.Received(1).OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await nextHandler.Received(1).OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -37,9 +38,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             var amqpTransportSettings = Substitute.For<ITransportSettings>();
             var mqttTransportSettings = Substitute.For<ITransportSettings>();
-            var innerHandler = Substitute.For<IDelegatingHandler>();
+            var nextHandler = Substitute.For<IDelegatingHandler>();
             int openCallCounter = 0;
-            innerHandler.OpenAsync(CancellationToken.None).ReturnsForAnyArgs(async ci =>
+            nextHandler.OpenAsync(CancellationToken.None).ReturnsForAnyArgs(async ci =>
             {
                 openCallCounter++;
                 await Task.Yield();
@@ -47,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             });
             contextMock.TransportSettingsArray = new[] { amqpTransportSettings, mqttTransportSettings };
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
-            sut.ContinuationFactory = (ctx, inner) => innerHandler;
+            sut.ContinuationFactory = (ctx, next) => nextHandler;
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ExpectedAsync<InvalidOperationException>().ConfigureAwait(false);
 
@@ -62,75 +63,75 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mqttTransportSettings = Substitute.For<ITransportSettings>();
             int openCallCounter = 0;
 
-            var innerHandlers = new List<IDelegatingHandler>(2);
-            IDelegatingHandler GetInnerHandler()
+            var nextHandlers = new List<IDelegatingHandler>(2);
+            IDelegatingHandler GetNextHandler()
             {
-                var innerHandler = Substitute.For<IDelegatingHandler>();
-                innerHandler.IsUsable.Returns(true);
-                innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
+                var nextHandler = Substitute.For<IDelegatingHandler>();
+                nextHandler.IsUsable.Returns(true);
+                nextHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
                 {
                     openCallCounter++;
                     await Task.Yield();
-                    innerHandler.IsUsable.Returns(false);
+                    nextHandler.IsUsable.Returns(false);
                     throw new TimeoutException();
                 });
-                innerHandlers.Add(innerHandler);
-                return innerHandler;
+                nextHandlers.Add(nextHandler);
+                return nextHandler;
             }
 
             contextMock.TransportSettingsArray = new[] { amqpTransportSettings, mqttTransportSettings };
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
-            sut.ContinuationFactory = (ctx, inner) => GetInnerHandler();
+            sut.ContinuationFactory = (ctx, next) => GetNextHandler();
             var cancellationToken = new CancellationToken();
 
             await sut.OpenAsync(cancellationToken).ExpectedAsync<TimeoutException>().ConfigureAwait(false);
-            Assert.AreEqual(1, innerHandlers.Count);
-            innerHandlers[0].Received(0).Dispose();
+            Assert.AreEqual(1, nextHandlers.Count);
+            nextHandlers[0].Received(0).Dispose();
 
             await sut.OpenAsync(cancellationToken).ExpectedAsync<TimeoutException>().ConfigureAwait(false);
-            Assert.AreEqual(2, innerHandlers.Count);
-            innerHandlers[0].Received(1).Dispose();
-            innerHandlers[1].Received(0).Dispose();
+            Assert.AreEqual(2, nextHandlers.Count);
+            nextHandlers[0].Received(1).Dispose();
+            nextHandlers[1].Received(0).Dispose();
 
             Assert.AreEqual(2, openCallCounter);
         }
 
         [TestMethod]
-        public async Task TransportRouting_TryOpenWhenInnerHandlerNotUsable_Success()
+        public async Task TransportRouting_TryOpenWhenNextHandlerNotUsable_Success()
         {
             var contextMock = Substitute.For<PipelineContext>();
             var amqpTransportSettings = Substitute.For<ITransportSettings>();
             var mqttTransportSettings = Substitute.For<ITransportSettings>();
             int openCallCounter = 0;
 
-            var innerHandlers = new List<IDelegatingHandler>(2);
-            IDelegatingHandler GetInnerHandler()
+            var nextHandlers = new List<IDelegatingHandler>(2);
+            IDelegatingHandler GetNextHandler()
             {
-                var innerHandler = Substitute.For<IDelegatingHandler>();
-                innerHandler.IsUsable.Returns(true);
-                innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
+                var nextHandler = Substitute.For<IDelegatingHandler>();
+                nextHandler.IsUsable.Returns(true);
+                nextHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
                 {
                     openCallCounter++;
                     await Task.Yield();
-                    innerHandler.IsUsable.Returns(false);
+                    nextHandler.IsUsable.Returns(false);
                 });
-                innerHandlers.Add(innerHandler);
-                return innerHandler;
+                nextHandlers.Add(nextHandler);
+                return nextHandler;
             }
 
             contextMock.TransportSettingsArray = new[] { amqpTransportSettings, mqttTransportSettings };
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
-            sut.ContinuationFactory = (ctx, inner) => GetInnerHandler();
+            sut.ContinuationFactory = (ctx, next) => GetNextHandler();
             var cancellationToken = new CancellationToken();
 
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            Assert.AreEqual(1, innerHandlers.Count);
-            innerHandlers[0].Received(0).Dispose();
+            Assert.AreEqual(1, nextHandlers.Count);
+            nextHandlers[0].Received(0).Dispose();
 
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
-            Assert.AreEqual(2, innerHandlers.Count);
-            innerHandlers[0].Received(1).Dispose();
-            innerHandlers[1].Received(0).Dispose();
+            Assert.AreEqual(2, nextHandlers.Count);
+            nextHandlers[0].Received(1).Dispose();
+            nextHandlers[1].Received(0).Dispose();
 
             Assert.AreEqual(2, openCallCounter);
         }
@@ -139,8 +140,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task TransportRouting_CancellationTokenCanceled_Open()
         {
             var transportSettings = Substitute.For<ITransportSettings>();
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            var nextHandler = Substitute.For<IDelegatingHandler>();
+            nextHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
 

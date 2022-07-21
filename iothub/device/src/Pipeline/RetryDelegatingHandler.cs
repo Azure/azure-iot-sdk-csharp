@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
+                    Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
 
                 return await _internalRetryPolicy
                     .RunWithRetryAsync(
@@ -175,32 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(ReceiveAsync));
-            }
-        }
-
-        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
-
-                using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-                return await _internalRetryPolicy
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await EnsureOpenedAsync(false, timeoutHelper).ConfigureAwait(false);
-                            return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
-                        },
-                        cts.Token)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, timeoutHelper, nameof(ReceiveAsync));
+                    Logging.Exit(this, cancellationToken, nameof(ReceiveMessageAsync));
             }
         }
 
@@ -575,19 +550,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                            await base.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -595,23 +570,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
             }
         }
 
-        public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                            await base.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -619,23 +594,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
             }
         }
 
-        public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
 
                 await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-                            await base.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
+                            await base.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
@@ -643,7 +618,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
             }
         }
 
@@ -739,61 +714,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private async Task EnsureOpenedAsync(bool withRetry, TimeoutHelper timeoutHelper)
-        {
-            if (Volatile.Read(ref _opened))
-            {
-                return;
-            }
-
-            bool gain = await _handlerSemaphore.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException("Timed out to acquire handler lock.");
-            }
-
-            try
-            {
-                if (!_opened)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
-
-                    // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
-                    // we are returning the corresponding connection status change event => disconnected: retry_expired.
-                    try
-                    {
-                        await OpenInternalAsync(withRetry, timeoutHelper).ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (!ex.IsFatal())
-                    {
-                        HandleConnectionStatusExceptions(ex, true);
-                        throw;
-                    }
-
-                    if (!_disposed)
-                    {
-                        _opened = true;
-                        _openCalled = true;
-
-                        // Send the request for transport close notification.
-                        _transportClosedTask = HandleDisconnectAsync();
-                    }
-                    else
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
-
-                        _handleDisconnectCts.Cancel();
-                    }
-                }
-            }
-            finally
-            {
-                _handlerSemaphore?.Release();
-            }
-        }
-
         private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
         {
             if (withRetry)
@@ -846,65 +766,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Exit(this, cancellationToken, nameof(OpenAsync));
                 }
             }
-        }
-
-        private async Task OpenInternalAsync(bool withRetry, TimeoutHelper timeoutHelper)
-        {
-            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-
-            if (withRetry)
-            {
-                await _internalRetryPolicy
-                .RunWithRetryAsync(
-                    async () =>
-                    {
-                        try
-                        {
-                            if (Logging.IsEnabled)
-                                Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
-
-                            // Will throw on error.
-                            await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
-                            _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
-                        }
-                        catch (Exception ex) when (!ex.IsFatal())
-                        {
-                            HandleConnectionStatusExceptions(ex);
-                            throw;
-                        }
-                        finally
-                        {
-                            if (Logging.IsEnabled)
-                                Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
-                        }
-                    },
-                    cts.Token)
-                .ConfigureAwait(false);
-            }
-            else
-            {
-                try
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
-
-                    // Will throw on error.
-                    await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
-                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
-                }
-                catch (Exception ex) when (!ex.IsFatal())
-                {
-                    HandleConnectionStatusExceptions(ex);
-                    throw;
-                }
-                finally
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
-                }
-            }
-
-
         }
 
         // Triggered from connection loss event
