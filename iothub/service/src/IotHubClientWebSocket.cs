@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices
             byte[] header = new byte[2];
 
             Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringReceive);
-            TcpClient.ReceiveTimeout = TimeoutHelper.ToMilliseconds(timeout);
+            TcpClient.ReceiveTimeout = (int)timeout.TotalMilliseconds;
 
             bool succeeded = false;
             try
@@ -387,7 +387,7 @@ namespace Microsoft.Azure.Devices
         public async Task SendAsync(byte[] buffer, int offset, int size, WebSocketMessageType webSocketMessageType, TimeSpan timeout)
         {
             Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringSend);
-            TcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
+            TcpClient.Client.SendTimeout = (int)timeout.TotalMilliseconds;
             bool succeeded = false;
             try
             {
@@ -804,10 +804,9 @@ namespace Microsoft.Azure.Devices
 
             public async Task ReadAsync(TimeSpan timeout)
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
                 do
                 {
-                    TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
+                    TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeout);
                     _bytesRead = 0;
 
                     _bytesRead = await ReadFromStreamAsync(Stream, Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);

@@ -305,8 +305,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
-        /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
-        public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -331,8 +331,6 @@ namespace Microsoft.Azure.Devices
                 message.ResetBody();
             }
 
-            timeout ??= _operationTimeout;
-
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
 
@@ -340,7 +338,11 @@ namespace Microsoft.Azure.Devices
             {
                 SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
                 Outcome outcome = await sendingLink
-                    .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
+                    .SendMessageAsync(
+                        amqpMessage,
+                        IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
+                        AmqpConstants.NullBinary,
+                        cancellationToken)
                     .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
@@ -351,10 +353,11 @@ namespace Microsoft.Azure.Devices
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-            catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
+            catch (Exception ex) when (ex is not TimeoutException && !ex.IsFatal())
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally

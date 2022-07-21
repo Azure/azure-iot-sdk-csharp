@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -57,7 +58,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             try
             {
                 using var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
-                await sender.SendAsync(testDevice.Id, testMessage, timeout).ConfigureAwait(false);
+                using var cts = timeout.HasValue
+                    ? new CancellationTokenSource(timeout.Value)
+                    : new CancellationTokenSource();
+                await sender.SendAsync(testDevice.Id, testMessage, cts.Token).ConfigureAwait(false);
             }
             finally
             {

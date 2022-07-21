@@ -242,17 +242,17 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, timeout, nameof(CreateSessionAsync));
 
             TransportBase transport = null;
+            using var cts = new CancellationTokenSource(timeout);
 
             try
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
                 _refreshTokenTimer.Cancel();
 
                 AmqpSettings amqpSettings = CreateAmqpSettings();
                 if (_useWebSocketOnly)
                 {
                     // Try only AMQP transport over WebSocket
-                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime())
+                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cts.Token)
                         .ConfigureAwait(false);
                 }
                 else
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices
                     var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
                     try
                     {
-                        transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                        transport = await amqpTransportInitiator.ConnectAsync(cts.Token).ConfigureAwait(false);
                     }
                     catch (Exception e) when (e is not AuthenticationException)
                     {
@@ -274,14 +274,7 @@ namespace Microsoft.Azure.Devices
                         }
 
                         // AMQP transport over TCP failed. Retry AMQP transport over WebSocket
-                        if (timeoutHelper.RemainingTime() != TimeSpan.Zero)
-                        {
-                            transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            throw;
-                        }
+                        transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cts.Token).ConfigureAwait(false);
                     }
                 }
 
@@ -296,7 +289,7 @@ namespace Microsoft.Azure.Devices
                 };
 
                 var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
-                await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await amqpConnection.OpenAsync(cts.Token).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(AmqpConnection)} opened.");
@@ -309,14 +302,14 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     AmqpSession amqpSession = amqpConnection.CreateSession(sessionSettings);
-                    await amqpSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    await amqpSession.OpenAsync(cts.Token).ConfigureAwait(false);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(AmqpSession)} opened.");
 
                     // This adds itself to amqpConnection.Extensions
                     var cbsLink = new AmqpCbsLink(amqpConnection);
-                    await SendCbsTokenAsync(cbsLink, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    await SendCbsTokenAsync(cbsLink, cts.Token).ConfigureAwait(false);
                     return amqpSession;
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -355,10 +348,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Exit(this, nameof(CloseConnection));
         }
 
-        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
+        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, websocketUri, timeout, nameof(CreateClientWebSocketAsync));
+                Logging.Enter(this, websocketUri, cancellationToken, nameof(CreateClientWebSocketAsync));
 
             try
             {
@@ -387,15 +380,14 @@ namespace Microsoft.Azure.Devices
                         Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
-                using var cts = new CancellationTokenSource(timeout);
-                await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
+                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
                 return websocket;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, websocketUri, timeout, nameof(CreateClientWebSocketAsync));
+                    Logging.Exit(this, websocketUri, cancellationToken, nameof(CreateClientWebSocketAsync));
             }
         }
 
@@ -419,26 +411,25 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
+        private async Task<TransportBase> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, timeout, nameof(CreateClientWebSocketTransportAsync));
+                Logging.Enter(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
 
             try
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
                 var websocketUri = new Uri($"{WebSocketConstants.Scheme}{Credential.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}");
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, websocketUri, nameof(CreateClientWebSocketTransportAsync));
 
-                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
                 return new ClientWebSocketTransport(websocket, null, null);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, timeout, nameof(CreateClientWebSocketTransportAsync));
+                    Logging.Exit(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));
             }
         }
 
@@ -522,10 +513,10 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task SendCbsTokenAsync(AmqpCbsLink cbsLink, TimeSpan timeout)
+        private async Task SendCbsTokenAsync(AmqpCbsLink cbsLink, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
+                Logging.Enter(this, cbsLink, cancellationToken, nameof(SendCbsTokenAsync));
 
             string audience = Credential.AmqpEndpoint.AbsoluteUri;
             string resource = Credential.AmqpEndpoint.AbsoluteUri;
@@ -536,12 +527,12 @@ namespace Microsoft.Azure.Devices
                     audience,
                     resource,
                     Credential.AmqpAudience.ToArray(),
-                    timeout)
+                    cancellationToken)
                 .ConfigureAwait(false);
             ScheduleTokenRefresh(expiresAtUtc);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, cbsLink, timeout, nameof(SendCbsTokenAsync));
+                Logging.Exit(this, cbsLink, cancellationToken, nameof(SendCbsTokenAsync));
         }
 
         private async void OnRefreshTokenAsync()
@@ -558,7 +549,8 @@ namespace Microsoft.Azure.Devices
                 {
                     try
                     {
-                        await SendCbsTokenAsync(cbsLink, DefaultOperationTimeout).ConfigureAwait(false);
+                        using var cts = new CancellationTokenSource(DefaultOperationTimeout);
+                        await SendCbsTokenAsync(cbsLink, cts.Token).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
