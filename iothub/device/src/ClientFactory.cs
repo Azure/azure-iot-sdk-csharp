@@ -174,36 +174,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create a InternalClient using Amqp transport from the specified connection string
-        /// </summary>
-        /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
-        /// <param name="deviceId">Id of the Device</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient CreateFromConnectionString(
-            string connectionString,
-            string deviceId,
-            ClientOptions options = default)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (s_deviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
-            }
-
-            return CreateFromConnectionString($"{connectionString};{DeviceId}={deviceId}", options);
-        }
-
-        /// <summary>
         /// Create InternalClient from the specified connection string using a prioritized list of transports
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
@@ -216,38 +186,6 @@ namespace Microsoft.Azure.Devices.Client
             ClientOptions options = default)
         {
             return CreateFromConnectionString(connectionString, null, transportSettings, null, options);
-        }
-
-        /// <summary>
-        /// Create InternalClient from the specified connection string using the prioritized list of transports
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
-        /// <param name="deviceId">Id of the device</param>
-        /// <param name="transportSettings">Prioritized list of transport types and their settings</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient CreateFromConnectionString(
-            string connectionString,
-            string deviceId,
-            ITransportSettings[] transportSettings,
-            ClientOptions options = default)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (s_deviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
-            }
-
-            return CreateFromConnectionString($"{connectionString};{DeviceId}={deviceId}", transportSettings, options);
         }
 
         internal static InternalClient CreateFromConnectionString(

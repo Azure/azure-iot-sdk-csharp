@@ -80,18 +80,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a disposable DeviceClient using AMQP transport from the specified connection string
-        /// </summary>
-        /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
-        /// <param name="deviceId">Id of the Device</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, options));
-        }
-
-        /// <summary>
         /// Create a disposable DeviceClient from the specified connection string using a prioritized list of transports
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
@@ -104,23 +92,6 @@ namespace Microsoft.Azure.Devices.Client
             ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings, options));
-        }
-
-        /// <summary>
-        /// Creates a disposable DeviceClient from the specified connection string using the prioritized list of transports
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
-        /// <param name="deviceId">Id of the device</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(
-            string connectionString,
-            string deviceId,
-            ITransportSettings[] transportSettings,
-            ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportSettings, options));
         }
 
         private static DeviceClient Create(Func<InternalClient> internalClientCreator)
