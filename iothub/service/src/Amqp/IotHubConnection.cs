@@ -53,19 +53,19 @@ namespace Microsoft.Azure.Devices
 
         internal IotHubConnectionProperties Credential { get; private set; }
 
-        public Task OpenAsync(TimeSpan timeout)
+        public Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, timeout, nameof(OpenAsync));
+                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
             try
             {
-                return _faultTolerantSession.GetOrCreateAsync(timeout);
+                return _faultTolerantSession.GetOrCreateAsync(cancellationToken);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, timeout, nameof(OpenAsync));
+                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
             }
         }
 
@@ -90,13 +90,13 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, path, timeout, nameof(CreateSendingLinkAsync));
 
+            using var cts = new CancellationTokenSource(timeout);
+
             try
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
-
                 if (!_faultTolerantSession.TryGetOpenedObject(out AmqpSession session))
                 {
-                    session = await _faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    session = await _faultTolerantSession.GetOrCreateAsync(cts.Token).ConfigureAwait(false);
                 }
 
                 Uri linkAddress = Credential.BuildLinkAddress(path);
@@ -111,15 +111,15 @@ namespace Microsoft.Azure.Devices
                     LinkName = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
                 };
 
-                SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
+                SetLinkSettingsCommonProperties(linkSettings, timeout);
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Creating sending link with target={linkSettings.Target}, link name={linkSettings.LinkName}, total link creadit={linkSettings.TotalLinkCredit}");
+                    Logging.Info(this, $"Creating sending link with target={linkSettings.Target}, link name={linkSettings.LinkName}, total link credit={linkSettings.TotalLinkCredit}");
 
                 var link = new SendingAmqpLink(linkSettings);
                 link.AttachTo(session);
 
-                await OpenLinkAsync(link, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await OpenLinkAsync(link, cts.Token).ConfigureAwait(false);
 
                 return link;
             }
@@ -132,15 +132,16 @@ namespace Microsoft.Azure.Devices
 
         public async Task<ReceivingAmqpLink> CreateReceivingLinkAsync(string path, TimeSpan timeout, uint prefetchCount)
         {
-            Logging.Enter(this, path, timeout, prefetchCount, nameof(CreateReceivingLinkAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, path, timeout, prefetchCount, nameof(CreateReceivingLinkAsync));
 
             try
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
+                using var cts = new CancellationTokenSource(timeout);
 
                 if (!_faultTolerantSession.TryGetOpenedObject(out AmqpSession session))
                 {
-                    session = await _faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    session = await _faultTolerantSession.GetOrCreateAsync(cts.Token).ConfigureAwait(false);
                 }
 
                 Uri linkAddress = Credential.BuildLinkAddress(path);
@@ -156,14 +157,14 @@ namespace Microsoft.Azure.Devices
                     LinkName = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
                 };
 
-                SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
+                SetLinkSettingsCommonProperties(linkSettings, timeout);
 
-                Logging.Info(this, $"Creating receiving link with source={linkSettings.Source}, link name={linkSettings.LinkName}, total link creadit={linkSettings.TotalLinkCredit}");
+                Logging.Info(this, $"Creating receiving link with source={linkSettings.Source}, link name={linkSettings.LinkName}, total link credit={linkSettings.TotalLinkCredit}");
 
                 var link = new ReceivingAmqpLink(linkSettings);
                 link.AttachTo(session);
 
-                await OpenLinkAsync(link, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await OpenLinkAsync(link, cts.Token).ConfigureAwait(false);
 
                 return link;
             }
@@ -262,7 +263,7 @@ namespace Microsoft.Azure.Devices
                     {
                         transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     }
-                    catch (Exception e) when (!(e is AuthenticationException))
+                    catch (Exception e) when (e is not AuthenticationException)
                     {
                         if (Logging.IsEnabled)
                             Logging.Error(this, e, nameof(CreateSessionAsync));
@@ -386,10 +387,8 @@ namespace Microsoft.Azure.Devices
                         Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
-                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
-                {
-                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
-                }
+                using var cts = new CancellationTokenSource(timeout);
+                await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
                 return websocket;
             }
@@ -457,10 +456,10 @@ namespace Microsoft.Azure.Devices
             return amqpSettings;
         }
 
-        private static AmqpLinkSettings SetLinkSettingsCommonProperties(AmqpLinkSettings linkSettings, TimeSpan timeSpan)
+        private static AmqpLinkSettings SetLinkSettingsCommonProperties(AmqpLinkSettings linkSettings, TimeSpan timeout)
         {
             string clientVersion = Utils.GetClientVersion();
-            linkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeSpan.TotalMilliseconds);
+            linkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeout.TotalMilliseconds);
             linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, clientVersion);
 
             if (Logging.IsEnabled)
@@ -490,17 +489,16 @@ namespace Microsoft.Azure.Devices
             return tlsTransportSettings;
         }
 
-        private static async Task OpenLinkAsync(AmqpObject link, TimeSpan timeout)
+        private static async Task OpenLinkAsync(AmqpObject link, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(link, link.State, timeout, nameof(OpenLinkAsync));
+                Logging.Enter(link, link.State, cancellationToken, nameof(OpenLinkAsync));
 
             try
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
                 try
                 {
-                    await link.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    await link.OpenAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
@@ -520,7 +518,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(link, link.State, timeout, nameof(OpenLinkAsync));
+                    Logging.Exit(link, link.State, cancellationToken, nameof(OpenLinkAsync));
             }
         }
 

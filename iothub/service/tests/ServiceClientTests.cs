@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using FluentAssertions;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
@@ -92,6 +93,8 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public async Task DisposeTest()
         {
+            // arrange
+
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
             var connectionClosed = false;
@@ -100,16 +103,25 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
             var serviceClient = new ServiceClient(connection, restOpMock.Object);
+
             // This is required to cause onClose callback invocation.
-            await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            await connection.OpenAsync(cts.Token).ConfigureAwait(false);
+
+            // act
             serviceClient.Dispose();
+
+            // assert
+
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
-            Assert.IsTrue(connectionClosed);
+            connectionClosed.Should().BeTrue();
         }
 
         [TestMethod]
         public async Task CloseAsyncTest()
         {
+            // arrange
+
             var restOpMock = new Mock<IHttpClientHelper>();
             restOpMock.Setup(restOp => restOp.Dispose());
             var connectionClosed = false;
@@ -119,11 +131,17 @@ namespace Microsoft.Azure.Devices.Api.Test
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
             var connection = new IotHubConnection(onCreate, onClose);
             var serviceClient = new ServiceClient(connection, restOpMock.Object);
+
             // This is required to cause onClose callback invocation.
-            await connection.OpenAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            await connection.OpenAsync(cts.Token).ConfigureAwait(false);
+
+            // act
             await serviceClient.CloseAsync().ConfigureAwait(false);
+
+            // assert
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
-            Assert.IsTrue(connectionClosed);
+            connectionClosed.Should().BeTrue();
         }
     }
 }
