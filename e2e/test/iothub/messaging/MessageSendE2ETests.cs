@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt });
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt_Tcp_Only });
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 

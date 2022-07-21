@@ -1299,7 +1299,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var options = new ClientOptions
             {
-                TransportType = TransportType.Mqtt,
+                TransportType = TransportType.Mqtt_Tcp_Only,
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
@@ -1339,7 +1339,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var options = new ClientOptions
             {
-                TransportType = TransportType.Mqtt,
+                TransportType = TransportType.Mqtt_Tcp_Only,
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };

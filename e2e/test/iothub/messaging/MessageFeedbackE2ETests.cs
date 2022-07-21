@@ -40,8 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            if (transport == Client.TransportType.Mqtt
-                || transport == Client.TransportType.Mqtt_Tcp_Only
+            if (transport == Client.TransportType.Mqtt_Tcp_Only
                 || transport == Client.TransportType.Mqtt_WebSocket_Only)
             {
                 Assert.Fail("Message completion out of order not supported outside of AMQP");

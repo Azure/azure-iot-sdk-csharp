@@ -50,9 +50,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _transportType = transportType;
                     break;
 
-                case TransportType.Mqtt:
-                    throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Must specify Mqtt_WebSocket_Only or Mqtt_Tcp_Only");
-
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Unsupported Transport Type {0}".FormatInvariant(transportType));
             }

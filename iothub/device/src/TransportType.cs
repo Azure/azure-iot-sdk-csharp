@@ -13,12 +13,6 @@ namespace Microsoft.Azure.Devices.Client
     public enum TransportType
     {
         /// <summary>
-        /// Advanced Message Queuing Protocol transport.
-        /// Try AMQP over TCP first and fall back to AMQP over WebSocket if that fails
-        /// </summary>
-        Amqp = 0,
-
-        /// <summary>
         /// HyperText Transfer Protocol version 1 transport.
         /// </summary>
         Http1 = 1,
@@ -32,12 +26,6 @@ namespace Microsoft.Azure.Devices.Client
         /// Advanced Message Queuing Protocol transport over native TCP only
         /// </summary>
         Amqp_Tcp_Only = 3,
-
-        /// <summary>
-        /// Message Queuing Telemetry Transport.
-        /// Try Mqtt over TCP first and fall back to Mqtt over WebSocket if that fails
-        /// </summary>
-        Mqtt = 4,
 
         /// <summary>
         /// Message Queuing Telemetry Transport over Websocket only.
