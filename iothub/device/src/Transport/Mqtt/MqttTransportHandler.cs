@@ -91,8 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Dictionary<string, MqttApplicationMessageReceivedEventArgs> messagesToAcknowledge = new Dictionary<string, MqttApplicationMessageReceivedEventArgs>();
 
-        private readonly Dictionary<string, Twin> receivedTwins = new Dictionary<string, Twin>();
-        private readonly Dictionary<string, int> receivedTwinsErrors = new Dictionary<string, int>();
+        private readonly Dictionary<string, GetTwinResponse> getTwinResponses = new Dictionary<string, GetTwinResponse>();
         private SemaphoreSlim _getTwinSemaphore = new SemaphoreSlim(0);
 
         private readonly Dictionary<string, int> reportedPropertyUpdateResponses = new Dictionary<string, int>();
@@ -429,7 +428,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(DirectMethodsRequestTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+            await SubscribeAsync(DirectMethodsRequestTopic, cancellationToken);
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
@@ -458,7 +457,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(deviceBoundMessagesTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+            await SubscribeAsync(deviceBoundMessagesTopic, cancellationToken);
         }
 
         public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
@@ -476,11 +475,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (isAnEdgeModule)
             {
-                await SubscribeAsync(edgeModuleInputEventsTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+                await SubscribeAsync(edgeModuleInputEventsTopic, cancellationToken);
             }
             else
             {
-                await SubscribeAsync(moduleEventMessageTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+                await SubscribeAsync(moduleEventMessageTopic, cancellationToken);
             }
 
             isSubscribedToDesiredPropertyPatches = true;
@@ -498,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
-            await SubscribeAsync(TwinDesiredPropertiesPatchTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+            await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken);
 
             isSubscribedToDesiredPropertyPatches = true;
         }
@@ -514,7 +513,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!isSubscribedToTwinResponses)
             {
-                await SubscribeAsync(TwinResponseTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+                await SubscribeAsync(TwinResponseTopic, cancellationToken);
                 isSubscribedToTwinResponses = true;
             }
 
@@ -535,36 +534,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             inProgressGetTwinRequests.Add(requestId);
 
-            while (!receivedTwins.ContainsKey(requestId) && !receivedTwinsErrors.ContainsKey(requestId))
+            while (!getTwinResponses.ContainsKey(requestId))
             {
                 // May need to wait multiple times. This semaphore is released each time a get twin
                 // request gets a response, but it may not be in response to this particular get twin request.
                 _getTwinSemaphore.Wait(cancellationToken);
             }
 
-            if (receivedTwinsErrors.ContainsKey(requestId))
+            getTwinResponses.Remove(requestId, out GetTwinResponse getTwinResponse);
+            int getTwinStatus = getTwinResponse.Status;
+
+            if (getTwinStatus != 200)
             {
-                int errorCode = receivedTwinsErrors[requestId];
-                // TODO status code to exception mapping logic
-                throw new IotHubException("TODO " + errorCode);
+                throw ExceptionHandlingHelper.GetExceptionFromStatusCode(getTwinStatus, "Failed to get twin");
             }
-            else if (receivedTwins.ContainsKey(requestId))
-            {
-                Twin receivedTwin = receivedTwins[requestId];
-                return receivedTwin;
-            }
-            else
-            {
-                //TODO illegal state
-                throw new ThreadStateException("TODO");
-            }
+
+            return getTwinResponse.Twin;
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (!isSubscribedToTwinResponses)
             {
-                await SubscribeAsync(TwinResponseTopic, MqttClientSubscribeResultCode.GrantedQoS0, cancellationToken);
+                await SubscribeAsync(TwinResponseTopic, cancellationToken);
                 isSubscribedToTwinResponses = true;
             }
 
@@ -602,8 +594,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 int status = reportedPropertyUpdateResponses[requestId];
                 if (status != 204)
                 {
-                    // TODO error mapping logic
-                    throw new IotHubException("TODO");
+                    throw ExceptionHandlingHelper.GetExceptionFromStatusCode(status, "Failed to send twin patch");
                 }
 
                 //TODO shouldn't there be a new reported properties version here?
@@ -653,7 +644,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             base.Dispose(disposing);
             mqttClient?.Dispose();
-            receivedTwins?.Clear();
+            getTwinResponses?.Clear();
             _getTwinSemaphore?.Dispose();
             _reportedPropertyUpdateResponsesSemaphore?.Dispose();
 
@@ -672,7 +663,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         #endregion Client operations
 
-        private async Task SubscribeAsync(string topic, MqttClientSubscribeResultCode expectedQoS, CancellationToken cancellationToken)
+        private async Task SubscribeAsync(string topic, CancellationToken cancellationToken)
         {
             // "#" postfix is a multi-level wildcard in MQTT. When a client subscribes to a topic with a
             // multi-level wildcard, it receives all messages of a topic that begins with the pattern
@@ -702,12 +693,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
                 {
                     throw new Exception("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
-                }
-
-                if (subscribeResult.ResultCode != expectedQoS)
-                {
-                    //TODO
-                    throw new Exception("Failed to subscribe to topic " + fullTopic + " with reason " + subscribeResult.ResultCode);
                 }
 
                 return;
@@ -873,7 +858,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         // Save the status code, but don't throw here. The thread waiting on the
                         // _getTwinSemaphore will check this value and throw if it wasn't successful
-                        receivedTwinsErrors[receivedRequestId] = status;
+                        getTwinResponses[receivedRequestId] = new GetTwinResponse(status);
                     }
                     else
                     {
@@ -884,7 +869,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
                             };
 
-                            receivedTwins[receivedRequestId] = twin;
+                            getTwinResponses[receivedRequestId] = new GetTwinResponse(status, twin);
                         }
                         catch (JsonReaderException ex)
                         {
