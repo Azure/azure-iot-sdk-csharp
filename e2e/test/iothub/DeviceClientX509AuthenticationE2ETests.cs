@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod]
-        public async Task X509_Cert_Chain_Install_Test_MQTT_Tcp()
+        public async Task X509_Cert_Chain_Install_Test_Mqtt_Tcp()
         {
             // arrange
             var chainCerts = new X509Certificate2Collection
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod]
-        public async Task X509_Cert_Chain_Install_Test_AMQP_Tcp()
+        public async Task X509_Cert_Chain_Install_Test_Amqp_Tcp()
         {
             // arrange
             var chainCerts = new X509Certificate2Collection

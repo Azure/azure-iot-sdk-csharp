@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// An instance of a class that implements <see cref="IWebProxy"/>.
         /// </value>
         /// <remarks>
-        /// This setting will be used when the client attempts to connect over web sockets.
+        /// This setting will only be used when the client connects over web sockets or HTTPS.
         /// </remarks>
         /// <example>
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from
@@ -48,8 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         ///         {
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
-        ///         var deviceClient = DeviceClient.CreateFromConnectionString("a connection string", new ITransportSettings[] { transportSettings });
-        ///         return deviceClient;
+        ///         return DeviceClient.CreateFromConnectionString("a connection string", new ITransportSettings[] { transportSettings });
         ///     }
         ///     catch (Exception)
         ///     {
