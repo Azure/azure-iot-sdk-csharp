@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,58 +18,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IotHubConnectionString iotHubConnectionString,
             ITransportSettings transportSettings);
 
-        /// <summary>
-        /// After we've verified that we could open the transport for any operation, we will stop attempting others in the list.
-        /// </summary>
+        // After we've verified that we could open the transport for any operation, we will stop attempting others in the list.
         private bool _transportSelectionComplete;
 
         private int _nextTransportIndex;
 
-        private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _handlerLock = new(1, 1);
 
         public ProtocolRoutingDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-        }
-
-        public override async Task OpenAsync(TimeoutHelper timeoutHelper)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-
-                bool gain = await _handlerLock.WaitAsync(timeoutHelper.GetRemainingTime()).ConfigureAwait(false);
-                if (!gain)
-                {
-                    throw new TimeoutException("Timed out to acquire handler lock.");
-                }
-
-                SelectTransport();
-
-                try
-                {
-                    CreateNewTransportIfNotReady();
-                    await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
-
-                    // since Dispose is not synced with _handlerLock, double check if disposed.
-                    if (_disposed)
-                    {
-                        InnerHandler?.Dispose();
-                        ThrowIfDisposed();
-                    }
-                    _transportSelectionComplete = true;
-                }
-                finally
-                {
-                    _handlerLock.Release();
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-            }
         }
 
         private void SelectTransport()
@@ -124,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // since Dispose is not synced with _handlerLock, double check if disposed.
                     if (_disposed)
                     {
-                        InnerHandler?.Dispose();
+                        NextHandler?.Dispose();
                         ThrowIfDisposed();
                     }
                     _transportSelectionComplete = true;
@@ -143,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void CreateNewTransportIfNotReady()
         {
-            if (InnerHandler == null || !InnerHandler.IsUsable)
+            if (NextHandler == null || !NextHandler.IsUsable)
             {
                 CreateNewTransportHandler();
             }
@@ -151,10 +108,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void CreateNewTransportHandler()
         {
-            IDelegatingHandler innerHandler = InnerHandler;
+            IDelegatingHandler innerHandler = NextHandler;
 
             // Ask the ContinuationFactory to attach the proper handler given the Context's ITransportSettings.
-            InnerHandler = ContinuationFactory(Context, null);
+            NextHandler = ContinuationFactory(Context, null);
 
             innerHandler?.Dispose();
         }
@@ -168,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
 
             await _handlerLock.WaitAsync().ConfigureAwait(false);
-            Debug.Assert(InnerHandler != null);
+            Debug.Assert(NextHandler != null);
 
             // We don't need to double check since it's being handled in OpenAsync
             CreateNewTransportIfNotReady();

@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices
                         State = WebSocketState.Closed;
                         WebSocketStream.Close();
                         TcpClient.Close();
-                        return 0;  // TODO: throw exception?
+                        return 0; // TODO: throw exception?
                     }
 
                     if (pongFrame && payloadLength > 0)

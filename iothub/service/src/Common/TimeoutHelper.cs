@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common
 
             OriginalTimeout = timeout;
             _deadline = DateTime.MaxValue;
-            _deadlineSet = (timeout == TimeSpan.MaxValue);
+            _deadlineSet = timeout == TimeSpan.MaxValue;
 
             if (startTimeout && !_deadlineSet)
             {
@@ -66,14 +66,9 @@ namespace Microsoft.Azure.Devices.Common
             else
             {
                 TimeSpan remaining = _deadline - DateTime.UtcNow;
-                if (remaining <= TimeSpan.Zero)
-                {
-                    return TimeSpan.Zero;
-                }
-                else
-                {
-                    return remaining;
-                }
+                return remaining > TimeSpan.Zero
+                    ? remaining
+                    : TimeSpan.Zero;
             }
         }
 

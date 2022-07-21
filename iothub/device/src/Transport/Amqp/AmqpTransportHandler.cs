@@ -77,33 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override bool IsUsable => !_disposed;
 
-        public override async Task OpenAsync(TimeoutHelper timeoutHelper)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
-
-            lock (_lock)
-            {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                _closed = false;
-            }
-
-            try
-            {
-                using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-                await _amqpUnit.OpenAsync(cts.Token).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
-            }
-        }
-
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -197,24 +170,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
-
-            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-            Message message = await _amqpUnit.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
-
-            return message;
-        }
-
         public override async Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
+                Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
 
             Message message;
             while (true)
@@ -231,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, cancellationToken, cancellationToken, nameof(ReceiveAsync));
+                Logging.Exit(this, cancellationToken, cancellationToken, nameof(ReceiveMessageAsync));
 
             return message;
         }
@@ -503,10 +462,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         }
 
-        public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
+        public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
+                Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
 
             try
             {
@@ -516,14 +475,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteMessageAsync));
             }
         }
 
-        public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
+        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
+                Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
 
             try
             {
@@ -533,14 +492,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonMessageAsync));
             }
         }
 
-        public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
+                Logging.Enter(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
 
             try
             {
@@ -550,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectMessageAsync));
             }
         }
 

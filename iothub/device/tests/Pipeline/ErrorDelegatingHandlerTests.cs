@@ -165,29 +165,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             string lockToken = "lockToken";
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.CompleteAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.CompleteAsync(lockToken, cancellationToken),
-                di => di.Received(2).CompleteAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
+                di => di.CompleteMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
+                di => di.CompleteMessageAsync(lockToken, cancellationToken),
+                di => di.Received(2).CompleteMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.AbandonAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.AbandonAsync(lockToken, cancellationToken),
-                di => di.Received(2).AbandonAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
+                di => di.AbandonMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
+                di => di.AbandonMessageAsync(lockToken, cancellationToken),
+                di => di.Received(2).AbandonMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.RejectAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                di => di.RejectAsync(lockToken, cancellationToken),
-                di => di.Received(2).RejectAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
-
-            TimeSpan timeout = TimeSpan.FromSeconds(1);
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.ReceiveAsync(Arg.Is(timeoutHelper)),
-                di => di.ReceiveAsync(timeoutHelper),
-                di => di.Received(2).ReceiveAsync(Arg.Is(timeoutHelper)),
+                di => di.RejectMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
+                di => di.RejectMessageAsync(lockToken, cancellationToken),
+                di => di.Received(2).RejectMessageAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(

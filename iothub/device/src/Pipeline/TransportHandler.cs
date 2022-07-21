@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected ITransportSettings _transportSettings;
 
         protected TransportHandler(PipelineContext context, ITransportSettings transportSettings)
-            : base(context, innerHandler: null)
+            : base(context, nextHandler: null)
         {
             _transportSettings = transportSettings;
         }
@@ -27,9 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
-                }
 
                 if (!_disposed)
                 {
@@ -45,9 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
-                }
             }
         }
 
