@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 const string commandName = "Reboot";
                 bool deviceMethodCalledSuccessfully = false;
 
-                deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt });
+                deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt_Tcp_Only });
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient

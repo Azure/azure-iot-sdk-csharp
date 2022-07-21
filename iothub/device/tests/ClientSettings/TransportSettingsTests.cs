@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -13,13 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Test
     {
         private const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
         private const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Client.Test\\TestCertsPassword.txt";
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_InvalidTransportTypeAmqp()
-        {
-            _ = new AmqpTransportSettings(TransportType.Amqp);
-        }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
@@ -99,16 +93,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void MqttTransportSettings_InvalidTransportTypeMqtt()
-        {
-            _ = new MqttTransportSettings(TransportType.Mqtt);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void AmqpTransportSettings_UnderOperationTimeoutMin()
         {
-            _ = new AmqpTransportSettings(TransportType.Amqp, 200, new AmqpConnectionPoolSettings())
+            _ = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, new AmqpConnectionPoolSettings())
             {
                 OperationTimeout = TimeSpan.Zero,
             };
@@ -138,9 +125,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200);
 
             // assert
-            Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.OperationTimeout, "Default OperationTimeout not set correctly");
-            Assert.AreEqual(AmqpTransportSettings.DefaultIdleTimeout, transportSetting.IdleTimeout, "Default IdleTimeout not set correctly");
-            Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.DefaultReceiveTimeout, "Default DefaultReceiveTimeout not set correctly");
+            transportSetting.OperationTimeout.Should().Be(AmqpTransportSettings.DefaultOperationTimeout, "Default OperationTimeout not set correctly");
+            transportSetting.IdleTimeout.Should().Be(AmqpTransportSettings.DefaultIdleTimeout, "Default IdleTimeout not set correctly");
+            transportSetting.DefaultReceiveTimeout.Should().Be(AmqpTransportSettings.DefaultOperationTimeout, "Default DefaultReceiveTimeout not set correctly");
         }
 
         [TestMethod]

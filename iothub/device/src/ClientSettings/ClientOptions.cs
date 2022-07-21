@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The transport type to use (i.e., AMQP, MQTT, HTTP), including whether to use TCP or web sockets where applicable.
         /// </summary>
-        public TransportType TransportType { get; set; } = TransportType.Amqp;
+        public TransportType TransportType { get; set; } = TransportType.Amqp_Tcp_Only;
 
         /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.

@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a device client instance initializing it with the "Thermostat" model.
             var options = new ClientOptions
             {
-                TransportType = Client.TransportType.Mqtt,
+                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = thermostatModelId,
             };
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt });
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt_Tcp_Only });
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt });
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt_Tcp_Only });
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));

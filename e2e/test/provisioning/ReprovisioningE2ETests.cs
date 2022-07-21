@@ -581,7 +581,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null)
             {
                 //hardcoding amqp since http does not support twin, but tests that call into this may use http
-                using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions { TransportType = Client.TransportType.Amqp });
+                using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions { TransportType = Client.TransportType.Amqp_Tcp_Only });
                 //Confirm that the device twin reflects what the enrollment dictated
                 Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
                 twin.Capabilities.IotEdge.Should().Be(capabilities.IotEdge);
@@ -607,16 +607,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 case AttestationMechanismType.Tpm:
                     IndividualEnrollment tpmEnrollment = await CreateIndividualEnrollmentAsync(
-                        provisioningServiceClient,
-                        registrationId,
-                        AttestationMechanismType.Tpm,
-                        null,
-                        reprovisionPolicy,
-                        allocationPolicy,
-                        customAllocationDefinition,
-                        iothubs,
-                        capabilities,
-                        Logger).ConfigureAwait(false);
+                            provisioningServiceClient,
+                            registrationId,
+                            AttestationMechanismType.Tpm,
+                            null,
+                            reprovisionPolicy,
+                            allocationPolicy,
+                            customAllocationDefinition,
+                            iothubs,
+                            capabilities,
+                            Logger)
+                        .ConfigureAwait(false);
 
                     return new AuthenticationProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
@@ -637,16 +638,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                             using (X509Certificate2 publicCertificate = X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder))
                             {
                                 IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
-                                    provisioningServiceClient,
-                                    registrationId,
-                                    AttestationMechanismType.X509,
-                                    publicCertificate,
-                                    reprovisionPolicy,
-                                    allocationPolicy,
-                                    customAllocationDefinition,
-                                    iothubs,
-                                    capabilities,
-                                    Logger).ConfigureAwait(false);
+                                        provisioningServiceClient,
+                                        registrationId,
+                                        AttestationMechanismType.X509,
+                                        publicCertificate,
+                                        reprovisionPolicy,
+                                        allocationPolicy,
+                                        customAllocationDefinition,
+                                        iothubs,
+                                        capabilities,
+                                        Logger)
+                                    .ConfigureAwait(false);
 
                                 x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
                             }

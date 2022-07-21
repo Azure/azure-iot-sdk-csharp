@@ -284,7 +284,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
                     };
 
-                case Client.TransportType.Amqp:
                 case Client.TransportType.Amqp_Tcp_Only:
                     return new AmqpTransportSettings(transportType);
 
@@ -294,7 +293,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
                     };
 
-                case Client.TransportType.Mqtt:
                 case Client.TransportType.Mqtt_Tcp_Only:
                     return new MqttTransportSettings(transportType);
 

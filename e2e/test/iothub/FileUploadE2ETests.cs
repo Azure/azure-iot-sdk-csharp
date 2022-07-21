@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
         {
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await GetSasUriAsync(Client.TransportType.Mqtt, smallFileBlobName, true).ConfigureAwait(false);
+            await GetSasUriAsync(Client.TransportType.Mqtt_Tcp_Only, smallFileBlobName, true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

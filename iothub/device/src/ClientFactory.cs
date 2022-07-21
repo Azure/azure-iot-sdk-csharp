@@ -203,16 +203,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             return transportType switch
             {
-                TransportType.Amqp => new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                        new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                    },
-                TransportType.Mqtt => new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
-                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                    },
                 TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new ITransportSettings[]
                     {
                         new AmqpTransportSettings(transportType)
@@ -373,17 +363,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             return transportType switch
             {
-                TransportType.Amqp => new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        },
-                        new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    },
                 TransportType.Amqp_Tcp_Only => new ITransportSettings[]
                     {
                         new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
@@ -401,17 +380,6 @@ namespace Microsoft.Azure.Devices.Client
                 TransportType.Http1 => new ITransportSettings[]
                     {
                         new Http1TransportSettings()
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    },
-                TransportType.Mqtt => new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        },
-                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
                         {
                             ClientCertificate = connectionStringBuilder.Certificate
                         }
