@@ -808,7 +808,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             string[] tokens = Regex.Split(receivedEventArgs.ApplicationMessage.Topic, "/", RegexOptions.Compiled);
 
-            using var methodRequest = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), new MemoryStream(receivedEventArgs.ApplicationMessage.Payload), CancellationToken.None);
+            NameValueCollection queryStringKeyValuePairs = HttpUtility.ParseQueryString(tokens[4]);
+            string requestId = queryStringKeyValuePairs.Get("$rid");
+            string methodName = tokens[3];
+
+            using var methodRequest = new MethodRequestInternal(methodName, requestId, new MemoryStream(payload));
 
             // Deliberately not awaiting on this async call so that the user's direct method handler can run independently of this thread
             _methodListener.Invoke(methodRequest).ConfigureAwait(false);
