@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// A common base-class for all delegating handlers to ensure that:
+    /// 1. The next handler in the chain is always called.
+    /// 2. Frequently checking for the object being disposed and throwing an exception.
+    /// 3. Provides a default implementation in the case that a given handler only needs to implement some interface methods.
+    /// </summary>
     internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
         private volatile IDelegatingHandler _nextHandler;

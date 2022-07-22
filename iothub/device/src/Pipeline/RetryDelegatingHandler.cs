@@ -13,6 +13,9 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// Runs each operation and disconnect events with the configured retry policy.
+    /// </summary>
     internal class RetryDelegatingHandler : DefaultDelegatingHandler
     {
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
@@ -20,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private RetryPolicy _internalRetryPolicy;
 
-        private SemaphoreSlim _handlerSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _handlerSemaphore = new(1, 1);
         private bool _openCalled;
         private bool _opened;
         private bool _methodsEnabled;
@@ -30,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _isAnEdgeModule = true;
 
         private Task _transportClosedTask;
-        private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _handleDisconnectCts = new();
 
         private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 

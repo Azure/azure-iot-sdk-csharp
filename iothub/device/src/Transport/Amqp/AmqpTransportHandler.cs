@@ -12,14 +12,17 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
+    /// <summary>
+    /// The final node in the handler chain, running operations on the AMQP transport.
+    /// </summary>
     internal class AmqpTransportHandler : TransportHandler
     {
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
         protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly object _lock = new object();
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
+        private readonly object _lock = new();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new();
         private bool _closed;
 
         static AmqpTransportHandler()

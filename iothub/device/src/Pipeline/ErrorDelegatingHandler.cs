@@ -19,6 +19,10 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// This handler inspects thrown exceptions and remaps them as appropriate to a
+    /// high level exception that is more appropriate for the user and the retry handler.
+    /// </summary>
     internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
         public ErrorDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
@@ -26,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
         }
 
-        private static readonly HashSet<Type> s_networkExceptions = new HashSet<Type>
+        private static readonly HashSet<Type> s_networkExceptions = new()
         {
             typeof(IOException),
             typeof(SocketException),
@@ -202,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else if (IsNetworkExceptionChain(exception))
                     {
-                        throw new IotHubCommunicationException("Transient network error occurred, please retry.", exception);
+                        throw new IotHubCommunicationException("Transient network error occurred; please retry.", exception);
                     }
                     else
                     {
