@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The policy for which a particular message will be sent.
+    /// The policy for which a particular message will be sent. Note that IoT hub does not support QoS 2.
     /// </summary>
     public enum QualityOfService
     {
@@ -20,10 +17,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// The message will be sent once, but will be resent if the service fails to acknowledge the message.
         /// </summary>
         AtLeastOnce = 1,
-
-        /// <summary>
-        /// TODO does hub even support this?
-        /// </summary>
-        ExactlyOnce = 2
     }
 }

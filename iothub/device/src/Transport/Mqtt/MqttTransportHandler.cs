@@ -86,6 +86,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         internal MqttClientOptions mqttClientOptions;
         private MqttClientOptionsBuilder mqttClientOptionsBuilder;
 
+        private MqttQualityOfServiceLevel publishingQualityOfService;
+        private MqttQualityOfServiceLevel receivingQualityOfService;
+
         private readonly Func<MethodRequestInternal, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
@@ -294,14 +297,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     mqttClientOptionsBuilder.WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce);
                 }
-                else if (settings.WillMessage.QualityOfService == QualityOfService.ExactlyOnce)
-                {
-                    mqttClientOptionsBuilder.WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.ExactlyOnce);
-                }
             }
 
             mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
             mqttClient.DisconnectedAsync += HandleDisconnection;
+
+            publishingQualityOfService = settings.PublishToServerQoS == QualityOfService.AtLeastOnce
+                ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
+
+            receivingQualityOfService = settings.ReceivingQoS == QualityOfService.AtLeastOnce
+                ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
         }
 
         private bool certificateValidationHandler(MqttClientCertificateValidationEventArgs args)
@@ -392,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             var mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(TopicName)
                 .WithPayload(payloadStream)
-                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
+                .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
             MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
@@ -437,7 +442,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(methodResponse.BodyStream)
-                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
+                .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
             MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
@@ -508,7 +513,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(TwinGetTopicFormat.FormatInvariant(requestId))
-                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
+                .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
             MqttClientPublishResult result = await mqttClient.PublishAsync(mqttMessage, cancellationToken);
@@ -554,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
-                .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce) // TODO make this configurable to user?
+                .WithQualityOfServiceLevel(publishingQualityOfService)
                 .WithPayload(Encoding.UTF8.GetBytes(body))
                 .Build();
 
@@ -622,7 +627,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string fullTopic = topic + "#";
 
             MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter(fullTopic)
+                .WithTopicFilter(fullTopic, receivingQualityOfService)
                 .Build();
 
             MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken);
