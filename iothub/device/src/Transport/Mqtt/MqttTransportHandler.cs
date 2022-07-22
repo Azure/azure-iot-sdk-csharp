@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -314,12 +315,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         #region Client operations
 
-        public override async Task OpenAsync(TimeoutHelper timeoutHelper)
-        {
-            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
-            await OpenAsync(cts.Token).ConfigureAwait(false);
-        }
-
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             string clientId = moduleId == null ? deviceId : deviceId + "/" + moduleId;
@@ -601,39 +596,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             //return patchTwinResponse.Version;
         }
 
-        public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            MqttApplicationMessageReceivedEventArgs messageToAcknowledge;
-            try
-            {
-                messageToAcknowledge = messagesToAcknowledge[lockToken];
-            }
-            catch (KeyNotFoundException ex)
-            {
-                throw new Exception("Could not correlate the provided lock token with a received message", ex);
-            }
-
-            await messageToAcknowledge.AcknowledgeAsync(cancellationToken);
-
-            messagesToAcknowledge.Remove(lockToken);
-        }
-
-        public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            throw new NotSupportedException("MQTT protocol does not support this operation");
-        }
-
-        public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            throw new NotSupportedException("MQTT protocol does not support this operation");
-        }
-
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
@@ -771,6 +733,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        [SuppressMessage(
+            "Reliability",
+            "CA2000:Dispose objects before losing scope",
+            Justification = "The created message is handed to the user and the user application is in charge of disposing the message.")]
         private async Task HandleReceivedCloudToDeviceMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
@@ -784,8 +750,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_deviceMessageReceivedListener != null)
             {
-                await _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
-                receivedCloudToDeviceMessage.Dispose();
+                // We are intentionally not awaiting _deviceMessageReceivedListener callback.
+                // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
+                _ = _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
             }
             else
             {
@@ -814,7 +782,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             using var methodRequest = new MethodRequestInternal(methodName, requestId, new MemoryStream(payload));
 
-            // Deliberately not awaiting on this async call so that the user's direct method handler can run independently of this thread
+            // We are intentionally not awaiting _methodListener callback.
+            // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
             _methodListener.Invoke(methodRequest).ConfigureAwait(false);
         }
 
