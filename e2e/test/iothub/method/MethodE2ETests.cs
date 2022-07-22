@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 const string commandName = "Reboot";
                 bool deviceMethodCalledSuccessfully = false;
 
-                deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
+                deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt_Tcp_Only });
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient
@@ -520,7 +520,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            var options = new ClientOptions { TransportType = transport };
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
 
             await subscribeAndUnsubscribeMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
 
@@ -536,7 +537,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            var options = new ClientOptions { TransportType = transport };
+            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
@@ -553,16 +555,29 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        private async Task SendMethodAndRespondAsync(
+            Client.TransportType transport,
+            Func<ModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
+            TimeSpan responseTimeout = default,
+            ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport);
+            var options = new ClientOptions { TransportType = transport };
+            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName, Logger).ConfigureAwait(false);
 
             await Task
                 .WhenAll(
-                    ServiceSendMethodAndVerifyResponseAsync(testModule.DeviceId, testModule.Id, MethodName, DeviceResponseJson, ServiceRequestJson, Logger, responseTimeout, serviceClientTransportSettings),
+                    ServiceSendMethodAndVerifyResponseAsync(
+                        testModule.DeviceId,
+                        testModule.Id,
+                        MethodName,
+                        DeviceResponseJson,
+                        ServiceRequestJson,
+                        Logger,
+                        responseTimeout,
+                        serviceClientTransportSettings),
                     methodReceivedTask)
                 .ConfigureAwait(false);
 

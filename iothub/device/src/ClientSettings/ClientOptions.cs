@@ -11,9 +11,20 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientOptions
     {
         /// <summary>
-        /// The DTDL model Id associated with the device or module client instance.
-        /// This feature is currently supported only over MQTT and AMQP.
+        /// The transport type to use (i.e., AMQP, MQTT, HTTP), including whether to use TCP or web sockets where applicable.
         /// </summary>
+        public TransportType TransportType { get; set; } = TransportType.Amqp_Tcp_Only;
+
+        /// <summary>
+        /// The fully-qualified DNS host name of a gateway to connect through.
+        /// </summary>
+        public string GatewayHostName { get; set; }
+
+        /// <summary>
+        /// The DTDL model Id associated with the device or module client instance.
+        /// </summary>
+        /// This feature is currently supported only over MQTT and AMQP transports.
+        /// <remarks></remarks>
         public string ModelId { get; set; }
 
         /// <summary>
@@ -26,8 +37,10 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.
-        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
         /// </summary>
+        /// <remarks>
+        /// The default behavior is that MessageId is set only by the user.
+        /// </remarks>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
         /// <summary>

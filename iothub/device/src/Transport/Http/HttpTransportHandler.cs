@@ -82,11 +82,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 isClientPrimaryTransportHandler);
         }
 
-        public override Task OpenAsync(TimeoutHelper timeoutHelper)
-        {
-            return TaskHelpers.CompletedTask;
-        }
-
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
             return TaskHelpers.CompletedTask;
@@ -275,22 +270,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return message;
         }
 
-        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
-        {
-            TimeSpan timeout = timeoutHelper.GetRemainingTime();
-            if (timeout > TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(timeoutHelper),
-                    "HTTP Protocol does not support a non-zero receive timeout.");
-            }
-            else
-            {
-                using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
-                return await ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
-            }
-        }
-
         public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -307,7 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 " or set the callback over MQTT or AMQP.");
         }
 
-        public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
                 CommonConstants.DeviceBoundPathCompleteTemplate.FormatInvariant(_deviceId, lockToken),
@@ -326,7 +305,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .ConfigureAwait(false);
         }
 
-        public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
                 CommonConstants.DeviceBoundPathAbandonTemplate.FormatInvariant(_deviceId, lockToken),
@@ -346,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .ConfigureAwait(false);
         }
 
-        public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        public override async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(
                 CommonConstants.DeviceBoundPathRejectTemplate.FormatInvariant(_deviceId, lockToken),

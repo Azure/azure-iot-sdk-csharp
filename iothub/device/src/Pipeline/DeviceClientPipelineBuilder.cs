@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class DeviceClientPipelineBuilder : IDeviceClientPipelineBuilder
     {
-        private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new List<ContinuationFactory<IDelegatingHandler>>();
+        private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();
 
         public IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> delegatingHandlerCreator)
         {

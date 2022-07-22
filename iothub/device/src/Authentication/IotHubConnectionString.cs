@@ -69,11 +69,11 @@ namespace Microsoft.Azure.Devices.Client
                     // Since the SDK creates the instance of disposable ModuleAuthenticationWithSakRefresh, the SDK needs to
                     // dispose it once the client is disposed.
                     TokenRefresher = new ModuleAuthenticationWithSakRefresh(
-                        DeviceId, 
-                        ModuleId, 
-                        this, 
-                        builder.SasTokenTimeToLive, 
-                        builder.SasTokenRenewalBuffer, 
+                        DeviceId,
+                        ModuleId,
+                        this,
+                        builder.SasTokenTimeToLive,
+                        builder.SasTokenRenewalBuffer,
                         disposeWithClient: true);
 
                     if (Logging.IsEnabled)

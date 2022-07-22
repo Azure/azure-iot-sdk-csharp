@@ -17,14 +17,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private readonly TestDevice _testDevice;
         private readonly MsTestLogger _logger;
 
-        private readonly SemaphoreSlim _methodCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private readonly SemaphoreSlim _methodCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _methodExceptionDispatch;
 
-        private readonly SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private readonly SemaphoreSlim _twinCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _twinExceptionDispatch;
         private string _expectedTwinPropertyValue;
 
-        private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new SemaphoreSlim(0, 1);
+        private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
         private Message _expectedMessageSentByService;
 
@@ -119,31 +119,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetMessageReceiveCallbackHandlerAsync()
         {
-            await _deviceClient.SetReceiveMessageHandlerAsync(
-                async (receivedMessage, context) =>
+            await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null).ConfigureAwait(false);
+        }
+
+        public async Task UnSetMessageReceiveCallbackHandlerAsync()
+        {
+            await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
+        }
+
+        private async Task OnC2dMessageReceivedAsync(Client.Message message, object context)
+        {
+            _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {message.MessageId}.");
+
+            try
+            {
+                if (ExpectedMessageSentByService != null)
                 {
-                    _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDevice.Id} received message with Id: {receivedMessage.MessageId}.");
+                    message.MessageId.Should().Be(ExpectedMessageSentByService.MessageId, "Received message Id should match what was sent by service");
+                    message.UserId.Should().Be(ExpectedMessageSentByService.UserId, "Received user Id should match what was sent by service");
+                }
 
-                    try
-                    {
-                        receivedMessage.MessageId.Should().Be(ExpectedMessageSentByService.MessageId, "Received message Id should match what was sent by service");
-                        receivedMessage.UserId.Should().Be(ExpectedMessageSentByService.UserId, "Received user Id should match what was sent by service");
-
-                        await CompleteMessageAsync(receivedMessage).ConfigureAwait(false);
-                        _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {receivedMessage.MessageId}.");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
-                        _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                    }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _receivedMessageCallbackSemaphore.Release();
-                    }
-                },
-                null).ConfigureAwait(false);
+                await CompleteMessageAsync(message).ConfigureAwait(false);
+                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+            }
+            catch (Exception ex)
+            {
+                _logger.Trace($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+            }
+            finally
+            {
+                // Always notify that we got the callback.
+                _receivedMessageCallbackSemaphore.Release();
+            }
         }
 
         private async Task CompleteMessageAsync(Client.Message message)

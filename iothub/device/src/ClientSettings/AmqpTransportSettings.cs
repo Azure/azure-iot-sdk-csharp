@@ -82,12 +82,6 @@ namespace Microsoft.Azure.Devices.Client
                     _transportType = transportType;
                     break;
 
-                case TransportType.Amqp:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(transportType),
-                        transportType,
-                        "Must specify Amqp_WebSocket_Only or Amqp_Tcp_Only");
-
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportType), transportType, null);
             }

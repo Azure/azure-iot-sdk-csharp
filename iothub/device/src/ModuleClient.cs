@@ -39,7 +39,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Constructor for a module client to be created from an <see cref="InternalClient"/>.
         /// </summary>
         /// <param name="internalClient">The internal client to use for the commands.</param>
-        internal ModuleClient(InternalClient internalClient) : this(internalClient, NullCertificateValidator.Instance)
+        internal ModuleClient(InternalClient internalClient)
+            : this(internalClient, NullCertificateValidator.Instance)
         {
         }
 
@@ -80,47 +81,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates an AMQP ModuleClient from individual parameters.
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway.</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, options));
-        }
-
-        /// <summary>
-        /// Creates a ModuleClient from individual parameters.
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
-        /// <param name="transportType">The transportType used (Http1 or AMQP).</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportType, options));
-        }
-
-        /// <summary>
-        /// Creates a ModuleClient from individual parameters.
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway.</param>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
-        /// <param name="transportType">The transportType used (Http1 or AMQP).</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
-            TransportType transportType, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType, options));
-        }
-
-        /// <summary>
         /// Creates a ModuleClient from individual parameters.
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
@@ -135,21 +95,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a ModuleClient from individual parameters.
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway.</param>
-        /// <param name="authenticationMethod">The authentication method that is used.</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportSettings, options));
-        }
-
-        /// <summary>
         /// Creates a ModuleClient using AMQP transport from the specified connection string.
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
@@ -158,18 +103,6 @@ namespace Microsoft.Azure.Devices.Client
         public static ModuleClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
-        }
-
-        /// <summary>
-        /// Creates ModuleClient from the specified connection string using the specified transport type.
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
-        /// <param name="transportType">Specifies whether AMQP or HTTP transport is used.</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
-        public static ModuleClient CreateFromConnectionString(string connectionString, TransportType transportType, ClientOptions options = default)
-        {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportType, options));
         }
 
         /// <summary>
@@ -189,21 +122,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
+        /// 
         /// <returns>ModuleClient instance</returns>
         public static Task<ModuleClient> CreateFromEnvironmentAsync(ClientOptions options = default)
         {
-            return CreateFromEnvironmentAsync(TransportType.Amqp, options);
-        }
+            if (options == default)
+            {
+                options = new();
+            }
 
-        /// <summary>
-        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
-        /// </summary>
-        /// <param name="transportType">Specifies whether AMQP or HTTP transport is used.</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient instance</returns>
-        public static Task<ModuleClient> CreateFromEnvironmentAsync(TransportType transportType, ClientOptions options = default)
-        {
-            return CreateFromEnvironmentAsync(ClientFactory.GetTransportSettings(transportType), options);
+            return CreateFromEnvironmentAsync(ClientFactory.GetTransportSettings(options.TransportType), options);
         }
 
         /// <summary>

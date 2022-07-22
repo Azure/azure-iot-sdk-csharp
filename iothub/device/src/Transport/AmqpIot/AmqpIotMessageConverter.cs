@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, CancellationToken cancellationToken)
+        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)
             {
@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName);
 
-            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream, cancellationToken);
+            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream);
         }
 
         /// <summary>

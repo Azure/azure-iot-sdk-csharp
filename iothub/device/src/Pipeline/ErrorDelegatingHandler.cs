@@ -41,19 +41,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
         }
 
-        public override Task OpenAsync(TimeoutHelper timeoutHelper)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
-        }
-
         public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveMessageAsync(cancellationToken));
-        }
-
-        public override Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
-        {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeoutHelper));
         }
 
         public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
@@ -113,19 +103,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken));
         }
 
-        public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
+        public override Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.AbandonAsync(lockToken, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.AbandonMessageAsync(lockToken, cancellationToken));
         }
 
-        public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
+        public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.CompleteAsync(lockToken, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.CompleteMessageAsync(lockToken, cancellationToken));
         }
 
-        public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        public override Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.RejectAsync(lockToken, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.RejectMessageAsync(lockToken, cancellationToken));
         }
 
         public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)

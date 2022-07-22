@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
         {
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await GetSasUriAsync(Client.TransportType.Mqtt, smallFileBlobName, true).ConfigureAwait(false);
+            await GetSasUriAsync(Client.TransportType.Mqtt_Tcp_Only, smallFileBlobName, true).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -92,8 +92,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
             DeviceClient deviceClient;
-            var clientOptions = new ClientOptions()
+            var clientOptions = new ClientOptions
             {
+                TransportType = Client.TransportType.Http1,
                 FileUploadTransportSettings = fileUploadTransportSettings
             };
 
@@ -104,11 +105,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, Client.TransportType.Http1);
+                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, new ClientOptions { TransportType = Client.TransportType.Http1 });
             }
             else
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Http1, clientOptions);
+                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, clientOptions);
             }
 
             var fileUploadSasUriRequest = new FileUploadSasUriRequest()
@@ -147,6 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         : TestDeviceType.Sasl)
                 .ConfigureAwait(false);
 
+            var options = new ClientOptions { TransportType = transport };
             DeviceClient deviceClient;
             X509Certificate2 cert = null;
             DeviceAuthenticationWithX509Certificate x509Auth = null;
@@ -155,16 +157,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, transport);
+                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, options);
             }
             else
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
             }
 
             using (deviceClient)
             {
-                FileUploadSasUriResponse sasUriResponse = await deviceClient.GetFileUploadSasUriAsync(new FileUploadSasUriRequest { BlobName = blobName });
+                FileUploadSasUriResponse sasUriResponse = await deviceClient
+                    .GetFileUploadSasUriAsync(new FileUploadSasUriRequest { BlobName = blobName })
+                    .ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
 
