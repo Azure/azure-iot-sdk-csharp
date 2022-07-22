@@ -19,10 +19,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default constructor with no body data.
         /// </summary>
-        internal MethodRequestInternal(CancellationToken cancellationToken)
+        internal MethodRequestInternal()
         {
             InitializeWithStream(Stream.Null, true);
-            CancellationToken = cancellationToken;
         }
 
         /// <summary>
@@ -30,16 +29,14 @@ namespace Microsoft.Azure.Devices.Client
         /// that has serialized.
         /// </summary>
 
-        internal MethodRequestInternal(string name, string requestId, Stream bodyStream, CancellationToken cancellationToken)
-            : this(cancellationToken)
+        internal MethodRequestInternal(string name, string requestId, Stream bodyStream)
+            : this()
         {
             Name = name;
             RequestId = requestId;
             Stream stream = bodyStream;
             InitializeWithStream(stream, false);
         }
-
-        internal CancellationToken CancellationToken { get; private set; }
 
         /// <summary>
         /// Property indicating the method name for this instance.
