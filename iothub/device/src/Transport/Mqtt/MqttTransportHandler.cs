@@ -399,8 +399,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                //TODO
-                throw new Exception("Failed to publish the mqtt packet");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for message with correlation id {message.CorrelationId}");
             }
         }
 
@@ -445,8 +444,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                //TODO
-                throw new Exception("Failed to publish the mqtt packet");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for direct method response");
             }
         }
 
@@ -523,8 +521,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                //TODO
-                throw new Exception("Failed to publish the mqtt packet");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for getting this client's twin");
             }
 
             inProgressGetTwinRequests.Add(requestId);
@@ -571,8 +568,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                //TODO
-                throw new Exception("Failed to publish the mqtt packet");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for patching this client's twin");
             }
 
             inProgressUpdateReportedPropertiesRequests.Add(requestId);
