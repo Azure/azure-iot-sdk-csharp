@@ -779,12 +779,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 _deviceReceiveMessageSemaphore.Release();
 
-                if (_deviceReceiveMessageCallback != null)
-                {
-                    // Any previously received C2D messages will also need to be delivered.
-                    await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
-                }
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, messageHandler, userContext, nameof(SetReceiveMessageHandlerAsync));
             }

@@ -214,13 +214,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        // This method is added to ensure that over MQTT devices can receive messages that were sent when it was disconnected.
-        // This behavior is available by default over AMQP, so no additional implementation is required here.
-        public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
-        {
-            return TaskHelpers.CompletedTask;
-        }
-
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -459,7 +452,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
-
         }
 
         public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)

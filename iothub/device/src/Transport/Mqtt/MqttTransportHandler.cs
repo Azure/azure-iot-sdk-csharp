@@ -399,7 +399,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for message with correlation id {message.CorrelationId}");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for message with correlation id {message.CorrelationId} with reason code {result.ReasonCode}");
             }
         }
 
@@ -444,19 +444,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for direct method response");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for direct method response with reason code {result.ReasonCode}");
             }
         }
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             await SubscribeAsync(deviceBoundMessagesTopic, cancellationToken);
-        }
-
-        public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
-        {
-            // TODO what is this?
-            return Task.CompletedTask;
         }
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
@@ -521,7 +515,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for getting this client's twin");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}");
             }
 
             inProgressGetTwinRequests.Add(requestId);
@@ -568,7 +562,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for patching this client's twin");
+                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for patching this client's twin with reason code {result.ReasonCode}");
             }
 
             inProgressUpdateReportedPropertiesRequests.Add(requestId);
@@ -675,8 +669,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
                 {
-                    //TODO
-                    throw new Exception("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode);
+                    throw new IotHubCommunicationException("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode);
                 }
 
                 return;

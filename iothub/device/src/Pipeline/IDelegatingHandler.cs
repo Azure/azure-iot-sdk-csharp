@@ -29,10 +29,6 @@ namespace Microsoft.Azure.Devices.Client
 
         Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
 
-        // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
-        // then any message sent while the device was disconnected is delivered on the callback.
-        Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken);
-
         Task DisableReceiveMessageAsync(CancellationToken cancellationToken);
 
         Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken);
