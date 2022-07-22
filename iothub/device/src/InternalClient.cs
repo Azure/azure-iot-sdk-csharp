@@ -608,7 +608,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.BadRequest);
 
-                await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+                await SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
@@ -657,7 +657,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await SendMethodResponseAsync(methodResponseInternal, methodRequestInternal.CancellationToken).ConfigureAwait(false);
+                await SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
             }
             finally
             {

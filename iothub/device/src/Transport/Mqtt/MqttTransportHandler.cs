@@ -508,7 +508,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
-                using var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream(), CancellationToken.None);
+                using var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream());
                 await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
             }
             finally

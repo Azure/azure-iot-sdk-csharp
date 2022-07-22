@@ -218,9 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                MethodRequestInternal methodRequestInternal = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(
-                    amqpMessage,
-                    new CancellationToken(false));
+                MethodRequestInternal methodRequestInternal = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
                 DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
                 _onMethodReceived?.Invoke(methodRequestInternal);
             }
