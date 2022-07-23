@@ -16,6 +16,19 @@ namespace Microsoft.Azure.Devices.Client
         public TransportType TransportType { get; set; } = TransportType.Amqp_Tcp_Only;
 
         /// <summary>
+        /// The transport settings to use (i.e., <see cref="MqttTransportSettings"/>, <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).
+        /// </summary>
+        public ITransportSettings TransportSettings { get; set; }
+
+        /// <summary>
+        /// The transport settings to use for all file upload operations, regardless of what protocol the device
+        /// client is configured with. All file upload operations take place over https.
+        /// If FileUploadTransportSettings is not provided, then file upload operations will use the same client certificates
+        /// configured in the transport settings set for client connect.
+        /// </summary>
+        public HttpTransportSettings FileUploadTransportSettings { get; set; } = new HttpTransportSettings();
+
+        /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.
         /// </summary>
         public string GatewayHostName { get; set; }
@@ -26,14 +39,6 @@ namespace Microsoft.Azure.Devices.Client
         /// This feature is currently supported only over MQTT and AMQP transports.
         /// <remarks></remarks>
         public string ModelId { get; set; }
-
-        /// <summary>
-        /// The transport settings to use for all file upload operations, regardless of what protocol the device
-        /// client is configured with. All file upload operations take place over https.
-        /// If FileUploadTransportSettings is not provided, then file upload operations will use the same client certificates
-        /// configured in the transport settings set for client connect.
-        /// </summary>
-        public Http1TransportSettings FileUploadTransportSettings { get; set; } = new Http1TransportSettings();
 
         /// <summary>
         /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.

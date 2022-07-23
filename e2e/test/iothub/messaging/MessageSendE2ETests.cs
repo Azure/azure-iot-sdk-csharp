@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
         {
-            var httpTransportSettings = new Http1TransportSettings
+            var httpTransportSettings = new Client.HttpTransportSettings
             {
                 Proxy = new WebProxy(s_proxyServerAddress),
             };
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_Http_WithCustomProxy()
         {
-            var httpTransportSettings = new Http1TransportSettings();
+            var httpTransportSettings = new Client.HttpTransportSettings();
             var proxy = new CustomWebProxy(Logger);
             httpTransportSettings.Proxy = proxy;
 

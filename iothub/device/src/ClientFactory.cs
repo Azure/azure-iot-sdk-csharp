@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(transportType),
                 TransportType.Mqtt_WebSocket_Only or TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
-                TransportType.Http1 => new Http1TransportSettings(),
+                TransportType.Http1 => new HttpTransportSettings(),
                 _ => throw new InvalidOperationException($"Unsupported transport type {transportType}"),
             };
         }
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Client
                     break;
 
                 case TransportType.Http1:
-                    if (transportSettings is not Http1TransportSettings)
+                    if (transportSettings is not HttpTransportSettings)
                     {
                         throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                     }
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     ClientCertificate = csBuilder.Certificate
                 },
-                TransportType.Http1 => new Http1TransportSettings
+                TransportType.Http1 => new HttpTransportSettings
                 {
                     ClientCertificate = csBuilder.Certificate
                 },
@@ -381,7 +381,7 @@ namespace Microsoft.Azure.Devices.Client
                     break;
 
                 case TransportType.Http1:
-                    ((Http1TransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
+                    ((HttpTransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
                     break;
 
                 case TransportType.Mqtt_WebSocket_Only:

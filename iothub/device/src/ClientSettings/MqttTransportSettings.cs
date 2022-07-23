@@ -7,7 +7,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using DotNetty.Codecs.Mqtt.Packets;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Settings for MQTT transport

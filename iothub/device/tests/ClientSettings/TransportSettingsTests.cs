@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void Http1TransportSettings_DefaultTransportType()
         {
-            Assert.AreEqual(TransportType.Http1, new Http1TransportSettings().GetTransportType(), "Should default to TransportType.Http1");
+            Assert.AreEqual(TransportType.Http1, new HttpTransportSettings().GetTransportType(), "Should default to TransportType.Http1");
         }
 
         [TestMethod]
