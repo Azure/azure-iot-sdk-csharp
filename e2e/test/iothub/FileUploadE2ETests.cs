@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var fileUploadTransportSettings = new Http1TransportSettings();
+            var fileUploadTransportSettings = new Client.HttpTransportSettings();
 
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var fileUploadTransportSettings = new Http1TransportSettings();
+            var fileUploadTransportSettings = new Client.HttpTransportSettings();
 
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, useX509auth: true).ConfigureAwait(false);
         }
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var fileUploadTransportSettings = new Http1TransportSettings()
+            var fileUploadTransportSettings = new Client.HttpTransportSettings()
             {
                 Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
-        private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool useX509auth = false)
+        private async Task UploadFileGranularAsync(Stream source, string filename, Client.HttpTransportSettings fileUploadTransportSettings, bool useX509auth = false)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
                 Logger,

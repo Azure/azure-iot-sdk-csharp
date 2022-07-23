@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static ITransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
         {
             TlsVersions.Instance.CertificateRevocationCheck = true;
-            return new Http1TransportSettings();
+            return new Client.HttpTransportSettings();
         }
 
         private static ITransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(DeviceTransportType transportType)

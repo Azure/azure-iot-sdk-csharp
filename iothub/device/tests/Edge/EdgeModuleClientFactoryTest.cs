@@ -97,37 +97,37 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 var trustBundle = Substitute.For<ITrustBundleProvider>();
                 var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
 
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
 
                 Environment.SetEnvironmentVariable(IotEdgedUriVariableName, ServerUrl);
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
 
                 Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
 
                 Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
 
                 Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
 
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
 
                 Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(settings, trustBundle)
+                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
                     ConfigureAwait(false);
             }
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
                 var trustBundle = Substitute.For<ITrustBundleProvider>();
                 await TestAssert
-                    .ThrowsAsync<InvalidOperationException>(async () => await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync().ConfigureAwait(false))
+                    .ThrowsAsync<InvalidOperationException>(async () => await new EdgeModuleClientFactory(trustBundle).CreateAsync().ConfigureAwait(false))
                     .ConfigureAwait(false);
             }
             finally
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
+            ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
             Assert.IsNotNull(dc);
 
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
+            ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
             Assert.IsNotNull(dc);
 
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
+            ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
             return dc;
         }
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
             var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            ModuleClient dc = await new EdgeModuleClientFactory(settings, trustBundle).CreateAsync();
+            ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
             return dc;
         }

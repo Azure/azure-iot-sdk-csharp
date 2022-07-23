@@ -10,14 +10,14 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains HTTP transport-specific settings for the device and module clients.
     /// </summary>
-    public sealed class Http1TransportSettings : ITransportSettings
+    public sealed class HttpTransportSettings : ITransportSettings
     {
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        public Http1TransportSettings()
+        public HttpTransportSettings()
         {
             Proxy = DefaultWebProxySettings.Instance;
         }

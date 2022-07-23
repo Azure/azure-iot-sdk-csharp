@@ -31,19 +31,17 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private const string IothubConnectionstringVariableName = "IotHubConnectionString";
         private const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
 
-        private readonly ITransportSettings _transportSettings;
         private readonly ITrustBundleProvider _trustBundleProvider;
         private readonly ClientOptions _options;
 
         /// <summary>
         /// Initializes a new instance of the class with transport settings.
         /// </summary>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        public EdgeModuleClientFactory(ITransportSettings transportSettings, ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
+        /// 
+        public EdgeModuleClientFactory(ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
         {
-            _transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
             _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
             _options = options ?? new();
         }
@@ -124,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 if (IsOSPlatform(OSPlatform.Windows))
                 {
                     Debug.WriteLine("EdgeModuleClientFactory GetCertificateValidator on Windows");
-                    var certValidator = CustomCertificateValidator.Create(certs, _transportSettings);
+                    var certValidator = CustomCertificateValidator.Create(certs, _options.TransportSettings);
                     return certValidator;
                 }
                 else
@@ -140,12 +138,12 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
         private InternalClient CreateInternalClientFromConnectionString(string connectionString, ClientOptions options)
         {
-            return ClientFactory.CreateFromConnectionString(connectionString, _transportSettings, options);
+            return ClientFactory.CreateFromConnectionString(connectionString, options);
         }
 
         private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, IAuthenticationMethod authMethod, ClientOptions options)
         {
-            return ClientFactory.Create(hostname, authMethod, _transportSettings, options);
+            return ClientFactory.Create(hostname, authMethod, options);
         }
 
         private static string GetValueFromEnvironment(IDictionary envVariables, string variableName)

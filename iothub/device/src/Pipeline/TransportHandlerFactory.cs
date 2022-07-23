@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return new HttpTransportHandler(
                         context,
                         connectionString,
-                        transportSetting as Http1TransportSettings,
+                        transportSetting as HttpTransportSettings,
                         isClientPrimaryTransportHandler: true);
 
                 case TransportType.Mqtt_Tcp_Only:

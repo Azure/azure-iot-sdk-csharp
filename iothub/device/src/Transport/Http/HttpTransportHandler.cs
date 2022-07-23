@@ -13,11 +13,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// The final node in the handler chain, running operations on the HTTP transport.
+    /// </summary>
     internal sealed class HttpTransportHandler : TransportHandler
     {
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
@@ -61,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal HttpTransportHandler(
             PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
-            Http1TransportSettings transportSettings,
+            HttpTransportSettings transportSettings,
             HttpClientHandler httpClientHandler = null,
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
