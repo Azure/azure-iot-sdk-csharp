@@ -64,10 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = DeviceClient.Create(
                 hostName,
                 authMethod,
-                new ITransportSettings[]
-                {
-                    new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                });
+                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only));
         }
 
         [TestMethod]
@@ -112,10 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = DeviceClient.Create(
                 hostName,
                 authMethod,
-                new ITransportSettings[]
-                {
-                    new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                },
+                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only),
                 options);
         }
 
@@ -152,10 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = DeviceClient.Create(
                 gatewayHostname,
                 authMethod,
-                new ITransportSettings[]
-                {
-                    new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                });
+                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only));
         }
 
         [TestMethod]
@@ -216,28 +207,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var options = new ClientOptions { TransportType = TransportType.Http1 };
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options);
-            try
-            {
-                deviceClient.DiagnosticSamplingPercentage = 100;
-                Assert.Fail();
-            }
-            catch (NotSupportedException e)
-            {
-                Assert.AreEqual($"{TransportType.Http1} protocol doesn't support E2E diagnostic.", e.Message);
-            }
-        }
-
-        [TestMethod]
-        public void DeviceClient_StartDiagLocallyWithMutipleProtocolThatDoNotSupport_ThrowException()
-        {
-            var transportSettings = new ITransportSettings[]
-            {
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
-                new Http1TransportSettings(),
-            };
-
-            using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, transportSettings);
             try
             {
                 deviceClient.DiagnosticSamplingPercentage = 100;
@@ -1411,7 +1380,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_InitWithTransportArrayAndModelId_ThrowsWhenHttp()
+        [DataRow(TransportType.Amqp_Tcp_Only)]
+        [DataRow(TransportType.Amqp_WebSocket_Only)]
+        [DataRow(TransportType.Mqtt_Tcp_Only)]
+        [DataRow(TransportType.Mqtt_WebSocket_Only)]
+        public void Deviceclient_InitWithNonHttpTransportAndModelId_DoesNotThrow(TransportType transportType)
         {
             // arrange
 
@@ -1420,44 +1393,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 ModelId = TestModelId,
             };
 
-            var allTransportTypes = new ITransportSettings[]
-            {
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only),
-                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
-                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
-                new Http1TransportSettings(),
-            };
-
-            // act
-
-            Action act = () => DeviceClient.CreateFromConnectionString(FakeConnectionString, allTransportTypes, clientOptions);
-
-            // assert
-
-            act.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("*Plug and Play*")
-                .WithMessage("*HTTP*");
-        }
-
-        [TestMethod]
-        public void Deviceclient_InitWithNonHttpTransportAndModelId_DoesNotThrow()
-        {
-            // arrange
-
-            var clientOptions = new ClientOptions
-            {
-                ModelId = TestModelId,
-            };
-
-            var allTransportTypes = new ITransportSettings[]
-            {
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only),
-                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
-                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
-            };
+            var allTransportTypes = ClientFactory.GetTransportSettings(transportType);
 
             // act and assert
             FluentActions

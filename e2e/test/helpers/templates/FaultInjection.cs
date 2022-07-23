@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
             ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
-            DeviceClient deviceClient = testDevice.CreateDeviceClient(new ITransportSettings[] { transportSettings });
+            DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;

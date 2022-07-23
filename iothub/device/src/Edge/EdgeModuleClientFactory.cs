@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private const string IothubConnectionstringVariableName = "IotHubConnectionString";
         private const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
 
-        private readonly ITransportSettings[] _transportSettings;
+        private readonly ITransportSettings _transportSettings;
         private readonly ITrustBundleProvider _trustBundleProvider;
         private readonly ClientOptions _options;
 
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        public EdgeModuleClientFactory(ITransportSettings[] transportSettings, ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
+        public EdgeModuleClientFactory(ITransportSettings transportSettings, ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
         {
             _transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
             _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));

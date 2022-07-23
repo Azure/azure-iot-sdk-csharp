@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly ProductInfo _productInfo = new();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
-        private readonly ITransportSettings[] _transportSettings;
+        private readonly ITransportSettings _transportSettings;
         private readonly ClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public InternalClient(
             IotHubConnectionString iotHubConnectionString,
-            ITransportSettings[] transportSettings,
+            ITransportSettings transportSettings,
             IDeviceClientPipelineBuilder pipelineBuilder,
             ClientOptions options)
         {
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client
 
             var pipelineContext = new PipelineContext
             {
-                TransportSettings = transportSettings.First(),
+                TransportSettings = transportSettings,
                 IotHubConnectionString = iotHubConnectionString,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
@@ -1205,17 +1205,16 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsE2eDiagnosticSupportedProtocol()
         {
-            foreach (ITransportSettings transportSetting in _transportSettings)
+            TransportType transportType = _transportSettings.GetTransportType();
+            if (transportType is not
+                (TransportType.Amqp_WebSocket_Only
+                    or TransportType.Amqp_Tcp_Only
+                    or TransportType.Mqtt_WebSocket_Only
+                    or TransportType.Mqtt_Tcp_Only))
             {
-                TransportType transportType = transportSetting.GetTransportType();
-                if (!(transportType == TransportType.Amqp_WebSocket_Only
-                    || transportType == TransportType.Amqp_Tcp_Only
-                    || transportType == TransportType.Mqtt_WebSocket_Only
-                    || transportType == TransportType.Mqtt_Tcp_Only))
-                {
-                    throw new NotSupportedException($"{transportType} protocol doesn't support E2E diagnostic.");
-                }
+                throw new NotSupportedException($"{transportType} protocol doesn't support E2E diagnostic.");
             }
+
             return true;
         }
     }

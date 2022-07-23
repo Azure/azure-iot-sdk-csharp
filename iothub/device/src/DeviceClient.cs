@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
+            ITransportSettings transportSettings, ClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings, options));
         }
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(
             string connectionString,
-            ITransportSettings[] transportSettings,
+            ITransportSettings transportSettings,
             ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings, options));

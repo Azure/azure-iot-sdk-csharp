@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
             // act
-            _ = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
+            _ = DeviceClient.Create(hostName, authMethod, new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100));
         }
     }
 }

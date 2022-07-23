@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Net.Security;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,21 +29,21 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_ShouldSucceed()
         {
-            ITransportSettings[] transportSettings = { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) };
+            var transportSettings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
-            Assert.IsNotNull(((MqttTransportSettings)transportSettings[0]).RemoteCertificateValidationCallback);
+            transportSettings.RemoteCertificateValidationCallback.Should().NotBeNull();
         }
 
         [TestMethod]
         public void TestSetupCertificateValidation_Amqp_ShouldSucceed()
         {
-            ITransportSettings[] transportSettings = new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
+            var transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
-            Assert.IsNotNull(((AmqpTransportSettings)transportSettings[0]).RemoteCertificateValidationCallback);
+            transportSettings.RemoteCertificateValidationCallback.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -56,10 +57,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                     return true;
                 };
             setting.RemoteCertificateValidationCallback = callback;
-            ITransportSettings[] transportSettings = new ITransportSettings[] { setting };
-            var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
+            var customCertificateValidator = CustomCertificateValidator.Create(certs, setting);
 
-            Assert.AreEqual(setting.RemoteCertificateValidationCallback, callback);
+            setting.RemoteCertificateValidationCallback.Should().Be(callback);
         }
 
         [TestMethod]
@@ -73,10 +73,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 return true;
             };
             setting.RemoteCertificateValidationCallback = callback;
-            ITransportSettings[] transportSettings = new ITransportSettings[] { setting };
-            var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
+            var customCertificateValidator = CustomCertificateValidator.Create(certs, setting);
 
-            Assert.IsNotNull(((AmqpTransportSettings)transportSettings[0]).RemoteCertificateValidationCallback);
+            setting.RemoteCertificateValidationCallback.Should().NotBeNull();
         }
     }
 }
