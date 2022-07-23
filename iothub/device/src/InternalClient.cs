@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client
 
             var pipelineContext = new PipelineContext
             {
-                TransportSettingsArray = transportSettings,
+                TransportSettings = transportSettings.First(),
                 IotHubConnectionString = iotHubConnectionString,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
