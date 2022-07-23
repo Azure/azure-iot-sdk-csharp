@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
+            ITransportSettings transportSettings, ClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings, options));
         }
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
         public static ModuleClient CreateFromConnectionString(string connectionString,
-            ITransportSettings[] transportSettings, ClientOptions options = default)
+            ITransportSettings transportSettings, ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings, options));
         }
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">Prioritized list of transports and their settings.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient instance</returns>
-        public static Task<ModuleClient> CreateFromEnvironmentAsync(ITransportSettings[] transportSettings, ClientOptions options = default)
+        public static Task<ModuleClient> CreateFromEnvironmentAsync(ITransportSettings transportSettings, ClientOptions options = default)
         {
             return new EdgeModuleClientFactory(transportSettings, new TrustBundleProvider(), options).CreateAsync();
         }

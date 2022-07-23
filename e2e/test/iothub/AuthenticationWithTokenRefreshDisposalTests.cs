@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             for (int i = 0; i < devicesCount; i++)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope - the client instance is disposed during the course of the test.
-                var deviceClient = DeviceClient.Create(testDevices[i].IotHubHostName, authenticationMethods[i], new ITransportSettings[] { amqpTransportSettings });
+                var deviceClient = DeviceClient.Create(testDevices[i].IotHubHostName, authenticationMethods[i], amqpTransportSettings);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);
@@ -249,10 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var deviceClient = DeviceClient.Create(
                     testDevices[i].IotHubHostName,
                     authenticationMethods[i],
-                    new ITransportSettings[]
-                    {
-                        amqpTransportSettings
-                    });
+                    amqpTransportSettings);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);

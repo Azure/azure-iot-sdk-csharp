@@ -30,17 +30,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings = new ITransportSettings[]
+            var transportSettings  = new AmqpTransportSettings(transport)
             {
-                new AmqpTransportSettings(transport)
+                AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
                 {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
-                    {
-                        MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true,
-                    },
-                    Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                }
+                    MaxPoolSize = unchecked((uint)poolSize),
+                    Pooling = true,
+                },
+                Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
             };
 
             var testDevices = new List<TestDevice>();

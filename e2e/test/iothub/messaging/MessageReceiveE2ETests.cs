@@ -112,14 +112,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
         {
-            var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only) { CleanSession = true } };
+            var settings = new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only) { CleanSession = true };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
         {
-            var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only) };
+            var settings = new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
@@ -582,7 +582,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient2.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, ITransportSettings[] transportSettings)
+        private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, ITransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);

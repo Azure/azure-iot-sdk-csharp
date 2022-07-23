@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             return deviceClient;
         }
 
-        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, ClientOptions options = default)
+        public DeviceClient CreateDeviceClient(ITransportSettings transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 
