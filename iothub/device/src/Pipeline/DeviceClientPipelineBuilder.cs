@@ -10,9 +10,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();
 
-        public IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> delegatingHandlerCreator)
+        public IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> handlerCreator)
         {
-            _pipeline.Add(delegatingHandlerCreator);
+            _pipeline.Add(handlerCreator);
             return this;
         }
 
@@ -25,17 +25,18 @@ namespace Microsoft.Azure.Devices.Client
 
             IDelegatingHandler nextHandler = null;
             IDelegatingHandler currentHandler = null;
+            ContinuationFactory<IDelegatingHandler> nextFactory = null;
 
-            // Initializes all handlers except the last one: the transport. 
-            // That is dynamically initialized by the ProtocolRoutingDelegatingHandler.
-            for (int i = _pipeline.Count - 2; i >= 0; i--)
+            // Initializes all handlers in reverse order, so each new one added on links to the
+            // logical next one in the singly-linked list.
+            for (int i = _pipeline.Count - 1; i >= 0; i--)
             {
                 ContinuationFactory<IDelegatingHandler> currentFactory = _pipeline[i];
-                ContinuationFactory<IDelegatingHandler> nextFactory = _pipeline[i + 1];
                 currentHandler = currentFactory(context, nextHandler);
                 currentHandler.ContinuationFactory = nextFactory;
 
                 nextHandler = currentHandler;
+                nextFactory = currentFactory;
             }
 
             return currentHandler;
