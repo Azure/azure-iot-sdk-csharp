@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private const bool DefaultCleanSession = false;
         private const bool DefaultHasWill = false;
-        private const int DefaultKeepAliveInSeconds = 300;
+        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromSeconds(300);
         private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
         private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             CleanSession = DefaultCleanSession;
             ConnectArrivalTimeout = s_defaultConnectArrivalTimeout;
             HasWill = DefaultHasWill;
-            KeepAliveInSeconds = DefaultKeepAliveInSeconds;
+            KeepAlive = DefaultKeepAlive;
             PublishToServerQoS = DefaultPublishToServerQoS;
             ReceivingQoS = DefaultReceivingQoS;
             WillMessage = null;
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Setting a very low keep-alive value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
-        public int KeepAliveInSeconds { get; set; }
+        public TimeSpan KeepAlive { get; set; }
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

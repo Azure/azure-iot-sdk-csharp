@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
@@ -94,12 +95,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
-        private readonly Dictionary<string, MqttApplicationMessageReceivedEventArgs> messagesToAcknowledge = new Dictionary<string, MqttApplicationMessageReceivedEventArgs>();
+        private readonly ConcurrentDictionary<string, MqttApplicationMessageReceivedEventArgs> messagesToAcknowledge = new ConcurrentDictionary<string, MqttApplicationMessageReceivedEventArgs>();
 
-        private readonly Dictionary<string, GetTwinResponse> getTwinResponses = new Dictionary<string, GetTwinResponse>();
+        private readonly ConcurrentDictionary<string, GetTwinResponse> getTwinResponses = new ConcurrentDictionary<string, GetTwinResponse>();
         private SemaphoreSlim _getTwinSemaphore = new SemaphoreSlim(0);
 
-        private readonly Dictionary<string, PatchTwinResponse> reportedPropertyUpdateResponses = new Dictionary<string, PatchTwinResponse>();
+        private readonly ConcurrentDictionary<string, PatchTwinResponse> reportedPropertyUpdateResponses = new ConcurrentDictionary<string, PatchTwinResponse>();
         private SemaphoreSlim _reportedPropertyUpdateResponsesSemaphore = new SemaphoreSlim(0);
 
         private readonly List<string> inProgressUpdateReportedPropertiesRequests = new List<string>();
@@ -275,14 +276,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             tlsParameters.UseTls = true;
-            tlsParameters.SslProtocol = System.Security.Authentication.SslProtocols.Tls12; //TODO get this from system or from user instead of hardcoding it?
+            tlsParameters.SslProtocol = TlsVersions.Instance.Preferred;
             mqttClientOptionsBuilder.WithTls(tlsParameters);
 
-            mqttClientOptionsBuilder.WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311);
+            mqttClientOptionsBuilder.WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311); // 3.1.1
 
             mqttClientOptionsBuilder.WithCleanSession(settings.CleanSession);
 
-            mqttClientOptionsBuilder.WithKeepAlivePeriod(TimeSpan.FromSeconds(settings.KeepAliveInSeconds));
+            mqttClientOptionsBuilder.WithKeepAlivePeriod(settings.KeepAlive);
 
             if (settings.HasWill && settings.WillMessage != null)
             {
@@ -312,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private bool certificateValidationHandler(MqttClientCertificateValidationEventArgs args)
         {
             return mqttTransportSettings.RemoteCertificateValidationCallback.Invoke(
-                new object(), //TODO what on earth is this? //https://stackoverflow.com/questions/3664109/what-is-the-sender-in-remotecertificatevalidationcallback
+                mqttClient,
                 args.Certificate,
                 args.Chain,
                 args.SslPolicyErrors);
@@ -363,10 +364,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case MqttClientConnectResultCode.BadUserNameOrPassword:
                     case MqttClientConnectResultCode.NotAuthorized:
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new UnauthorizedException("Failed to open the MQTT connection due to incorrect or unauthorized credentials");
-
+                        throw new UnauthorizedException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", cfe);
+                    case MqttClientConnectResultCode.UnsupportedProtocolVersion:
+                        // Should never happen since the protocol version (3.1.1) is hardcoded
+                        throw new IotHubCommunicationException("Failed to open the MQTT connection due to an unsupported MQTT version", cfe);
+                    case MqttClientConnectResultCode.ServerUnavailable:
+                        throw new ServerBusyException("MQTT connection rejected because the server was unavailable", cfe);
                     default:
-                        throw; //TODO more granularity here
+                        // MQTT 3.1.1 only supports the above connect return codes, so this default case
+                        // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
+                        // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
+                        // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
+                        // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
+                        throw new IotHubCommunicationException("Failed to open the MQTT connection", cfe);
                 }
             }
         }
@@ -532,8 +542,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _getTwinSemaphore.Wait(cancellationToken);
             }
 
-            GetTwinResponse getTwinResponse = getTwinResponses[requestId];
-            getTwinResponses.Remove(requestId);
+            getTwinResponses.TryRemove(requestId, out GetTwinResponse getTwinResponse);
             int getTwinStatus = getTwinResponse.Status;
 
             if (getTwinStatus != 200)
@@ -580,8 +589,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _reportedPropertyUpdateResponsesSemaphore.Wait(cancellationToken);
             }
 
-            PatchTwinResponse patchTwinResponse = reportedPropertyUpdateResponses[requestId];
-            reportedPropertyUpdateResponses.Remove(requestId);
+            reportedPropertyUpdateResponses.TryRemove(requestId, out PatchTwinResponse patchTwinResponse);
             if (patchTwinResponse.Status != 204)
             {
                 throw ExceptionHandlingHelper.GetExceptionFromStatusCode(patchTwinResponse.Status, "Failed to send twin patch");
@@ -595,7 +603,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             base.Dispose(disposing);
             mqttClient?.Dispose();
+
+            // TODO notify the user for these that they failed? Clear these when closing instead?
             getTwinResponses?.Clear();
+            reportedPropertyUpdateResponses?.Clear();
+            inProgressGetTwinRequests?.Clear();
+            inProgressUpdateReportedPropertiesRequests?.Clear();
+            messagesToAcknowledge?.Clear();
+
             _getTwinSemaphore?.Dispose();
             _reportedPropertyUpdateResponsesSemaphore?.Dispose();
 
