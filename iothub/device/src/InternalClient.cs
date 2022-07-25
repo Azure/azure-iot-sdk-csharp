@@ -1217,14 +1217,9 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsE2eDiagnosticSupportedProtocol()
         {
-            TransportType transportType = _transportSettings.GetTransportType();
-            if (transportType is not
-                (TransportType.Amqp_WebSocket_Only
-                    or TransportType.Amqp_Tcp_Only
-                    or TransportType.Mqtt_WebSocket_Only
-                    or TransportType.Mqtt_Tcp_Only))
+            if (_transportSettings is not AmqpTransportSettings or MqttTransportSettings)
             {
-                throw new NotSupportedException($"{transportType} protocol doesn't support E2E diagnostic.");
+                throw new NotSupportedException($"'{_transportSettings.GetType()}' transport doesn't support E2E diagnostic.");
             }
 
             return true;

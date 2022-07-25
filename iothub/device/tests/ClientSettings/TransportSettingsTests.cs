@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new AmqpTransportSettings(transportType);
 
             // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initialized value");
+            Assert.AreEqual(transportType, transportSetting.TransportProtocol(), "Should match initialized value");
             Assert.AreEqual(prefetchCount, transportSetting.PrefetchCount, "Should default to 50");
         }
 
@@ -55,14 +55,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new AmqpTransportSettings(transportType, prefetchCount, new AmqpConnectionPoolSettings());
 
             // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initialized value");
+            Assert.AreEqual(transportType, transportSetting.TransportProtocol(), "Should match initialized value");
             Assert.AreEqual(prefetchCount, transportSetting.PrefetchCount, "Should match initialized value");
         }
 
         [TestMethod]
         public void Http1TransportSettings_DefaultTransportType()
         {
-            Assert.AreEqual(TransportType.Http, new HttpTransportSettings().GetTransportType(), "Should default to TransportType.Http1");
+            Assert.AreEqual(TransportType.Http, new HttpTransportSettings().TransportProtocol(), "Should default to TransportType.Http1");
         }
 
         [TestMethod]
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new MqttTransportSettings(transportType);
 
             // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initilized value");
+            Assert.AreEqual(transportType, transportSetting.TransportProtocol(), "Should match initilized value");
         }
 
         [TestMethod]
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new MqttTransportSettings(transportType);
 
             // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initilized value");
+            Assert.AreEqual(transportType, transportSetting.TransportProtocol(), "Should match initilized value");
         }
 
         [TestMethod]

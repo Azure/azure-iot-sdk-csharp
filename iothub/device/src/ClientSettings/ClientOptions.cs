@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ClientOptions()
         {
-            TransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            TransportSettings = new AmqpTransportSettings();
         }
 
         /// <summary>

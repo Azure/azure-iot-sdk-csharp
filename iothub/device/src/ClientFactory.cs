@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -121,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (!string.IsNullOrWhiteSpace(options.ModelId)
-                && options.TransportSettings.GetTransportType() == TransportType.Http)
+                && options.TransportSettings is HttpTransportSettings)
             {
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
@@ -144,46 +143,14 @@ namespace Microsoft.Azure.Devices.Client
                 builder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
-            var transportType = options.TransportSettings.GetTransportType();
-            if (transportType != TransportType.Amqp_Tcp_Only
-                && transportType != TransportType.Mqtt_Tcp_Only
-                && authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
-                && certificate.ChainCertificates != null)
+            if (authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
+                && certificate.ChainCertificates != null
+                && options.TransportSettings.Protocol != TransportProtocol.Tcp)
             {
-                throw new ArgumentException("Certificate chains are only supported on Amqp_Tcp_Only and Mqtt_Tcp_Only");
+                throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
             }
 
             var iotHubConnectionString = builder.ToIotHubConnectionString();
-
-            switch (options.TransportSettings.GetTransportType())
-            {
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    if (options.TransportSettings is not AmqpTransportSettings)
-                    {
-                        throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
-                    }
-                    break;
-
-                case TransportType.Http:
-                    if (options.TransportSettings is not HttpTransportSettings)
-                    {
-                        throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
-                    }
-                    break;
-
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    if (options.TransportSettings is not MqttTransportSettings)
-                    {
-                        throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
-                    }
-                    break;
-
-                default:
-                    throw new InvalidOperationException(
-                        $"Unsupported Transport Type {options.TransportSettings.GetTransportType()}");
-            }
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate
                 && builder.Certificate == null)
@@ -208,16 +175,16 @@ namespace Microsoft.Azure.Devices.Client
             return client;
         }
 
-        internal static ITransportSettings GetTransportSettings(TransportType transportType)
-        {
-            return transportType switch
-            {
-                TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(transportType),
-                TransportType.Mqtt_WebSocket_Only or TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
-                TransportType.Http => new HttpTransportSettings(),
-                _ => throw new InvalidOperationException($"Unsupported transport type {transportType}"),
-            };
-        }
+        //internal static ITransportSettings GetTransportSettings(TransportType transportType)
+        //{
+        //    return transportType switch
+        //    {
+        //        TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(transportType),
+        //        TransportType.Mqtt_WebSocket_Only or TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
+        //        TransportType.Http => new HttpTransportSettings(),
+        //        _ => throw new InvalidOperationException($"Unsupported transport type {transportType}"),
+        //    };
+        //}
 
         /// <summary>
         /// Ensures that the ClientOptions is configured and initialized.
@@ -235,11 +202,19 @@ namespace Microsoft.Azure.Devices.Client
                 options.FileUploadTransportSettings = new();
             }
 
-            if (cert != null
-                && options.FileUploadTransportSettings.ClientCertificate == null)
+            if (cert != null)
             {
-                options.FileUploadTransportSettings.ClientCertificate = cert;
+                if (options.FileUploadTransportSettings.ClientCertificate == null)
+                {
+                    options.FileUploadTransportSettings.ClientCertificate = cert;
+                }
+
+                if (options.TransportSettings.ClientCertificate == null)
+                {
+                    options.TransportSettings.ClientCertificate = cert;
+                }
             }
+
         }
 
         private static IDeviceClientPipelineBuilder BuildPipeline()
@@ -251,63 +226,6 @@ namespace Microsoft.Azure.Devices.Client
                 .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
 
             return pipelineBuilder;
-        }
-
-        private static ITransportSettings PopulateCertificateInTransportSettings(
-            IotHubConnectionStringBuilder csBuilder,
-            TransportType transportType)
-        {
-            return transportType switch
-            {
-                TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                {
-                    ClientCertificate = csBuilder.Certificate
-                },
-                TransportType.Amqp_WebSocket_Only => new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                {
-                    ClientCertificate = csBuilder.Certificate
-                },
-                TransportType.Http => new HttpTransportSettings
-                {
-                    ClientCertificate = csBuilder.Certificate
-                },
-                TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
-                {
-                    ClientCertificate = csBuilder.Certificate
-                },
-                TransportType.Mqtt_WebSocket_Only => new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                {
-                    ClientCertificate = csBuilder.Certificate
-                },
-                _ => throw new InvalidOperationException($"Unsupported Transport {transportType}"),
-            };
-        }
-
-        private static ITransportSettings PopulateCertificateInTransportSettings(
-            IotHubConnectionStringBuilder connectionStringBuilder,
-            ITransportSettings transportSettings)
-        {
-            switch (transportSettings.GetTransportType())
-            {
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    ((AmqpTransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
-                    break;
-
-                case TransportType.Http:
-                    ((HttpTransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
-                    break;
-
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    ((MqttTransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
-                    break;
-
-                default:
-                    throw new InvalidOperationException($"Unsupported Transport {transportSettings.GetTransportType()}");
-            }
-
-            return transportSettings;
         }
     }
 }

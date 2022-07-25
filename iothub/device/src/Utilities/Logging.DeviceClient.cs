@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices
             if (IsEnabled)
             {
                 var sb = new StringBuilder();
-                sb.Append(transportSettings.GetTransportType().ToString());
+                sb.Append(transportSettings.ToString());
 
                 if (!string.IsNullOrWhiteSpace(options?.ModelId))
                 {
