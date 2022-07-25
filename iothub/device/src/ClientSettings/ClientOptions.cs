@@ -11,14 +11,28 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientOptions
     {
         /// <summary>
-        /// The transport type to use (i.e., AMQP, MQTT, HTTP), including whether to use TCP or web sockets where applicable.
+        /// Creates an instances of this class with the default transport settings.
         /// </summary>
-        public TransportType TransportType { get; set; } = TransportType.Amqp_Tcp_Only;
+        public ClientOptions()
+        {
+            TransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+        }
+
+        /// <summary>
+        /// Creates an instance of this class with the specified transport settings.
+        /// </summary>
+        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="MqttTransportSettings"/>,
+        /// <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
+        public ClientOptions(ITransportSettings transportSettings)
+        {
+            TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+        }
 
         /// <summary>
         /// The transport settings to use (i.e., <see cref="MqttTransportSettings"/>, <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).
         /// </summary>
-        public ITransportSettings TransportSettings { get; set; }
+        public ITransportSettings TransportSettings { get; }
 
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device

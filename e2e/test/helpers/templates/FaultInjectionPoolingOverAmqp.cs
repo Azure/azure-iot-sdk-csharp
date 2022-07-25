@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             for (int i = 0; i < devicesCount; i++)
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
-                DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
+                DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings), authScope);
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
                 deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);

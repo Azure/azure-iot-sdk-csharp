@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -9,20 +10,35 @@ using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class ClientFactory
+    internal static class ClientFactory
     {
         /// <summary>
-        /// Create an Amqp InternalClient from individual parameters
+        /// Create an instance of InternalClient with the given parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
+        /// <param name="connectionString">The device connection string.</param>
+        /// <param name="options">The optional client settings.</param>
+        /// <returns>An instance of InternalClient.</returns>
+        internal static InternalClient CreateFromConnectionString(
+            string connectionString,
+            ClientOptions options)
         {
-            if (hostname == null)
+            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(connectionString, null);
+
+            return CreateInternal(null, connectionString, builder.AuthenticationMethod, options);
+        }
+
+        /// <summary>
+        /// Create an instance of InternalClient with the given parameters.
+        /// </summary>
+        /// <param name="hostName">The fully-qualified DNS hostname of IoT hub</param>
+        /// <param name="authenticationMethod">The authentication method.</param>
+        /// <param name="options">The optional client settings.</param>
+        /// <returns>InternalClient</returns>
+        internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
+        {
+            if (hostName == null)
             {
-                throw new ArgumentNullException(nameof(hostname));
+                throw new ArgumentNullException(nameof(hostName));
             }
 
             if (authenticationMethod == null)
@@ -35,202 +51,77 @@ namespace Microsoft.Azure.Devices.Client
                 options = new();
             }
 
-            if (options.TransportType != TransportType.Amqp_Tcp_Only
-                && options.TransportType != TransportType.Mqtt_Tcp_Only
-                && authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
-                && certificate.ChainCertificates != null)
-            {
-                throw new ArgumentException("Certificate chains are only supported on Amqp_Tcp_Only and Mqtt_Tcp_Only");
-            }
-
-            if (!string.IsNullOrWhiteSpace(options?.ModelId)
-                && options.TransportType == TransportType.Http1)
-            {
-                throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
-            }
-
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, options.GatewayHostName, authenticationMethod);
+            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostName, options.GatewayHostName, authenticationMethod);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
 
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
+            if (authenticationMethod is not DeviceAuthenticationWithX509Certificate)
             {
-                if (connectionStringBuilder.Certificate == null)
-                {
-                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
-                }
-
-                InternalClient internalClient = CreateFromConnectionString(
-                    connectionStringBuilder.ToString(),
-                    authenticationMethod,
-                    PopulateCertificateInTransportSettings(connectionStringBuilder, options.TransportType),
-                    null,
-                    options);
-
-                internalClient.Certificate = connectionStringBuilder.Certificate;
-
-                // Install all the intermediate certificates in the chain if specified.
-                if (connectionStringBuilder.ChainCertificates != null)
-                {
-                    try
-                    {
-                        CertificateInstaller.EnsureChainIsInstalled(connectionStringBuilder.ChainCertificates);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
-
-                        throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
-                    }
-                }
-
-                return internalClient;
+                return CreateInternal(null, connectionStringBuilder.ToString(), authenticationMethod, options);
             }
 
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, null, options);
-        }
+            // Prep for certificate auth.
 
-        /// <summary>
-        /// Create a InternalClient from individual parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient Create(
-            string hostname,
-            IAuthenticationMethod authenticationMethod,
-            ITransportSettings transportSettings,
-            ClientOptions options = default)
-        {
-            if (hostname == null)
+            if (connectionStringBuilder.Certificate == null)
             {
-                throw new ArgumentNullException(nameof(hostname));
+                throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
             }
 
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationMethod));
-            }
-
-            if (options == default)
-            {
-                options = new();
-            }
-
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, options.GatewayHostName, authenticationMethod);
-
-            // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
-
-            if (!string.IsNullOrWhiteSpace(options.ModelId)
-                && transportSettings.GetTransportType() == TransportType.Http1)
-            {
-                throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
-            }
-
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
-            {
-                if (connectionStringBuilder.Certificate == null)
-                {
-                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
-                }
-
-                InternalClient dc = CreateFromConnectionString(
-                    connectionStringBuilder.ToString(),
-                    PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings),
-                    options);
-                dc.Certificate = connectionStringBuilder.Certificate;
-                return dc;
-            }
-
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null, options);
-        }
-
-        /// <summary>
-        /// Create a InternalClient using Amqp transport from the specified connection string
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
-        {
-            return CreateFromConnectionString(connectionString, transportSettings: null, options: options);
-        }
-
-        /// <summary>
-        /// Create InternalClient from the specified connection string using a prioritized list of transports
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
-        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
-        /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>InternalClient</returns>
-        internal static InternalClient CreateFromConnectionString(
-            string connectionString,
-            ITransportSettings transportSettings,
-            ClientOptions options = default)
-        {
-            return CreateFromConnectionString(connectionString, null, transportSettings, null, options);
-        }
-
-        internal static InternalClient CreateFromConnectionString(
-            string connectionString,
-            IAuthenticationMethod authenticationMethod,
-            IDeviceClientPipelineBuilder pipelineBuilder,
-            ClientOptions options = default)
-        {
-            if (options == default)
-            {
-                options = new();
-            }
-
-            ITransportSettings transportSettings = GetTransportSettings(options.TransportType);
-            return CreateFromConnectionString(
-                connectionString,
+            InternalClient internalClient = CreateInternal(
+                null,
+                connectionStringBuilder.ToString(),
                 authenticationMethod,
-                transportSettings,
-                pipelineBuilder,
                 options);
-        }
 
-        internal static ITransportSettings GetTransportSettings(TransportType transportType)
-        {
-            return transportType switch
+            internalClient.Certificate = connectionStringBuilder.Certificate;
+
+            // Install all the intermediate certificates in the chain if specified.
+            if (connectionStringBuilder.ChainCertificates != null)
             {
-                TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(transportType),
-                TransportType.Mqtt_WebSocket_Only or TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
-                TransportType.Http1 => new HttpTransportSettings(),
-                _ => throw new InvalidOperationException($"Unsupported transport type {transportType}"),
-            };
+                try
+                {
+                    CertificateInstaller.EnsureChainIsInstalled(connectionStringBuilder.ChainCertificates);
+                }
+                catch (Exception ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+
+                    throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
+                }
+            }
+
+            return internalClient;
         }
 
-        internal static InternalClient CreateFromConnectionString(
+        /// <summary>
+        /// This initializer exists only for unit tests to override the pipeline creation
+        /// </summary>
+        /// <param name="pipelineBuilder">Should only be specified by SDK tests to override the operation pipeline.</param>
+        /// <param name="connectionString">The device connection string.</param>
+        /// <param name="authenticationMethod">The authentication method.</param>
+        /// <param name="options">The optional client settings.</param>
+#if DEBUG
+        internal
+#else
+        private
+#endif
+        static InternalClient CreateInternal(
+            IDeviceClientPipelineBuilder pipelineBuilder,
             string connectionString,
             IAuthenticationMethod authenticationMethod,
-            ITransportSettings transportSettings,
-            IDeviceClientPipelineBuilder pipelineBuilder,
-            ClientOptions options = default)
+            ClientOptions options)
         {
-            if (options == default)
-            {
-                options = new();
-            }
+            Debug.Assert(options != null);
 
             if (connectionString == null)
             {
                 throw new ArgumentNullException(nameof(connectionString));
             }
 
-            if (transportSettings == null)
-            {
-                transportSettings = GetTransportSettings(options.TransportType);
-            }
-
             if (!string.IsNullOrWhiteSpace(options.ModelId)
-                && transportSettings.GetTransportType() == TransportType.Http1)
+                && options.TransportSettings.GetTransportType() == TransportType.Http)
             {
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
@@ -238,6 +129,10 @@ namespace Microsoft.Azure.Devices.Client
             var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
                 connectionString,
                 authenticationMethod);
+            if (authenticationMethod == null)
+            {
+                authenticationMethod = builder.AuthenticationMethod;
+            }
 
             // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
             // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
@@ -249,20 +144,29 @@ namespace Microsoft.Azure.Devices.Client
                 builder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
+            var transportType = options.TransportSettings.GetTransportType();
+            if (transportType != TransportType.Amqp_Tcp_Only
+                && transportType != TransportType.Mqtt_Tcp_Only
+                && authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
+                && certificate.ChainCertificates != null)
+            {
+                throw new ArgumentException("Certificate chains are only supported on Amqp_Tcp_Only and Mqtt_Tcp_Only");
+            }
+
             var iotHubConnectionString = builder.ToIotHubConnectionString();
 
-            switch (transportSettings.GetTransportType())
+            switch (options.TransportSettings.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
-                    if (transportSettings is not AmqpTransportSettings)
+                    if (options.TransportSettings is not AmqpTransportSettings)
                     {
                         throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                     }
                     break;
 
-                case TransportType.Http1:
-                    if (transportSettings is not HttpTransportSettings)
+                case TransportType.Http:
+                    if (options.TransportSettings is not HttpTransportSettings)
                     {
                         throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                     }
@@ -270,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
-                    if (transportSettings is not MqttTransportSettings)
+                    if (options.TransportSettings is not MqttTransportSettings)
                     {
                         throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                     }
@@ -278,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 default:
                     throw new InvalidOperationException(
-                        $"Unsupported Transport Type {transportSettings.GetTransportType()}");
+                        $"Unsupported Transport Type {options.TransportSettings.GetTransportType()}");
             }
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate
@@ -292,17 +196,27 @@ namespace Microsoft.Azure.Devices.Client
 
             pipelineBuilder ??= BuildPipeline();
 
-            // Defer concrete InternalClient creation to OpenAsync
-            var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder, options);
+            var client = new InternalClient(iotHubConnectionString, pipelineBuilder, options);
 
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
                     $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId};ModuleId={iotHubConnectionString.ModuleId}",
-                    transportSettings,
+                    options.TransportSettings,
                     options);
 
             return client;
+        }
+
+        internal static ITransportSettings GetTransportSettings(TransportType transportType)
+        {
+            return transportType switch
+            {
+                TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(transportType),
+                TransportType.Mqtt_WebSocket_Only or TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
+                TransportType.Http => new HttpTransportSettings(),
+                _ => throw new InvalidOperationException($"Unsupported transport type {transportType}"),
+            };
         }
 
         /// <summary>
@@ -353,7 +267,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     ClientCertificate = csBuilder.Certificate
                 },
-                TransportType.Http1 => new HttpTransportSettings
+                TransportType.Http => new HttpTransportSettings
                 {
                     ClientCertificate = csBuilder.Certificate
                 },
@@ -380,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client
                     ((AmqpTransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
                     break;
 
-                case TransportType.Http1:
+                case TransportType.Http:
                     ((HttpTransportSettings)transportSettings).ClientCertificate = connectionStringBuilder.Certificate;
                     break;
 

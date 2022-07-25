@@ -174,18 +174,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             if (AuthenticationMethod == null)
             {
                 deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, options);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string: {options.TransportType} ID={TestLogger.IdOf(deviceClient)}");
+                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string: {options.TransportSettings.GetTransportType()} ID={TestLogger.IdOf(deviceClient)}");
             }
             else
             {
                 deviceClient = DeviceClient.Create(IotHubHostName, AuthenticationMethod, options);
-                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: {options.TransportType} ID={TestLogger.IdOf(deviceClient)}");
+                s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: {options.TransportSettings.GetTransportType()} ID={TestLogger.IdOf(deviceClient)}");
             }
 
             return deviceClient;
         }
 
-        public DeviceClient CreateDeviceClient(ITransportSettings transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, ClientOptions options = default)
+        public DeviceClient CreateDeviceClient(ClientOptions options = default, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             DeviceClient deviceClient = null;
 
@@ -193,18 +193,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             {
                 if (authScope == ConnectionStringAuthScope.Device)
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings, options);
+                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, options);
                     s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from device connection string: Id={TestLogger.IdOf(deviceClient)}");
                 }
                 else
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={Device.Id}", transportSettings, options);
+                    deviceClient = DeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={Device.Id}", options);
                     s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IoTHub connection string: Id={TestLogger.IdOf(deviceClient)}");
                 }
             }
             else
             {
-                deviceClient = DeviceClient.Create(IotHubHostName, AuthenticationMethod, transportSettings, options);
+                deviceClient = DeviceClient.Create(IotHubHostName, AuthenticationMethod, options);
                 s_logger.Trace($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod: ID={TestLogger.IdOf(deviceClient)}");
             }
 

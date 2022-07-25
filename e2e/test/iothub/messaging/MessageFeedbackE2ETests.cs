@@ -29,19 +29,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_CompleteMixOrder_Amqp()
         {
             // AMQP allows completing messages in any order received. Let's test that.
-            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, Logger).ConfigureAwait(false);
+            await CompleteMessageMixOrder(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), Logger).ConfigureAwait(false);
         }
 
-        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, MsTestLogger logger)
+        private static async Task CompleteMessageMixOrder(TestDeviceType type, ITransportSettings transportSettings, MsTestLogger logger)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = transport });
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings));
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            if (transport == Client.TransportType.Mqtt_Tcp_Only
-                || transport == Client.TransportType.Mqtt_WebSocket_Only)
+            if (transportSettings is MqttTransportSettings)
             {
                 Assert.Fail("Message completion out of order not supported outside of AMQP");
             }

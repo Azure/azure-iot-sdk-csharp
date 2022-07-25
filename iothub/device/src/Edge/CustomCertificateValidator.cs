@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     }
                     break;
 
-                case TransportType.Http1:
+                case TransportType.Http:
                     // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
                     // So set the callback in HttpClientHandler for InvokeMethodAsync
                     break;

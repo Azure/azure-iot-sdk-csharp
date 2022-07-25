@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1)
+                if (transport == Client.TransportType.Http)
                 {
                     throw;
                 }
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1)
+                if (transport == Client.TransportType.Http)
                 {
                     throw;
                 }
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
             ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
-            DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
+            DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings));
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             try
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                if (transport != Client.TransportType.Http1)
+                if (transport != Client.TransportType.Http)
                 {
                     Assert.IsTrue(connectionStatusChangeCount >= 1, $"The expected connection status change should be equal or greater than 1 but was {connectionStatusChangeCount}"); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
                     Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Connected} but was {lastConnectionStatus}");
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
 
-                if (transport != Client.TransportType.Http1)
+                if (transport != Client.TransportType.Http)
                 {
                     if (FaultShouldDisconnect(faultType))
                     {
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             switch (transportType)
             {
-                case Client.TransportType.Http1:
+                case Client.TransportType.Http:
                     return new Client.HttpTransportSettings
                     {
                         Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),

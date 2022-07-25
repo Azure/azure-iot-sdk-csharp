@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            var options = new ClientOptions { TransportType = TransportType.Mqtt_Tcp_Only };
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
             ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
@@ -76,7 +76,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+            ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 

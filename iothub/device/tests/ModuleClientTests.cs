@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var options = new ClientOptions { TransportType = TransportType.Mqtt_Tcp_Only };
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
             var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var options = new ClientOptions { TransportType = TransportType.Mqtt_Tcp_Only };
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
             var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var options = new ClientOptions { TransportType = TransportType.Mqtt_Tcp_Only };
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
             var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var options = new ClientOptions { TransportType = TransportType.Mqtt_Tcp_Only };
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
             var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// HyperText Transfer Protocol version 1 transport.
         /// </summary>
-        Http1 = 1,
+        Http = 1,
 
         /// <summary>
         /// Advanced Message Queuing Protocol transport over WebSocket only.
