@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -12,10 +13,14 @@ namespace Microsoft.Azure.Devices.Client
     public interface ITransportSettings
     {
         /// <summary>
-        /// Returns the transport type of the TransportSettings object.
+        /// The configured transport protocol.
         /// </summary>
-        /// <returns>The TransportType</returns>
-        TransportType GetTransportType();
+        TransportProtocol Protocol { get; }
+
+        /// <summary>
+        /// The client certificate to use for authenticating.
+        /// </summary>
+        public X509Certificate2 ClientCertificate { get; set; }
 
         /// <summary>
         /// The time to wait for a receive operation.

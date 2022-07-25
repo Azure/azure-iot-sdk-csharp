@@ -41,40 +41,27 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             Debug.WriteLine("CustomCertificateValidator.SetupCertificateValidation()");
 
-            switch (_transportSettings.GetTransportType())
+            if (_transportSettings is AmqpTransportSettings amqpTransportSettings)
             {
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    if (_transportSettings is AmqpTransportSettings amqpTransportSettings)
-                    {
-                        if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
-                        {
-                            amqpTransportSettings.RemoteCertificateValidationCallback =
-                                (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                        }
-                    }
-                    break;
-
-                case TransportType.Http:
-                    // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
-                    // So set the callback in HttpClientHandler for InvokeMethodAsync
-                    break;
-
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    if (_transportSettings is MqttTransportSettings mqttTransportSettings)
-                    {
-                        if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
-                        {
-                            mqttTransportSettings.RemoteCertificateValidationCallback =
-                                (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(_transportSettings.GetTransportType()));
+                if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
+                {
+                    amqpTransportSettings.RemoteCertificateValidationCallback =
+                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
+                }
             }
+            else if (_transportSettings is MqttTransportSettings mqttTransportSettings)
+            {
+                if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
+                {
+                    mqttTransportSettings.RemoteCertificateValidationCallback =
+                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
+                }
+            }
+
+            // TODO: Tim/Abhipsa, what does this mean?
+
+            // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
+            // So set the callback in HttpClientHandler for InvokeMethodAsync
         }
 
         private static bool ValidateCertificate(X509Certificate2 trustedCertificate, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

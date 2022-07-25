@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             bool transportProtocolSupportsTwinOperations = transportSettings is not Client.HttpTransportSettings;
 
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings.GetTransportType());
+            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings.TransportProtocol());
             using AuthenticationProvider auth = await CreateAuthenticationProviderFromNameAsync(
                     attestationType,
                     enrollmentType,

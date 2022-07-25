@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Security;
@@ -10,84 +11,48 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Contains Amqp transport-specific settings for the device and module clients.
+    /// Contains AMQP transport-specific settings for the device and module clients.
     /// </summary>
     public sealed class AmqpTransportSettings : ITransportSettings
     {
-        private readonly TransportType _transportType;
-        private TimeSpan _operationTimeout;
+        private TimeSpan _operationTimeout = DefaultOperationTimeout;
+        private uint _prefetchCount = DefaultPrefetchCount;
 
         /// <summary>
-        /// The default operation timeout
+        /// The default operation timeout.
         /// </summary>
         public static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// The default open timeout
+        /// The default open timeout.
         /// </summary>
         public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// The default idle timeout
+        /// The default idle timeout.
         /// </summary>
         public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// The default pre-fetch count
+        /// The default pre-fetch count.
         /// </summary>
         public const uint DefaultPrefetchCount = 50;
 
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="transportType">The AMQP transport type.</param>
-        public AmqpTransportSettings(TransportType transportType)
-            : this(transportType, DefaultPrefetchCount, new AmqpConnectionPoolSettings())
+        /// <param name="transportProtocol">The transport protocol.</param>
+        public AmqpTransportSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of this class.
-        /// </summary>
-        /// <param name="transportType">The AMQP transport type.</param>
-        /// <param name="prefetchCount">The pre-fetch count.</param>
-        public AmqpTransportSettings(TransportType transportType, uint prefetchCount)
-            : this(transportType, prefetchCount, new AmqpConnectionPoolSettings())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of this class.
-        /// </summary>
-        /// <param name="transportType">The AMQP transport type.</param>
-        /// <param name="prefetchCount">The pre-fetch count.</param>
-        /// <param name="amqpConnectionPoolSettings">AMQP connection pool settings.</param>
-        public AmqpTransportSettings(TransportType transportType, uint prefetchCount, AmqpConnectionPoolSettings amqpConnectionPoolSettings)
-        {
-            OperationTimeout = DefaultOperationTimeout;
-            IdleTimeout = DefaultIdleTimeout;
-
-            PrefetchCount = prefetchCount <= 0
-                ? throw new ArgumentOutOfRangeException(nameof(prefetchCount), "Must be greater than zero")
-                : prefetchCount;
-
-            switch (transportType)
+            Protocol = transportProtocol;
+            if (Protocol == TransportProtocol.WebSocket)
             {
-                case TransportType.Amqp_WebSocket_Only:
-                    Proxy = DefaultWebProxySettings.Instance;
-                    _transportType = transportType;
-                    break;
-
-                case TransportType.Amqp_Tcp_Only:
-                    _transportType = transportType;
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(transportType), transportType, null);
+                Proxy = DefaultWebProxySettings.Instance;
             }
-
-            AmqpConnectionPoolSettings = amqpConnectionPoolSettings;
         }
+
+        /// <inheritdoc/>
+        public TransportProtocol Protocol { get; }
 
         /// <summary>
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
@@ -117,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
-        public TimeSpan IdleTimeout { get; set; }
+        public TimeSpan IdleTimeout { get; set; } = DefaultIdleTimeout;
 
         /// <summary>
         /// The time to wait for any operation to complete. The default is 1 minute.
@@ -125,7 +90,9 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan OperationTimeout
         {
             get => _operationTimeout;
-            set => SetOperationTimeout(value);
+            set => _operationTimeout = value > TimeSpan.Zero
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(OperationTimeout), "Must be greather than zero.");
         }
 
         /// <summary>
@@ -137,11 +104,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The pre-fetch count
         /// </summary>
-        public uint PrefetchCount { get; set; }
+        public uint PrefetchCount
+        {
+            get => _prefetchCount;
+            set => _prefetchCount = value > 0
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(PrefetchCount), "Must be greater than zero");
+        }
 
-        /// <summary>
-        /// The client certificate to use for authenticating
-        /// </summary>
+        /// <inheritdoc/>
         public X509Certificate2 ClientCertificate { get; set; }
 
         /// <inheritdoc/>
@@ -164,14 +135,6 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
 
         /// <summary>
-        /// Returns the configured transport type
-        /// </summary>
-        public TransportType GetTransportType()
-        {
-            return _transportType;
-        }
-
-        /// <summary>
         /// Compares the properties of this instance to another
         /// </summary>
         /// <param name="other">The other instance to compare to</param>
@@ -186,11 +149,11 @@ namespace Microsoft.Azure.Devices.Client
                 && AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings));
         }
 
-        private void SetOperationTimeout(TimeSpan timeout)
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override string ToString()
         {
-            _operationTimeout = timeout > TimeSpan.Zero
-                ? timeout
-                : throw new ArgumentOutOfRangeException(nameof(timeout));
+            return $"{GetType()}/{Protocol}";
         }
     }
 }
