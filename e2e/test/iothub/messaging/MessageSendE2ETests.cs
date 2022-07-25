@@ -39,31 +39,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_Amqp()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_AmqpWs()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_Mqtt()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_MqttWs()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceSendSingleMessage_Http()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new Client.HttpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -164,63 +164,63 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task X509_DeviceSendSingleMessage_Amqp()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.X509, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendSingleMessage_AmqpWs()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.X509, new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task X509_DeviceSendSingleMessage_Mqtt()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.X509, new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendSingleMessage_MqttWs()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.X509, new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendSingleMessage_Http()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.X509, new Client.HttpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendBatchMessages_Amqp()
         {
-            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await SendBatchMessages(TestDeviceType.X509, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendBatchMessages_AmqpWs()
         {
-            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await SendBatchMessages(TestDeviceType.X509, new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task X509_DeviceSendBatchMessages_Mqtt()
         {
-            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendBatchMessages(TestDeviceType.X509, new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendBatchMessages_MqttWs()
         {
-            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendBatchMessages(TestDeviceType.X509, new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_DeviceSendBatchMessages_Http()
         {
-            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+            await SendBatchMessages(TestDeviceType.X509, new Client.HttpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = Client.TransportType.Mqtt_Tcp_Only });
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)));
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -249,29 +249,50 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataRow(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, LargeMessageSizeInBytes)]
         [DataRow(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, LargeMessageSizeInBytes)]
         [DataRow(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.Sasl, Client.TransportType.Http1, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.Sasl, Client.TransportType.Http, LargeMessageSizeInBytes)]
         [DataRow(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only, LargeMessageSizeInBytes)]
         [DataRow(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only, LargeMessageSizeInBytes)]
         [DataRow(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only, LargeMessageSizeInBytes)]
         [DataRow(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.X509, Client.TransportType.Http1, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.X509, Client.TransportType.Http, LargeMessageSizeInBytes)]
         public async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, Client.TransportType transportType, int messageSize)
         {
-            await SendSingleMessage(testDeviceType, transportType, messageSize).ConfigureAwait(false);
+            ITransportSettings transportSettings;
+            switch (transportType)
+            {
+                case Client.TransportType.Amqp_Tcp_Only:
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    transportSettings = new AmqpTransportSettings(transportType);
+                    break;
+
+
+                case Client.TransportType.Mqtt_Tcp_Only:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    transportSettings = new MqttTransportSettings(transportType);
+                    break;
+
+                case Client.TransportType.Http:
+                    transportSettings = new Client.HttpTransportSettings();
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(transportType), "Unsupported transport type.");
+            }
+            await SendSingleMessage(testDeviceType, transportSettings, messageSize).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageOverAllowedSize_Amqp()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageOverAllowedSize_AmqpWs()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
@@ -282,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [ExpectedException(typeof(InvalidOperationException))]
         public async Task Message_DeviceSendMessageOverAllowedSize_Mqtt()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
@@ -293,28 +314,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [ExpectedException(typeof(InvalidOperationException))]
         public async Task Message_DeviceSendMessageOverAllowedSize_MqttWs()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageOverAllowedSize_Http()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new Client.HttpTransportSettings(), ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_Amqp()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_AmqpWs()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
@@ -325,7 +346,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [ExpectedException(typeof(InvalidOperationException))]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_Mqtt()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
@@ -336,20 +357,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [ExpectedException(typeof(InvalidOperationException))]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_MqttWs()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_Http()
         {
-            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, new Client.HttpTransportSettings(), OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
+        private async Task SendSingleMessage(TestDeviceType type, ITransportSettings transportSettings, int messageSize = 0)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            var options = new ClientOptions { TransportType = transport };
+            var options = new ClientOptions(transportSettings);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -357,10 +378,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendBatchMessages(TestDeviceType type, Client.TransportType transport)
+        private async Task SendBatchMessages(TestDeviceType type, ITransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            var options = new ClientOptions { TransportType = transport };
+            var options = new ClientOptions(transportSettings);
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -368,20 +389,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessage(TestDeviceType type, ITransportSettings transportSettings, int messageSize = 0)
-        {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
-
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageAsync(deviceClient, Logger, messageSize).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-        }
-
         private async Task SendSingleMessageModule(ITransportSettings transportSettings)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
+            var options = new ClientOptions(transportSettings);
+            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
             await SendSingleMessageModuleAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);

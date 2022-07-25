@@ -33,51 +33,51 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp_Tcp()
         {
-            await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTest(new AmqpTransportSettings(DeviceTransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp_WebSocket()
         {
-            await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTest(new AmqpTransportSettings(DeviceTransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt_Tcp()
         {
-            await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTest(new MqttTransportSettings(DeviceTransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt_WebSocket()
         {
-            await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTest(new MqttTransportSettings(DeviceTransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp_Tcp()
         {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTwiceTest(new AmqpTransportSettings(DeviceTransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp_WebSocket()
         {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTwiceTest(new AmqpTransportSettings(DeviceTransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_Tcp()
         {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTwiceTest(new MqttTransportSettings(DeviceTransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_WebSocket()
         {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTwiceTest(new MqttTransportSettings(DeviceTransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
-                new ClientOptions { TransportType = DeviceTransportType.Mqtt_Tcp_Only });
+                new ClientOptions(new MqttTransportSettings(DeviceTransportType.Mqtt_Tcp_Only)));
 
             // act
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = DeviceClient.Create(
                 _hostName,
                 auth,
-                new ClientOptions { TransportType = DeviceTransportType.Amqp_Tcp_Only });
+                new ClientOptions(new AmqpTransportSettings(DeviceTransportType.Amqp_Tcp_Only)));
 
             // act
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSetting);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSetting));
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await MessageSendE2ETests.SendSingleMessageAsync(deviceClient, Logger).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -218,11 +218,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             return new AmqpTransportSettings(transportType);
         }
 
-        private async Task X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType transportType)
+        private async Task X509InvalidDeviceIdOpenAsyncTest(ITransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, new ClientOptions { TransportType = transportType });
+            using var deviceClient = DeviceClient.Create(_hostName, auth, new ClientOptions(transportSettings));
 
             try
             {
@@ -239,11 +239,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
         }
 
-        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType transportType)
+        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(ITransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, new ClientOptions { TransportType = transportType });
+            using var deviceClient = DeviceClient.Create(_hostName, auth, new ClientOptions(transportSettings));
 
             for (int i = 0; i < 2; i++)
             {

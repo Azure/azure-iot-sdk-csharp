@@ -25,10 +25,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the transport type for this settings class.
         /// </summary>
-        /// <returns>HyperText Transfer Protocol transport type. <see cref="TransportType.Http1"/></returns>
+        /// <returns>HyperText Transfer Protocol transport type. <see cref="TransportType.Http"/></returns>
         public TransportType GetTransportType()
         {
-            return TransportType.Http1;
+            return TransportType.Http;
         }
 
         /// <summary>

@@ -67,20 +67,19 @@ namespace Microsoft.Azure.Devices.Client
 
         public InternalClient(
             IotHubConnectionString iotHubConnectionString,
-            ITransportSettings transportSettings,
             IDeviceClientPipelineBuilder pipelineBuilder,
             ClientOptions options)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            _transportSettings = transportSettings;
+            _transportSettings = options.TransportSettings;
             _clientOptions = options;
             IotHubConnectionString = iotHubConnectionString;
 
             var pipelineContext = new PipelineContext
             {
-                TransportSettings = transportSettings,
+                TransportSettings = options.TransportSettings,
                 IotHubConnectionString = iotHubConnectionString,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
@@ -99,12 +98,12 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = innerHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, transportSettings, nameof(InternalClient));
+                Logging.Associate(this, options.TransportSettings, nameof(InternalClient));
 
             _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
         /// <summary>
@@ -173,7 +172,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken = default)
+        public async Task SetDesiredPropertyUpdateCallbackAsync(
+            DesiredPropertyUpdateCallback callback,
+            object userContext,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
@@ -220,7 +222,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
-        public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default)
+        public async Task SetMethodHandlerAsync(
+            string methodName,
+            MethodCallback methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
@@ -267,7 +273,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
-        public async Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default)
+        public async Task SetMethodDefaultHandlerAsync(
+            MethodCallback methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
@@ -308,7 +317,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets the retry policy used in the operation retries.
         /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        /// <param name="retryPolicy">
+        /// The retry policy. The default is <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100),
+        /// TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c>
+        /// </param>
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             RetryDelegatingHandler retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void AmqpTransportSettings_InvalidTransportTypeAmqpHttp()
         {
-            _ = new AmqpTransportSettings(TransportType.Http1);
+            _ = new AmqpTransportSettings(TransportType.Http);
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void Http1TransportSettings_DefaultTransportType()
         {
-            Assert.AreEqual(TransportType.Http1, new HttpTransportSettings().GetTransportType(), "Should default to TransportType.Http1");
+            Assert.AreEqual(TransportType.Http, new HttpTransportSettings().GetTransportType(), "Should default to TransportType.Http1");
         }
 
         [TestMethod]
@@ -230,9 +230,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             const string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
+            var options = new ClientOptions(new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100));
 
             // act
-            _ = DeviceClient.Create(hostName, authMethod, new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100));
+            _ = DeviceClient.Create(hostName, authMethod, options);
         }
     }
 }

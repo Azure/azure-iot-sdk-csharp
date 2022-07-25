@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         new Func<string, Message, Task>(onModuleEventReceivedCallback),
                         new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
-                case TransportType.Http1:
+                case TransportType.Http:
                     return new HttpTransportHandler(
                         context,
                         connectionString,

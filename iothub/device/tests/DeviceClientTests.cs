@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
-            Action act = () => DeviceClient.Create(hostName, authMethod, new ClientOptions { TransportType = TransportType.Amqp_WebSocket_Only });
+            Action act = () => DeviceClient.Create(hostName, authMethod, new ClientOptions(new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)));
             act.Should().Throw<ArgumentException>();
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
 
-            var deviceClient = DeviceClient.Create(hostName, authMethod, new ClientOptions { TransportType = TransportType.Amqp_WebSocket_Only });
+            var deviceClient = DeviceClient.Create(hostName, authMethod, new ClientOptions(new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)));
         }
 
         [TestMethod]
@@ -60,11 +60,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
-
+            var transportSettings = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only);
+            var options = new ClientOptions(transportSettings);
             using var deviceClient = DeviceClient.Create(
                 hostName,
                 authMethod,
-                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only));
+                options);
         }
 
         [TestMethod]
@@ -85,9 +86,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             string gatewayHostName = "gateway.acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
 
-            var options = new ClientOptions
+            var options = new ClientOptions(new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only))
             {
-                TransportType = TransportType.Amqp_WebSocket_Only,
                 GatewayHostName = gatewayHostName,
             };
 
@@ -100,8 +100,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             string hostName = "acme.azure-devices.net";
             string gatewayHostName = "gateway.acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
-
-            var options = new ClientOptions
+            var transportSettings = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only);
+            var options = new ClientOptions(transportSettings)
             {
                 GatewayHostName = gatewayHostName,
             };
@@ -109,7 +109,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var deviceClient = DeviceClient.Create(
                 hostName,
                 authMethod,
-                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only),
                 options);
         }
 
@@ -132,7 +131,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             string gatewayHostname = "myGatewayDevice";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
 
-            using var deviceClient = DeviceClient.Create(gatewayHostname, authMethod, new ClientOptions { TransportType = TransportType.Amqp_WebSocket_Only });
+            using var deviceClient = DeviceClient.Create(
+                gatewayHostname,
+                authMethod,
+                new ClientOptions(new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)));
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
@@ -142,11 +144,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string gatewayHostname = "myGatewayDevice";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
-
+            var transportSettings = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only);
+            var options = new ClientOptions(transportSettings);
             using var deviceClient = DeviceClient.Create(
                 gatewayHostname,
                 authMethod,
-                new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only));
+                options);
         }
 
         [TestMethod]
@@ -205,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
         {
-            var options = new ClientOptions { TransportType = TransportType.Http1 };
+            var options = new ClientOptions(new HttpTransportSettings());
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options);
             try
             {
@@ -214,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
             catch (NotSupportedException e)
             {
-                Assert.AreEqual($"{TransportType.Http1} protocol doesn't support E2E diagnostic.", e.Message);
+                Assert.AreEqual($"{TransportType.Http} protocol doesn't support E2E diagnostic.", e.Message);
             }
         }
 
@@ -1266,9 +1269,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var options = new ClientOptions
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
             {
-                TransportType = TransportType.Mqtt_Tcp_Only,
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
@@ -1276,10 +1278,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = ClientFactory.CreateFromConnectionString(
+            InternalClient internalClient = ClientFactory.CreateInternal(
+                pipelineBuilderSubstitute,
                 FakeConnectionString,
                 null,
-                pipelineBuilderSubstitute,
                 options);
 
             // assert
@@ -1306,9 +1308,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var options = new ClientOptions
+            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
             {
-                TransportType = TransportType.Mqtt_Tcp_Only,
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
@@ -1322,10 +1323,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = ClientFactory.CreateFromConnectionString(
+            InternalClient internalClient = ClientFactory.CreateInternal(
+                pipelineBuilderSubstitute,
                 FakeConnectionString,
                 authMethod1,
-                pipelineBuilderSubstitute,
                 options);
 
             // assert
@@ -1361,9 +1362,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
 
-            var clientOptions = new ClientOptions
+            var clientOptions = new ClientOptions(new Client.HttpTransportSettings())
             {
-                TransportType = TransportType.Http1,
                 ModelId = TestModelId,
             };
 
@@ -1388,16 +1388,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
 
-            var clientOptions = new ClientOptions
+            var clientOptions = new ClientOptions(ClientFactory.GetTransportSettings(transportType))
             {
                 ModelId = TestModelId,
             };
 
-            var allTransportTypes = ClientFactory.GetTransportSettings(transportType);
-
             // act and assert
             FluentActions
-                .Invoking(() => { using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, allTransportTypes, clientOptions); })
+                .Invoking(() => { using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, clientOptions); })
                 .Should()
                 .NotThrow();
         }
@@ -1405,7 +1403,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceClient_InitWithHttpTransportButNoModelId_DoesNotThrow()
         {
-            var options = new ClientOptions { TransportType = TransportType.Http1 };
+            var options = new ClientOptions(new Client.HttpTransportSettings());
             // act and assert
             FluentActions
                 .Invoking(() => { using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString, options); })
