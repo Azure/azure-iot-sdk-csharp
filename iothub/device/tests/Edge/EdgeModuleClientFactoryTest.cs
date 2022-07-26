@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Edge;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -64,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+            var options = new ClientOptions(new MqttTransportSettings());
             ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
@@ -76,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            var options = new ClientOptions(new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+            var options = new ClientOptions(new MqttTransportSettings());
             ModuleClient dc = await ModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
@@ -96,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, null);
 
                 var trustBundle = Substitute.For<ITrustBundleProvider>();
-                var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+                var settings = new MqttTransportSettings();
 
                 await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
                     .CreateAsync()).
@@ -154,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
 
                 Environment.SetEnvironmentVariable(AuthSchemeVariableName, "x509Cert");
-                var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+                var settings = new MqttTransportSettings();
                 var trustBundle = Substitute.For<ITrustBundleProvider>();
                 await TestAssert
                     .ThrowsAsync<InvalidOperationException>(async () => await new EdgeModuleClientFactory(trustBundle).CreateAsync().ConfigureAwait(false))
@@ -181,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
-            var settings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            var settings = new AmqpTransportSettings();
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
@@ -206,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
-            var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            var settings = new MqttTransportSettings();
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
@@ -230,7 +229,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
-            var settings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            var settings = new AmqpTransportSettings();
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 
@@ -247,7 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
-            var settings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            var settings = new MqttTransportSettings();
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             ModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
 

@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private static readonly RegistryManager _registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-        private static readonly List<object> s_listOfPropertyValues = new List<object>
+        private static readonly List<object> s_listOfPropertyValues = new()
         {
             1,
             "someString",
@@ -30,15 +30,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             new CustomTwinProperty
             {
                 Id = 123,
-                Name = "someName"
-            }
+                Name = "someName",
+            },
         };
 
         [LoggedTestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+                    new MqttTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))
+                    new MqttTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))
+                    new AmqpTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))
+                    new AmqpTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Mqtt()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+                    new MqttTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))
+                    new MqttTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))
+                    new AmqpTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))
+                    new AmqpTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     s_listOfPropertyValues)
                 .ConfigureAwait(false);
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     s_listOfPropertyValues)
                 .ConfigureAwait(false);
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     s_listOfPropertyValues)
                 .ConfigureAwait(false);
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     s_listOfPropertyValues)
                 .ConfigureAwait(false);
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Mqtt()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+                    new MqttTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))
+                    new MqttTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))
+                    new AmqpTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))
+                    new AmqpTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Mqtt()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+                    new MqttTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))
+                    new MqttTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))
+                    new AmqpTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))
+                    new AmqpTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+                    new MqttTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))
+                    new MqttTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))
+                    new AmqpTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))
+                    new AmqpTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Mqtt()
         {
             await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+                    new MqttTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
         {
             await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))
+                    new MqttTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
         {
             await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))
+                    new AmqpTransportSettings())
                 .ConfigureAwait(false);
         }
 
@@ -338,20 +338,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
         {
             await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))
+                    new AmqpTransportSettings(TransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
         [DataTestMethod]
-        [DataRow(Client.TransportType.Amqp_Tcp_Only)]
-        [DataRow(Client.TransportType.Amqp_WebSocket_Only)]
+        [DataRow(TransportProtocol.Tcp)]
+        [DataRow(TransportProtocol.WebSocket)]
         [TestCategory("LongRunning")]
-        public async Task Twin_ClientSetsReportedPropertyWithoutDesiredPropertyCallback(Client.TransportType transportType)
+        public async Task Twin_ClientSetsReportedPropertyWithoutDesiredPropertyCallback(TransportProtocol transportProtocol)
         {
             // arrange
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            var options = new ClientOptions(new AmqpTransportSettings(transportType));
+            var options = new ClientOptions(new AmqpTransportSettings(transportProtocol));
             using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
 
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);

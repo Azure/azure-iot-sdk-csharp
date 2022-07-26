@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             var transportSettings  = new AmqpTransportSettings(transport)
             {
-                AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings()
                 {
                     MaxPoolSize = unchecked((uint)poolSize),
                     Pooling = true,

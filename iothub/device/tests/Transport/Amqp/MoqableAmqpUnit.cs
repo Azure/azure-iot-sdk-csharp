@@ -17,13 +17,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             : this(
                 new DeviceIdentity(
                     IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                    new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     new ProductInfo(),
                     new ClientOptions()),
                 new AmqpConnectionHolder(
                     new DeviceIdentity(
                         IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                        new AmqpTransportSettings(),
                         new ProductInfo(),
                         new ClientOptions())))
         {

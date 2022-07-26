@@ -4,7 +4,6 @@
 using System.Net.Security;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Edge;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test.Edge
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_ShouldSucceed()
         {
-            var transportSettings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            var transportSettings = new MqttTransportSettings();
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
@@ -39,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Amqp_ShouldSucceed()
         {
-            var transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            var transportSettings = new AmqpTransportSettings();
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
@@ -51,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
-            var setting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            var setting = new MqttTransportSettings();
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>
                 {
                     return true;
@@ -67,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
-            var setting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            var setting = new AmqpTransportSettings();
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>
             {
                 return true;

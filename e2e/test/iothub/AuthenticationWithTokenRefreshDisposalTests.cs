@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Set up amqp transport settings to multiplex all device sessions over the same amqp connection.
             var amqpTransportSettings = new AmqpTransportSettings(transport)
             {
-                AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
                     Pooling = true,
                     MaxPoolSize = 1,

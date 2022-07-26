@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (_amqpSasIndividualPool == null)
                 {
-                    _amqpSasIndividualPool = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
+                    _amqpSasIndividualPool = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.ConnectionPoolSettings.MaxPoolSize];
                 }
 
                 return _amqpSasIndividualPool;
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
                 if (amqpConnectionHolders == null)
                 {
-                    amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
+                    amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.ConnectionPoolSettings.MaxPoolSize];
                     GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
                 }
 

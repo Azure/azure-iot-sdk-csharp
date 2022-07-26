@@ -175,17 +175,6 @@ namespace Microsoft.Azure.Devices.Client
             return client;
         }
 
-        //internal static ITransportSettings GetTransportSettings(TransportType transportType)
-        //{
-        //    return transportType switch
-        //    {
-        //        TransportType.Amqp_WebSocket_Only or TransportType.Amqp_Tcp_Only => new AmqpTransportSettings(transportType),
-        //        TransportType.Mqtt_WebSocket_Only or TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
-        //        TransportType.Http => new HttpTransportSettings(),
-        //        _ => throw new InvalidOperationException($"Unsupported transport type {transportType}"),
-        //    };
-        //}
-
         /// <summary>
         /// Ensures that the ClientOptions is configured and initialized.
         /// If a certificate is provided, the fileUploadTransportSettings will use it during initialization.
