@@ -36,10 +36,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// IoT Hub does not preserve writable property update notifications for disconnected devices/modules.
-        /// On connecting, the client should retreive the full property document through <see cref="DeviceClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/>/
-        /// <see cref="ModuleClient.GetClientPropertiesAsync(System.Threading.CancellationToken)"/> in addition to subscribing for update notifications
-        /// through <see cref="DeviceClient.SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task}, System.Threading.CancellationToken)"/>/
-        /// <see cref="ModuleClient.SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task}, System.Threading.CancellationToken)"/>.
+        /// On connecting, the client should retreive the full property document through <see cref="DeviceClient.GetClientPropertiesAsync(CancellationToken)"/>
+        /// in addition to subscribing for update notifications through
+        /// <see cref="DeviceClient.SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task{ClientPropertyCollection}}, CancellationToken)"/>
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// The client application can ignore all update notifications with version less that or equal to the version of the full document.
         /// </remarks>
         /// <value>A <see cref="long"/> that is used to identify the version of the writable property collection.</value>
@@ -56,8 +56,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
         /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// and report it to the service.
         /// <para>
         /// To retrieve the value of the root-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
         /// </para>
@@ -95,8 +94,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
         /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to the service via <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>
-        /// (or corresponding method on the <see cref="ModuleClient"/>).
+        /// and report it to the service.
         /// <para>
         /// To retrieve the value of the component-level writable property update request see <see cref="WritableClientProperty.TryGetValue{T}(out T)"/>.
         /// </para>

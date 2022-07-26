@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                             _clientPropertyCallbackSemaphore.Release();
                         }
 
-                        return Task.FromResult(true);
+                        return Task.FromResult(new ClientPropertyCollection());
                     })
                 .ConfigureAwait(false);
         }

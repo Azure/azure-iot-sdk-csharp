@@ -1167,7 +1167,7 @@ namespace Microsoft.Azure.Devices.Client
             await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
         }
 
-        internal void OnDesiredStatePatchReceived(IDictionary<string, object> patch)
+        internal async void OnDesiredStatePatchReceived(IDictionary<string, object> patch)
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, string.Join(",", patch), nameof(OnDesiredStatePatchReceived));
@@ -1175,12 +1175,40 @@ namespace Microsoft.Azure.Devices.Client
             if (_desiredPropertyUpdateCallback != null)
             {
                 TwinCollection twinUpdate = JsonConvert.DeserializeObject<TwinCollection>(JsonConvert.SerializeObject(patch));
-                _desiredPropertyUpdateCallback(twinUpdate, _twinPatchCallbackContext);
+                await _desiredPropertyUpdateCallback(twinUpdate, _twinPatchCallbackContext);
             }
             else if (_writableClientPropertyUpdateCallback != null)
             {
                 var writableClientPropertyCollection = new WritableClientPropertyCollection(patch, PayloadConvention);
-                _writableClientPropertyUpdateCallback(writableClientPropertyCollection);
+
+                var propertiesToBeReported = new ClientPropertyCollection();
+                try
+                {
+                    propertiesToBeReported = await _writableClientPropertyUpdateCallback.Invoke(writableClientPropertyCollection);
+                }
+                catch(Exception ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Received an exception when invoking user-supplied writable client property callback: {ex}", nameof(OnDesiredStatePatchReceived));
+                }
+
+                if (propertiesToBeReported != null && propertiesToBeReported.Any())
+                {
+                    try
+                    {
+                        _ = await UpdateClientPropertiesAsync(propertiesToBeReported, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"Received an exception when updating writable client property acknowledgement: {ex}", nameof(OnDesiredStatePatchReceived));
+                    }
+                }
+                else
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"Did not receive any properties to update", nameof(OnDesiredStatePatchReceived));
+                }
             }
         }
 

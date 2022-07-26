@@ -4,13 +4,11 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// A writable property update acknowledgement that contains the requested property name, property value, component name (if applicable) and version.
+    /// A writable property update acknowledgement that contains the requested property name, property value, component name (if applicable), version and an optional description.
     /// </summary>
     /// <remarks>
-    /// Use the <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-    /// to add this payload to your client properties to be reported back to the service using 
-    /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>
-    /// (or corresponding method on the <see cref="ModuleClient"/>).
+    /// Create a <see cref="ClientPropertyCollection"/> and use <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
+    /// to add this acknowledgement to your client properties to be reported back to service.
     /// </remarks>
     public class WritableClientPropertyAcknowledgement
     {

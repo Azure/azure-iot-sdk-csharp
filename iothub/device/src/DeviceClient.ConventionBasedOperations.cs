@@ -117,8 +117,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <para>
         /// <see cref="WritableClientProperty"/> has a convenience method <see cref="WritableClientProperty.CreateAcknowledgement(int, string)"/>
         /// to help you build the writable property acknowledgement object that you can add to a <see cref="ClientPropertyCollection"/>
-        /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>
-        /// and report it to service via <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/>.
+        /// using <see cref="ClientPropertyCollection.AddWritableClientPropertyAcknowledgement(WritableClientPropertyAcknowledgement)"/>.
+        /// </para>
+        /// <para>
+        /// If there are no properties to be acknowledged, you can respond with an empty <see cref="ClientPropertyCollection"/>.
+        /// An empty <see cref="ClientPropertyCollection"/> will not be sent to service.
         /// </para>
         /// </remarks>
         /// <example>
@@ -153,7 +156,6 @@ namespace Microsoft.Azure.Devices.Client
         ///                 // Process rest of the writable property update requests
         ///             }
         ///         }
-        ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         ///     },
         ///     cancellationToken);
         ///</code>
@@ -186,13 +188,11 @@ namespace Microsoft.Azure.Devices.Client
         ///         {
         ///             // Process rest of the writable property update requests
         ///         }
-        ///
-        ///         ClientPropertiesUpdateResponse updateResponse = await client.UpdateClientPropertiesAsync(propertiesToBeUpdated, cancellationToken);
         ///     },
         ///     cancellationToken);
         /// </code>
         /// </example>
-        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPropertyCollection, Task> callback, CancellationToken cancellationToken = default)
+        public Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPropertyCollection, Task<ClientPropertyCollection>> callback, CancellationToken cancellationToken = default)
             => InternalClient.SubscribeToWritablePropertyUpdateRequestsAsync(callback, cancellationToken);
     }
 }

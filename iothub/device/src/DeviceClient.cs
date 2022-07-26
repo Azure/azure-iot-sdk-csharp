@@ -792,7 +792,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <remarks>
         /// To get better support for serialization and convention-based devices, see the new version of this method
-        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task{ClientPropertyCollection}}, CancellationToken)"/>.
         /// </remarks>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
             InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
@@ -812,7 +812,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="TaskCanceledException">Thrown when the operation has been canceled.</exception>
         /// <remarks>
         /// To get better support for serialization and convention-based devices, see the new version of this method
-        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task{ClientPropertyCollection}}, CancellationToken)"/>.
         /// </remarks>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken) =>
             InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
@@ -841,7 +841,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// To get better support for serialization and convention-based devices, see the new version of this method
         /// <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/> in conjunction with
-        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task{ClientPropertyCollection}}, CancellationToken)"/>.
         /// </remarks>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties);
@@ -855,7 +855,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// To get better support for serialization and convention-based devices, see the new version of this method
         /// <see cref="UpdateClientPropertiesAsync(ClientPropertyCollection, CancellationToken)"/> in conjunction with
-        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task}, CancellationToken)"/>.
+        /// <see cref="SubscribeToWritablePropertyUpdateRequestsAsync(Func{WritableClientPropertyCollection, Task{ClientPropertyCollection}}, CancellationToken)"/>.
         /// </remarks>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
