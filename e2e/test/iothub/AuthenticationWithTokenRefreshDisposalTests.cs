@@ -26,25 +26,25 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Amqp()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_AmqpWs()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Mqtt()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new MqttTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_MqttWs()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new MqttTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -56,13 +56,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_Amqp()
         {
-            await ReuseAuthenticationMethod_MuxedDevices(new AmqpTransportSettings(), 2).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_MuxedDevices(Client.TransportType.Amqp_Tcp_Only, 2).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_AmqpWs()
         {
-            await ReuseAuthenticationMethod_MuxedDevices(new AmqpTransportSettings(TransportProtocol.WebSocket), 2).ConfigureAwait(false); ;
+            await ReuseAuthenticationMethod_MuxedDevices(Client.TransportType.Amqp_WebSocket_Only, 2).ConfigureAwait(false); ;
         }
 
         [LoggedTestMethod]
@@ -74,13 +74,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Amqp()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings()).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_AmqpWs()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         // Even on encountering an exception, the MQTT layer keeps on reattempting CONNECT when communicating via DotNetty's TCP stack.
@@ -91,13 +91,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings()).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_MqttWs()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         private async Task AuthenticationMethodDisposesTokenRefresher(ITransportSettings transportSettings)
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             authenticationMethod.Dispose();
         }
 
-        private async Task ReuseAuthenticationMethod_MuxedDevices(ITransportSettings transportSettings, int devicesCount)
+        private async Task ReuseAuthenticationMethod_MuxedDevices(Client.TransportType transport, int devicesCount)
         {
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<DeviceClient> deviceClients = new List<DeviceClient>();
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
 
             // Set up amqp transport settings to multiplex all device sessions over the same amqp connection.
-            var amqpTransportSettings = new AmqpTransportSettings()
+            var amqpTransportSettings = new AmqpTransportSettings(transport)
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
