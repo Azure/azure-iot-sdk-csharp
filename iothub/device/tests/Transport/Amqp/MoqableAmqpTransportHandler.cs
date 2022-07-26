@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     {
         public MoqableAmqpTransportHandler() : this(new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only))
+                new AmqpTransportSettings())
         {
         }
 

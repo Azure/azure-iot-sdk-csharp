@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
             TestDeviceType type,
-            Client.TransportType transport,
+            AmqpTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await PoolingOverAmqp
                 .TestPoolAmqpAsync(
                     _devicePrefix,
-                    transport,
+                    transportSettings,
                     poolSize,
                     devicesCount,
                     InitOperationAsync,

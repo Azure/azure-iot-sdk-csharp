@@ -16,17 +16,11 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class AmqpTransportSettings : ITransportSettings
     {
         private TimeSpan _operationTimeout = DefaultOperationTimeout;
-        private uint _prefetchCount = DefaultPrefetchCount;
 
         /// <summary>
         /// The default operation timeout.
         /// </summary>
         public static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-
-        /// <summary>
-        /// The default open timeout.
-        /// </summary>
-        public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// The default idle timeout.
@@ -104,13 +98,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The pre-fetch count
         /// </summary>
-        public uint PrefetchCount
-        {
-            get => _prefetchCount;
-            set => _prefetchCount = value > 0
-                ? value
-                : throw new ArgumentOutOfRangeException(nameof(PrefetchCount), "Must be greater than zero");
-        }
+        public uint PrefetchCount { get; set; } = DefaultPrefetchCount;
 
         /// <inheritdoc/>
         public X509Certificate2 ClientCertificate { get; set; }
@@ -127,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The connection pool settings for AMQP
         /// </summary>
-        public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
+        public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
 
         /// <summary>
         /// The time to wait for a receive operation. The default value is 1 minute.
@@ -146,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client
                 // ClientCertificates are usually different, so ignore them in the comparison
                 || PrefetchCount == other.PrefetchCount
                 && OperationTimeout == other.OperationTimeout
-                && AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings));
+                && ConnectionPoolSettings.Equals(other.ConnectionPoolSettings));
         }
 
         /// <inheritdoc/>
