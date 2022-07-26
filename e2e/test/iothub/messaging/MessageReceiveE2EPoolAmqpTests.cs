@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
             await ReceiveMessage_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         private async Task ReceiveMessage_PoolOverAmqpAsync(
-            Client.TransportType transport,
+            AmqpTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 Tuple<Message, string> msgSent = messagesSent[testDevice.Id];
-                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(transport, deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2, Logger).ConfigureAwait(false);
+                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2, Logger).ConfigureAwait(false);
             }
 
             async Task CleanupOperationAsync()
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await PoolingOverAmqp
                 .TestPoolAmqpAsync(
                     DevicePrefix,
-                    transport,
+                    transportSettings,
                     poolSize,
                     devicesCount,
                     InitOperationAsync,
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         private async Task ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-            Client.TransportType transport,
+            AmqpTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await PoolingOverAmqp
                 .TestPoolAmqpAsync(
                     DevicePrefix,
-                    transport,
+                    transportSettings,
                     poolSize,
                     devicesCount,
                     InitOperationAsync,

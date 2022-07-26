@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -323,7 +323,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -377,7 +377,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -404,7 +404,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -417,7 +417,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -431,7 +431,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -446,7 +446,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -460,7 +460,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -474,7 +474,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -489,7 +489,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -517,7 +517,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -530,7 +530,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -544,7 +544,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -571,7 +571,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -584,7 +584,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -612,7 +612,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -625,7 +625,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -638,7 +638,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -652,7 +652,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_Tcp,
@@ -666,7 +666,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -679,7 +679,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -692,7 +692,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -706,7 +706,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpConn,
@@ -721,7 +721,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -735,7 +735,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -749,7 +749,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -764,7 +764,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpSess,
@@ -779,7 +779,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -792,7 +792,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -805,7 +805,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -819,7 +819,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_AmqpC2D,
@@ -833,7 +833,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -846,7 +846,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -859,7 +859,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -873,7 +873,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    Client.TransportType.Amqp_WebSocket_Only,
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjection.FaultType_GracefulShutdownAmqp,
@@ -884,7 +884,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveMessageRecoveryPoolOverAmqpAsync(
             TestDeviceType type,
-            Client.TransportType transport,
+            ITransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             string faultType,
@@ -907,7 +907,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync()
                 .ConfigureAwait(false);
-                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(transport, deviceClient, testDevice.Id, msg, payload, Logger)
+                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msg, payload, Logger)
                 .ConfigureAwait(false);
             }
 
@@ -924,7 +924,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await FaultInjectionPoolingOverAmqp
                 .TestFaultInjectionPoolAmqpAsync(
                     MessageReceive_DevicePrefix,
-                    transport,
+                    transportSettings,
                     proxyAddress,
                     poolSize,
                     devicesCount,
@@ -942,7 +942,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
             TestDeviceType type,
-            Client.TransportType transport,
+            ITransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             string faultType,
@@ -986,7 +986,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await FaultInjectionPoolingOverAmqp
                 .TestFaultInjectionPoolAmqpAsync(
                     MessageReceive_DevicePrefix,
-                    transport,
+                    transportSettings,
                     proxyAddress,
                     poolSize,
                     devicesCount,
