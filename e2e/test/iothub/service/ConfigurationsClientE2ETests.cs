@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private readonly string _idPrefix = $"{nameof(ConfigurationsClientE2ETests)}_";
 
         [LoggedTestMethod]
-        public async Task RegistryManager_ConfigurationOperations_Work()
+        public async Task ConfigurationOperations_Work()
         {
             // arrange
 

@@ -146,18 +146,6 @@ namespace Microsoft.Azure.Devices
         /// Update the mutable fields of the configuration registration
         /// </summary>
         /// <param name="configuration">The configuration object with updated fields.</param>
-        /// <param name="forceUpdate">Forces the device object to be replaced without regard for an ETag match.</param>
-        /// <returns>The Configuration object with updated ETags.</returns>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> UpdateAsync(Configuration configuration, bool forceUpdate)
-        {
-            return UpdateAsync(configuration, forceUpdate, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Update the mutable fields of the configuration registration
-        /// </summary>
-        /// <param name="configuration">The configuration object with updated fields.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object with updated ETags.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
@@ -174,7 +162,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object with updated ETags.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task<Configuration> UpdateAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken)
+        public async virtual Task<Configuration> UpdateAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating configuration: {configuration?.Id} - Force update: {forceUpdate}", nameof(UpdateAsync));
@@ -185,10 +173,6 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingConfiguration);
                 }
-
-                PutOperationType operationType = forceUpdate
-                    ? PutOperationType.ForceUpdateEntity
-                    : PutOperationType.UpdateEntity;
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -294,52 +278,6 @@ namespace Microsoft.Azure.Devices
             HttpMessageHelper2.InsertEtag(request, eTagHolder.ETag);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-        }
-
-        /// <summary>
-        /// Applies configuration content to an Edge device to create a deployment.
-        /// </summary>
-        /// <remarks><see cref="ConfigurationContent.ModulesContent"/> is required.
-        /// <see cref="ConfigurationContent.DeviceContent"/> is optional.
-        /// <see cref="ConfigurationContent.ModuleContent"/> is not applicable.</remarks>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="content">The configuration.</param>
-        public virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content)
-        {
-            return ApplyConfigurationContentOnDeviceAsync(deviceId, content, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Applies configuration content to an Edge device.
-        /// </summary>
-        /// <remarks><see cref="ConfigurationContent.ModulesContent"/> is required.
-        /// <see cref="ConfigurationContent.DeviceContent"/> is optional.
-        /// <see cref="ConfigurationContent.ModuleContent"/> is not applicable.</remarks>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="content">The configuration.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public async virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
-
-            try
-            {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ApplyConfigurationContentOnDeviceAsync)} threw an exception: {ex}", nameof(ApplyConfigurationContentOnDeviceAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
-            }
         }
 
         private static Uri GetConfigurationRequestUri(string configurationId)
