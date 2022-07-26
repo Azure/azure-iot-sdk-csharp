@@ -20,9 +20,8 @@ namespace Microsoft.Azure.Devices
         private HttpClient _httpClient;
         private HttpRequestMessageFactory _httpRequestMessageFactory;
 
-        private const string ConfigurationRequestUriFormat = "/configurations/{0}?{1}";
-        private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}&{1}";
-        private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string ConfigurationRequestUriFormat = "/configurations/{0}";
+        private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}";
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         /// <summary>
@@ -58,7 +57,7 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new ArgumentException(ApiResources.ETagSetWhileCreatingConfiguration);
                 }
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Configuration>(response, cancellationToken);
@@ -280,20 +279,62 @@ namespace Microsoft.Azure.Devices
             await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
         }
 
+        /// <summary>
+        /// Applies configuration content to an Edge device to create a deployment.
+        /// </summary>
+        /// <remarks><see cref="ConfigurationContent.ModulesContent"/> is required.
+        /// <see cref="ConfigurationContent.DeviceContent"/> is optional.
+        /// <see cref="ConfigurationContent.ModuleContent"/> is not applicable.</remarks>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="content">The configuration.</param>
+        public virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content)
+        {
+            return ApplyConfigurationContentOnDeviceAsync(deviceId, content, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Applies configuration content to an Edge device.
+        /// </summary>
+        /// <remarks><see cref="ConfigurationContent.ModulesContent"/> is required.
+        /// <see cref="ConfigurationContent.DeviceContent"/> is optional.
+        /// <see cref="ConfigurationContent.ModuleContent"/> is not applicable.</remarks>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="content">The configuration.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        public async virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
+
+            try
+            {
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ApplyConfigurationContentOnDeviceAsync)} threw an exception: {ex}", nameof(ApplyConfigurationContentOnDeviceAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
+            }
+        }
+
         private static Uri GetConfigurationRequestUri(string configurationId)
         {
             configurationId = WebUtility.UrlEncode(configurationId);
-            return new Uri(ConfigurationRequestUriFormat.FormatInvariant(configurationId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ConfigurationRequestUriFormat.FormatInvariant(configurationId), UriKind.Relative);
         }
 
         private static Uri GetConfigurationsRequestUri(int maxCount)
         {
-            return new Uri(ConfigurationsRequestUriFormat.FormatInvariant(maxCount, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(ConfigurationsRequestUriFormat.FormatInvariant(maxCount), UriKind.Relative);
         }
 
-        private static Uri GetApplyConfigurationOnDeviceRequestUri(string deviceId)
-        {
-            return new Uri(ApplyConfigurationOnDeviceUriFormat.FormatInvariant(deviceId), UriKind.Relative);
-        }
     }
 }
