@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public bool IsPooling()
         {
-            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling ?? false);
+            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
         }
 
         public override bool Equals(object obj)

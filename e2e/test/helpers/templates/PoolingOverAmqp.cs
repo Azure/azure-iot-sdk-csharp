@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
-            Client.TransportType transport,
+            AmqpTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
@@ -30,13 +30,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             bool ignoreConnectionStatus,
             MsTestLogger logger)
         {
-            var transportSettings = new AmqpTransportSettings(transport)
+            transportSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings
             {
-                AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings
-                {
-                    MaxPoolSize = unchecked((uint)poolSize),
-                    Pooling = true,
-                }
+                MaxPoolSize = unchecked((uint)poolSize),
+                Pooling = true,
             };
 
             int totalRuns = 0;

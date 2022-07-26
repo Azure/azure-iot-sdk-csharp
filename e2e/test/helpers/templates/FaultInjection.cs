@@ -4,13 +4,12 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites
@@ -77,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        public static async Task ActivateFaultInjectionAsync(Client.TransportType transport, string faultType, string reason, TimeSpan delay, TimeSpan duration, DeviceClient deviceClient, MsTestLogger logger)
+        public static async Task ActivateFaultInjectionAsync(ITransportSettings transportSettings, string faultType, string reason, TimeSpan delay, TimeSpan duration, DeviceClient deviceClient, MsTestLogger logger)
         {
             logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={delay}s, duration={DefaultFaultDuration}s");
 
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http)
+                if (transportSettings is Client.HttpTransportSettings)
                 {
                     throw;
                 }
@@ -107,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http)
+                if (transportSettings is Client.HttpTransportSettings)
                 {
                     throw;
                 }
@@ -122,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public static async Task TestErrorInjectionAsync(
             string devicePrefix,
             TestDeviceType type,
-            Client.TransportType transport,
+            ITransportSettings transportSettings,
             string proxyAddress,
             string faultType,
             string reason,
@@ -135,7 +134,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
-            ITransportSettings transportSettings = CreateTransportSettingsFromName(transport, proxyAddress);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings));
 
             ConnectionStatus? lastConnectionStatus = null;
@@ -155,11 +153,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             try
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                if (transport != Client.TransportType.Http)
+                if (transportSettings is not Client.HttpTransportSettings)
                 {
-                    Assert.IsTrue(connectionStatusChangeCount >= 1, $"The expected connection status change should be equal or greater than 1 but was {connectionStatusChangeCount}"); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
-                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Connected} but was {lastConnectionStatus}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Connection_Ok} but was {lastConnectionStatusChangeReason}");
+                    // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
+                    connectionStatusChangeCount.Should().BeGreaterOrEqualTo(1);
+                    lastConnectionStatus.Should().Be(ConnectionStatus.Connected);
+                    lastConnectionStatusChangeReason.Should().Be(ConnectionStatusChangeReason.Connection_Ok);
                 }
 
                 if (initOperation != null)
@@ -173,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 int countBeforeFaultInjection = connectionStatusChangeCount;
                 watch.Start();
                 logger.Trace($">>> {nameof(FaultInjection)} Testing fault handling");
-                await ActivateFaultInjectionAsync(transport, faultType, reason, delay, duration, deviceClient, logger).ConfigureAwait(false);
+                await ActivateFaultInjectionAsync(transportSettings, faultType, reason, delay, duration, deviceClient, logger).ConfigureAwait(false);
                 logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay} seconds.");
                 await Task.Delay(delay).ConfigureAwait(false);
 
@@ -234,24 +233,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
 
-                if (transport != Client.TransportType.Http)
+                if (transportSettings is not Client.HttpTransportSettings)
                 {
                     if (FaultShouldDisconnect(faultType))
                     {
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(connectionStatusChangeCount >= 4, $"The expected connection status change count for {testDevice.Id} should be equal or greater than 4 but was {connectionStatusChangeCount}");
+                        connectionStatusChangeCount.Should().BeGreaterOrEqualTo(4, $"Device Id {testDevice.Id}");
                     }
                     else
                     {
                         // 2 is the minimum notification count: connect, disable.
                         // We will monitor the test environment real network stability and switch to >=2 if necessary to
                         // account for real network issues.
-                        Assert.IsTrue(connectionStatusChangeCount == 2, $"The expected connection status change count for {testDevice.Id}  should be 2 but was {connectionStatusChangeCount}");
+                        connectionStatusChangeCount.Should().Be(2, $"Device Id {testDevice.Id}");
                     }
-                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Disabled} but was {lastConnectionStatus}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Client_Close} but was {lastConnectionStatusChangeReason}");
+                    lastConnectionStatus.Should().Be(ConnectionStatus.Disabled, $"The connection status change reason was {lastConnectionStatusChangeReason}");
+                    lastConnectionStatusChangeReason.Should().Be(ConnectionStatusChangeReason.Client_Close);
                 }
             }
             finally
@@ -272,38 +271,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
                 }
             }
-        }
-
-        private static ITransportSettings CreateTransportSettingsFromName(Client.TransportType transportType, string proxyAddress)
-        {
-            switch (transportType)
-            {
-                case Client.TransportType.Http:
-                    return new Client.HttpTransportSettings
-                    {
-                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                    };
-
-                case Client.TransportType.Amqp_Tcp_Only:
-                    return new AmqpTransportSettings(transportType);
-
-                case Client.TransportType.Amqp_WebSocket_Only:
-                    return new AmqpTransportSettings(transportType)
-                    {
-                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                    };
-
-                case Client.TransportType.Mqtt_Tcp_Only:
-                    return new MqttTransportSettings(transportType);
-
-                case Client.TransportType.Mqtt_WebSocket_Only:
-                    return new MqttTransportSettings(transportType)
-                    {
-                        Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                    };
-            }
-
-            throw new NotSupportedException($"Unknown transport: '{transportType}'.");
         }
     }
 }
