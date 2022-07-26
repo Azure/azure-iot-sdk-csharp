@@ -1204,11 +1204,8 @@ namespace Microsoft.Azure.Devices.Client
                             Logging.Error(this, $"Received an exception when updating writable client property acknowledgement: {ex}", nameof(OnDesiredStatePatchReceived));
                     }
                 }
-                else
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"Did not receive any properties to update", nameof(OnDesiredStatePatchReceived));
-                }
+                else if (Logging.IsEnabled)
+                    Logging.Info(this, $"Did not receive any properties to update", nameof(OnDesiredStatePatchReceived));
             }
         }
 
