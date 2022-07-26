@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private const bool DefaultCleanSession = false;
         private const bool DefaultHasWill = false;
-        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromSeconds(300);
+        private readonly TimeSpan DefaultKeepAlive = TimeSpan.FromMinutes(5);
         private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
         private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
 
