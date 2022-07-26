@@ -574,6 +574,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
+        [LoggedTestMethod]
+        public async Task DevicesClient_GetStatistics()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+
+            // No great way to test the accuracy of these statistics, but making the request successfully should
+            // be enough to indicate that this API works as intended
+            ServiceStatistics serviceStatistics = await serviceClient.Devices.GetServiceStatisticsAsync().ConfigureAwait(false);
+            serviceStatistics.ConnectedDeviceCount.Should().BeGreaterOrEqualTo(0);
+
+            // No great way to test the accuracy of these statistics, but making the request successfully should
+            // be enough to indicate that this API works as intended
+            RegistryStatistics registryStatistics = await serviceClient.Devices.GetRegistryStatisticsAsync().ConfigureAwait(false);
+            registryStatistics.DisabledDeviceCount.Should().BeGreaterOrEqualTo(0);
+            registryStatistics.EnabledDeviceCount.Should().BeGreaterOrEqualTo(0);
+            registryStatistics.TotalDeviceCount.Should().BeGreaterOrEqualTo(0);
+        }
+
         private static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)
         {
             if (deviceId == null)

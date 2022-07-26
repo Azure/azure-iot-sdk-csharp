@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         private const string JobsListUriFormat = "/jobs";
         private const string JobsCreateUriFormat = "/jobs/create";
         private const string DeviceStatisticsUriFormat = "/statistics/devices";
-        private const string ServiceStatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string ServiceStatisticsUriFormat = "/statistics/service";
         private const string AdminUriFormat = "/$admin/{0}";
 
         /// <summary>
@@ -1170,7 +1170,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetDeviceStatisticsUri()
         {
-            return new Uri(DeviceStatisticsUriFormat.FormatInvariant(ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceStatisticsUriFormat, UriKind.Relative);
         }
 
         private static Uri GetServiceStatisticsUri()
