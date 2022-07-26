@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             bool configCreated = false;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
-            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
@@ -374,7 +374,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 // act and assert
 
-                Configuration addResult = await client.AddConfigurationAsync(expected).ConfigureAwait(false);
+                Configuration addResult = await sc.Configurations.CreateAsync(expected).ConfigureAwait(false);
                 configCreated = true;
                 addResult.Id.Should().Be(configurationId);
                 addResult.Priority.Should().Be(expected.Priority);
@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 addResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
                 addResult.ETag.Should().NotBeNullOrEmpty();
 
-                Configuration getResult = await client.GetConfigurationAsync(configurationId).ConfigureAwait(false);
+                Configuration getResult = await sc.Configurations.GetAsync(configurationId).ConfigureAwait(false);
                 getResult.Id.Should().Be(configurationId);
                 getResult.Priority.Should().Be(expected.Priority);
                 getResult.TargetCondition.Should().Be(expected.TargetCondition);
@@ -391,12 +391,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 getResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
                 getResult.ETag.Should().Be(addResult.ETag);
 
-                IEnumerable<Configuration> listResult = await client.GetConfigurationsAsync(100).ConfigureAwait(false);
+                IEnumerable<Configuration> listResult = await sc.Configurations.GetAsync(100).ConfigureAwait(false);
                 listResult.Should().Contain(x => x.Id == configurationId);
 
                 expected.Priority++;
                 expected.ETag = getResult.ETag;
-                Configuration updateResult = await client.UpdateConfigurationAsync(expected).ConfigureAwait(false);
+                Configuration updateResult = await sc.Configurations.UpdateAsync(expected).ConfigureAwait(false);
                 updateResult.Id.Should().Be(configurationId);
                 updateResult.Priority.Should().Be(expected.Priority);
                 updateResult.TargetCondition.Should().Be(expected.TargetCondition);
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 if (configCreated)
                 {
                     // If this fails, we shall let it throw an exception and fail the test
-                    await client.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
+                    await sc.Configurations.RemoveAsync(configurationId).ConfigureAwait(false);
                 }
             }
         }

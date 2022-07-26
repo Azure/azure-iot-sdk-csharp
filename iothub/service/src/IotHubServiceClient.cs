@@ -135,6 +135,12 @@ namespace Microsoft.Azure.Devices
         public ModulesClient Modules { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles configurations
+        /// getting/adding/setting/deleting configurations.
+        /// </summary>
+        public ConfigurationsClient Configurations { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -147,6 +153,7 @@ namespace Microsoft.Azure.Devices
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Configurations = new ConfigurationsClient(_credentialProvider, new HttpTransportSettings());
         }
     }
 }
