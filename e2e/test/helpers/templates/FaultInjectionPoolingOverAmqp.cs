@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
     {
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
-            Client.TransportType transport,
+            ITransportSettings TransportSettings,
             string proxyAddress,
             int poolSize,
             int devicesCount,
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings  = new AmqpTransportSettings(transport)
+            var transportSettings  = new AmqpTransportSettings(TransportSettings.Protocol)
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings()
                 {
