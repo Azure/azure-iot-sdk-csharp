@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.17.1</Version>
+    <Version>1.17.2</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
