@@ -6,20 +6,24 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="IotHubServiceClient"/> that handles creating, updating, getting and deleting configurations
+    /// Subclient of <see cref="IotHubServiceClient"/> that handles creating, updating, getting and deleting configurations.
     /// </summary>
     public class ConfigurationsClient
     {
+        private string _hostName;
+        private IotHubConnectionProperties _credentialProvider;
+        private HttpClient _httpClient;
+        private HttpRequestMessageFactory _httpRequestMessageFactory;
+
         private const string ConfigurationRequestUriFormat = "/configurations/{0}?{1}";
         private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}&{1}";
         private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
-
-        private IHttpClientHelper _httpClientHelper;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -28,59 +32,36 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal ConfigurationsClient(IotHubConnectionProperties connectionProperties, HttpTransportSettings transportSettings)
+        internal ConfigurationsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {
-            _httpClientHelper = new HttpClientHelper(
-                connectionProperties.HttpsEndpoint,
-                connectionProperties,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                s_defaultOperationTimeout,
-                transportSettings.Proxy,
-                transportSettings.ConnectionLeaseTimeoutMilliseconds);
+            _credentialProvider = credentialProvider;
+            _hostName = hostName;
+            _httpClient = httpClient;
+            _httpRequestMessageFactory = httpRequestMessageFactory;
         }
 
         /// <summary>
-        /// Creates a new Configuration for Azure IoT Edge in IoT hub
+        /// Creates a new configuration for Azure IoT Edge in IoT hub
         /// </summary>
-        /// <param name="configuration">The Configuration object being created.</param>
-        /// <returns>The Configuration object.</returns>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> CreateAsync(Configuration configuration)
-        {
-            return CreateAsync(configuration, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Creates a new Configuration for Azure IoT Edge in IoT hub
-        /// </summary>
-        /// <param name="configuration">The Configuration object being created.</param>
+        /// <param name="configuration">The configuration object being created.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> CreateAsync(Configuration configuration, CancellationToken cancellationToken)
+        public async virtual Task<Configuration> CreateAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
 
             try
             {
-                EnsureInstanceNotClosed();
-
                 if (!string.IsNullOrEmpty(configuration.ETag))
                 {
                     throw new ArgumentException(ApiResources.ETagSetWhileCreatingConfiguration);
                 }
-
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-                {
-                    {
-                        HttpStatusCode.PreconditionFailed,
-                        async responseMessage => new PreconditionFailedException(
-                            await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
-                    }
-                };
-
-                return _httpClientHelper.PutAsync(GetConfigurationRequestUri(configuration.Id), configuration, PutOperationType.CreateEntity, errorMappingOverrides, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Configuration>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -96,24 +77,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves the specified Configuration object.
+        /// Retrieves the specified configuration object.
         /// </summary>
-        /// <param name="configurationId">The id of the Configuration being retrieved.</param>
-        /// <returns>The Configuration object.</returns>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> GetAsync(string configurationId)
-        {
-            return GetAsync(configurationId, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Retrieves the specified Configuration object.
-        /// </summary>
-        /// <param name="configurationId">The id of the Configuration being retrieved.</param>
+        /// <param name="configurationId">The id of the configuration being retrieved.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> GetAsync(string configurationId, CancellationToken cancellationToken)
+        public async virtual Task<Configuration> GetAsync(string configurationId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
@@ -124,14 +94,10 @@ namespace Microsoft.Azure.Devices
                     throw new ArgumentException(IotHubApiResources.GetString(ApiResources.ParameterCannotBeNullOrWhitespace, "configurationId"));
                 }
 
-                EnsureInstanceNotClosed();
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
-                {
-                    { HttpStatusCode.NotFound, async responseMessage => new ConfigurationNotFoundException(
-                        await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) }
-                };
-
-                return _httpClientHelper.GetAsync<Configuration>(GetConfigurationRequestUri(configurationId), errorMappingOverrides, null, false, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Configuration>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -152,30 +118,16 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <returns>The list of configurations.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<IEnumerable<Configuration>> GetAsync(int maxCount)
-        {
-            return GetAsync(maxCount, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Retrieves specified number of configurations from every IoT hub partition.
-        /// Results are not ordered.
-        /// </summary>
-        /// <returns>The list of configurations.</returns>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<IEnumerable<Configuration>> GetAsync(int maxCount, CancellationToken cancellationToken)
+        public async virtual Task<IEnumerable<Configuration>> GetAsync(int maxCount, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
             try
             {
-                EnsureInstanceNotClosed();
-
-                return _httpClientHelper.GetAsync<IEnumerable<Configuration>>(
-                    GetConfigurationsRequestUri(maxCount),
-                    null,
-                    null,
-                    cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationsRequestUri(maxCount), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<IEnumerable<Configuration>>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -191,20 +143,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Update the mutable fields of the Configuration registration
+        /// Update the mutable fields of the configuration registration
         /// </summary>
-        /// <param name="configuration">The Configuration object with updated fields.</param>
-        /// <returns>The Configuration object with updated ETag.</returns>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> UpdateAsync(Configuration configuration)
-        {
-            return UpdateAsync(configuration, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Update the mutable fields of the Configuration registration
-        /// </summary>
-        /// <param name="configuration">The Configuration object with updated fields.</param>
+        /// <param name="configuration">The configuration object with updated fields.</param>
         /// <param name="forceUpdate">Forces the device object to be replaced without regard for an ETag match.</param>
         /// <returns>The Configuration object with updated ETags.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
@@ -214,57 +155,45 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Update the mutable fields of the Configuration registration
+        /// Update the mutable fields of the configuration registration
         /// </summary>
-        /// <param name="configuration">The Configuration object with updated fields.</param>
+        /// <param name="configuration">The configuration object with updated fields.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object with updated ETags.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> UpdateAsync(Configuration configuration, CancellationToken cancellationToken)
+        public virtual Task<Configuration> UpdateAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             return UpdateAsync(configuration, false, cancellationToken);
         }
 
         /// <summary>
-        /// Update the mutable fields of the Configuration registration
+        /// Update the mutable fields of the configuration registration
         /// </summary>
-        /// <param name="configuration">The Configuration object with updated fields.</param>
-        /// <param name="forceUpdate">Forces the Configuration object to be replaced even if it was updated since it was retrieved last time.</param>
+        /// <param name="configuration">The configuration object with updated fields.</param>
+        /// <param name="forceUpdate">Forces the configuration object to be replaced even if it was updated since it was retrieved last time.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object with updated ETags.</returns>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task<Configuration> UpdateAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken)
+        public async virtual Task<Configuration> UpdateAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating configuration: {configuration?.Id} - Force update: {forceUpdate}", nameof(UpdateAsync));
 
             try
             {
-                EnsureInstanceNotClosed();
-
                 if (string.IsNullOrWhiteSpace(configuration.ETag) && !forceUpdate)
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingConfiguration);
                 }
 
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
-                {
-                    { HttpStatusCode.PreconditionFailed, async (responseMessage) => new PreconditionFailedException(
-                        await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) },
-                    {
-                        HttpStatusCode.NotFound, async responseMessage =>
-                        {
-                            string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                            return new ConfigurationNotFoundException(responseContent, (Exception)null);
-                        }
-                    }
-                };
-
                 PutOperationType operationType = forceUpdate
                     ? PutOperationType.ForceUpdateEntity
                     : PutOperationType.UpdateEntity;
 
-                return _httpClientHelper.PutAsync(GetConfigurationRequestUri(configuration.Id), configuration, operationType, errorMappingOverrides, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponse<Configuration>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -282,28 +211,16 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Deletes a previously registered device from the system.
         /// </summary>
-        /// <param name="configurationId">The id of the Configuration being deleted.</param>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task RemoveAsync(string configurationId)
-        {
-            return RemoveAsync(configurationId, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Deletes a previously registered device from the system.
-        /// </summary>
         /// <param name="configurationId">The id of the configurationId being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task RemoveAsync(string configurationId, CancellationToken cancellationToken)
+        public async virtual Task RemoveAsync(string configurationId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Removing configuration: {configurationId}", nameof(RemoveAsync));
 
             try
             {
-                EnsureInstanceNotClosed();
-
                 if (string.IsNullOrWhiteSpace(configurationId))
                 {
                     throw new ArgumentException(IotHubApiResources.GetString(ApiResources.ParameterCannotBeNullOrWhitespace, "configurationId"));
@@ -311,7 +228,7 @@ namespace Microsoft.Azure.Devices
 
                 // use wild-card ETag
                 var eTag = new ETagHolder { ETag = "*" };
-                return RemoveAsync(configurationId, eTag, cancellationToken);
+                await RemoveAsync(configurationId, eTag, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -329,30 +246,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Deletes a previously registered device from the system.
         /// </summary>
-        /// <param name="configuration">The Configuration being deleted.</param>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task RemoveAsync(Configuration configuration)
-        {
-            return RemoveAsync(configuration, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Deletes a previously registered device from the system.
-        /// </summary>
-        /// <param name="configuration">The Configuration being deleted.</param>
+        /// <param name="configuration">The configuration being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual Task RemoveAsync(Configuration configuration, CancellationToken cancellationToken)
+        public async virtual Task RemoveAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Removing configuration: {configuration?.Id}", nameof(RemoveAsync));
             try
             {
-                EnsureInstanceNotClosed();
-
-                return string.IsNullOrWhiteSpace(configuration.ETag)
-                    ? throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration)
-                    : RemoveAsync(configuration.Id, configuration, cancellationToken);
+                if (string.IsNullOrWhiteSpace(configuration.ETag))
+                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration);
+                else
+                    await RemoveAsync(configuration.Id, configuration, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -367,7 +273,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private Task RemoveAsync(string configurationId, IETagHolder eTagHolder, CancellationToken cancellationToken)
+        private async Task RemoveAsync(string configurationId, IETagHolder eTagHolder, CancellationToken cancellationToken)
         {
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
@@ -384,8 +290,10 @@ namespace Microsoft.Azure.Devices
                     async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 }
             };
-
-            return _httpClientHelper.DeleteAsync(GetConfigurationRequestUri(configurationId), eTagHolder, errorMappingOverrides, null, cancellationToken);
+            using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configurationId), _credentialProvider);
+            HttpMessageHelper2.InsertEtag(request, eTagHolder.ETag);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+            await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
         }
 
         /// <summary>
@@ -410,14 +318,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device Id.</param>
         /// <param name="content">The configuration.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        public virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken)
+        public async virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
 
             try
             {
-                return _httpClientHelper.PostAsync(GetApplyConfigurationOnDeviceRequestUri(deviceId), content, null, null, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
             }
             catch (Exception ex)
             {
@@ -429,15 +339,6 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
-            }
-        }
-
-        private void EnsureInstanceNotClosed()
-        {
-            if (_httpClientHelper == null)
-            {
-                // TODO - update ApiResources......
-                throw new ObjectDisposedException("ConfigurationsClient", ApiResources.RegistryManagerInstanceAlreadyClosed);
             }
         }
 

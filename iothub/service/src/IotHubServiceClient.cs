@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Configurations = new ConfigurationsClient(_credentialProvider, new HttpTransportSettings());
+            Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }
