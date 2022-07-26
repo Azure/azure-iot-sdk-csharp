@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="transportProtocol">The transport protocol.</param>
+        /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
         public AmqpTransportSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
@@ -122,26 +122,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
 
-        /// <summary>
-        /// Compares the properties of this instance to another
-        /// </summary>
-        /// <param name="other">The other instance to compare to</param>
-        /// <returns>True if equal</returns>
-        public bool Equals(AmqpTransportSettings other)
-        {
-            return other != null
-                && (ReferenceEquals(this, other)
-                // ClientCertificates are usually different, so ignore them in the comparison
-                || PrefetchCount == other.PrefetchCount
-                && OperationTimeout == other.OperationTimeout
-                && ConnectionPoolSettings.Equals(other.ConnectionPoolSettings));
-        }
-
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override string ToString()
         {
-            return $"{GetType()}/{Protocol}";
+            return $"{GetType().Name}/{Protocol}";
         }
     }
 }

@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -20,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
+        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 new AmqpTransportSettings(TransportProtocol.Tcp),
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestCategory("LongRunning")]
         [LoggedTestMethod]
-        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
+        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 new AmqpTransportSettings(TransportProtocol.WebSocket),
@@ -38,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
+        public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 new AmqpTransportSettings(TransportProtocol.Tcp),
@@ -52,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
+        public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 new AmqpTransportSettings(TransportProtocol.WebSocket),
@@ -66,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 TransportProtocol.Tcp, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
@@ -74,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 TransportProtocol.WebSocket, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
@@ -83,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
         // [LoggedTestMethod]
-        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
+        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 TransportProtocol.Tcp, async (r, d) =>
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
         // [LoggedTestMethod]
-        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
+        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 TransportProtocol.WebSocket, async (r, d) =>

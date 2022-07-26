@@ -39,7 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
         /// </summary>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// 
         public EdgeModuleClientFactory(ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
         {
             _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));

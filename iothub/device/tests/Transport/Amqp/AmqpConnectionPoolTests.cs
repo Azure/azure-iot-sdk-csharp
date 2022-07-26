@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             deviceIdentity.Setup(m => m.IotHubConnectionString).Returns(new IotHubConnectionString(sharedAccessKeyName: sharedAccessKeyName));
             deviceIdentity.Setup(m => m.AmqpTransportSettings).Returns(new AmqpTransportSettings()
             {
-                ConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
                     Pooling = true,
                     MaxPoolSize = poolSize,

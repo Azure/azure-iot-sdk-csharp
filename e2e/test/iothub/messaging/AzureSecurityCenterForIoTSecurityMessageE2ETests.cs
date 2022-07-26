@@ -36,13 +36,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Flaky")]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageAsync(new AmqpTransportSettings());
+            return TestSecurityMessageAsync(new AmqpTransportSettings(TransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageModuleAsync(new AmqpTransportSettings());
+            return TestSecurityMessageModuleAsync(new AmqpTransportSettings(TransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod]
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             string eventId = Guid.NewGuid().ToString();
             string p1Value = eventId;
-            string payload = AzureSecurityCenterForIoTSecurityMessageE2ETests.ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
+            string payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
             var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {

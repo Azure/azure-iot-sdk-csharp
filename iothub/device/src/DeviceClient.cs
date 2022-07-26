@@ -62,6 +62,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A disposable DeviceClient instance</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
         {
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
         }
 

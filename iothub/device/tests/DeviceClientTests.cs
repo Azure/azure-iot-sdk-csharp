@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,6 +34,93 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             Action act = () => DeviceClient.Create(hostName, authMethod, new ClientOptions(new AmqpTransportSettings(TransportProtocol.WebSocket)));
             act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsHttp_Throws()
+        {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+            var certs = new X509Certificate2Collection();
+            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var options = new ClientOptions(new Client.HttpTransportSettings());
+
+            // act
+            using var dc = DeviceClient.Create(hostName, authMethod, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsAmqpWs_Throws()
+        {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+            var certs = new X509Certificate2Collection();
+            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var options = new ClientOptions(new AmqpTransportSettings(TransportProtocol.WebSocket));
+
+            // act
+            using var dc = DeviceClient.Create(hostName, authMethod, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsMqtttWs_Throws()
+        {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+            var certs = new X509Certificate2Collection();
+            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var options = new ClientOptions(new MqttTransportSettings(TransportProtocol.WebSocket));
+
+            // act
+            using var dc = DeviceClient.Create(hostName, authMethod, options);
+        }
+
+        [TestMethod]
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsAmqpTcp_DoesNotThrow()
+        {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+            var certs = new X509Certificate2Collection();
+            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var options = new ClientOptions(new AmqpTransportSettings(TransportProtocol.Tcp));
+
+            // act
+            using var dc = DeviceClient.Create(hostName, authMethod, options);
+
+            // should not throw
+        }
+
+        [TestMethod]
+        public void DeviceAuthenticationWithX509Certificate_ChainCertsMqtttTcp_DoesNotThrow()
+        {
+            // arrange
+            string hostName = "acme.azure-devices.net";
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+            using var cert = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+            var certs = new X509Certificate2Collection();
+            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
+            var options = new ClientOptions(new MqttTransportSettings(TransportProtocol.Tcp));
+
+            // act
+            using var dc = DeviceClient.Create(hostName, authMethod, options);
+
+            // should not throw
         }
 
         [TestMethod]
@@ -215,7 +303,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
             catch (NotSupportedException e)
             {
-                Assert.AreEqual($"{options.TransportSettings.GetType()} transport doesn't support E2E diagnostic.", e.Message);
+                e.Message.Should().Contain($"transport doesn't support E2E diagnostic.");
             }
         }
 
@@ -1378,25 +1466,25 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithMqttTcpTransportAndModelId_DoesNotThrow(ITransportSettings transportSettings)
+        public void Deviceclient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
         {
             DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new MqttTransportSettings());
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithMqttWsTransportAndModelId_DoesNotThrow(ITransportSettings transportSettings)
+        public void Deviceclient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
         {
             DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new MqttTransportSettings(TransportProtocol.WebSocket));
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow(ITransportSettings transportSettings)
+        public void Deviceclient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow()
         {
             DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new AmqpTransportSettings());
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithAmqpWsTransportAndModelId_DoesNotThrow(ITransportSettings transportSettings)
+        public void Deviceclient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
         {
             DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new AmqpTransportSettings(TransportProtocol.WebSocket));
         }

@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void ModuleClient_CreateFromConnectionString_WithModuleId()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithModuleId);
+            using var moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithModuleId);
             Assert.IsNotNull(moduleClient);
         }
 

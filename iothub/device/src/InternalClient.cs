@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(DiagnosticSamplingPercentage),
-                        DiagnosticSamplingPercentage,
+                        value,
                         "The range of diagnostic sampling percentage should between [0,100].");
                 }
 
@@ -1217,12 +1217,13 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsE2eDiagnosticSupportedProtocol()
         {
-            if (_transportSettings is not AmqpTransportSettings or MqttTransportSettings)
+            if (_transportSettings is AmqpTransportSettings
+                || _transportSettings is MqttTransportSettings)
             {
-                throw new NotSupportedException($"'{_transportSettings.GetType()}' transport doesn't support E2E diagnostic.");
+                return true;
             }
 
-            return true;
+            throw new NotSupportedException($"The {_transportSettings.GetType().Name} transport doesn't support E2E diagnostic.");
         }
     }
 }

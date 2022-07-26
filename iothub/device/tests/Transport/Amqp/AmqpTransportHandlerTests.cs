@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public async Task AmqpTransport_Select_CorrectReceiverLink_ForEdgeModule()
         {
             // Test that we do not call EnableReceiveMessageAsync when we call EnableEventReceiveAsync indicating this is an Edge Module 
-            Mock<MoqableAmqpTransportHandler> mockedMockAmqpTransportHandler = new Mock<MoqableAmqpTransportHandler>();
+            var mockedMockAmqpTransportHandler = new Mock<MockableAmqpTransportHandler>();
 
             mockedMockAmqpTransportHandler.Setup(p => p.EnableEventReceiveAsync(true, default)).CallBase();
             mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransport_Select_CorrectReceiverLink_ForModuleTwin()
         {
-            Mock<MoqableAmqpTransportHandler> mockedMockAmqpTransportHandler = new Mock<MoqableAmqpTransportHandler>();
+            var mockedMockAmqpTransportHandler = new Mock<MockableAmqpTransportHandler>();
 
             mockedMockAmqpTransportHandler.Setup(p => p.EnableEventReceiveAsync(false, default)).CallBase();
             mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));

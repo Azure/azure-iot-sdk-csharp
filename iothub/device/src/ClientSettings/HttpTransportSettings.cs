@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override string ToString()
         {
-            return $"{GetType()}/{Protocol}";
+            return $"{GetType().Name}/{Protocol}";
         }
     }
 }

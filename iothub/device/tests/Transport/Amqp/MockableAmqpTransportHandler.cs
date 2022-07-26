@@ -8,15 +8,15 @@ using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
-    internal class MoqableAmqpTransportHandler : AmqpTransportHandler
+    internal class MockableAmqpTransportHandler : AmqpTransportHandler
     {
-        public MoqableAmqpTransportHandler() : this(new PipelineContext(),
+        public MockableAmqpTransportHandler() : this(new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
                 new AmqpTransportSettings())
         {
         }
 
-        internal MoqableAmqpTransportHandler(
+        internal MockableAmqpTransportHandler(
             PipelineContext context,
             IotHubConnectionString connectionString,
             AmqpTransportSettings transportSettings,
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                   onModuleMessageReceivedCallback,
                   onDeviceMessageReceivedCallback)
         {
-            _amqpUnit = new MoqableAmqpUnit();
+            _amqpUnit = new MockableAmqpUnit();
         }
     }
 }

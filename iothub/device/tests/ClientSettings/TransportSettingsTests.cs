@@ -31,68 +31,37 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void AmqpTransportSettings_RespectsCtorParameterTcp()
+        [DataRow(TransportProtocol.Tcp)]
+        [DataRow(TransportProtocol.WebSocket)]
+        public void AmqpTransportSettings_RespectsCtorParameter(TransportProtocol protocol)
         {
-            // arrange
-            const TransportProtocol expectedProtocol = TransportProtocol.Tcp;
-
             // act
-            var transportSetting = new AmqpTransportSettings(expectedProtocol);
+            var transportSetting = new AmqpTransportSettings(protocol);
 
             // assert
-            transportSetting.Protocol.Should().Be(expectedProtocol);
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_RespectsCtorParameterWebSocket()
-        {
-            // arrange
-            const TransportProtocol expectedProtocol = TransportProtocol.WebSocket;
-
-            // act
-            var transportSetting = new AmqpTransportSettings(expectedProtocol);
-
-            // assert
-            transportSetting.Protocol.Should().Be(expectedProtocol);
+            transportSetting.Protocol.Should().Be(protocol);
         }
 
         [TestMethod]
         public void MqttTransportSettings_DefaultPropertyValues()
         {
-            // arrange
-            const TransportProtocol expectedProtocol = TransportProtocol.Tcp;
-
             // act
             var transportSetting = new MqttTransportSettings();
 
             // assert
-            transportSetting.Protocol.Should().Be(expectedProtocol);
+            transportSetting.Protocol.Should().Be(TransportProtocol.Tcp);
         }
 
         [TestMethod]
-        public void MqttTransportSettings_RespectsCtorParameterMqttTcp()
+        [DataRow(TransportProtocol.Tcp)]
+        [DataRow(TransportProtocol.WebSocket)]
+        public void MqttTransportSettings_RespectsCtorParameter(TransportProtocol protocol)
         {
-            // arrange
-            const TransportProtocol expectedTransportProtocol = TransportProtocol.Tcp;
-
             // act
-            var transportSetting = new MqttTransportSettings(expectedTransportProtocol);
+            var transportSetting = new MqttTransportSettings(protocol);
 
             // assert
-            transportSetting.Protocol.Should().Be(expectedTransportProtocol);
-        }
-
-        [TestMethod]
-        public void MqttTransportSettings_RespectsCtorParameterMqttWebSocket()
-        {
-            // arrange
-            const TransportProtocol expectedTransportProtocol = TransportProtocol.WebSocket;
-
-            // act
-            var transportSetting = new MqttTransportSettings(expectedTransportProtocol);
-
-            // assert
-            transportSetting.Protocol.Should().Be(expectedTransportProtocol);
+            transportSetting.Protocol.Should().Be(protocol);
         }
 
         [TestMethod]
@@ -189,42 +158,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // assert
             connectionPoolSettings.Pooling.Should().BeFalse();
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_Equals()
-        {
-            // act
-            var amqpTransportSettings1 = new AmqpTransportSettings
-            {
-                PrefetchCount = 100,
-                OperationTimeout = TimeSpan.FromMinutes(1),
-            };
-            // different prefetch
-            var amqpTransportSettings2 = new AmqpTransportSettings
-            {
-                PrefetchCount = amqpTransportSettings1.PrefetchCount + 1,
-                OperationTimeout = amqpTransportSettings1.OperationTimeout,
-            };
-            // different operation timeout
-            var amqpTransportSettings3 = new AmqpTransportSettings
-            {
-                PrefetchCount = amqpTransportSettings1.PrefetchCount,
-                OperationTimeout = amqpTransportSettings1.OperationTimeout.Add(TimeSpan.FromMinutes(1)),
-            };
-            // same
-            var amqpTransportSettings4 = new AmqpTransportSettings
-            {
-                PrefetchCount = amqpTransportSettings1.PrefetchCount,
-                OperationTimeout = amqpTransportSettings1.OperationTimeout,
-            };
-
-            // assert
-            amqpTransportSettings1.Should().Be(amqpTransportSettings1, "An object should equal itself");
-            amqpTransportSettings1.Should().NotBe(new AmqpTransportSettings());
-            amqpTransportSettings1.Should().NotBe(amqpTransportSettings2);
-            amqpTransportSettings1.Should().NotBe(amqpTransportSettings3);
-            amqpTransportSettings1.Should().Be(amqpTransportSettings4);
         }
 
         [TestMethod]

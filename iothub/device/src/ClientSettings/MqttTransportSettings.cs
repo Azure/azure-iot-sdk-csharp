@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="transportProtocol">The transport protocol.</param>
+        /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
         public MqttTransportSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override string ToString()
         {
-            return $"{GetType()}/{Protocol}";
+            return $"{GetType().Name}/{Protocol}";
         }
     }
 }

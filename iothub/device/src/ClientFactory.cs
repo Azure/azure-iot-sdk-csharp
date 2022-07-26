@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -21,6 +20,8 @@ namespace Microsoft.Azure.Devices.Client
             string connectionString,
             ClientOptions options)
         {
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
+
             var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(connectionString, null);
 
             return CreateInternal(null, connectionString, builder.AuthenticationMethod, options);
@@ -112,7 +113,10 @@ namespace Microsoft.Azure.Devices.Client
             IAuthenticationMethod authenticationMethod,
             ClientOptions options)
         {
-            Debug.Assert(options != null);
+            if (options == null)
+            {
+                options = new();
+            }
 
             if (connectionString == null)
             {
@@ -145,7 +149,9 @@ namespace Microsoft.Azure.Devices.Client
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
                 && certificate.ChainCertificates != null
-                && options.TransportSettings.Protocol != TransportProtocol.Tcp)
+                && (options.TransportSettings is not AmqpTransportSettings
+                && options.TransportSettings is not MqttTransportSettings
+                || options.TransportSettings.Protocol != TransportProtocol.Tcp))
             {
                 throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
             }

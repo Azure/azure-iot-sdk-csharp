@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
         [LoggedTestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
+        public async Task Method_DeviceReceivesMethodAndResponse_MqttTcp()
         {
             await SendMethodAndRespondAsync(new MqttTransportSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_DeviceUnsubscribes_Mqtt()
+        public async Task Method_DeviceUnsubscribes_MqttTcp()
         {
             await SendMethodAndUnsubscribeAsync(new MqttTransportSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttTcp()
         {
             await SendMethodAndRespondAsync(new MqttTransportSettings(), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
+        public async Task Method_DeviceReceivesMethodAndResponse_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_DeviceUnsubscribes_Amqp()
+        public async Task Method_DeviceUnsubscribes_AmqpTcp()
         {
             await SendMethodAndUnsubscribeAsync(new AmqpTransportSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_ModuleReceivesMethodAndResponse_Mqtt()
+        public async Task Method_ModuleReceivesMethodAndResponse_MqttTcp()
         {
             await SendMethodAndRespondAsync(new MqttTransportSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
+        public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttTcp()
         {
             await SendMethodAndRespondAsync(new MqttTransportSettings(), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_ModuleReceivesMethodAndResponse_Amqp()
+        public async Task Method_ModuleReceivesMethodAndResponse_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod]
-        public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
+        public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }

@@ -11,9 +11,9 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
-    internal class MoqableAmqpUnit : AmqpUnit
+    internal class MockableAmqpUnit : AmqpUnit
     {
-        public MoqableAmqpUnit()
+        public MockableAmqpUnit()
             : this(
                 new DeviceIdentity(
                     IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
         }
 
-        public MoqableAmqpUnit(DeviceIdentity deviceIdentity,
+        public MockableAmqpUnit(DeviceIdentity deviceIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener = null,
