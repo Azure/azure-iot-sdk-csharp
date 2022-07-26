@@ -23,50 +23,50 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
-            return TestSecurityMessageAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only));
+            return TestSecurityMessageAsync(new AmqpTransportSettings());
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
-            return TestSecurityMessageModuleAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only));
+            return TestSecurityMessageModuleAsync(new AmqpTransportSettings());
         }
 
         [LoggedTestMethod]
         [TestCategory("Flaky")]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only));
+            return TestSecurityMessageAsync(new AmqpTransportSettings());
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageModuleAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only));
+            return TestSecurityMessageModuleAsync(new AmqpTransportSettings());
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
-            return TestSecurityMessageAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only));
+            return TestSecurityMessageAsync(new MqttTransportSettings());
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
-            return TestSecurityMessageModuleAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only));
+            return TestSecurityMessageModuleAsync(new MqttTransportSettings());
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessageAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only));
+            return TestSecurityMessageAsync(new MqttTransportSettings(TransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod]
         public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessageModuleAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only));
+            return TestSecurityMessageModuleAsync(new MqttTransportSettings(TransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod]

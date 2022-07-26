@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Amqp_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Amqp_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Amqp_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Mqtt_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Amqp_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_MqttWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only),
+                    new MqttTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Mqtt_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Amqp_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Mqtt_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Amqp_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only),
+                    new AmqpTransportSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only),
+                    new AmqpTransportSettings(TransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             bool transportProtocolSupportsTwinOperations = transportSettings is not Client.HttpTransportSettings;
 
-            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings.TransportProtocol());
+            using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
             using AuthenticationProvider auth = await CreateAuthenticationProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
@@ -583,7 +583,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null)
             {
                 //hardcoding amqp since http does not support twin, but tests that call into this may use http
-                using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)));
+                using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions(new AmqpTransportSettings()));
                 //Confirm that the device twin reflects what the enrollment dictated
                 Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
                 twin.Capabilities.IotEdge.Should().Be(capabilities.IotEdge);

@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)));
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new AmqpTransportSettings()));
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
             deviceClient.SetRetryPolicy(new NoRetry());
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjection.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
-                    Client.TransportType.Amqp_Tcp_Only,
+                    new AmqpTransportSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
-            var options = new ClientOptions(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only));
+            var options = new ClientOptions(new AmqpTransportSettings());
             using DeviceClient deviceClient1 = testDevice.CreateDeviceClient(options);
             using DeviceClient deviceClient2 = testDevice.CreateDeviceClient(options);
 

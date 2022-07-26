@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -245,40 +244,48 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [DataTestMethod]
-        [DataRow(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.Sasl, Client.TransportType.Http, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only, LargeMessageSizeInBytes)]
-        [DataRow(TestDeviceType.X509, Client.TransportType.Http, LargeMessageSizeInBytes)]
-        public async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, Client.TransportType transportType, int messageSize)
+        [DataRow(TestDeviceType.Sasl)]
+        [DataRow(TestDeviceType.X509)]
+        public async Task Message_DeviceSendSingleLargeMessageAsync_AmqpTcp(TestDeviceType testDeviceType)
         {
-            ITransportSettings transportSettings;
-            switch (transportType)
-            {
-                case Client.TransportType.Amqp_Tcp_Only:
-                case Client.TransportType.Amqp_WebSocket_Only:
-                    transportSettings = new AmqpTransportSettings(transportType);
-                    break;
+            var transportSettings = new AmqpTransportSettings();
+            await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
+        }
 
+        [DataTestMethod]
+        [DataRow(TestDeviceType.Sasl)]
+        [DataRow(TestDeviceType.X509)]
+        public async Task Message_DeviceSendSingleLargeMessageAsync_AmqpWS(TestDeviceType testDeviceType)
+        {
+            var transportSettings = new AmqpTransportSettings(TransportProtocol.WebSocket);
+            await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
+        }
 
-                case Client.TransportType.Mqtt_Tcp_Only:
-                case Client.TransportType.Mqtt_WebSocket_Only:
-                    transportSettings = new MqttTransportSettings(transportType);
-                    break;
+        [DataTestMethod]
+        [DataRow(TestDeviceType.Sasl)]
+        [DataRow(TestDeviceType.X509)]
+        public async Task Message_DeviceSendSingleLargeMessageAsync_MqttTcp(TestDeviceType testDeviceType)
+        {
+            var transportSettings = new MqttTransportSettings();
+            await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
+        }
 
-                case Client.TransportType.Http:
-                    transportSettings = new Client.HttpTransportSettings();
-                    break;
+        [DataTestMethod]
+        [DataRow(TestDeviceType.Sasl)]
+        [DataRow(TestDeviceType.X509)]
+        public async Task Message_DeviceSendSingleLargeMessageAsync_MqttWS(TestDeviceType testDeviceType)
+        {
+            var transportSettings = new MqttTransportSettings(TransportProtocol.WebSocket);
+            await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
+        }
 
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(transportType), "Unsupported transport type.");
-            }
-            await SendSingleMessage(testDeviceType, transportSettings, messageSize).ConfigureAwait(false);
+        [DataTestMethod]
+        [DataRow(TestDeviceType.Sasl)]
+        [DataRow(TestDeviceType.X509)]
+        public async Task Message_DeviceSendSingleLargeMessageAsync_Http(TestDeviceType testDeviceType)
+        {
+            var transportSettings = new Client.HttpTransportSettings();
+            await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
         }
 
         [LoggedTestMethod]
@@ -365,6 +372,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_DeviceSendMessageWayOverAllowedSize_Http()
         {
             await SendSingleMessage(TestDeviceType.Sasl, new Client.HttpTransportSettings(), OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        private async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, ITransportSettings transportSettings)
+        {
+            await SendSingleMessage(testDeviceType, transportSettings, LargeMessageSizeInBytes).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessage(TestDeviceType type, ITransportSettings transportSettings, int messageSize = 0)

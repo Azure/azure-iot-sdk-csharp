@@ -31,73 +31,73 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceUnsubscribes_Mqtt()
         {
-            await SendMethodAndUnsubscribeAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new MqttTransportSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceUnsubscribes_MqttWs()
         {
-            await SendMethodAndUnsubscribeAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new MqttTransportSettings(TransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceUnsubscribes_Amqp()
         {
-            await SendMethodAndUnsubscribeAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new AmqpTransportSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
-            await SendMethodAndUnsubscribeAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new AmqpTransportSettings(TransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             await SendMethodAndRespondAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     SetDeviceReceiveMethodAsync,
                     serviceClientTransportSettings: serviceClientTransportSettings)
                 .ConfigureAwait(false);
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             await SendMethodAndRespondAsync(
-                    new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only),
+                    new MqttTransportSettings(),
                     SetDeviceReceiveMethodAsync,
                     TimeSpan.FromMinutes(5),
                     serviceClientTransportSettings)
@@ -159,49 +159,49 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponse_Mqtt()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondAsync(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new MqttTransportSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponse_Amqp()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new AmqpTransportSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 const string commandName = "Reboot";
                 bool deviceMethodCalledSuccessfully = false;
 
-                deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)));
+                deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient

@@ -81,14 +81,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only))).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings())).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings())).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only))).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only))).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }

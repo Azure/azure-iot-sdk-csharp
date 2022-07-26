@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_CompleteMixOrder_Amqp()
         {
             // AMQP allows completing messages in any order received. Let's test that.
-            await CompleteMessageMixOrder(TestDeviceType.Sasl, new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only), Logger).ConfigureAwait(false);
+            await CompleteMessageMixOrder(TestDeviceType.Sasl, new AmqpTransportSettings(), Logger).ConfigureAwait(false);
         }
 
         private static async Task CompleteMessageMixOrder(TestDeviceType type, ITransportSettings transportSettings, MsTestLogger logger)

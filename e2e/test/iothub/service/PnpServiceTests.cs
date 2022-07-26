@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a device.
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
-            var options = new ClientOptions(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+            var options = new ClientOptions(new MqttTransportSettings())
             {
                 ModelId = TestModelId,
             };
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a device.
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
-            var options = new ClientOptions(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+            var options = new ClientOptions(new MqttTransportSettings())
             {
                 ModelId = TestModelId,
             };
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a module.
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the module plug and play.
-            var options = new ClientOptions(new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only))
+            var options = new ClientOptions(new MqttTransportSettings())
             {
                 ModelId = TestModelId,
             };
