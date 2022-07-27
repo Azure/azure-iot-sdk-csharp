@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Ensures that the ClientOptions is configured and initialized.
+        /// Ensures that the client options are configured and initialized.
         /// If a certificate is provided, the fileUploadTransportSettings will use it during initialization.
         /// </summary>
         private static void EnsureOptionsIsSetup(X509Certificate2 cert, ref IotHubClientOptions options)
