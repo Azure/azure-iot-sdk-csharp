@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Deletes a previously registered device from the system.
+        /// Deletes a configuration from IoT hub.
         /// </summary>
         /// <param name="configurationId">The id of the configurationId being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
@@ -279,7 +279,10 @@ namespace Microsoft.Azure.Devices
 
                 // use wild-card ETag
                 var eTag = new ETagHolder { ETag = "*" };
-                await DeleteAsync(configurationId, eTag, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configurationId), _credentialProvider);
+                HttpMessageHelper2.InsertEtag(request, eTag.ETag);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
             catch (Exception ex)
             {
@@ -295,7 +298,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Deletes a previously registered device from the system.
+        /// Deletes a configuration from IoT hub.
         /// </summary>
         /// <param name="configuration">The configuration being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
@@ -323,7 +326,10 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration);
                 }
-                await DeleteAsync(configuration.Id, configuration, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
+                HttpMessageHelper2.InsertEtag(request, configuration.ETag);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
             }
             catch (Exception ex)
             {
@@ -336,45 +342,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="configurationId"></param>
-        /// <param name="eTagHolder"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task DeleteAsync(string configurationId, IETagHolder eTagHolder, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
-            try
-            {
-                Argument.RequireNotNull(configurationId, nameof(configurationId));
-                cancellationToken.ThrowIfCancellationRequested();
-                if (string.IsNullOrWhiteSpace(eTagHolder.ETag))
-                {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration);
-                }
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configurationId), _credentialProvider);
-                HttpMessageHelper2.InsertEtag(request, eTagHolder.ETag);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.NoContent, response);
-            }
-            catch(Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
-            }
-
         }
 
         /// <summary>
