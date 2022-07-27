@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
                 }
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpMessageHelper2.InsertEtag(request, device.ETag);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
