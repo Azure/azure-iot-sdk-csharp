@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transportSettings is Client.IotHubClientHttpSettings)
+                if (transportSettings is IotHubClientHttpSettings)
                 {
                     throw;
                 }
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transportSettings is Client.IotHubClientHttpSettings)
+                if (transportSettings is IotHubClientHttpSettings)
                 {
                     throw;
                 }
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             try
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                if (transportSettings is not Client.IotHubClientHttpSettings)
+                if (transportSettings is not IotHubClientHttpSettings)
                 {
                     // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
                     connectionStatusChangeCount.Should().BeGreaterOrEqualTo(1);
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
 
-                if (transportSettings is not Client.IotHubClientHttpSettings)
+                if (transportSettings is not IotHubClientHttpSettings)
                 {
                     if (FaultShouldDisconnect(faultType))
                     {

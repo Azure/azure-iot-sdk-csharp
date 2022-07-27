@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Http()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new Client.IotHubClientHttpSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new Client.IotHubClientHttpSettings()).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

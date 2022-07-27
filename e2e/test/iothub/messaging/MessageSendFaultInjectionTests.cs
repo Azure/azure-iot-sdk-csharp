@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await SendMessageRecoveryAsync(
                         TestDeviceType.Sasl,
-                        new Client.IotHubClientHttpSettings(),
+                        new IotHubClientHttpSettings(),
                         FaultInjection.FaultType_Throttle,
                         FaultInjection.FaultCloseReason_Boom,
                         FaultInjection.DefaultFaultDelay,
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await SendMessageRecoveryAsync(
                         TestDeviceType.Sasl,
-                        new Client.IotHubClientHttpSettings(),
+                        new IotHubClientHttpSettings(),
                         FaultInjection.FaultType_QuotaExceeded,
                         FaultInjection.FaultCloseReason_Boom,
                         FaultInjection.DefaultFaultDelay,
@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new Client.IotHubClientHttpSettings(),
+                    new IotHubClientHttpSettings(),
                     FaultInjection.FaultType_Auth,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,

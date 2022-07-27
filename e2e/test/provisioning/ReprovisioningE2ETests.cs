@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             //twin is irrelevant since HTTP Device Clients can't use twin
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new Client.IotHubClientHttpSettings(),
+                    new IotHubClientHttpSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Http_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new Client.IotHubClientHttpSettings(),
+                    new IotHubClientHttpSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new Client.IotHubClientHttpSettings(),
+                    new IotHubClientHttpSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningWorks_Http_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-                    new Client.IotHubClientHttpSettings(),
+                    new IotHubClientHttpSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -314,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Http_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-                    new Client.IotHubClientHttpSettings(),
+                    new IotHubClientHttpSettings(),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -481,7 +481,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
             }
 
-            bool transportProtocolSupportsTwinOperations = transportSettings is not Client.IotHubClientHttpSettings;
+            bool transportProtocolSupportsTwinOperations = transportSettings is not IotHubClientHttpSettings;
 
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
             using AuthenticationProvider auth = await CreateAuthenticationProviderFromNameAsync(

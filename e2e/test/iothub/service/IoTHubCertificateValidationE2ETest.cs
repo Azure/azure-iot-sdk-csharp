@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateHttp_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new Client.IotHubClientHttpSettings())).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new IotHubClientHttpSettings())).ConfigureAwait(false);
 
 #if NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));

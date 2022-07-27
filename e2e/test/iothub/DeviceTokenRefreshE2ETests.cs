@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Http()
         {
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new Client.IotHubClientHttpSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             // Wait for the Token to expire.
-            if (transportSettings is Client.IotHubClientHttpSettings)
+            if (transportSettings is IotHubClientHttpSettings)
             {
                 float waitTime = ttl * ((float)buffer / 100) + 1;
                 Logger.Trace($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");

@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
-            return TestSecurityMessageAsync(new Client.IotHubClientHttpSettings());
+            return TestSecurityMessageAsync(new IotHubClientHttpSettings());
         }
 
         private Client.Message ComposeD2CSecurityTestMessage()

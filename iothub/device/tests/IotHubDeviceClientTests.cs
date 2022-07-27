@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new Client.IotHubClientHttpSettings());
+            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -1448,7 +1448,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
 
-            var clientOptions = new IotHubClientOptions(new Client.IotHubClientHttpSettings())
+            var clientOptions = new IotHubClientOptions(new IotHubClientHttpSettings())
             {
                 ModelId = TestModelId,
             };
@@ -1508,7 +1508,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_InitWithHttpTransportButNoModelId_DoesNotThrow()
         {
-            var options = new IotHubClientOptions(new Client.IotHubClientHttpSettings());
+            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
             // act and assert
             FluentActions
                 .Invoking(() => { using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, options); })
