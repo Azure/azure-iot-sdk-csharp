@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         private HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
-        private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}";
+        private const string ConfigurationsRequestUriFormat = "&top={0}";
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationsRequestUri(maxCount), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, GetConfigurationsRequestUri(maxCount));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<IEnumerable<Configuration>>(response, cancellationToken);
@@ -173,7 +173,8 @@ namespace Microsoft.Azure.Devices
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingConfiguration);
                 }
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
+                HttpMessageHelper2.InsertEtag(request, configuration.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<Configuration>(response, cancellationToken);
