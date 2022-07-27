@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices
     {
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string PageSizeHeader = "x-ms-max-item-count";
-        private const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string DevicesQueryUriFormat = "/devices/query";
 
         private string _hostName;
         private IotHubConnectionProperties _credentialProvider;
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices
             
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = sqlQueryString });
             AddCustomHeaders(request, customHeaders, contentType);
-            HttpResponseMessage response = await _httpClient.PostAsync(QueryDevicesRequestUri(), request.Content, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
             return await HttpMessageHelper2.DeserializeResponse<QueryResult>(response, cancellationToken).ConfigureAwait(false);
         }
