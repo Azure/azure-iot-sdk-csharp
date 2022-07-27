@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices.Http2
         /// <param name="relativeUri">The URI that the request will be made to.</param>
         /// <param name="authorizationProvider">The provider of authorization tokens.</param>
         /// <param name="payload">The payload for the request to be serialized. If null, no payload will be in the request.</param>
-        /// <param name="extraParam">Any extra parameters to be added to request URI</param>
+        /// <param name="queryStringParameters">Additional query string parameters to be added to request URI.</param>
         /// <returns>The created HTTP request.</returns>
-        internal HttpRequestMessage CreateRequest(HttpMethod method, Uri relativeUri, IotHubConnectionProperties authorizationProvider, object payload = null, Uri extraParam = null)
+        internal HttpRequestMessage CreateRequest(HttpMethod method, Uri relativeUri, IotHubConnectionProperties authorizationProvider, object payload = null, string queryStringParameters = null)
         {
             var message = new HttpRequestMessage();
             message.Method = method;
-            message.RequestUri = new Uri(_baseUri, relativeUri.ToString() + _apiVersionQueryString + (extraParam == null ? "" : extraParam.ToString()));
+            message.RequestUri = new Uri(_baseUri, relativeUri.ToString() + _apiVersionQueryString + (string.IsNullOrWhiteSpace(queryStringParameters) ? "" : queryStringParameters));
             message.Headers.Add(HttpRequestHeader.Accept.ToString(), ApplicationJson);
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), authorizationProvider.GetAuthorizationHeader());
             message.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());

@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
                 expected.Priority++;
                 expected.ETag = getResult.ETag;
-                Configuration updateResult = await sc.Configurations.UpdateAsync(expected).ConfigureAwait(false);
+                Configuration updateResult = await sc.Configurations.SetAsync(expected).ConfigureAwait(false);
                 updateResult.Id.Should().Be(configurationId);
                 updateResult.Priority.Should().Be(expected.Priority);
                 updateResult.TargetCondition.Should().Be(expected.TargetCondition);
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 if (configCreated)
                 {
                     // If this fails, we shall let it throw an exception and fail the test
-                    await sc.Configurations.RemoveAsync(configurationId).ConfigureAwait(false);
+                    await sc.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
             }
         }
