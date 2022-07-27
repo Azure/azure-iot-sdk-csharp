@@ -41,11 +41,7 @@ namespace Microsoft.Azure.Devices
         private const string RequestUriFormat = "/devices/{0}?{1}";
         private const string JobsUriFormat = "/jobs{0}?{1}";
         private const string DevicesRequestUriFormat = "/devices/?top={0}&{1}";
-        private const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
         private const string WildcardEtag = "*";
-
-        private const string ContinuationTokenHeader = "x-ms-continuation";
-        private const string PageSizeHeader = "x-ms-max-item-count";
 
         private const string TwinUriFormat = "/twins/{0}?{1}";
 
@@ -215,44 +211,6 @@ namespace Microsoft.Azure.Devices
         public virtual Task CloseAsync()
         {
             return TaskHelpers.CompletedTask;
-        }
-
-        /// <summary>
-        /// Retrieves a handle through which a result for a given query can be fetched.
-        /// </summary>
-        /// <param name="sqlQueryString">The SQL query.</param>
-        /// <returns>A handle used to fetch results for a SQL query.</returns>
-        public virtual IQuery CreateQuery(string sqlQueryString)
-        {
-            return CreateQuery(sqlQueryString, null);
-        }
-
-        /// <summary>
-        /// Retrieves a handle through which a result for a given query can be fetched.
-        /// </summary>
-        /// <param name="sqlQueryString">The SQL query.</param>
-        /// <param name="pageSize">The maximum number of items per page.</param>
-        /// <returns>A handle used to fetch results for a SQL query.</returns>
-        public virtual IQuery CreateQuery(string sqlQueryString, int? pageSize)
-        {
-            Logging.Enter(this, $"Creating query", nameof(CreateQuery));
-            try
-            {
-                return new Query((token) => ExecuteQueryAsync(
-                    sqlQueryString,
-                    pageSize,
-                    token,
-                    CancellationToken.None));
-            }
-            catch (Exception ex)
-            {
-                Logging.Error(this, $"{nameof(CreateQuery)} threw an exception: {ex}", nameof(CreateQuery));
-                throw;
-            }
-            finally
-            {
-                Logging.Exit(this, $"Creating query", nameof(CreateQuery));
-            }
         }
 
         /// <summary>
@@ -801,40 +759,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task<QueryResult> ExecuteQueryAsync(string sqlQueryString, int? pageSize, string continuationToken, CancellationToken cancellationToken)
-        {
-            EnsureInstanceNotClosed();
-
-            if (string.IsNullOrWhiteSpace(sqlQueryString))
-            {
-                throw new ArgumentException(IotHubApiResources.GetString(ApiResources.ParameterCannotBeNullOrEmpty, nameof(sqlQueryString)));
-            }
-
-            var customHeaders = new Dictionary<string, string>();
-            if (!string.IsNullOrWhiteSpace(continuationToken))
-            {
-                customHeaders.Add(ContinuationTokenHeader, continuationToken);
-            }
-
-            if (pageSize != null)
-            {
-                customHeaders.Add(PageSizeHeader, pageSize.ToString());
-            }
-
-            HttpResponseMessage response = await _httpClientHelper
-                .PostAsync(
-                    QueryDevicesRequestUri(),
-                    new QuerySpecification { Sql = sqlQueryString },
-                    null,
-                    customHeaders,
-                    new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" },
-                    null,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
-        }
-
         private static Uri GetModuleTwinRequestUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
@@ -855,11 +779,6 @@ namespace Microsoft.Azure.Devices
         private static Uri GetBulkRequestUri(string apiVersionQueryString)
         {
             return new Uri(RequestUriFormat.FormatInvariant(string.Empty, apiVersionQueryString), UriKind.Relative);
-        }
-
-        private static Uri QueryDevicesRequestUri()
-        {
-            return new Uri(DevicesQueryUriFormat, UriKind.Relative);
         }
 
         private static Uri GetTwinUri(string deviceId)

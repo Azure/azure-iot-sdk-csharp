@@ -17,10 +17,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod]
-        public async Task RegistryManager_QueryDevicesInvalidServiceCertificateHttp_Fails()
+        public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
-            using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
-            IQuery query = rm.CreateQuery("select * from devices");
+            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            IQuery query = sc.Query.CreateQuery("select * from devices");
             IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => query.GetNextAsTwinAsync()).ConfigureAwait(false);
 
