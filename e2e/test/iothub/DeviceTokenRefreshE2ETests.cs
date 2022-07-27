@@ -31,8 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
-            var options = new ClientOptions(new AmqpTransportSettings());
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
+            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -46,8 +46,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
-            var options = new ClientOptions(new AmqpTransportSettings());
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
+            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -98,8 +98,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using var deviceClient = DeviceClient.Create(iotHub, auth, new ClientOptions(new AmqpTransportSettings()));
-            Logger.Trace($"{deviceId}: Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
+            using var deviceClient = IotHubDeviceClient.Create(iotHub, auth, new IotHubClientOptions(new AmqpTransportSettings()));
+            Logger.Trace($"{deviceId}: Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -124,14 +124,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var options = new ClientOptions(new MqttTransportSettings())
+            var options = new IotHubClientOptions(new MqttTransportSettings())
             {
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
 
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-            Logger.Trace($"Created {nameof(DeviceClient)} instance for {testDevice.Id}.");
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
             {
@@ -186,8 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transportSettings,
                 Logger);
 
-            using var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, refresher, new ClientOptions(transportSettings));
-            Logger.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
+            using var deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
+            Logger.Trace($"Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             if (transportSettings is MqttTransportSettings
                 && transportSettings.Protocol == TransportProtocol.Tcp)

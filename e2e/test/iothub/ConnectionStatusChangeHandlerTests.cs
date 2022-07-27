@@ -121,8 +121,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStatusChangeReason? statusChangeReason = null;
             int deviceDisabledReceivedCount = 0;
 
-            var options = new ClientOptions(transportSettings);
-            using var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, options);
+            var options = new IotHubClientOptions(transportSettings);
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(deviceConnectionString, options);
             void statusChangeHandler(ConnectionStatus s, ConnectionStatusChangeReason r)
             {
                 if (r == ConnectionStatusChangeReason.Device_Disabled)
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(DeviceClient)} with device Id={testDevice.Id}");
+            Logger.Trace($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(IotHubDeviceClient)} with device Id={testDevice.Id}");
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -188,11 +188,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceDisabledReceivedCount++;
                 }
             };
-            var options = new ClientOptions(transportSettings);
+            var options = new IotHubClientOptions(transportSettings);
 
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
             moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(ModuleClient)} with moduleId={testModule.Id}");
+            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(IotHubModuleClient)} with moduleId={testModule.Id}");
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
 

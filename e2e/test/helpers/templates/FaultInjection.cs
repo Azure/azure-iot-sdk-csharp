@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        public static async Task ActivateFaultInjectionAsync(ITransportSettings transportSettings, string faultType, string reason, TimeSpan delay, TimeSpan duration, DeviceClient deviceClient, MsTestLogger logger)
+        public static async Task ActivateFaultInjectionAsync(ITransportSettings transportSettings, string faultType, string reason, TimeSpan delay, TimeSpan duration, IotHubDeviceClient deviceClient, MsTestLogger logger)
         {
             logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={delay}s, duration={DefaultFaultDuration}s");
 
@@ -127,14 +127,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             TimeSpan delay,
             TimeSpan duration,
-            Func<DeviceClient, TestDevice, Task> initOperation,
-            Func<DeviceClient, TestDevice, Task> testOperation,
+            Func<IotHubDeviceClient, TestDevice, Task> initOperation,
+            Func<IotHubDeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation,
             MsTestLogger logger)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, devicePrefix, type).ConfigureAwait(false);
 
-            DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings));
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;

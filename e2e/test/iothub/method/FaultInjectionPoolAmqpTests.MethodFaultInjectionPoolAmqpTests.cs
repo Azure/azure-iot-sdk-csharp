@@ -727,7 +727,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ITransportSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
+            Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             string faultType,
             string reason,
             TimeSpan delayInSec = default,
@@ -735,7 +735,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 Logger.Trace($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
                 await testDeviceCallbackHandler
@@ -743,7 +743,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     .ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
@@ -760,7 +760,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
+            async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
                 deviceClients.ForEach(deviceClient => deviceClient.Dispose());
                 testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());

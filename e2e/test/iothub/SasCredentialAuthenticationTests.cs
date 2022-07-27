@@ -13,7 +13,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Rest;
 using Azure;
 
-using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
+using ClientOptions = Microsoft.Azure.Devices.Client.IotHubClientOptions;
 using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 ModelId = thermostatModelId,
             };
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         /// <summary>
         /// Device configuration options at the time of initialization.
         /// </summary>
-        ClientOptions Options { get; }
+        IotHubClientOptions Options { get; }
 
         /// <summary>
         /// Device authentication audience.

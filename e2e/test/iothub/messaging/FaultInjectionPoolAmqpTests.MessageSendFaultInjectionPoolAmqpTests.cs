@@ -881,7 +881,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -892,7 +892,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             }
 
-            Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> _)
+            Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> _)
             {
                 deviceClients.ForEach(deviceClient => deviceClient.Dispose());
                 return Task.FromResult(0);

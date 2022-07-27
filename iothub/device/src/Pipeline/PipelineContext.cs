@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IotHubConnectionString IotHubConnectionString { get; set; }
 
-        internal ClientOptions ClientOptions { get; set; }
+        internal IotHubClientOptions ClientOptions { get; set; }
 
         internal ConnectionStatusChangesHandler ConnectionStatusChangesHandler { get; set; }
 

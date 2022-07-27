@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                version = typeof(IotHubDeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
                 string runtime = RuntimeInformation.FrameworkDescription.Trim();
                 string operatingSystem = RuntimeInformation.OSDescription.Trim();
                 string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();

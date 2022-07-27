@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeBig = 5120 * 1024;
 
         private static async Task SendErrorInjectionMessageAsync(
-            DeviceClient deviceClient,
+            IotHubDeviceClient deviceClient,
             string faultType,
             string reason,
             TimeSpan delayInSec,

@@ -432,7 +432,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             TimeSpan operationTimeoutInMilliSecs = retryDuration == TimeSpan.Zero ? FaultInjection.RecoveryTime : retryDuration;
 
-            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            Func<IotHubDeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 (Client.Message testMessage, string payload, string p1Value) = MessageSendE2ETests.ComposeD2cTestMessage(Logger);
                 using var cts = new CancellationTokenSource(retryDuration);

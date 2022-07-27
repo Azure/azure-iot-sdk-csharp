@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task TestSecurityMessageAsync(ITransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
             try
             {
@@ -136,8 +136,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
 
-            var options = new ClientOptions(transportSettings);
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            var options = new IotHubClientOptions(transportSettings);
+            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
             try
             {
                 await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         private async Task SendSingleSecurityMessageAsync(
-            DeviceClient deviceClient)
+            IotHubDeviceClient deviceClient)
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         private async Task SendSingleSecurityMessageModuleAsync(
-            ModuleClient moduleClient)
+            IotHubModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
             using Client.Message testMessage = ComposeD2CSecurityTestMessage();

@@ -24,9 +24,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             TimeSpan delayInSec,
             TimeSpan durationInSec,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
-            Func<List<DeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
+            Func<List<IotHubDeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             };
 
             var testDevices = new List<TestDevice>();
-            var deviceClients = new List<DeviceClient>();
+            var deviceClients = new List<IotHubDeviceClient>();
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
             var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
             var operations = new List<Task>();
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             for (int i = 0; i < devicesCount; i++)
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
-                DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings), authScope);
+                IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope);
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
                 deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);

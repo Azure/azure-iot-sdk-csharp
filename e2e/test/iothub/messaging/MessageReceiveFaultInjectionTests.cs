@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             string proxyAddress = null)
         {
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -380,7 +380,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 }
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 (Message message, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
@@ -420,14 +420,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 var timeout = TimeSpan.FromSeconds(20);
                 using var cts = new CancellationTokenSource(timeout);

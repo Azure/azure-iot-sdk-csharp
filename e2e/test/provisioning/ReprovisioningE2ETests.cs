@@ -556,7 +556,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ITransportSettings transportSettings,
             bool transportProtocolSupportsTwinOperations)
         {
-            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions(transportSettings));
+            using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
@@ -583,7 +583,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null)
             {
                 //hardcoding amqp since http does not support twin, but tests that call into this may use http
-                using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions(new AmqpTransportSettings()));
+                using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(new AmqpTransportSettings()));
                 //Confirm that the device twin reflects what the enrollment dictated
                 Client.Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
                 twin.Capabilities.IotEdge.Should().Be(capabilities.IotEdge);
@@ -916,7 +916,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ReprovisionPolicy reprovisionPolicy,
             bool transportProtocolSupportsTwinOperations)
         {
-            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions(transportSettings));
+            using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");

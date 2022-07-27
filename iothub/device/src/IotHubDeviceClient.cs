@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     /// <threadsafety static="true" instance="true" />
-    public class DeviceClient : IDisposable
+    public class IotHubDeviceClient : IDisposable
 #if NETSTANDARD2_1_OR_GREATER
         , IAsyncDisposable
 #endif
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
-        private DeviceClient(InternalClient internalClient)
+        private IotHubDeviceClient(InternalClient internalClient)
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
 
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, this, internalClient, nameof(DeviceClient));
+                Logging.Associate(this, this, internalClient, nameof(IotHubDeviceClient));
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
+        public static IotHubDeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
         }
@@ -60,15 +60,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
+        public static IotHubDeviceClient CreateFromConnectionString(string connectionString, IotHubClientOptions options = default)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
         }
 
-        private static DeviceClient Create(Func<InternalClient> internalClientCreator)
+        private static IotHubDeviceClient Create(Func<InternalClient> internalClientCreator)
         {
-            return new DeviceClient(internalClientCreator());
+            return new IotHubDeviceClient(internalClientCreator());
         }
 
         internal IDelegatingHandler InnerHandler

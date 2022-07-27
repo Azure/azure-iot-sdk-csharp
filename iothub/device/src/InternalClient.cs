@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly ProductInfo _productInfo = new();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings _transportSettings;
-        private readonly ClientOptions _clientOptions;
+        private readonly IotHubClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client
         public InternalClient(
             IotHubConnectionString iotHubConnectionString,
             IDeviceClientPipelineBuilder pipelineBuilder,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
@@ -959,7 +959,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(
@@ -1023,7 +1023,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(

@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings mqttTransportSettings,
             ProductInfo productInfo,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             IWillMessage willMessage = mqttTransportSettings.HasWill ? _settings.WillMessage : null;
 

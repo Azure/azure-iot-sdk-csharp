@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
-    public class ModuleClient : IDisposable
+    public class IotHubModuleClient : IDisposable
 #if NETSTANDARD2_1_OR_GREATER
         , IAsyncDisposable
 #endif
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Constructor for a module client to be created from an <see cref="InternalClient"/>.
         /// </summary>
         /// <param name="internalClient">The internal client to use for the commands.</param>
-        internal ModuleClient(InternalClient internalClient)
+        internal IotHubModuleClient(InternalClient internalClient)
             : this(internalClient, NullCertificateValidator.Instance)
         {
         }
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="internalClient">The internal client to use for the commands.</param>
         /// <param name="certValidator">The custom certificate validator to use for connection.</param>
-        internal ModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
+        internal IotHubModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
             _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client
             _isAnEdgeModule = internalClient.IotHubConnectionString.IsUsingGateway;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, this, internalClient, nameof(ModuleClient));
+                Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
-        public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
+        public static IotHubModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
         }
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
-        public static ModuleClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
+        public static IotHubModuleClient CreateFromConnectionString(string connectionString, IotHubClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
         }
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// 
         /// <returns>ModuleClient instance</returns>
-        public static Task<ModuleClient> CreateFromEnvironmentAsync(ClientOptions options = default)
+        public static Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
             if (options == default)
             {
@@ -108,9 +108,9 @@ namespace Microsoft.Azure.Devices.Client
             return new EdgeModuleClientFactory(new TrustBundleProvider(), options).CreateAsync();
         }
 
-        private static ModuleClient Create(Func<InternalClient> internalClientCreator)
+        private static IotHubModuleClient Create(Func<InternalClient> internalClientCreator)
         {
-            return new ModuleClient(internalClientCreator());
+            return new IotHubModuleClient(internalClientCreator());
         }
 
         internal InternalClient InternalClient { get; private set; }

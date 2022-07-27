@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The client was disconnected due to a transient exception, but the retry policy expired before a connection
         /// could be re-established. If you want to perform more operations on the device client, one should call
-        /// <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.
+        /// <see cref="IotHubDeviceClient.Dispose()"/> and then re-initialize the client.
         /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disconnected"/>.</para>
         /// </summary>
         Retry_Expired,
@@ -58,14 +58,14 @@ namespace Microsoft.Azure.Devices.Client
         /// you can resume operations on the client.</para>
         /// <para>When returned with a connection status of <see cref="ConnectionStatus.Disconnected"/> signifies that
         /// client is disconnected due to a non-retryable exception.
-        /// If you want to perform more operations on the device client, one should call <see cref="DeviceClient.Dispose()"/>
+        /// If you want to perform more operations on the device client, one should call <see cref="IotHubDeviceClient.Dispose()"/>
         /// and then re-initialize the client.</para>
         /// </summary>
         Communication_Error,
 
         /// <summary>
         /// The client has been closed gracefully.
-        /// If you want to perform more operations on the device client, one should call <see cref="DeviceClient.Dispose()"/>
+        /// If you want to perform more operations on the device client, one should call <see cref="IotHubDeviceClient.Dispose()"/>
         /// and then re-initialize the client.
         /// <para>This is returned with a connection status of <see cref="ConnectionStatus.Disabled"/> </para>
         /// </summary>

@@ -48,13 +48,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentNullException))]
         public void ModuleClient_CreateFromConnectionString_NullConnectionStringThrows()
         {
-            _ = ModuleClient.CreateFromConnectionString(null);
+            _ = IotHubModuleClient.CreateFromConnectionString(null);
         }
 
         [TestMethod]
         public void ModuleClient_CreateFromConnectionString_WithModuleId()
         {
-            using var moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithModuleId);
+            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(ConnectionStringWithModuleId);
             Assert.IsNotNull(moduleClient);
         }
 
@@ -62,13 +62,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentException))]
         public void ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
-            ModuleClient.CreateFromConnectionString(ConnectionStringWithoutModuleId);
+            IotHubModuleClient.CreateFromConnectionString(ConnectionStringWithoutModuleId);
         }
 
         [TestMethod]
         public void ModuleClient_CreateFromConnectionString_NoTransportSettings()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             Assert.IsNotNull(moduleClient);
         }
 
@@ -76,20 +76,20 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ModuleClient_CreateFromConnectionStringWithClientOptions_DoesNotThrow()
         {
             // setup
-            var clientOptions = new ClientOptions
+            var clientOptions = new IotHubClientOptions
             {
                 ModelId = "tempModuleId"
             };
 
             // act
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, clientOptions);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, clientOptions);
         }
 
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var options = new ClientOptions(new MqttTransportSettings());
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
+            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -104,8 +104,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var options = new ClientOptions(new MqttTransportSettings());
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
+            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -134,8 +134,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var options = new ClientOptions(new MqttTransportSettings());
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
+            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -149,8 +149,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var options = new ClientOptions(new MqttTransportSettings());
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, options);
+            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Amqp()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Amqp()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_OnReceiveEventMessageCalled_NullMessageRequest()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_OnReceiveEventMessageCalled_SpecifiedCallbackCalled()
         {
-            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString);
+            var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
