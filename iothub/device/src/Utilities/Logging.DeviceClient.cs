@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
         public static void CreateFromConnectionString(
             object thisOrContextObject,
             string iotHubConnectionStringWithNoKey,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             IotHubClientOptions options)
         {
             DebugValidateArg(thisOrContextObject);

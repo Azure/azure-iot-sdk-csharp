@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task X509_Enable_CertificateRevocationCheck_Httt_Tcp()
         {
-            TransportSettings transportSetting
+            IotHubClientTransportSettings transportSetting
                 = CreateHttpTransportSettingWithCertificateRevocationCheck();
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
@@ -90,28 +90,28 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
-            TransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol.Tcp);
+            IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol.Tcp);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_Enable_CertificateRevocationCheck__MqttWs()
         {
-            TransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol.WebSocket);
+            IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol.WebSocket);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpTcp()
         {
-            TransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol.Tcp);
+            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol.Tcp);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
-            TransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol.WebSocket);
+            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol.WebSocket);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             store?.Dispose();
         }
 
-        private async Task SendMessageTest(TransportSettings transportSetting)
+        private async Task SendMessageTest(IotHubClientTransportSettings transportSetting)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
@@ -199,25 +199,25 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private static TransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
+        private static IotHubClientTransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
         {
             TlsVersions.Instance.CertificateRevocationCheck = true;
             return new IotHubClientHttpSettings();
         }
 
-        private static TransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
+        private static IotHubClientTransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
         {
             TlsVersions.Instance.CertificateRevocationCheck = true;
             return new IotHubClientMqttSettings(transportProtocol);
         }
 
-        private static TransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
+        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
         {
             TlsVersions.Instance.CertificateRevocationCheck = true;
             return new IotHubClientAmqpSettings(transportProtocol);
         }
 
-        private async Task X509InvalidDeviceIdOpenAsyncTest(TransportSettings transportSettings)
+        private async Task X509InvalidDeviceIdOpenAsyncTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
         }
 
-        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(TransportSettings transportSettings)
+        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);

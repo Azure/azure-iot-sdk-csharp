@@ -1489,7 +1489,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
         }
 
-        private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(TransportSettings transportSettings)
+        private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)
         {
             // arrange
 

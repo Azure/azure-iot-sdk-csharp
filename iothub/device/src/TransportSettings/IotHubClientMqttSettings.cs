@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains MQTT transport-specific settings for the device and module clients.
     /// </summary>
-    public class IotHubClientMqttSettings : TransportSettings
+    public class IotHubClientMqttSettings : IotHubClientTransportSettings
     {
         private const bool DefaultCleanSession = false;
         private const bool DefaultHasWill = false;

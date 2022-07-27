@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// The expected behaviour is that, with ReprovisionPolicy set to not migrate data, the twin updates from the original hub are not present at the new hub
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType enrollmentType,
             bool setCustomProxy,
@@ -397,7 +397,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// The expected behaviour is that, with ReprovisionPolicy set to migrate data, the twin updates from the original hub are present at the new hub
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType enrollmentType,
             bool setCustomProxy,
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// The expected behavior is that, with ReprovisionPolicy set to never update hub, the a device is not reprovisioned, even when other settings would suggest it should
         /// </summary>
         private async Task ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType enrollmentType,
             bool setCustomProxy,
@@ -455,7 +455,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// did/did not migrate twin data as expected.
         /// </summary>
         public async Task ProvisioningDeviceClient_ReprovisioningFlow(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
@@ -553,7 +553,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             bool transportProtocolSupportsTwinOperations)
         {
             using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
@@ -912,7 +912,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task ConfirmDeviceWorksAfterReprovisioningAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             ReprovisionPolicy reprovisionPolicy,
             bool transportProtocolSupportsTwinOperations)
         {

@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class PipelineContext
     {
-        internal TransportSettings TransportSettings { get; set; }
+        internal IotHubClientTransportSettings TransportSettings { get; set; }
 
         internal ProductInfo ProductInfo { get; set; }
 

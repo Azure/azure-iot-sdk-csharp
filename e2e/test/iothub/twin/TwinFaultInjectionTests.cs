@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         private async Task Twin_DeviceReportedPropertiesRecovery(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delayInSec,
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delayInSec,

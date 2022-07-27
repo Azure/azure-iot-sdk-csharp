@@ -512,7 +512,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         private async Task SendMethodAndUnsubscribeAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             Func<IotHubDeviceClient,
                 string, MsTestLogger,
                 Task<Task>> subscribeAndUnsubscribeMethod,
@@ -531,7 +531,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         private async Task SendMethodAndRespondAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
@@ -556,7 +556,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         private async Task SendMethodAndRespondAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             Func<IotHubModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)

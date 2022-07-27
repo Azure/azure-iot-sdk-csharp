@@ -870,7 +870,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         #endregion InvalidGlobalAddress
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
@@ -892,7 +892,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
@@ -916,7 +916,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         private async Task ProvisioningDeviceClientValidRegistrationIdRegisterOkAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
@@ -1036,7 +1036,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// pointing to that Azure function will always enroll to the hub with the longest name
         /// </summary>
         private async Task ProvisioningDeviceClientCustomAllocationPolicyAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType enrollmentType,
             bool setCustomProxy,
@@ -1073,7 +1073,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         private async Task ProvisioningDeviceClientProvisioningFlowCustomAllocationAllocateToHubWithLongestHostNameAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             bool setCustomProxy,
@@ -1150,7 +1150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(TransportSettings transportSettings)
+        public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(IotHubClientTransportSettings transportSettings)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
             using AuthenticationProvider auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
@@ -1176,7 +1176,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             string groupId)
@@ -1228,7 +1228,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         }
 
         private async Task ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             AttestationMechanismType attestationType,
             EnrollmentType? enrollmentType,
             string groupId = "")
@@ -1282,7 +1282,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
         }
 
-        public static ProvisioningTransportHandler CreateTransportHandlerFromName(TransportSettings transportSettings)
+        public static ProvisioningTransportHandler CreateTransportHandlerFromName(IotHubClientTransportSettings transportSettings)
         {
             if (transportSettings is IotHubClientAmqpSettings)
             {
@@ -1313,7 +1313,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private async Task ConfirmRegisteredDeviceWorksAsync(
             DeviceRegistrationResult result,
             Client.IAuthenticationMethod auth,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             bool sendReportedPropertiesUpdate)
         {
             using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
@@ -1621,7 +1621,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId)));
         }
 
-        public static bool ImplementsWebProxy(TransportSettings transportSettings)
+        public static bool ImplementsWebProxy(IotHubClientTransportSettings transportSettings)
         {
             return transportSettings is IotHubClientMqttSettings or IotHubClientAmqpSettings;
         }

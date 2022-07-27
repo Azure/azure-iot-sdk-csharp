@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/>,
         /// <see cref="IotHubClientAmqpSettings"/>, or <see cref="IotHubClientHttpSettings"/>).</param>
         /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
-        public IotHubClientOptions(TransportSettings transportSettings)
+        public IotHubClientOptions(IotHubClientTransportSettings transportSettings)
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
         }
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/>, <see cref="IotHubClientAmqpSettings"/>, or <see cref="IotHubClientHttpSettings"/>).
         /// </summary>
-        public TransportSettings TransportSettings { get; }
+        public IotHubClientTransportSettings TransportSettings { get; }
 
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device

@@ -14,15 +14,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
     internal class CustomCertificateValidator : ICertificateValidator
     {
         private readonly IEnumerable<X509Certificate2> _certs;
-        private readonly TransportSettings _transportSettings;
+        private readonly IotHubClientTransportSettings _transportSettings;
 
-        private CustomCertificateValidator(IList<X509Certificate2> certs, TransportSettings transportSettings)
+        private CustomCertificateValidator(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
             _certs = certs;
             _transportSettings = transportSettings;
         }
 
-        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, TransportSettings transportSettings)
+        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
             var instance = new CustomCertificateValidator(certs, transportSettings);
             instance.SetupCertificateValidation();

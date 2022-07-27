@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        public static async Task ActivateFaultInjectionAsync(TransportSettings transportSettings, string faultType, string reason, TimeSpan delay, TimeSpan duration, IotHubDeviceClient deviceClient, MsTestLogger logger)
+        public static async Task ActivateFaultInjectionAsync(IotHubClientTransportSettings transportSettings, string faultType, string reason, TimeSpan delay, TimeSpan duration, IotHubDeviceClient deviceClient, MsTestLogger logger)
         {
             logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={delay}, duration={DefaultFaultDuration}");
 
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public static async Task TestErrorInjectionAsync(
             string devicePrefix,
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string proxyAddress,
             string faultType,
             string reason,

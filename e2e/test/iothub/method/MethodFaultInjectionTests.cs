@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
         }
 
-        private async Task SendMethodAndRespondRecoveryAsync(TransportSettings transportSettings, string faultType, string reason, TimeSpan delayInSec, string proxyAddress = null)
+        private async Task SendMethodAndRespondRecoveryAsync(IotHubClientTransportSettings transportSettings, string faultType, string reason, TimeSpan delayInSec, string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);

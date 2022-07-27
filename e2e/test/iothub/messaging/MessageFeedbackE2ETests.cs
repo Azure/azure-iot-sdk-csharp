@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await CompleteMessageMixOrder(TestDeviceType.Sasl, new IotHubClientAmqpSettings(), Logger).ConfigureAwait(false);
         }
 
-        private static async Task CompleteMessageMixOrder(TestDeviceType type, TransportSettings transportSettings, MsTestLogger logger)
+        private static async Task CompleteMessageMixOrder(TestDeviceType type, IotHubClientTransportSettings transportSettings, MsTestLogger logger)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));

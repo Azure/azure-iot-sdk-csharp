@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains HTTP transport-specific settings for the device and module clients.
     /// </summary>
-    public sealed class IotHubClientHttpSettings : TransportSettings
+    public sealed class IotHubClientHttpSettings : IotHubClientTransportSettings
     {
         /// <summary>
         /// Creates an instance of this class.

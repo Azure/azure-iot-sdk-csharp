@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
     {
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
-            TransportSettings TransportSettings,
+            IotHubClientTransportSettings TransportSettings,
             string proxyAddress,
             int poolSize,
             int devicesCount,

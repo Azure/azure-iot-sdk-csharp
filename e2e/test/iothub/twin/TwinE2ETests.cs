@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(0, connectionStatusChangeCount, "AMQP should not be disconnected.");
         }
 
-        private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(TransportSettings transportSettings)
+        private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
         }
 
-        private async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(TransportSettings transportSettings)
+        private async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
@@ -458,7 +458,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(TransportSettings transportSettings, object propValue)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(IotHubClientTransportSettings transportSettings, object propValue)
         {
             string propName = Guid.NewGuid().ToString();
 
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             Func<IotHubDeviceClient, string, object, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync, object propValue)
         {
             string propName = Guid.NewGuid().ToString();
@@ -526,7 +526,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(TransportSettings transportSettings)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(IotHubClientTransportSettings transportSettings)
         {
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
@@ -547,7 +547,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(TransportSettings transportSettings)
+        private async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(IotHubClientTransportSettings transportSettings)
         {
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Logger.Trace("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
         }
 
-        private async Task Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(TransportSettings transportSettings)
+        private async Task Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(IotHubClientTransportSettings transportSettings)
         {
             string propName1 = Guid.NewGuid().ToString();
             string propName2 = Guid.NewGuid().ToString();
@@ -621,7 +621,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(value2, propEmptyValue);
         }
 
-        private async Task Twin_ClientHandlesRejectionInvalidPropertyNameAsync(TransportSettings transportSettings)
+        private async Task Twin_ClientHandlesRejectionInvalidPropertyNameAsync(IotHubClientTransportSettings transportSettings)
         {
             string propName1 = "$" + Guid.NewGuid().ToString();
             string propName2 = Guid.NewGuid().ToString();

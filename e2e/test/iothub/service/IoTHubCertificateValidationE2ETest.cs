@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        private static async Task TestDeviceClientInvalidServiceCertificate(TransportSettings transportSettings)
+        private static async Task TestDeviceClientInvalidServiceCertificate(IotHubClientTransportSettings transportSettings)
         {
             using var deviceClient =
                 IotHubDeviceClient.CreateFromConnectionString(

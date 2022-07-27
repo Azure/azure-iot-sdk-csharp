@@ -1423,7 +1423,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             string faultType,
@@ -1466,7 +1466,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             string faultType,

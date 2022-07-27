@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains AMQP transport-specific settings for the device and module clients.
     /// </summary>
-    public sealed class IotHubClientAmqpSettings : TransportSettings
+    public sealed class IotHubClientAmqpSettings : IotHubClientTransportSettings
     {
         private TimeSpan _operationTimeout = DefaultOperationTimeout;
 

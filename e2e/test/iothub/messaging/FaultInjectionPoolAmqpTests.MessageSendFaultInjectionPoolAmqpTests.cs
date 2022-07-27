@@ -871,7 +871,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMessageRecoveryPoolOverAmqpAsync(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             string faultType,

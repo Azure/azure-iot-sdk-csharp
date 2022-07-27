@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessageRecovery(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delayInSec,
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task ReceiveMessageWithCallbackRecoveryAsync(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delayInSec,

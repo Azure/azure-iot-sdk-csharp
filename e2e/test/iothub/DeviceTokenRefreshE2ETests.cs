@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(TransportSettings transportSettings, int ttl = 20)
+        private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(IotHubClientTransportSettings transportSettings, int ttl = 20)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
             private readonly string _key;
-            private readonly TransportSettings _transportSettings;
+            private readonly IotHubClientTransportSettings _transportSettings;
             private readonly Stopwatch _stopwatch = new();
             private readonly SemaphoreSlim _tokenRefreshSemaphore = new(0);
             private int _counter;
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string key,
                 int suggestedTimeToLive,
                 int timeBufferPercentage,
-                TransportSettings transportSettings,
+                IotHubClientTransportSettings transportSettings,
                 MsTestLogger logger)
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {

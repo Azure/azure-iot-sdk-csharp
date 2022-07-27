@@ -724,7 +724,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMethodAndRespondRecoveryPoolOverAmqpAsync(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,

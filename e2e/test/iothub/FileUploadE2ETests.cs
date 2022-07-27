@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             x509Auth?.Dispose();
         }
 
-        private async Task GetSasUriAsync(TransportSettings transportSettings, string blobName, bool useX509auth = false)
+        private async Task GetSasUriAsync(IotHubClientTransportSettings transportSettings, string blobName, bool useX509auth = false)
         {
             using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(

@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);

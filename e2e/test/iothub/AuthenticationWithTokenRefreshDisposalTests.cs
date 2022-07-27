@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await AuthenticationMethodDisposesTokenRefresher(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        private async Task AuthenticationMethodDisposesTokenRefresher(TransportSettings transportSettings)
+        private async Task AuthenticationMethodDisposesTokenRefresher(IotHubClientTransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient2.Dispose();
         }
 
-        private async Task ReuseAuthenticationMethod_SingleDevice(TransportSettings transportSettings)
+        private async Task ReuseAuthenticationMethod_SingleDevice(IotHubClientTransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             authenticationMethod.Dispose();
         }
 
-        private async Task ReuseAuthenticationMethod_MuxedDevices(TransportSettings transportSettings, int devicesCount)
+        private async Task ReuseAuthenticationMethod_MuxedDevices(IotHubClientTransportSettings transportSettings, int devicesCount)
         {
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<IotHubDeviceClient> deviceClients = new List<IotHubDeviceClient>();

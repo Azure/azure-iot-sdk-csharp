@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             };
         }
 
-        private async Task TestSecurityMessageAsync(TransportSettings transportSettings)
+        private async Task TestSecurityMessageAsync(IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task TestSecurityMessageModuleAsync(TransportSettings transportSettings)
+        private async Task TestSecurityMessageModuleAsync(IotHubClientTransportSettings transportSettings)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
 

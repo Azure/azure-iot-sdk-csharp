@@ -422,7 +422,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         internal async Task SendMessageRecoveryAsync(
             TestDeviceType type,
-            TransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delay,

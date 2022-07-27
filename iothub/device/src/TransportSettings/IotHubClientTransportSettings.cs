@@ -9,9 +9,9 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Interface used to define various transport-specific settings for DeviceClient and ModuleClient.
+    /// Base class used to define various transport-specific settings for IoT hub device and module clients.
     /// </summary>
-    public abstract class TransportSettings
+    public abstract class IotHubClientTransportSettings
     {
         /// <summary>
         /// The configured transport protocol.
