@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public bool IsPooling()
         {
-            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling ?? false);
+            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
         }
 
         public override bool Equals(object obj)
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 && Equals(IotHubConnectionString.DeviceId, identity.IotHubConnectionString.DeviceId)
                 && Equals(IotHubConnectionString.HostName, identity.IotHubConnectionString.HostName)
                 && Equals(IotHubConnectionString.ModuleId, identity.IotHubConnectionString.ModuleId)
-                && Equals(AmqpTransportSettings.GetTransportType(), identity.AmqpTransportSettings.GetTransportType())
+                && Equals(AmqpTransportSettings.Protocol, identity.AmqpTransportSettings.Protocol)
                 && Equals(AuthenticationModel.GetHashCode(), identity.AuthenticationModel.GetHashCode());
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             int hashCode = UpdateHashCode(620602339, IotHubConnectionString.DeviceId);
             hashCode = UpdateHashCode(hashCode, IotHubConnectionString.HostName);
             hashCode = UpdateHashCode(hashCode, IotHubConnectionString.ModuleId);
-            hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.GetTransportType());
+            hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.Protocol);
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;
         }

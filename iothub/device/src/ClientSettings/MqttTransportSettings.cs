@@ -2,24 +2,22 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using DotNetty.Codecs.Mqtt.Packets;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Settings for MQTT transport
+    /// Contains MQTT transport-specific settings for the device and module clients.
     /// </summary>
     public class MqttTransportSettings : ITransportSettings
     {
-        private readonly TransportType _transportType;
-
         private const bool DefaultCleanSession = false;
-        private const bool DefaultDeviceReceiveAckCanTimeout = false;
         private const bool DefaultHasWill = false;
-        private const bool DefaultMaxOutboundRetransmissionEnforced = false;
         private const int DefaultKeepAliveInSeconds = 300;
         private const int DefaultMaxPendingInboundMessages = 50;
         private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
@@ -28,30 +26,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // The CONNACK timeout has been chosen to be 60 seconds to be in alignment with the service implemented timeout for processing connection requests.
         private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(60);
 
-        private static readonly TimeSpan s_defaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
         private static readonly TimeSpan s_defaultReceiveTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// Creates an instance based on the specified type options
+        /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="transportType">The transport type, of Mqtt_WebSocket_Only, or Mqtt_Tcp_Only</param>
-        public MqttTransportSettings(TransportType transportType)
+        /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
+        public MqttTransportSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
         {
-            _transportType = transportType;
-
-            switch (transportType)
+            Protocol = transportProtocol;
+            if (Protocol == TransportProtocol.WebSocket)
             {
-                case TransportType.Mqtt_WebSocket_Only:
-                    Proxy = DefaultWebProxySettings.Instance;
-                    _transportType = transportType;
-                    break;
-
-                case TransportType.Mqtt_Tcp_Only:
-                    _transportType = transportType;
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(transportType), transportType, "Unsupported Transport Type {0}".FormatInvariant(transportType));
+                Proxy = DefaultWebProxySettings.Instance;
             }
 
             CleanSession = DefaultCleanSession;
@@ -64,6 +50,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             WillMessage = null;
             DefaultReceiveTimeout = s_defaultReceiveTimeout;
         }
+
+        /// <inheritdoc/>
+        public TransportProtocol Protocol { get; }
+
+        /// <inheritdoc/>
+        public X509Certificate2 ClientCertificate { get; set; }
 
         /// <summary>
         /// Indicates if certificate revocation check is enabled. The default value is <c>false</c>.
@@ -174,26 +166,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
-        /// <summary>
-        /// The client certificate to be used for authenticating the TLS connection.
-        /// </summary>
-        public X509Certificate ClientCertificate { get; set; }
-
         /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }
-
-        /// <summary>
-        /// The connection transport type.
-        /// </summary>
-        /// <returns></returns>
-        public TransportType GetTransportType()
-        {
-            return _transportType;
-        }
 
         /// <summary>
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         internal string AuthenticationChain { get; set; }
+
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override string ToString()
+        {
+            return $"{GetType().Name}/{Protocol}";
+        }
     }
 }

@@ -12,8 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpConnectionPool : IAmqpUnitManager
     {
         private AmqpConnectionHolder[] _amqpSasIndividualPool;
-        private readonly IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
-        private readonly object _lock = new object();
+        private readonly Dictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new();
+        private readonly object _lock = new();
 
         protected virtual IDictionary<string, AmqpConnectionHolder[]> GetAmqpSasGroupedPoolDictionary()
         {
@@ -99,27 +99,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private AmqpConnectionHolder[] ResolveConnectionGroup(IDeviceIdentity deviceIdentity)
         {
+            if (deviceIdentity.AmqpTransportSettings.ConnectionPoolSettings == null)
+            {
+                deviceIdentity.AmqpTransportSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings();
+            }
+
             if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
                 if (_amqpSasIndividualPool == null)
                 {
-                    _amqpSasIndividualPool = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
+                    _amqpSasIndividualPool = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.ConnectionPoolSettings.MaxPoolSize];
                 }
 
                 return _amqpSasIndividualPool;
             }
-            else
-            {
-                string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
-                GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
-                if (amqpConnectionHolders == null)
-                {
-                    amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
-                    GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
-                }
 
-                return amqpConnectionHolders;
+            string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
+            GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
+            if (amqpConnectionHolders == null)
+            {
+                amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.ConnectionPoolSettings.MaxPoolSize];
+                GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
             }
+
+            return amqpConnectionHolders;
         }
 
         private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IDeviceIdentity deviceIdentity)

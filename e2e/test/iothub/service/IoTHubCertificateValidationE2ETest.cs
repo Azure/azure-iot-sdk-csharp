@@ -80,25 +80,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
-            Client.TransportType transport = Client.TransportType.Amqp_Tcp_Only;
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings())).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
-            Client.TransportType transport = Client.TransportType.Mqtt_Tcp_Only;
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings())).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateHttp_Fails()
         {
-            Client.TransportType transport = Client.TransportType.Http1;
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new Client.HttpTransportSettings())).ConfigureAwait(false);
 
 #if NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
@@ -110,9 +107,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
-            Client.TransportType transport = Client.TransportType.Amqp_WebSocket_Only;
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
@@ -120,19 +116,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
         {
-            Client.TransportType transport = Client.TransportType.Mqtt_WebSocket_Only;
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        private static async Task TestDeviceClientInvalidServiceCertificate(Client.TransportType transport)
+        private static async Task TestDeviceClientInvalidServiceCertificate(ITransportSettings transportSettings)
         {
             using var deviceClient =
                 DeviceClient.CreateFromConnectionString(
                     TestConfiguration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
-                    new ClientOptions { TransportType = transport });
+                    new ClientOptions (transportSettings));
             using var testMessage = new Client.Message();
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);

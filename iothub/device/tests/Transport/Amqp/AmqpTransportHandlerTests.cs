@@ -68,11 +68,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public async Task AmqpTransport_Select_CorrectReceiverLink_ForEdgeModule()
         {
             // Test that we do not call EnableReceiveMessageAsync when we call EnableEventReceiveAsync indicating this is an Edge Module 
-            Mock<MoqableAmqpTransportHandler> mockedMockAmqpTransportHandler = new Mock<MoqableAmqpTransportHandler>();
+            var mockedMockAmqpTransportHandler = new Mock<MockableAmqpTransportHandler>();
 
             mockedMockAmqpTransportHandler.Setup(p => p.EnableEventReceiveAsync(true, default)).CallBase();
             mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
-            
+
             await mockedMockAmqpTransportHandler.Object.EnableEventReceiveAsync(false, default);
 
             bool enableReceiveMessageAsyncWasCalled = mockedMockAmqpTransportHandler.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
@@ -83,13 +83,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransport_Select_CorrectReceiverLink_ForModuleTwin()
         {
-            Mock<MoqableAmqpTransportHandler> mockedMockAmqpTransportHandler = new Mock<MoqableAmqpTransportHandler>();
+            var mockedMockAmqpTransportHandler = new Mock<MockableAmqpTransportHandler>();
 
             mockedMockAmqpTransportHandler.Setup(p => p.EnableEventReceiveAsync(false, default)).CallBase();
             mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
 
             await mockedMockAmqpTransportHandler.Object.EnableEventReceiveAsync(false, default);
-            
+
             bool enableReceiveMessageAsyncWasCalled = mockedMockAmqpTransportHandler.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
 
             enableReceiveMessageAsyncWasCalled.Should().BeTrue();
@@ -98,23 +98,37 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public void AmqpTransportHandler_RejectAmqpSettingsChange()
         {
-            var amqpTransportHandler1 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
-            {
-                Pooling = true,
-                MaxPoolSize = 10,
-            }));
+            var amqpTransportHandler1 = new AmqpTransportHandler(
+                new PipelineContext(),
+                new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)),
+                new AmqpTransportSettings
+                {
+                    PrefetchCount = 60,
+                    ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                    {
+                        Pooling = true,
+                        MaxPoolSize = 10,
+                    },
+                });
 
             try
             {
-                var amqpTransportHandler2 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
-                {
-                    Pooling = true,
-                    MaxPoolSize = 7, // different pool size
-                }));
+                var amqpTransportHandler2 = new AmqpTransportHandler(
+                    new PipelineContext(),
+                    new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)),
+                    new AmqpTransportSettings
+                    {
+                        PrefetchCount = 60,
+                        ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                        {
+                            Pooling = true,
+                            MaxPoolSize = 7, // different pool size
+                        },
+                    });
             }
-            catch (ArgumentException ae)
+            catch (ArgumentException ex)
             {
-                Assert.IsTrue(ae.Message.Contains("AmqpTransportSettings cannot be modified from the initial settings."), "Did not return the correct error message");
+                ex.Message.Should().Contain("AmqpTransportSettings cannot be modified from the initial settings.");
             }
         }
 
@@ -136,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new AmqpTransportHandler(
                 new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(TestConnectionString),
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
+                new AmqpTransportSettings());
         }
     }
 }

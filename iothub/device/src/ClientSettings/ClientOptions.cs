@@ -11,9 +11,36 @@ namespace Microsoft.Azure.Devices.Client
     public class ClientOptions
     {
         /// <summary>
-        /// The transport type to use (i.e., AMQP, MQTT, HTTP), including whether to use TCP or web sockets where applicable.
+        /// Creates an instances of this class with the default transport settings.
         /// </summary>
-        public TransportType TransportType { get; set; } = TransportType.Amqp_Tcp_Only;
+        public ClientOptions()
+        {
+            TransportSettings = new AmqpTransportSettings();
+        }
+
+        /// <summary>
+        /// Creates an instance of this class with the specified transport settings.
+        /// </summary>
+        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="MqttTransportSettings"/>,
+        /// <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
+        public ClientOptions(ITransportSettings transportSettings)
+        {
+            TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+        }
+
+        /// <summary>
+        /// The transport settings to use (i.e., <see cref="MqttTransportSettings"/>, <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).
+        /// </summary>
+        public ITransportSettings TransportSettings { get; }
+
+        /// <summary>
+        /// The transport settings to use for all file upload operations, regardless of what protocol the device
+        /// client is configured with. All file upload operations take place over https.
+        /// If FileUploadTransportSettings is not provided, then file upload operations will use the same client certificates
+        /// configured in the transport settings set for client connect.
+        /// </summary>
+        public HttpTransportSettings FileUploadTransportSettings { get; set; } = new HttpTransportSettings();
 
         /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.
@@ -26,14 +53,6 @@ namespace Microsoft.Azure.Devices.Client
         /// This feature is currently supported only over MQTT and AMQP transports.
         /// <remarks></remarks>
         public string ModelId { get; set; }
-
-        /// <summary>
-        /// The transport settings to use for all file upload operations, regardless of what protocol the device
-        /// client is configured with. All file upload operations take place over https.
-        /// If FileUploadTransportSettings is not provided, then file upload operations will use the same client certificates
-        /// configured in the transport settings set for client connect.
-        /// </summary>
-        public Http1TransportSettings FileUploadTransportSettings { get; set; } = new Http1TransportSettings();
 
         /// <summary>
         /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the device or module client instance.

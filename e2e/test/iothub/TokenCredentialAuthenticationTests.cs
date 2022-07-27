@@ -84,9 +84,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string thermostatModelId = "dtmi:com:example:TemperatureController;1";
 
             // Create a device client instance initializing it with the "Thermostat" model.
-            var options = new ClientOptions
+            var options = new ClientOptions(new MqttTransportSettings())
             {
-                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = thermostatModelId,
             };
             using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);

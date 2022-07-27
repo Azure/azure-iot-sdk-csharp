@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
     {
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
-            Client.TransportType transport,
+            ITransportSettings TransportSettings,
             string proxyAddress,
             int poolSize,
             int devicesCount,
@@ -30,17 +30,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings = new ITransportSettings[]
+            var transportSettings  = new AmqpTransportSettings(TransportSettings.Protocol)
             {
-                new AmqpTransportSettings(transport)
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings()
                 {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
-                    {
-                        MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true,
-                    },
-                    Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                }
+                    MaxPoolSize = unchecked((uint)poolSize),
+                    Pooling = true,
+                },
+                Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
             };
 
             var testDevices = new List<TestDevice>();
@@ -56,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             for (int i = 0; i < devicesCount; i++)
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
-                DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
+                DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings), authScope);
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
                 deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);

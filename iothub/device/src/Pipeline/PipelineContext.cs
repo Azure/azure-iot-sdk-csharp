@@ -9,8 +9,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal ITransportSettings TransportSettings { get; set; }
 
-        internal ITransportSettings[] TransportSettingsArray { get; set; }
-
         internal ProductInfo ProductInfo { get; set; }
 
         internal IotHubConnectionString IotHubConnectionString { get; set; }

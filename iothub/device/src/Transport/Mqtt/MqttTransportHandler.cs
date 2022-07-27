@@ -181,19 +181,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             else
             {
                 ClientOptions options = context.ClientOptions;
-                switch (settings.GetTransportType())
+                _channelFactory = settings.Protocol switch
                 {
-                    case TransportType.Mqtt_Tcp_Only:
-                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
-                        break;
-
-                    case TransportType.Mqtt_WebSocket_Only:
-                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
-                        break;
-
-                    default:
-                        throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(settings.GetTransportType()));
-                }
+                    TransportProtocol.Tcp => CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options),
+                    TransportProtocol.WebSocket => CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options),
+                    _ => throw new InvalidOperationException($"Unsupported transport setting: {settings.Protocol}"),
+                };
             }
 
             _closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));

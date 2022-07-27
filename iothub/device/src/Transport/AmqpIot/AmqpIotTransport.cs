@@ -72,16 +72,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             TransportBase transport;
 
-            switch (_amqpTransportSettings.GetTransportType())
+            switch (_amqpTransportSettings.Protocol)
             {
-                case TransportType.Amqp_WebSocket_Only:
-                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    break;
-
-                case TransportType.Amqp_Tcp_Only:
+                case TransportProtocol.Tcp:
                     var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
                     transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                    break;
+
+                case TransportProtocol.WebSocket:
+                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
+                        .ConfigureAwait(false);
                     break;
 
                 default:
