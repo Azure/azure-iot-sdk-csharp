@@ -14,15 +14,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
     internal class CustomCertificateValidator : ICertificateValidator
     {
         private readonly IEnumerable<X509Certificate2> _certs;
-        private readonly ITransportSettings _transportSettings;
+        private readonly TransportSettings _transportSettings;
 
-        private CustomCertificateValidator(IList<X509Certificate2> certs, ITransportSettings transportSettings)
+        private CustomCertificateValidator(IList<X509Certificate2> certs, TransportSettings transportSettings)
         {
             _certs = certs;
             _transportSettings = transportSettings;
         }
 
-        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, ITransportSettings transportSettings)
+        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, TransportSettings transportSettings)
         {
             var instance = new CustomCertificateValidator(certs, transportSettings);
             instance.SetupCertificateValidation();
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             Debug.WriteLine("CustomCertificateValidator.SetupCertificateValidation()");
 
-            if (_transportSettings is AmqpTransportSettings amqpTransportSettings)
+            if (_transportSettings is IotHubClientAmqpSettings amqpTransportSettings)
             {
                 if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
                 {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                         (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
                 }
             }
-            else if (_transportSettings is MqttTransportSettings mqttTransportSettings)
+            else if (_transportSettings is IotHubClientMqttSettings mqttTransportSettings)
             {
                 if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
                 {

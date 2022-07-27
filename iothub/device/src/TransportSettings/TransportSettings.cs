@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
@@ -10,12 +11,12 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Interface used to define various transport-specific settings for DeviceClient and ModuleClient.
     /// </summary>
-    public interface ITransportSettings
+    public abstract class TransportSettings
     {
         /// <summary>
         /// The configured transport protocol.
         /// </summary>
-        TransportProtocol Protocol { get; }
+        public TransportProtocol Protocol { get; protected set; }
 
         /// <summary>
         /// The client certificate to use for authenticating.
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The time to wait for a receive operation.
         /// </summary>
-        TimeSpan DefaultReceiveTimeout { get; }
+        public TimeSpan DefaultReceiveTimeout { get; protected set; }
 
         /// <summary>
         /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the
@@ -53,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client
         ///         {
         ///             Proxy = new WebProxy(proxyHost, proxyPort)
         ///         };
-        ///         return DeviceClient.CreateFromConnectionString("a connection string", new ITransportSettings[] { transportSettings });
+        ///         return DeviceClient.CreateFromConnectionString("a connection string", new TransportSettings[] { transportSettings });
         ///     }
         ///     catch (Exception)
         ///     {
@@ -63,6 +64,13 @@ namespace Microsoft.Azure.Devices.Client
         /// }
         /// </c>
         /// </example>
-        IWebProxy Proxy { get; set; }
+        public IWebProxy Proxy { get; set; }
+
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override string ToString()
+        {
+            return $"{GetType().Name}/{Protocol}";
+        }
     }
 }

@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new AmqpTransportSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
             deviceClient.SetRetryPolicy(new NoRetry());
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjection.FaultType_Tcp}...");
             await FaultInjection
                 .ActivateFaultInjectionAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: 2 device client instances with the same deviceId={testDevice.Id}.");
 
-            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options);
             using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options);
 

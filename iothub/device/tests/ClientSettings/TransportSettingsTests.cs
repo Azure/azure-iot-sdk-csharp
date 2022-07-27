@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             const uint expectedPrefetchCount = 50;
 
             // act
-            var transportSetting = new AmqpTransportSettings();
+            var transportSetting = new IotHubClientAmqpSettings();
 
             // assert
             transportSetting.Protocol.Should().Be(expectedProtocol);
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void AmqpTransportSettings_RespectsCtorParameter(TransportProtocol protocol)
         {
             // act
-            var transportSetting = new AmqpTransportSettings(protocol);
+            var transportSetting = new IotHubClientAmqpSettings(protocol);
 
             // assert
             transportSetting.Protocol.Should().Be(protocol);
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void MqttTransportSettings_DefaultPropertyValues()
         {
             // act
-            var transportSetting = new MqttTransportSettings();
+            var transportSetting = new IotHubClientMqttSettings();
 
             // assert
             transportSetting.Protocol.Should().Be(TransportProtocol.Tcp);
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void MqttTransportSettings_RespectsCtorParameter(TransportProtocol protocol)
         {
             // act
-            var transportSetting = new MqttTransportSettings(protocol);
+            var transportSetting = new IotHubClientMqttSettings(protocol);
 
             // assert
             transportSetting.Protocol.Should().Be(protocol);
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void AmqpTransportSettings_UnderOperationTimeoutMin()
         {
-            _ = new AmqpTransportSettings
+            _ = new IotHubClientAmqpSettings
             {
                 OperationTimeout = TimeSpan.Zero,
             };
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var tenMinutes = TimeSpan.FromMinutes(10);
 
             // act
-            var transportSetting = new AmqpTransportSettings
+            var transportSetting = new IotHubClientAmqpSettings
             {
                 OperationTimeout = tenMinutes,
             };
@@ -94,12 +94,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void AmqpTransportSettings_SetsDefaultTimeout()
         {
             // act
-            var transportSetting = new AmqpTransportSettings();
+            var transportSetting = new IotHubClientAmqpSettings();
 
             // assert
-            transportSetting.OperationTimeout.Should().Be(AmqpTransportSettings.DefaultOperationTimeout, "Default OperationTimeout not set correctly");
-            transportSetting.IdleTimeout.Should().Be(AmqpTransportSettings.DefaultIdleTimeout, "Default IdleTimeout not set correctly");
-            transportSetting.DefaultReceiveTimeout.Should().Be(AmqpTransportSettings.DefaultOperationTimeout, "Default DefaultReceiveTimeout not set correctly");
+            transportSetting.OperationTimeout.Should().Be(IotHubClientAmqpSettings.DefaultOperationTimeout, "Default OperationTimeout not set correctly");
+            transportSetting.IdleTimeout.Should().Be(IotHubClientAmqpSettings.DefaultIdleTimeout, "Default IdleTimeout not set correctly");
+            transportSetting.DefaultReceiveTimeout.Should().Be(IotHubClientAmqpSettings.DefaultOperationTimeout, "Default DefaultReceiveTimeout not set correctly");
         }
 
         [TestMethod]
@@ -108,11 +108,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // We want to test that the timeouts that we set on AmqpTransportSettings override the default timeouts.
             // In order to test that, we need to ensure the test timeout values are different from the default timeout values.
             // Adding a TimeSpan to the default timeout value is an easy way to achieve that.
-            var expectedOperationTimeout = AmqpTransportSettings.DefaultOperationTimeout.Add(TimeSpan.FromMinutes(5));
-            var expectedIdleTimeout = AmqpTransportSettings.DefaultIdleTimeout.Add(TimeSpan.FromMinutes(5));
+            var expectedOperationTimeout = IotHubClientAmqpSettings.DefaultOperationTimeout.Add(TimeSpan.FromMinutes(5));
+            var expectedIdleTimeout = IotHubClientAmqpSettings.DefaultIdleTimeout.Add(TimeSpan.FromMinutes(5));
 
             // act
-            var transportSetting = new AmqpTransportSettings
+            var transportSetting = new IotHubClientAmqpSettings
             {
                 OperationTimeout = expectedOperationTimeout,
                 IdleTimeout = expectedIdleTimeout,
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             const string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
-            var options = new IotHubClientOptions(new AmqpTransportSettings { PrefetchCount = 100 });
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
             _ = IotHubDeviceClient.Create(hostName, authMethod, options);

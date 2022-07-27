@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (!string.IsNullOrWhiteSpace(options.ModelId)
-                && options.TransportSettings is HttpTransportSettings)
+                && options.TransportSettings is IotHubClientHttpSettings)
             {
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
@@ -149,8 +149,8 @@ namespace Microsoft.Azure.Devices.Client
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
                 && certificate.ChainCertificates != null
-                && (options.TransportSettings is not AmqpTransportSettings
-                && options.TransportSettings is not MqttTransportSettings
+                && (options.TransportSettings is not IotHubClientAmqpSettings
+                && options.TransportSettings is not IotHubClientMqttSettings
                 || options.TransportSettings.Protocol != TransportProtocol.Tcp))
             {
                 throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");

@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal HttpTransportHandler(
             PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
-            HttpTransportSettings transportSettings,
+            IotHubClientHttpSettings transportSettings,
             HttpClientHandler httpClientHandler = null,
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)

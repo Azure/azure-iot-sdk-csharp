@@ -33,105 +33,105 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Amqp()
         {
-            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Mqtt()
         {
-            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new MqttTransportSettings()).ConfigureAwait(false);
+            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Http()
         {
-            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new Client.HttpTransportSettings()).ConfigureAwait(false);
+            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new Client.IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveMessageCancelsAfterSpecifiedDelay_Amqp()
         {
-            await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new AmqpTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveMessageCancelsAfterSpecifiedDelay_Mqtt()
         {
-            await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new MqttTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallback_Amqp()
         {
-            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallback_Mqtt()
         {
-            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, new MqttTransportSettings()).ConfigureAwait(false);
+            await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
-            await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Mqtt()
         {
-            await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new MqttTransportSettings()).ConfigureAwait(false);
+            await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallbackUpdateHandler_Mqtt()
         {
-            await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, new MqttTransportSettings()).ConfigureAwait(false);
+            await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceiveMessageUsingCallbackUpdateHandler_Amqp()
         {
-            await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceivePendingMessageUsingCallback_Mqtt()
         {
-            await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, new MqttTransportSettings()).ConfigureAwait(false);
+            await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceReceivePendingMessageUsingCallback_Amqp()
         {
-            await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
         {
-            var settings = new MqttTransportSettings() { CleanSession = true };
+            var settings = new IotHubClientMqttSettings() { CleanSession = true };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
         {
-            var settings = new AmqpTransportSettings();
+            var settings = new IotHubClientAmqpSettings();
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
         {
-            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new AmqpTransportSettings()).ConfigureAwait(false);
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Mqtt()
         {
-            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new MqttTransportSettings()).ConfigureAwait(false);
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
-        private async Task IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(ITransportSettings transportSettings)
+        private async Task IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(TransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task ReceiveMessageWithTimeoutAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task ReceiveMessageWithTimeoutAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // Note: We need this "fake" ReceiveAsync() call even though we (SDK default) CONNECT with a CleanSession flag set to 0.
             // This is because this test device is newly created, and it has never subscribed to IoT hub c2d topic.
             // Hence, IoT hub doesn't know about its CleanSession preference yet.
-            if (transportSettings is MqttTransportSettings)
+            if (transportSettings is IotHubClientMqttSettings)
             {
                 using var cts = new CancellationTokenSource(s_oneSecond);
                 try
@@ -360,7 +360,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task ReceiveSingleMessageUsingCallbackAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task ReceiveSingleMessageUsingCallbackAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -387,7 +387,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // For MQTT - we will need to subscribe to the MQTT receive telemetry topic
             // before the device can begin receiving c2d messages.
-            if (transportSettings is MqttTransportSettings)
+            if (transportSettings is IotHubClientMqttSettings)
             {
                 try
                 {
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // For Mqtt - since we have explicitly unsubscribed, we will need to resubscribe again
             // before the device can begin receiving c2d messages.
-            if (transportSettings is MqttTransportSettings)
+            if (transportSettings is IotHubClientMqttSettings)
             {
                 try
                 {
@@ -477,7 +477,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
@@ -524,14 +524,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient1 = testDevice.CreateDeviceClient(options);
 
             // An MQTT client must have connected at least once to be able to receive C2D messages.
-            if (transportSettings is MqttTransportSettings)
+            if (transportSettings is IotHubClientMqttSettings)
             {
                 await deviceClient1.OpenAsync().ConfigureAwait(false);
                 try
@@ -583,7 +583,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient2.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
@@ -635,7 +635,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // This test ensures that the SDK does not have this bug again
         // https://github.com/Azure/azure-iot-sdk-csharp/issues/2218
-        private async Task UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType type, ITransportSettings transportSettings)
+        private async Task UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType type, TransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);

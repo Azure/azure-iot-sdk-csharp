@@ -12,14 +12,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     {
         public MockableAmqpTransportHandler() : this(new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                new AmqpTransportSettings())
+                new IotHubClientAmqpSettings())
         {
         }
 
         internal MockableAmqpTransportHandler(
             PipelineContext context,
             IotHubConnectionString connectionString,
-            AmqpTransportSettings transportSettings,
+            IotHubClientAmqpSettings transportSettings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,

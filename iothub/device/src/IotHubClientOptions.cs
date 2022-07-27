@@ -15,24 +15,24 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public IotHubClientOptions()
         {
-            TransportSettings = new AmqpTransportSettings();
+            TransportSettings = new IotHubClientAmqpSettings();
         }
 
         /// <summary>
         /// Creates an instance of this class with the specified transport settings.
         /// </summary>
-        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="MqttTransportSettings"/>,
-        /// <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).</param>
+        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/>,
+        /// <see cref="IotHubClientAmqpSettings"/>, or <see cref="IotHubClientHttpSettings"/>).</param>
         /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
-        public IotHubClientOptions(ITransportSettings transportSettings)
+        public IotHubClientOptions(TransportSettings transportSettings)
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
         }
 
         /// <summary>
-        /// The transport settings to use (i.e., <see cref="MqttTransportSettings"/>, <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).
+        /// The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/>, <see cref="IotHubClientAmqpSettings"/>, or <see cref="IotHubClientHttpSettings"/>).
         /// </summary>
-        public ITransportSettings TransportSettings { get; }
+        public TransportSettings TransportSettings { get; }
 
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// If FileUploadTransportSettings is not provided, then file upload operations will use the same client certificates
         /// configured in the transport settings set for client connect.
         /// </summary>
-        public HttpTransportSettings FileUploadTransportSettings { get; set; } = new HttpTransportSettings();
+        public IotHubClientHttpSettings FileUploadTransportSettings { get; set; } = new IotHubClientHttpSettings();
 
         /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.

@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly SimpleWorkQueue<PublishPacket> _deviceBoundOneWayProcessor;
         private readonly OrderedTwoPhaseWorkQueue<int, PublishPacket> _deviceBoundTwoWayProcessor;
         private readonly string _iotHubHostName;
-        private readonly MqttTransportSettings _mqttTransportSettings;
+        private readonly IotHubClientMqttSettings _mqttTransportSettings;
         private readonly TimeSpan _pingRequestInterval;
         private readonly IAuthorizationProvider _passwordProvider;
         private readonly SimpleWorkQueue<PublishWorkItem> _serviceBoundOneWayProcessor;
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string moduleId,
             string iotHubHostName,
             IAuthorizationProvider passwordProvider,
-            MqttTransportSettings mqttTransportSettings,
+            IotHubClientMqttSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
             ProductInfo productInfo,

@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            var options = new IotHubClientOptions(new MqttTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var moduleClient = IotHubModuleClient.CreateFromConnectionString(FakeConnectionString, options);
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;

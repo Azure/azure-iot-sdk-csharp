@@ -482,7 +482,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 };
 
-                var transportSettings = new HttpTransportSettings();
+                var transportSettings = new IotHubClientHttpSettings();
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
                 if (InternalClient.Certificate != null)
                 {

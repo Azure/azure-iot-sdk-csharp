@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
-            AmqpTransportSettings transportSettings,
+            IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
             Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
