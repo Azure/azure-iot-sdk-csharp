@@ -78,21 +78,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpTcp_Fails()
+        public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings())).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttTcp_Fails()
+        public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings())).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_SendAsyncInvalidServiceCertificateHttp_Fails()
+        public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateHttp_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(new Client.HttpTransportSettings())).ConfigureAwait(false);
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
+        public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(new AmqpTransportSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
+        public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(new MqttTransportSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
@@ -125,9 +125,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private static async Task TestDeviceClientInvalidServiceCertificate(ITransportSettings transportSettings)
         {
             using var deviceClient =
-                DeviceClient.CreateFromConnectionString(
+                IotHubDeviceClient.CreateFromConnectionString(
                     TestConfiguration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
-                    new ClientOptions (transportSettings));
+                    new IotHubClientOptions (transportSettings));
             using var testMessage = new Client.Message();
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);

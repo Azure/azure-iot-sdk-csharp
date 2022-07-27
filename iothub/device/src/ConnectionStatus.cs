@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// The device connection was closed.
-        /// <para>If you want to perform more operations on the device client, you should <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.</para>
+        /// <para>If you want to perform more operations on the device client, you should <see cref="IotHubDeviceClient.Dispose()"/> and then re-initialize the client.</para>
         /// </summary>
         Disabled,
     }

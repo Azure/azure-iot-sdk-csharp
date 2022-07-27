@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName = Guid.NewGuid().ToString();
             var props = new Client.TwinCollection();
 
-            async Task testOperation(DeviceClient deviceClient, TestDevice testDevice)
+            async Task testOperation(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 string propValue = Guid.NewGuid().ToString();
                 props[propName] = propValue;
@@ -279,14 +279,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var props = new TwinCollection();
 
             // Configure the callback and start accepting twin changes.
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
             }
 
             // Change the twin from the service side and verify the device received it.
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 string propValue = Guid.NewGuid().ToString();
                 testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;

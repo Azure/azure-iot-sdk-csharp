@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new MqttTransportSettings()));
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -324,8 +324,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task SendSingleMessage(TestDeviceType type, ITransportSettings transportSettings, int messageSize = 0)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            var options = new ClientOptions(transportSettings);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            var options = new IotHubClientOptions(transportSettings);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await SendSingleMessageAsync(deviceClient, Logger, messageSize).ConfigureAwait(false);
@@ -335,8 +335,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task SendBatchMessages(TestDeviceType type, ITransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix, type).ConfigureAwait(false);
-            var options = new ClientOptions(transportSettings);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            var options = new IotHubClientOptions(transportSettings);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             await SendBatchMessagesAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
@@ -346,15 +346,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private async Task SendSingleMessageModule(ITransportSettings transportSettings)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
-            var options = new ClientOptions(transportSettings);
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            var options = new IotHubClientOptions(transportSettings);
+            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
             await SendSingleMessageModuleAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAsync(DeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
+        public static async Task SendSingleMessageAsync(IotHubDeviceClient deviceClient, MsTestLogger logger, int messageSize = 0)
         {
             Client.Message testMessage;
 
@@ -373,7 +373,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        public static async Task SendBatchMessagesAsync(DeviceClient deviceClient, string deviceId, MsTestLogger logger)
+        public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, string deviceId, MsTestLogger logger)
         {
             var messagesToBeSent = new Dictionary<Client.Message, Tuple<string, string>>();
 
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task SendSingleMessageModuleAsync(ModuleClient moduleClient, string deviceId)
+        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient, string deviceId)
         {
             (Client.Message testMessage, _, _) = ComposeD2cTestMessage(Logger);
 

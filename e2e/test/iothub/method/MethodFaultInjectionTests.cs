@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             // Configure the callback and start accepting method calls.
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, Logger);
                 await testDeviceCallbackHandler
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
 
             // Call the method from the service side and verify the device received the call.
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);

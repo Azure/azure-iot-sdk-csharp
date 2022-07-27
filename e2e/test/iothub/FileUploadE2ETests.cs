@@ -91,8 +91,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _devicePrefix,
                 useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
 
-            DeviceClient deviceClient;
-            var clientOptions = new ClientOptions(new Client.HttpTransportSettings())
+            IotHubDeviceClient deviceClient;
+            var clientOptions = new IotHubClientOptions(new Client.HttpTransportSettings())
             {
                 FileUploadTransportSettings = fileUploadTransportSettings
             };
@@ -104,11 +104,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
                 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, new ClientOptions(new Client.HttpTransportSettings()));
+                deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, x509Auth, new IotHubClientOptions(new Client.HttpTransportSettings()));
             }
             else
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, clientOptions);
+                deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString, clientOptions);
             }
 
             var fileUploadSasUriRequest = new FileUploadSasUriRequest()
@@ -147,8 +147,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         : TestDeviceType.Sasl)
                 .ConfigureAwait(false);
 
-            var options = new ClientOptions(transportSettings);
-            DeviceClient deviceClient;
+            var options = new IotHubClientOptions(transportSettings);
+            IotHubDeviceClient deviceClient;
             X509Certificate2 cert = null;
             DeviceAuthenticationWithX509Certificate x509Auth = null;
             if (useX509auth)
@@ -156,11 +156,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
 
-                deviceClient = DeviceClient.Create(testDevice.IotHubHostName, x509Auth, options);
+                deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, x509Auth, options);
             }
             else
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
+                deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
             }
 
             using (deviceClient)

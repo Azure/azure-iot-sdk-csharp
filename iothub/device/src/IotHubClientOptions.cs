@@ -6,14 +6,14 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Options that allow configuration of the device or module client instance during initialization.
+    /// Options that allow configuration of the IoT hub device or module client instance during initialization.
     /// </summary>
-    public class ClientOptions
+    public class IotHubClientOptions
     {
         /// <summary>
         /// Creates an instances of this class with the default transport settings.
         /// </summary>
-        public ClientOptions()
+        public IotHubClientOptions()
         {
             TransportSettings = new AmqpTransportSettings();
         }
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">The transport settings to use (i.e., <see cref="MqttTransportSettings"/>,
         /// <see cref="AmqpTransportSettings"/>, or <see cref="HttpTransportSettings"/>).</param>
         /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
-        public ClientOptions(ITransportSettings transportSettings)
+        public IotHubClientOptions(ITransportSettings transportSettings)
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
         }
@@ -69,8 +69,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// This is used only for SAS token authenticated clients through either the
-        /// <see cref="DeviceClient.CreateFromConnectionString(string, ClientOptions)"/> flow, the <see cref="ModuleClient.CreateFromConnectionString(string, ClientOptions)"/> flow
-        /// or the <see cref="ModuleClient.CreateFromEnvironmentAsync(ClientOptions)"/> flow.
+        /// <see cref="IotHubDeviceClient.CreateFromConnectionString(string, IotHubClientOptions)"/> flow, the <see cref="IotHubModuleClient.CreateFromConnectionString(string, IotHubClientOptions)"/> flow
+        /// or the <see cref="IotHubModuleClient.CreateFromEnvironmentAsync(IotHubClientOptions)"/> flow.
         /// </remarks>
         public TimeSpan SasTokenTimeToLive { get; set; }
 
@@ -81,8 +81,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// This is used only for SAS token authenticated clients through either the
-        /// <see cref="DeviceClient.CreateFromConnectionString(string, ClientOptions)"/> flow, the <see cref="ModuleClient.CreateFromConnectionString(string, ClientOptions)"/> flow
-        /// or the <see cref="ModuleClient.CreateFromEnvironmentAsync(ClientOptions)"/> flow.
+        /// <see cref="IotHubDeviceClient.CreateFromConnectionString(string, IotHubClientOptions)"/> flow, the <see cref="IotHubModuleClient.CreateFromConnectionString(string, IotHubClientOptions)"/> flow
+        /// or the <see cref="IotHubModuleClient.CreateFromEnvironmentAsync(IotHubClientOptions)"/> flow.
         /// </remarks>
         public int SasTokenRenewalBuffer { get; set; }
     }

@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>An instance of InternalClient.</returns>
         internal static InternalClient CreateFromConnectionString(
             string connectionString,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method.</param>
         /// <param name="options">The optional client settings.</param>
         /// <returns>InternalClient</returns>
-        internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
+        internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
             if (hostName == null)
             {
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client
             IDeviceClientPipelineBuilder pipelineBuilder,
             string connectionString,
             IAuthenticationMethod authenticationMethod,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             if (options == null)
             {
@@ -182,10 +182,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Ensures that the ClientOptions is configured and initialized.
+        /// Ensures that the client options are configured and initialized.
         /// If a certificate is provided, the fileUploadTransportSettings will use it during initialization.
         /// </summary>
-        private static void EnsureOptionsIsSetup(X509Certificate2 cert, ref ClientOptions options)
+        private static void EnsureOptionsIsSetup(X509Certificate2 cert, ref IotHubClientOptions options)
         {
             if (options == null)
             {

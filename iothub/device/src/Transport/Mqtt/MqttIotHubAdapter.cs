@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private int InboundBacklogSize => _deviceBoundOneWayProcessor.BacklogSize + _deviceBoundTwoWayProcessor.BacklogSize;
 
         private readonly ProductInfo _productInfo;
-        private readonly ClientOptions _options;
+        private readonly IotHubClientOptions _options;
 
         // default value for ushort is 0.
         private ushort _packetId;
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
             ProductInfo productInfo,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             Contract.Requires(deviceId != null);
             Contract.Requires(iotHubHostName != null);

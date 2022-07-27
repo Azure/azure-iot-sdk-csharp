@@ -26,13 +26,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [ExpectedException(typeof(DeviceNotFoundException))]
-        public async Task DeviceClient_Not_Exist_AMQP()
+        public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
-            var options = new ClientOptions(new AmqpTransportSettings());
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
+            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -40,14 +40,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [LoggedTestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        public async Task DeviceClient_Bad_Credentials_AMQP()
+        public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
-            var options = new ClientOptions(new AmqpTransportSettings());
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
+            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -56,29 +56,29 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         [TestCategory("Flaky")]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
+        public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Http()
         {
-            await DeviceClient_TokenIsRefreshed_Internal(new Client.HttpTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new Client.HttpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
+        public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
-            await DeviceClient_TokenIsRefreshed_Internal(new AmqpTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new AmqpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
+        public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
             // The IoT hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
             // After connecting with such an expired token, the service has an allowance of 5 more minutes before dropping the TCP connection.
-            await DeviceClient_TokenIsRefreshed_Internal(new MqttTransportSettings(), IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new MqttTransportSettings(), IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
+        public async Task IotHubDeviceClient_TokenConnectionDoubleRelease_Ok()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
@@ -98,8 +98,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using var deviceClient = DeviceClient.Create(iotHub, auth, new ClientOptions(new AmqpTransportSettings()));
-            Logger.Trace($"{deviceId}: Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
+            using var deviceClient = IotHubDeviceClient.Create(iotHub, auth, new IotHubClientOptions(new AmqpTransportSettings()));
+            Logger.Trace($"{deviceId}: Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // by initializing a DeviceClient instance over Mqtt (since sas token expiration over Mqtt is accompanied by a disconnect).
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
-        public async Task DeviceClient_CreateFromConnectionString_TokenIsRefreshed_Mqtt()
+        public async Task IotHubDeviceClient_CreateFromConnectionString_TokenIsRefreshed_Mqtt()
         {
             var sasTokenTimeToLive = TimeSpan.FromSeconds(10);
             int sasTokenRenewalBuffer = 50;
@@ -124,14 +124,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var options = new ClientOptions(new MqttTransportSettings())
+            var options = new IotHubClientOptions(new MqttTransportSettings())
             {
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
 
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-            Logger.Trace($"Created {nameof(DeviceClient)} instance for {testDevice.Id}.");
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
             {
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task DeviceClient_TokenIsRefreshed_Internal(ITransportSettings transportSettings, int ttl = 20)
+        private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(ITransportSettings transportSettings, int ttl = 20)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
@@ -186,8 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transportSettings,
                 Logger);
 
-            using var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, refresher, new ClientOptions(transportSettings));
-            Logger.Trace($"Created {nameof(DeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
+            using var deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
+            Logger.Trace($"Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             if (transportSettings is MqttTransportSettings
                 && transportSettings.Protocol == TransportProtocol.Tcp)

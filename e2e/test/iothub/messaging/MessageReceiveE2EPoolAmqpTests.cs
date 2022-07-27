@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // Initialize the service client
             var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // Initialize the service client
             var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
 
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
 

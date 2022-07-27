@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             IotHubConnectionString iotHubConnectionString,
             AmqpTransportSettings amqpTransportSettings,
             ProductInfo productInfo,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             IotHubConnectionString = iotHubConnectionString;
             AmqpTransportSettings = amqpTransportSettings;
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public string Audience { get; }
 
-        public ClientOptions Options { get; }
+        public IotHubClientOptions Options { get; }
 
         private static string CreateAudience(IotHubConnectionString connectionString)
         {

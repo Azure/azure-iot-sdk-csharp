@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Twin properties
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 IList<Task> initOperations = new List<Task>();
 
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 IList<Task> clientOperations = new List<Task>();
                 await deviceClient.OpenAsync().ConfigureAwait(false);

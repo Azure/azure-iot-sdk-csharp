@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
@@ -259,12 +259,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             AmqpTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<IotHubDeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue, Logger).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];

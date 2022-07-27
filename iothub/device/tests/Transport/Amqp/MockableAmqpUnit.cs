@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
                     new AmqpTransportSettings(),
                     new ProductInfo(),
-                    new ClientOptions()),
+                    new IotHubClientOptions()),
                 new AmqpConnectionHolder(
                     new DeviceIdentity(
                         IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
                         new AmqpTransportSettings(),
                         new ProductInfo(),
-                        new ClientOptions())))
+                        new IotHubClientOptions())))
         {
         }
 

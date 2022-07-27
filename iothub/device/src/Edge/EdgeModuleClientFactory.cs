@@ -32,14 +32,14 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
 
         private readonly ITrustBundleProvider _trustBundleProvider;
-        private readonly ClientOptions _options;
+        private readonly IotHubClientOptions _options;
 
         /// <summary>
         /// Initializes a new instance of the class with transport settings.
         /// </summary>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        public EdgeModuleClientFactory(ITrustBundleProvider trustBundleProvider, ClientOptions options = default)
+        public EdgeModuleClientFactory(ITrustBundleProvider trustBundleProvider, IotHubClientOptions options = default)
         {
             _trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
             _options = options ?? new();
@@ -48,12 +48,12 @@ namespace Microsoft.Azure.Devices.Client.Edge
         /// <summary>
         /// Creates an instance based on environment.
         /// </summary>
-        public Task<ModuleClient> CreateAsync()
+        public Task<IotHubModuleClient> CreateAsync()
         {
             return CreateInternalClientFromEnvironmentAsync();
         }
 
-        private async Task<ModuleClient> CreateInternalClientFromEnvironmentAsync()
+        private async Task<IotHubModuleClient> CreateInternalClientFromEnvironmentAsync()
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     certificateValidator = GetCertificateValidator(new List<X509Certificate2>() { expectedRoot });
                 }
 
-                return new ModuleClient(CreateInternalClientFromConnectionString(connectionString, _options), certificateValidator);
+                return new IotHubModuleClient(CreateInternalClientFromConnectionString(connectionString, _options), certificateValidator);
             }
             else
             {
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     _options.GatewayHostName = gateway;
                 }
 
-                return new ModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, authMethod, _options), certificateValidator);
+                return new IotHubModuleClient(CreateInternalClientFromAuthenticationMethod(hostname, authMethod, _options), certificateValidator);
             }
         }
 
@@ -135,12 +135,12 @@ namespace Microsoft.Azure.Devices.Client.Edge
             return NullCertificateValidator.Instance;
         }
 
-        private InternalClient CreateInternalClientFromConnectionString(string connectionString, ClientOptions options)
+        private InternalClient CreateInternalClientFromConnectionString(string connectionString, IotHubClientOptions options)
         {
             return ClientFactory.CreateFromConnectionString(connectionString, options);
         }
 
-        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, IAuthenticationMethod authMethod, ClientOptions options)
+        private InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, IAuthenticationMethod authMethod, IotHubClientOptions options)
         {
             return ClientFactory.Create(hostname, authMethod, options);
         }

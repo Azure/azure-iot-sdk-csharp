@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
+using ClientOptions = Microsoft.Azure.Devices.Client.IotHubClientOptions;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 ModelId = thermostatModelId,
             };
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);

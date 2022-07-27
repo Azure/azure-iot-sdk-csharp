@@ -1,20 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Azure.Amqp;
 using Microsoft.Rest;
-using Azure;
-
-using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
-using Microsoft.Azure.Devices;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
@@ -122,11 +119,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string thermostatModelId = "dtmi:com:example:TemperatureController;1";
 
             // Create a device client instance initializing it with the "Thermostat" model.
-            var options = new ClientOptions(new MqttTransportSettings())
+            var options = new IotHubClientOptions(new MqttTransportSettings())
             {
                 ModelId = thermostatModelId,
             };
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -154,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new MqttTransportSettings()));
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
@@ -178,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(new MqttTransportSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new MqttTransportSettings()));
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(-1));

@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                ClientOptions options = context.ClientOptions;
+                IotHubClientOptions options = context.ClientOptions;
                 _channelFactory = settings.Protocol switch
                 {
                     TransportProtocol.Tcp => CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options),
@@ -1102,7 +1102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, ClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo, IotHubClientOptions options)
         {
             return async (addresses, port) =>
             {
@@ -1179,7 +1179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             ProductInfo productInfo,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             return async (address, port) =>
             {

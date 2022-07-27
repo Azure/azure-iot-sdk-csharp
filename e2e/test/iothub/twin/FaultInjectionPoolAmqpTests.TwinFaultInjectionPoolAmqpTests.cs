@@ -1433,13 +1433,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
             string proxyAddress = null)
         {
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
                 await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> _)
+            async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> _)
             {
                 deviceClients.ForEach(deviceClient => deviceClient.Dispose());
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
@@ -1471,7 +1471,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            Func<DeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
+            Func<IotHubDeviceClient, string, string, MsTestLogger, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             TimeSpan delayInSec = default,
             TimeSpan durationInSec = default,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
@@ -1479,7 +1479,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
@@ -1490,7 +1490,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
@@ -1507,7 +1507,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(List<DeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
+            async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
                 deviceClients.ForEach(deviceClient => deviceClient.Dispose());
                 testDeviceCallbackHandlers.ForEach(testDeviceCallbackHandler => testDeviceCallbackHandler.Dispose());

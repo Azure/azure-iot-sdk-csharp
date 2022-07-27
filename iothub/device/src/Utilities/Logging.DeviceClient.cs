@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
             object thisOrContextObject,
             string iotHubConnectionStringWithNoKey,
             ITransportSettings transportSettings,
-            ClientOptions options)
+            IotHubClientOptions options)
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(iotHubConnectionStringWithNoKey);

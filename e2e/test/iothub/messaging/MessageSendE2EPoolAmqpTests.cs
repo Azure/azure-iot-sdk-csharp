@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 Logger.Trace($"{nameof(MessageSendE2EPoolAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);

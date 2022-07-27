@@ -1316,7 +1316,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ITransportSettings transportSettings,
             bool sendReportedPropertiesUpdate)
         {
-            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, new ClientOptions(transportSettings));
+            using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
@@ -1345,7 +1345,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
                 var connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
                 string edgehubConnectionString = connectionStringBuilder.ToString() + ";ModuleId=$edgeHub";
-                using var moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
+                using var moduleClient = IotHubModuleClient.CreateFromConnectionString(edgehubConnectionString);
                 await moduleClient.OpenAsync().ConfigureAwait(false);
             }
         }

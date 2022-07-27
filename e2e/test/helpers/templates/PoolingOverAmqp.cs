@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             AmqpTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             bool ignoreConnectionStatus,
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             bool reRunTest = false;
 
             var testDevices = new List<TestDevice>(devicesCount);
-            var deviceClients = new List<DeviceClient>(devicesCount);
+            var deviceClients = new List<IotHubDeviceClient>(devicesCount);
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
             var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>(devicesCount);
             var operations = new List<Task>(devicesCount);
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     // Initialize the test device client instances
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
-                    DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions(transportSettings), authScope: authScope);
+                    IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
 
                     // Set the device client connection status change handler
                     var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
