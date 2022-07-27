@@ -165,8 +165,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is
         /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with back-off
-        // parameters for calculating delay in between retries.]
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             InternalClient.SetRetryPolicy(retryPolicy);

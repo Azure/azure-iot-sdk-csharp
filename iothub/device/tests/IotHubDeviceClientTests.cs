@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class DeviceClientTests
+    public class IotHubDeviceClientTests
     {
         private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
         private const string FakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ParamsHostNameAuthMethod_Works()
+        public void IotHubDeviceClient_ParamsHostNameAuthMethod_Works()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ParamsHostNameAuthMethodTransportType_Works()
+        public void IotHubDeviceClient_ParamsHostNameAuthMethodTransportType_Works()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ParamsHostNameAuthMethodTransportArray_Works()
+        public void IotHubDeviceClient_ParamsHostNameAuthMethodTransportArray_Works()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ParamsHostNameGatewayAuthMethod_Works()
+        public void IotHubDeviceClient_ParamsHostNameGatewayAuthMethod_Works()
         {
             string hostName = "acme.azure-devices.net";
             string gatewayHostName = "gateway.acme.azure-devices.net";
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ParamsHostNameGatewayAuthMethodTransport_Works()
+        public void IotHubDeviceClient_ParamsHostNameGatewayAuthMethodTransport_Works()
         {
             string hostName = "acme.azure-devices.net";
             string gatewayHostName = "gateway.acme.azure-devices.net";
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ParsmHostNameGatewayAuthMethodTransportArray_Works()
+        public void IotHubDeviceClient_ParsmHostNameGatewayAuthMethodTransportArray_Works()
         {
             string hostName = "acme.azure-devices.net";
             string gatewayHostName = "gateway.acme.azure-devices.net";
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
         // For more details, see https://docs.microsoft.com/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
         [TestMethod]
-        public void DeviceClient_Params_GatewayAuthMethod_Works()
+        public void IotHubDeviceClient_Params_GatewayAuthMethod_Works()
         {
             string gatewayHostname = "myGatewayDevice";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
         // For more details, see https://docs.microsoft.com/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
         [TestMethod]
-        public void DeviceClient_ParamsGatewayAuthMethodTransport_Works()
+        public void IotHubDeviceClient_ParamsGatewayAuthMethodTransport_Works()
         {
             string gatewayHostname = "myGatewayDevice";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
         // For more details, see https://docs.microsoft.com/azure/iot-edge/how-to-authenticate-downstream-device#retrieve-and-modify-connection-string
         [TestMethod]
-        public void DeviceClient_ParamsGatewayAuthMethodTransportArray_Works()
+        public void IotHubDeviceClient_ParamsGatewayAuthMethodTransportArray_Works()
         {
             string gatewayHostname = "myGatewayDevice";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_cs);
@@ -239,14 +239,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CreateFromConnectionString_WithModuleIdThrows()
+        public void IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
             Action act = () => IotHubDeviceClient.CreateFromConnectionString(FakeConnectionStringWithModuleId);
             act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        public void DeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
+        public void IotHubDeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             const int DefaultPercentage = 0;
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_SetDiagnosticSamplingPercentageInRange_Ok()
+        public void IotHubDeviceClient_SetDiagnosticSamplingPercentageInRange_Ok()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             const int ValidPercentage = 80;
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
+        public void IotHubDeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             const int DefaultPercentage = 0;
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
+        public void IotHubDeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
         {
             var options = new IotHubClientOptions(new HttpTransportSettings());
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, options);
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_Unsubscribe()
+        public async Task IotHubDeviceClient_OnMethodCalled_Unsubscribe()
         {
             // arrange
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
+        public async Task IotHubDeviceClient_OnMethodCalled_NullMethodRequest()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -374,7 +374,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -394,7 +394,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool isMethodHandlerCalled = false;
@@ -434,7 +434,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodDefaultHandler()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodDefaultHandler()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerNotMatchedAndDefaultHandler()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerNotMatchedAndDefaultHandler()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -481,7 +481,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerAndDefaultHandler()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerAndDefaultHandler()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -508,7 +508,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_No_Result()
+        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_No_Result()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -528,7 +528,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientOnMethodCalledNoMethodHandler()
+        public async Task IotHubDeviceClient_OnMethodCalledNoMethodHandler()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerSetFirstMethodHandler()
+        public async Task IotHubDeviceClient_SetMethodHandlerSetFirstMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -588,7 +588,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerSetFirstMethodDefaultHandler()
+        public async Task IotHubDeviceClient_SetMethodHandlerSetFirstMethodDefaultHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -634,7 +634,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerOverwriteExistingDelegate()
+        public async Task IotHubDeviceClient_SetMethodHandlerOverwriteExistingDelegate()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -693,7 +693,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerOverwriteExistingDefaultDelegate()
+        public async Task IotHubDeviceClient_SetMethodHandlerOverwriteExistingDefaultDelegate()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -752,7 +752,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandler()
+        public async Task IotHubDeviceClient_SetMethodHandlerUnsetLastMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -794,7 +794,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandlerWithDefaultHandlerSet()
+        public async Task IotHubDeviceClient_SetMethodHandlerUnsetLastMethodHandlerWithDefaultHandlerSet()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -853,7 +853,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerUnsetDefaultHandlerSet()
+        public async Task IotHubDeviceClient_SetMethodHandlerUnsetDefaultHandlerSet()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -912,7 +912,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientSetMethodHandlerUnsetWhenNoMethodHandler()
+        public async Task IotHubDeviceClient_SetMethodHandlerUnsetWhenNoMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
@@ -1318,7 +1318,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CreateFromConnectionString_InvalidSasTimeToLive_ThrowsException()
+        public void IotHubDeviceClient_CreateFromConnectionString_InvalidSasTimeToLive_ThrowsException()
         {
             // arrange
             var options = new IotHubClientOptions
@@ -1334,7 +1334,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CreateFromConnectionString_InvalidSasRenewalBuffer_ThrowsException()
+        public void IotHubDeviceClient_CreateFromConnectionString_InvalidSasRenewalBuffer_ThrowsException()
         {
             // arrange
             var options = new IotHubClientOptions
@@ -1350,7 +1350,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CreateFromConnectionString_SasTokenTimeToLiveRenewalConfigurable()
+        public void IotHubDeviceClient_CreateFromConnectionString_SasTokenTimeToLiveRenewalConfigurable()
         {
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
@@ -1389,7 +1389,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CreateFromAuthenticationMethod_SasTokenTimeToLiveRenewalConfigurable()
+        public void IotHubDeviceClient_CreateFromAuthenticationMethod_SasTokenTimeToLiveRenewalConfigurable()
         {
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
@@ -1444,7 +1444,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_InitWithTransportAndModelId_ThrowsWhenHttp()
+        public void IotHubDeviceClient_InitWithTransportAndModelId_ThrowsWhenHttp()
         {
             // arrange
 
@@ -1466,30 +1466,30 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
         {
-            DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new MqttTransportSettings());
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new MqttTransportSettings());
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
         {
-            DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new MqttTransportSettings(TransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new MqttTransportSettings(TransportProtocol.WebSocket));
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithAmqpTcpTransportAndModelId_DoesNotThrow()
         {
-            DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new AmqpTransportSettings());
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new AmqpTransportSettings());
         }
 
         [TestMethod]
-        public void Deviceclient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
         {
-            DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new AmqpTransportSettings(TransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new AmqpTransportSettings(TransportProtocol.WebSocket));
         }
 
-        private void DeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(ITransportSettings transportSettings)
+        private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(ITransportSettings transportSettings)
         {
             // arrange
 
@@ -1506,7 +1506,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_InitWithHttpTransportButNoModelId_DoesNotThrow()
+        public void IotHubDeviceClient_InitWithHttpTransportButNoModelId_DoesNotThrow()
         {
             var options = new IotHubClientOptions(new Client.HttpTransportSettings());
             // act and assert
@@ -1517,7 +1517,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_ReceiveAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_ReceiveAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -1549,7 +1549,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CompleteAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_CompleteAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 
@@ -1582,7 +1582,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_RejectAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_RejectAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 
@@ -1615,7 +1615,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_SendEventAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_SendEventAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
 
@@ -1649,7 +1649,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 
@@ -1682,7 +1682,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_AbandonAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_AbandonAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 
@@ -1715,7 +1715,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_UpdateReportedPropertiesAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_UpdateReportedPropertiesAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
 
@@ -1748,7 +1748,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_GetTwinAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_GetTwinAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 
@@ -1781,7 +1781,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_CloseAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_CloseAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 
@@ -1814,7 +1814,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClient_SetDesiredPropertyCallbackAsync_Cancelled_ThrowsOperationCanceledException()
+        public void IotHubDeviceClient_SetDesiredPropertyCallbackAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
 

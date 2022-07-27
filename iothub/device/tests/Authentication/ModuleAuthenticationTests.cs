@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
 
 
         [TestMethod]
-        public void DeviceClient_ModuleAuthenticationWithRegistrySymmetricKey_Test()
+        public void IotHubDeviceClient_ModuleAuthenticationWithRegistrySymmetricKey_Test()
         {
             //Arrange
             var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(fakeConnectionString);
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
         }
 
         [TestMethod]
-        public void DeviceClient_ModuleAuthenticationWithToken_Test()
+        public void IotHubDeviceClient_ModuleAuthenticationWithToken_Test()
         {
             //Arrange
             var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(fakeToken);

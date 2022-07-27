@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void DeviceClient_NullX509Certificate()
+        public void IotHubDeviceClient_NullX509Certificate()
         {
             // arrange
             const string hostName = "acme.azure-devices.net";

@@ -66,19 +66,19 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
+        public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
         {
             await AuthenticationMethodDisposesTokenRefresher(new Client.HttpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Amqp()
+        public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Amqp()
         {
             await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_AmqpWs()
+        public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_AmqpWs()
         {
             await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }
@@ -89,13 +89,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         // This test has been ignored until we root-cause the issue on DotNetty's TCP stack.
         [Ignore]
         [LoggedTestMethod]
-        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
+        public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
         {
             await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
-        public async Task DeviceClient_AuthenticationMethodDisposesTokenRefresher_MqttWs()
+        public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_MqttWs()
         {
             await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }

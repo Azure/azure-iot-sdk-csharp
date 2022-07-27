@@ -15,9 +15,8 @@ namespace Microsoft.Azure.Devices.Client.Test
     {
         private static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
 
-        // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
+        public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -37,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceClientDesiredPropertyUpdateCallbackUnsubscribes()
+        public async Task IotHubDeviceClient_DesiredPropertyUpdateCallbackUnsubscribes()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -57,9 +56,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
+        public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -78,9 +76,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
         [TestMethod]
-        public async Task DeviceClientGetTwinAsyncCallsSendTwinGetAsync()
+        public async Task IotHubDeviceClient_GetTwinAsyncCallsSendTwinGetAsync()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -96,9 +93,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
         [TestMethod]
-        public async Task DeviceClientUpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
+        public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -115,10 +111,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                 SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClientUpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
+        public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -129,9 +124,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
         }
 
-        //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
-        public async Task DeviceClientCallbackAsyncIsCalledWhenPatchIsReceived()
+        public async Task IotHubDeviceClient_CallbackAsyncIsCalledWhenPatchIsReceived()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();

@@ -51,13 +51,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveMessageCancelsAfterSpecifiedDelay_Amqp()
         {
-            await DeviceClientGivesUpWaitingForC2dMessageAsync(new AmqpTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new AmqpTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceReceiveMessageCancelsAfterSpecifiedDelay_Mqtt()
         {
-            await DeviceClientGivesUpWaitingForC2dMessageAsync(new MqttTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new MqttTransportSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
-        private async Task DeviceClientGivesUpWaitingForC2dMessageAsync(ITransportSettings transportSettings)
+        private async Task IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(ITransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
