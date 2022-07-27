@@ -52,19 +52,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Indicates if certificate revocation check is enabled. The default value is <c>false</c>.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Performance",
-            "CA1822:Mark members as static",
-            Justification = "Cannot change public property in public facing classes.")]
-        public bool CertificateRevocationCheck
-        {
-            get => TlsVersions.Instance.CertificateRevocationCheck;
-            set => TlsVersions.Instance.CertificateRevocationCheck = value;
-        }
-
-        /// <summary>
         /// The QoS to be used when sending packets to service.
         /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
         /// </summary>

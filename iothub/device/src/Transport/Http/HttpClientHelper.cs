@@ -37,18 +37,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-            X509Certificate2 clientCert,
             HttpClientHandler httpClientHandler,
             ProductInfo productInfo,
-            IWebProxy proxy,
+            IotHubClientHttpSettings iotHubClientHttpSettings,
             bool isClientPrimaryTransportHandler = false)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+            _httpClientHandler.SslProtocols = iotHubClientHttpSettings.PreferredTlsVersions;
+            _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
+
+            X509Certificate2 clientCert = iotHubClientHttpSettings.ClientCertificate;
+            IWebProxy proxy = iotHubClientHttpSettings.Proxy;
 
             if (clientCert != null)
             {

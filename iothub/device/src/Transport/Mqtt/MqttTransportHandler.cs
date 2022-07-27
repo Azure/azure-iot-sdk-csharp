@@ -1114,7 +1114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     ? new List<X509Certificate>(0)
                     : new List<X509Certificate> { settings.ClientCertificate };
 
-                SslProtocols protocols = TlsVersions.Instance.Preferred;
+                SslProtocols protocols = settings.PreferredTlsVersions;
 
                 var clientTlsSettings = new ClientTlsSettings(
                      protocols,

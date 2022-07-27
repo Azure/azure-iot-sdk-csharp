@@ -50,19 +50,6 @@ namespace Microsoft.Azure.Devices.Client
         internal string AuthenticationChain { get; set; }
 
         /// <summary>
-        /// To enable certificate revocation check. Default to be false.
-        /// </summary>
-        [SuppressMessage(
-            "Performance",
-            "CA1822:Mark members as static",
-            Justification = "Cannot change public property in public facing classes.")]
-        public bool CertificateRevocationCheck
-        {
-            get => TlsVersions.Instance.CertificateRevocationCheck;
-            set => TlsVersions.Instance.CertificateRevocationCheck = value;
-        }
-
-        /// <summary>
         /// Specify client-side heartbeat interval.
         /// The interval, that the client establishes with the service, for sending keep alive pings.
         /// The default value is 2 minutes.
