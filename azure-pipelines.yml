@@ -1,0 +1,81 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+resources:
+  - repo: self
+    clean: true
+
+jobs:
+  
+  ### Build nuget packages ###
+  - job: Build_Packages
+    displayName: Build Nuget Packages
+    timeoutInMinutes: 20
+
+    condition: succeeded()
+    pool:
+      vmImage: windows-2022
+
+    steps:
+
+      - task: PowerShell@2
+        displayName: 'Build Packages'
+        name: BUILD_PKG
+        inputs:
+          targetType: 'inline'
+          script: |
+            $env:FILE_DATE = "2022-07-26-11-39-57.0"
+            Write-Host Package Folder will be appended with date suffix: $env:FILE_DATE
+            Write-Host "##vso[task.setvariable variable=NUGET_PKG_DATE;isoutput=true;]$env:FILE_DATE"
+###            Write-Host Start building release package with $(Agent.Id):$(Agent.MachineName) on $env:FILE_DATE
+###            $(Build.SourcesDirectory)/build.ps1 -build -clean -configuration Release -package
+
+
+  ### Windows Tests ###
+  - job: Windows_Test
+    displayName: Windows Tests
+    timeoutInMinutes: 75
+
+    strategy:
+      # Change maxParallel to 1 make builds run in serial rather than in parallel
+      maxParallel: 10
+      matrix:
+        .Net 6.0:
+          FRAMEWORK: net6.0
+
+
+    condition: succeeded()
+    dependsOn: Build_Packages
+    pool:
+      vmImage: windows-2022
+    
+    variables:
+      NUGET_PACKGE_FOLDER: $[ dependencies.Build_Packages.outputs['BUILD_PKG.NUGET_PKG_DATE'] ]
+
+    steps:
+
+      - task: AzureKeyVault@2
+        inputs:
+          azureSubscription: 'azuresdkpartnerdrops'
+          KeyVaultName: 'azuresdkpartnerdrops-kv'
+          SecretsFilter: '*'
+          RunAsPreJob: true
+
+      - task: AzureCLI@2
+        displayName: File Copy from Partner Release Pipeline Storage'
+        inputs:
+          azureSubscription: azuresdkpartnerdrops
+          scriptType: ps
+          scriptLocation: inlineScript
+          inlineScript: |
+            Write-Host "Prepare testing on $(Agent.Id):$(Agent.MachineName)"
+            Write-Host "Copy release package to $(System.DefaultWorkingDirectory)/bin/nuget/pkgs_$(NUGET_PACKGE_FOLDER)"
+            $env:AZCOPY_SPA_CLIENT_SECRET=$(azuresdkpartnerdrops-service-principal-key)
+            azcopy login --service-principal --application-id $(azuresdkpartnerdrops-application-id)
+            azcopy copy "https://azuresdkpartnerdrops.blob.core.windows.net/drops/azure-iot-sdk/net/pkgs_$(NUGET_PACKGE_FOLDER)/*" "$(System.DefaultWorkingDirectory)/bin/nuget" --recursive
+        
+      - task: PowerShell@2
+        displayName: 'Downloaded files checkpoint'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Download contents:"
+            gci -Path $(System.DefaultWorkingDirectory)/bin/nuget -Recurse -Force
