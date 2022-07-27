@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
-            await SendMethodAndRespondRecoveryAsync(new AmqpTransportSettings(),
+            await SendMethodAndRespondRecoveryAsync(new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecoveryAsync(new AmqpTransportSettings(TransportProtocol.WebSocket),
+            await SendMethodAndRespondRecoveryAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpConn,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpSess,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpMethodReq,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpMethodResp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
         }
 
-        private async Task SendMethodAndRespondRecoveryAsync(ITransportSettings transportSettings, string faultType, string reason, TimeSpan delayInSec, string proxyAddress = null)
+        private async Task SendMethodAndRespondRecoveryAsync(IotHubClientTransportSettings transportSettings, string faultType, string reason, TimeSpan delayInSec, string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);

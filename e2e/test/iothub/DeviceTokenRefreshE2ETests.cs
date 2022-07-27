@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
-            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
-            var options = new IotHubClientOptions(new AmqpTransportSettings());
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
@@ -58,14 +58,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Http()
         {
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new Client.HttpTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new AmqpTransportSettings()).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // The IoT hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
             // After connecting with such an expired token, the service has an allowance of 5 more minutes before dropping the TCP connection.
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new MqttTransportSettings(), IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientMqttSettings(), IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using var deviceClient = IotHubDeviceClient.Create(iotHub, auth, new IotHubClientOptions(new AmqpTransportSettings()));
+            using var deviceClient = IotHubDeviceClient.Create(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
             Logger.Trace($"{deviceId}: Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
-            var options = new IotHubClientOptions(new MqttTransportSettings())
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(ITransportSettings transportSettings, int ttl = 20)
+        private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(IotHubClientTransportSettings transportSettings, int ttl = 20)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
 
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
-            if (transportSettings is MqttTransportSettings
+            if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == TransportProtocol.Tcp)
             {
                 deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
@@ -222,13 +222,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             // Wait for the Token to expire.
-            if (transportSettings is Client.HttpTransportSettings)
+            if (transportSettings is IotHubClientHttpSettings)
             {
                 float waitTime = ttl * ((float)buffer / 100) + 1;
                 Logger.Trace($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");
                 await Task.Delay(TimeSpan.FromSeconds(waitTime)).ConfigureAwait(false);
             }
-            else if (transportSettings is MqttTransportSettings
+            else if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == TransportProtocol.Tcp)
             {
                     Logger.Trace($"[{DateTime.UtcNow}] Waiting for device disconnect.");
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
             private readonly string _key;
-            private readonly ITransportSettings _transportSettings;
+            private readonly IotHubClientTransportSettings _transportSettings;
             private readonly Stopwatch _stopwatch = new();
             private readonly SemaphoreSlim _tokenRefreshSemaphore = new(0);
             private int _counter;
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string key,
                 int suggestedTimeToLive,
                 int timeBufferPercentage,
-                ITransportSettings transportSettings,
+                IotHubClientTransportSettings transportSettings,
                 MsTestLogger logger)
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {
@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 _logger.Trace($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 
-                if (_transportSettings is MqttTransportSettings
+                if (_transportSettings is IotHubClientMqttSettings
                     && _transportSettings.Protocol == TransportProtocol.Tcp)
                 {
                     suggestedTimeToLive = -IoTHubServerTimeAllowanceSeconds + 30; // Create an expired token.

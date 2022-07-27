@@ -5,9 +5,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     internal class MqttIotHubAdapterFactory
     {
-        private readonly MqttTransportSettings _settings;
+        private readonly IotHubClientMqttSettings _settings;
 
-        public MqttIotHubAdapterFactory(MqttTransportSettings settings)
+        public MqttIotHubAdapterFactory(IotHubClientMqttSettings settings)
         {
             _settings = settings;
         }
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public MqttIotHubAdapter Create(
             IMqttIotHubEventHandler mqttIotHubEventHandler,
             IotHubConnectionString iotHubConnectionString,
-            MqttTransportSettings mqttTransportSettings,
+            IotHubClientMqttSettings mqttTransportSettings,
             ProductInfo productInfo,
             IotHubClientOptions options)
         {

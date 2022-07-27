@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly ProductInfo _productInfo = new();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
-        private readonly ITransportSettings _transportSettings;
+        private readonly IotHubClientTransportSettings _transportSettings;
         private readonly IotHubClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
@@ -1217,8 +1217,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsE2eDiagnosticSupportedProtocol()
         {
-            if (_transportSettings is AmqpTransportSettings
-                || _transportSettings is MqttTransportSettings)
+            if (_transportSettings is IotHubClientAmqpSettings
+                || _transportSettings is IotHubClientMqttSettings)
             {
                 return true;
             }

@@ -26,61 +26,61 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Amqp()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_AmqpWs()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new AmqpTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Mqtt()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new MqttTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_MqttWs()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new MqttTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Http()
         {
-            await ReuseAuthenticationMethod_SingleDevice(new Client.HttpTransportSettings()).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_Amqp()
         {
-            await ReuseAuthenticationMethod_MuxedDevices(new AmqpTransportSettings(), 2).ConfigureAwait(false);
+            await ReuseAuthenticationMethod_MuxedDevices(new IotHubClientAmqpSettings(), 2).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_AmqpWs()
         {
-            await ReuseAuthenticationMethod_MuxedDevices(new AmqpTransportSettings(TransportProtocol.WebSocket), 2).ConfigureAwait(false); ;
+            await ReuseAuthenticationMethod_MuxedDevices(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), 2).ConfigureAwait(false); ;
         }
 
         [LoggedTestMethod]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new Client.HttpTransportSettings()).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Amqp()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings()).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_AmqpWs()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new AmqpTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
         // Even on encountering an exception, the MQTT layer keeps on reattempting CONNECT when communicating via DotNetty's TCP stack.
@@ -91,16 +91,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings()).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_MqttWs()
         {
-            await AuthenticationMethodDisposesTokenRefresher(new MqttTransportSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        private async Task AuthenticationMethodDisposesTokenRefresher(ITransportSettings transportSettings)
+        private async Task AuthenticationMethodDisposesTokenRefresher(IotHubClientTransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: true);
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient2.Dispose();
         }
 
-        private async Task ReuseAuthenticationMethod_SingleDevice(ITransportSettings transportSettings)
+        private async Task ReuseAuthenticationMethod_SingleDevice(IotHubClientTransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var authenticationMethod = new DeviceAuthenticationSasToken(testDevice.ConnectionString, disposeWithClient: false);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             authenticationMethod.Dispose();
         }
 
-        private async Task ReuseAuthenticationMethod_MuxedDevices(ITransportSettings transportSettings, int devicesCount)
+        private async Task ReuseAuthenticationMethod_MuxedDevices(IotHubClientTransportSettings transportSettings, int devicesCount)
         {
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<IotHubDeviceClient> deviceClients = new List<IotHubDeviceClient>();
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
 
             // Set up amqp transport settings to multiplex all device sessions over the same amqp connection.
-            var amqpTransportSettings = new AmqpTransportSettings()
+            var amqpTransportSettings = new IotHubClientAmqpSettings()
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {

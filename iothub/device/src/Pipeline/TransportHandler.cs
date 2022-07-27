@@ -8,9 +8,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal abstract class TransportHandler : DefaultDelegatingHandler
     {
         private TaskCompletionSource<bool> _transportShouldRetry;
-        protected ITransportSettings _transportSettings;
+        protected IotHubClientTransportSettings _transportSettings;
 
-        protected TransportHandler(PipelineContext context, ITransportSettings transportSettings)
+        protected TransportHandler(PipelineContext context, IotHubClientTransportSettings transportSettings)
             : base(context, nextHandler: null)
         {
             _transportSettings = transportSettings;

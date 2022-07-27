@@ -20,14 +20,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
         private readonly AmqpSettings _amqpSettings;
-        private readonly AmqpTransportSettings _amqpTransportSettings;
+        private readonly IotHubClientAmqpSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIotTransport(
             AmqpSettings amqpSettings,
-            AmqpTransportSettings amqpTransportSettings,
+            IotHubClientAmqpSettings amqpTransportSettings,
             string hostName,
             bool disableServerCertificateValidation)
         {

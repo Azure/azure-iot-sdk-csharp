@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                         TestDeviceType.Sasl,
-                        new AmqpTransportSettings(),
+                        new IotHubClientAmqpSettings(),
                         PoolingOverAmqp.SingleConnection_PoolSize,
                         PoolingOverAmqp.SingleConnection_DevicesCount,
                         MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -383,7 +383,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -397,7 +397,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -425,7 +425,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -455,7 +455,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -469,7 +469,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -514,7 +514,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -529,7 +529,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -544,7 +544,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -560,7 +560,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -576,7 +576,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -591,7 +591,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -622,7 +622,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -638,7 +638,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -653,7 +653,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -668,7 +668,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -684,7 +684,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -699,7 +699,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -713,7 +713,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     MethodE2ETests.SetDeviceReceiveMethodAsync,
@@ -724,7 +724,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMethodAndRespondRecoveryPoolOverAmqpAsync(
             TestDeviceType type,
-            ITransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
             Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,

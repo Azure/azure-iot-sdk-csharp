@@ -12,11 +12,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     public static class FaultInjectionPoolingOverAmqp
-
     {
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
-            ITransportSettings TransportSettings,
+            IotHubClientTransportSettings TransportSettings,
             string proxyAddress,
             int poolSize,
             int devicesCount,
@@ -30,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings  = new AmqpTransportSettings(TransportSettings.Protocol)
+            var transportSettings  = new IotHubClientAmqpSettings(TransportSettings.Protocol)
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings()
                 {

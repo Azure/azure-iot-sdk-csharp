@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount)
                 .ConfigureAwait(false);
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount)
                 .ConfigureAwait(false);
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                 TestDeviceType.Sasl,
-                new AmqpTransportSettings(),
+                new IotHubClientAmqpSettings(),
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessagePoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     ConnectionStringAuthScope.IoTHub)
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private async Task SendMessagePoolOverAmqp(
             TestDeviceType type,
-            AmqpTransportSettings transportSettings,
+            IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)

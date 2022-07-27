@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var amqpTransportHandler1 = new AmqpTransportHandler(
                 new PipelineContext(),
                 new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)),
-                new AmqpTransportSettings
+                new IotHubClientAmqpSettings
                 {
                     PrefetchCount = 60,
                     ConnectionPoolSettings = new AmqpConnectionPoolSettings
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 var amqpTransportHandler2 = new AmqpTransportHandler(
                     new PipelineContext(),
                     new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)),
-                    new AmqpTransportSettings
+                    new IotHubClientAmqpSettings
                     {
                         PrefetchCount = 60,
                         ConnectionPoolSettings = new AmqpConnectionPoolSettings
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new AmqpTransportHandler(
                 new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(TestConnectionString),
-                new AmqpTransportSettings());
+                new IotHubClientAmqpSettings());
         }
     }
 }

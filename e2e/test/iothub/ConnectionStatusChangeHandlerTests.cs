@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new AmqpTransportSettings(TransportProtocol.Tcp),
+                new IotHubClientAmqpSettings(TransportProtocol.Tcp),
                 async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new AmqpTransportSettings(TransportProtocol.WebSocket),
+                new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                 async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new AmqpTransportSettings(TransportProtocol.Tcp),
+                new IotHubClientAmqpSettings(TransportProtocol.Tcp),
                 async (r, d) =>
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new AmqpTransportSettings(TransportProtocol.WebSocket),
+                new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                 async (r, d) =>
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            ITransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TransportProtocol protocol,
             Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
-            var transportSettings = new AmqpTransportSettings(protocol);
+            var transportSettings = new IotHubClientAmqpSettings(protocol);
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix, Logger).ConfigureAwait(false);
             ConnectionStatus? status = null;

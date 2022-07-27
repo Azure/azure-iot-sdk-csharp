@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         internal DeviceIdentity(
             IotHubConnectionString iotHubConnectionString,
-            AmqpTransportSettings amqpTransportSettings,
+            IotHubClientAmqpSettings amqpTransportSettings,
             ProductInfo productInfo,
             IotHubClientOptions options)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public IotHubConnectionString IotHubConnectionString { get; }
 
-        public AmqpTransportSettings AmqpTransportSettings { get; }
+        public IotHubClientAmqpSettings AmqpTransportSettings { get; }
 
         public ProductInfo ProductInfo { get; }
 

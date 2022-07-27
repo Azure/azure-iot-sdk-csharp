@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.ComponentModel;
-using System.Net;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using DotNetty.Codecs.Mqtt.Packets;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
@@ -14,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains MQTT transport-specific settings for the device and module clients.
     /// </summary>
-    public class MqttTransportSettings : ITransportSettings
+    public class IotHubClientMqttSettings : IotHubClientTransportSettings
     {
         private const bool DefaultCleanSession = false;
         private const bool DefaultHasWill = false;
@@ -26,13 +23,16 @@ namespace Microsoft.Azure.Devices.Client
         // The CONNACK timeout has been chosen to be 60 seconds to be in alignment with the service implemented timeout for processing connection requests.
         private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(60);
 
-        private static readonly TimeSpan s_defaultReceiveTimeout = TimeSpan.FromMinutes(1);
+        /// <summary>
+        /// The default operation timeout.
+        /// </summary>
+        public static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
-        public MqttTransportSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
+        public IotHubClientMqttSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
             if (Protocol == TransportProtocol.WebSocket)
@@ -48,14 +48,8 @@ namespace Microsoft.Azure.Devices.Client
             PublishToServerQoS = DefaultPublishToServerQoS;
             ReceivingQoS = DefaultReceivingQoS;
             WillMessage = null;
-            DefaultReceiveTimeout = s_defaultReceiveTimeout;
+            DefaultReceiveTimeout = DefaultOperationTimeout;
         }
-
-        /// <inheritdoc/>
-        public TransportProtocol Protocol { get; }
-
-        /// <inheritdoc/>
-        public X509Certificate2 ClientCertificate { get; set; }
 
         /// <summary>
         /// Indicates if certificate revocation check is enabled. The default value is <c>false</c>.
@@ -153,32 +147,14 @@ namespace Microsoft.Azure.Devices.Client
         public IWillMessage WillMessage { get; set; }
 
         /// <summary>
-        /// The time to wait for a receive operation. The default value is 1 minute.
-        /// </summary>
-        /// <remarks>
-        /// This property is currently unused.
-        /// </remarks>
-        public TimeSpan DefaultReceiveTimeout { get; set; }
-
-        /// <summary>
         /// A callback for remote certificate validation.
         /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
         /// </summary>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
-        /// <inheritdoc/>
-        public IWebProxy Proxy { get; set; }
-
         /// <summary>
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         internal string AuthenticationChain { get; set; }
-
-        /// <inheritdoc/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString()
-        {
-            return $"{GetType().Name}/{Protocol}";
-        }
     }
 }

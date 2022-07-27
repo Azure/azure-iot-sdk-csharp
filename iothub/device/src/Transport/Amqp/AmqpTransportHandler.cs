@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         internal AmqpTransportHandler(
             PipelineContext context,
             IotHubConnectionString connectionString,
-            AmqpTransportSettings transportSettings,
+            IotHubClientAmqpSettings transportSettings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,

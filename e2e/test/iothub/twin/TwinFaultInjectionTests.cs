@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new MqttTransportSettings(),
+                    new IotHubClientMqttSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new MqttTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new MqttTransportSettings(),
+                    new IotHubClientMqttSettings(),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new MqttTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new MqttTransportSettings(),
+                    new IotHubClientMqttSettings(),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new MqttTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                new AmqpTransportSettings(),
+                new IotHubClientAmqpSettings(),
                 FaultInjection.FaultType_Tcp,
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultFaultDelay)
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new MqttTransportSettings(),
+                    new IotHubClientMqttSettings(),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new MqttTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new AmqpTransportSettings(),
+                    new IotHubClientAmqpSettings(),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-                    new AmqpTransportSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         private async Task Twin_DeviceReportedPropertiesRecovery(
-            ITransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delayInSec,
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
-            ITransportSettings transportSettings,
+            IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
             TimeSpan delayInSec,

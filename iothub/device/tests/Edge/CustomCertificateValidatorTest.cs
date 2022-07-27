@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_ShouldSucceed()
         {
-            var transportSettings = new MqttTransportSettings();
+            var transportSettings = new IotHubClientMqttSettings();
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestSetupCertificateValidation_Amqp_ShouldSucceed()
         {
-            var transportSettings = new AmqpTransportSettings();
+            var transportSettings = new IotHubClientAmqpSettings();
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
             var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
 
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
-            var setting = new MqttTransportSettings();
+            var setting = new IotHubClientMqttSettings();
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>
                 {
                     return true;
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
 
-            var setting = new AmqpTransportSettings();
+            var setting = new IotHubClientAmqpSettings();
             RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>
             {
                 return true;
