@@ -37,29 +37,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-            X509Certificate2 clientCert,
             HttpClientHandler httpClientHandler,
+            HttpTransportSettings httpTransportSettings,
             ProductInfo productInfo,
-            IWebProxy proxy,
             bool isClientPrimaryTransportHandler = false)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+            _httpClientHandler.SslProtocols = httpTransportSettings.Preferred;
+            _httpClientHandler.CheckCertificateRevocationList = httpTransportSettings.CertificateRevocationCheck;
 
-            if (clientCert != null)
+            if (httpTransportSettings.ClientCertificate != null)
             {
-                _httpClientHandler.ClientCertificates.Add(clientCert);
+                _httpClientHandler.ClientCertificates.Add(httpTransportSettings.ClientCertificate);
                 _usingX509ClientCert = true;
             }
 
-            if (proxy != DefaultWebProxySettings.Instance)
+            if (httpTransportSettings.Proxy != DefaultWebProxySettings.Instance)
             {
-                _httpClientHandler.UseProxy = proxy != null;
-                _httpClientHandler.Proxy = proxy;
+                _httpClientHandler.UseProxy = httpTransportSettings.Proxy != null;
+                _httpClientHandler.Proxy = httpTransportSettings.Proxy;
             }
 
             _httpClientObj = new HttpClient(_httpClientHandler)

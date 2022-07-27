@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Port = AmqpConstants.DefaultSecurePort,
             };
 
-            SslProtocols protocols = TlsVersions.Instance.Preferred;
+            SslProtocols protocols = amqpTransportSettings.Preferred;
 
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {

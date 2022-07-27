@@ -463,6 +463,8 @@ namespace Microsoft.Azure.Devices.Client
             HttpClientHandler httpClientHandler = null;
             Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
 
+            var transportSettings = new HttpTransportSettings();
+
             try
             {
                 if (customCertificateValidation != null)
@@ -470,7 +472,7 @@ namespace Microsoft.Azure.Devices.Client
                     httpClientHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = TlsVersions.Instance.Preferred,
+                        SslProtocols = transportSettings.Preferred,
                     };
                 }
 
@@ -482,7 +484,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 };
 
-                var transportSettings = new HttpTransportSettings();
+                
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
                 if (InternalClient.Certificate != null)
                 {

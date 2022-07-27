@@ -77,10 +77,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 null,
-                transportSettings.ClientCertificate,
                 httpClientHandler,
+                transportSettings,
                 productInfo,
-                transportSettings.Proxy,
                 isClientPrimaryTransportHandler);
         }
 
