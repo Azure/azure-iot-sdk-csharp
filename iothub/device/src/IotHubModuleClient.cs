@@ -472,7 +472,7 @@ namespace Microsoft.Azure.Devices.Client
                     httpClientHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = transportSettings.PreferredTlsVersions,
+                        SslProtocols = transportSettings.SslProtocols,
                     };
                 }
 

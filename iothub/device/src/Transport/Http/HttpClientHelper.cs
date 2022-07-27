@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = iotHubClientHttpSettings.PreferredTlsVersions;
+            _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
             _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
 
             X509Certificate2 clientCert = iotHubClientHttpSettings.ClientCertificate;
