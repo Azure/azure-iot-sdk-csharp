@@ -67,11 +67,6 @@ namespace Microsoft.Azure.Devices.Client
         IWebProxy Proxy { get; set; }
 
         /// <summary>
-        /// The version of TLS to use by default.
-        /// </summary>
-        SslProtocols Preferred { get; set; }
-
-        /// <summary>
         /// To enable certificate revocation check. Default to be false.
         /// </summary>
         bool CertificateRevocationCheck { get; set; }

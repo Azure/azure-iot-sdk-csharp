@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The acceptable versions of TLS to use when the SDK must be explicit.
         /// </summary>
-        public SslProtocols MinimumTlsVersions { get; set; } = SslProtocols.Tls12;
+        public SslProtocols MinimumTlsVersions { get; private set; } = SslProtocols.Tls12;
 
         /// <summary>
         /// The version of TLS to use by default.
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux).
         /// </remarks>
-        public SslProtocols Preferred { get; set; } = SslProtocols.None;
+        public SslProtocols Preferred { get; private set; } = SslProtocols.None;
 
 #pragma warning disable CA5397 // Do not use deprecated SslProtocols values
         private const SslProtocols AllowedProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
