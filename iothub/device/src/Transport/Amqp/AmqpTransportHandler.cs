@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
         protected AmqpUnit _amqpUnit;
-        private readonly Action<IDictionary<string, object>> _onDesiredStatePatchListener;
+        private readonly Func<IDictionary<string, object>, Task> _onDesiredStatePatchListener;
         private readonly object _lock = new object();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
         private bool _closed;
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             IotHubConnectionString connectionString,
             AmqpTransportSettings transportSettings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<IDictionary<string, object>> onDesiredStatePatchReceivedCallback = null,
+            Func<IDictionary<string, object>, Task> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null)
             : base(context, transportSettings)

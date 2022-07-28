@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal partial class InternalClient
     {
-        internal Func<WritableClientPropertyCollection, Task> _writableClientPropertyUpdateCallback;
+        internal Func<WritableClientPropertyCollection, Task<ClientPropertyCollection>> _writableClientPropertyUpdateCallback;
 
         internal PayloadConvention PayloadConvention => _clientOptions.PayloadConvention ?? DefaultPayloadConvention.Instance;
 
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPropertyCollection, Task> callback, CancellationToken cancellationToken)
+        internal async Task SubscribeToWritablePropertyUpdateRequestsAsync(Func<WritableClientPropertyCollection, Task<ClientPropertyCollection>> callback, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, callback, nameof(SetDesiredPropertyUpdateCallbackAsync));

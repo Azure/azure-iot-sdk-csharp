@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                         Assert.Fail("After having unsubscribed from receiving client property update notifications " +
                             "this callback should not have been invoked.");
 
-                        return Task.FromResult(true);
+                        return Task.FromResult(new ClientPropertyCollection());
                     })
                 .ConfigureAwait(false);
 
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
             using var writablePropertyCallbackSemaphore = new SemaphoreSlim(0, 1);
             await deviceClient
                 .SubscribeToWritablePropertyUpdateRequestsAsync(
-                    async (writableProperties) =>
+                    (writableProperties) =>
                     {
                         try
                         {
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                             var writablePropertyAcks = new ClientPropertyCollection();
                             writablePropertyAcks.AddWritableClientPropertyAcknowledgement(writableClientProperty.CreateAcknowledgement(CommonClientResponseCodes.OK));
 
-                            await deviceClient.UpdateClientPropertiesAsync(writablePropertyAcks).ConfigureAwait(false);
+                            return Task.FromResult(writablePropertyAcks);
                         }
                         finally
                         {
@@ -307,7 +307,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 .ConfigureAwait(false);
 
             // Validate the updated properties from the device-client
-            ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+
+            // Since this will depend on the SDK updating the properties asynchronously under-the-cover,
+            // we will need to fetch the properties until we receive an updated version number.
+            ClientProperties clientProperties;
+            do
+            {
+                // Adding a delay because we don't want to throttle the service.
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                // Fetch the client properties that the device has received and reported.
+                // If it has processed the writable property update request, the reported properties patch version will be greater than 1.
+                clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            }
+            while (clientProperties.ReportedByClient.Version <= 1);
 
             // Validate that the writable property update request was received
             clientProperties.WritablePropertyRequests.TryGetWritableClientProperty(propName, out WritableClientProperty writableClientProperty).Should().BeTrue();

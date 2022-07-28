@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ITransportSettings transportSetting = context.TransportSettings;
             IotHubConnectionString connectionString = context.IotHubConnectionString;
             InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
-            Action<IDictionary<string, object>> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
+            Func<IDictionary<string, object>, Task> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
             InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
             InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 

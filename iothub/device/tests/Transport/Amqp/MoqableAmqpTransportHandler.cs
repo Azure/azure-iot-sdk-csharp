@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport
             IotHubConnectionString connectionString, 
             AmqpTransportSettings transportSettings, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
-            Action<IDictionary<string, object>> onDesiredStatePatchReceivedCallback = null, 
+            Func<IDictionary<string, object>, Task> onDesiredStatePatchReceivedCallback = null, 
             Func<string, Message, Task> onModuleMessageReceivedCallback = null, 
             Func<Message, Task> onDeviceMessageReceivedCallback = null) 
             : base(

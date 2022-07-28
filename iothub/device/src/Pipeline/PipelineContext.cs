@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ConnectionStatusChangesHandler ConnectionStatusChangesHandler { get; set; }
 
-        internal Action<IDictionary<string, object>> DesiredPropertyUpdateCallback { get; set; }
+        internal Func<IDictionary<string, object>, Task> DesiredPropertyUpdateCallback { get; set; }
 
         internal InternalClient.OnMethodCalledDelegate MethodCallback { get; set; }
 

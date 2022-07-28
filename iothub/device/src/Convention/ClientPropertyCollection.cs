@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// <para>
         /// This collection can be reported to service using 
-        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> or
-        /// <see cref="ModuleClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/>.
+        /// <see cref="DeviceClient.UpdateClientPropertiesAsync(ClientPropertyCollection, System.Threading.CancellationToken)"/> 
+        /// (or corresponding method on the <see cref="ModuleClient"/>).
         /// </para>
         /// </remarks>
         public ClientPropertyCollection()

@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
         private readonly Func<MethodRequestInternal, Task> _methodListener;
-        private readonly Action<IDictionary<string, object>> _onDesiredStatePatchListener;
+        private readonly Func<IDictionary<string, object>, Task> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<IDictionary<string, object>> onDesiredStatePatchReceivedCallback = null,
+            Func<IDictionary<string, object>, Task> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null)
