@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices
             AddCustomHeaders(request, customHeaders, contentType);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
             await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-            return await HttpMessageHelper2.DeserializeResponse<QueryResult>(response, cancellationToken).ConfigureAwait(false);
+            return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
         private static Uri QueryDevicesRequestUri()
