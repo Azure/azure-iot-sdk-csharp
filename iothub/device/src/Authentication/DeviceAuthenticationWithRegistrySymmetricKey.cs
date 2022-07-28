@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(deviceId));
+                throw new ArgumentException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;

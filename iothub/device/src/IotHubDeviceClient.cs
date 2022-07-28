@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
 
-            if (InternalClient.IotHubConnectionString?.ModuleId != null)
+            if (InternalClient.IotHubConnectionInfo?.ModuleId != null)
             {
                 throw new ArgumentException("A module Id was specified in the connection string - please use ModuleClient for modules.");
             }

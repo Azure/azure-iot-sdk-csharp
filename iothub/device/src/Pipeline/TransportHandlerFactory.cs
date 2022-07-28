@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // ProtocolRoutingDelegatingHandler configures the TransportSettings configuration
             // which is different from TransportSettings[] element.
             IotHubClientTransportSettings transportSettings = context.TransportSettings;
-            IotHubConnectionInfo connectionString = context.IotHubConnectionString;
+            IotHubConnectionInfo connInfo = context.IotHubConnectionInfo;
             InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
             InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new AmqpTransportHandler(
                     context,
-                    connectionString,
+                    connInfo,
                     transportSettings as IotHubClientAmqpSettings,
                     new Func<MethodRequestInternal, Task>(onMethodCallback),
                     onDesiredStatePatchReceived,
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new MqttTransportHandler(
                     context,
-                    connectionString,
+                    connInfo,
                     transportSettings as IotHubClientMqttSettings,
                     new Func<MethodRequestInternal, Task>(onMethodCallback),
                     onDesiredStatePatchReceived,
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new HttpTransportHandler(
                     context,
-                    connectionString,
+                    connInfo,
                     transportSettings as IotHubClientHttpSettings,
                     isClientPrimaryTransportHandler: true);
             }

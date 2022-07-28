@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 {
-    internal class IotHubConnectionStringExtensions
+    internal class IotHubConnectionInfoExtensions
     {
         internal static IotHubConnectionInfo Parse(string connectionString)
         {

@@ -930,14 +930,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = null;
             if (enrollmentType == EnrollmentType.Group)
             {
-                if (attestationType == AttestationMechanismType.X509)
-                {
-                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
-                }
-                else
-                {
-                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-                }
+                groupId = attestationType == AttestationMechanismType.X509
+                    ? TestConfiguration.Provisioning.X509GroupEnrollmentName
+                    : _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             }
 
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
@@ -1343,8 +1338,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null && capabilities.IotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
-                var connectionStringBuilder = new Client.IotHubConnectionStringBuilder(auth, result.AssignedHub);
-                string edgehubConnectionString = connectionStringBuilder.ToString() + ";ModuleId=$edgeHub";
+                var csBuilder = new Client.IotHubConnectionStringBuilder(auth, result.AssignedHub);
+                string edgehubConnectionString = csBuilder.ToString() + ";ModuleId=$edgeHub";
                 using var moduleClient = IotHubModuleClient.CreateFromConnectionString(edgehubConnectionString);
                 await moduleClient.OpenAsync().ConfigureAwait(false);
             }

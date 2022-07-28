@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void IotHubConnectionStringBuilder_ParamConnectionString_MissingDeviceId_Throws()
         {
             var connectionString = $"HostName={HostName};SharedAccessKey={SharedAccessKey}";

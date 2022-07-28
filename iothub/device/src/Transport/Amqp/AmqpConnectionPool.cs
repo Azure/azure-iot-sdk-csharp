@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 return _amqpSasIndividualPool;
             }
 
-            string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
+            string scope = deviceIdentity.IotHubConnectionInfo.SharedAccessKeyName;
             GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
             if (amqpConnectionHolders == null)
             {

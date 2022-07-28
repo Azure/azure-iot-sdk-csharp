@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestCategory("Unit")]
     public class AuthenticationWithTokenRefreshTests
     {
-        private const string TestIoTHubName = "contoso.azure-devices.net";
+        private const string TestIotHubName = "contoso.azure-devices.net";
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private static string TestSharedAccessKey;
 
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int buffer = 20;  // Token should refresh after 4 seconds.
 
             var refresher = new TestImplementation(ttl, buffer);
-            await refresher.GetTokenAsync(TestIoTHubName);
+            await refresher.GetTokenAsync(TestIotHubName);
 
             DateTime currentTime = DateTime.UtcNow;
             DateTime expectedExpiryTime = currentTime.AddSeconds(ttl);
@@ -62,8 +62,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             var refresher = new TestImplementation();
             string expectedToken = CreateToken(DefaultTimeToLiveSeconds);
 
-            string token1 = await refresher.GetTokenAsync(TestIoTHubName);
-            string token2 = await refresher.GetTokenAsync(TestIoTHubName);
+            string token1 = await refresher.GetTokenAsync(TestIotHubName);
+            string token2 = await refresher.GetTokenAsync(TestIotHubName);
 
             Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
             Assert.AreEqual(expectedToken, token1);
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var refresher = new TestImplementation();
             var csBuilder = new IotHubConnectionStringBuilder(
                 new ModuleAuthenticationWithRegistrySymmetricKey("deviceId", "moduleid", TestSharedAccessKey),
-                TestIoTHubName);
+                TestIotHubName);
 
             refresher.Populate(csBuilder);
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(null, csBuilder.SharedAccessKey);
             Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
 
-            string token = await refresher.GetTokenAsync(TestIoTHubName);
+            string token = await refresher.GetTokenAsync(TestIotHubName);
 
             refresher.Populate(csBuilder);
 
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var tasks = new Task[5];
             for (int i = 0; i < tasks.Length; i++)
             {
-                tasks[i] = refresher.GetTokenAsync(TestIoTHubName);
+                tasks[i] = refresher.GetTokenAsync(TestIotHubName);
             }
 
             await Task.WhenAll(tasks);
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int ttl = 1;
 
             var refresher = new TestImplementation(ttl, 90);
-            await refresher.GetTokenAsync(TestIoTHubName);
+            await refresher.GetTokenAsync(TestIotHubName);
 
             DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
             int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             ttl = 10;
             refresher.ActualTimeToLive = ttl;
 
-            await refresher.GetTokenAsync(TestIoTHubName);
+            await refresher.GetTokenAsync(TestIotHubName);
 
             expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
             timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);

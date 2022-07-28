@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
-            var builder = new IotHubConnectionStringBuilder(authenticationMethod, connectionString);
+            var builder = new IotHubConnectionStringBuilder(connectionString, authenticationMethod);
             if (authenticationMethod == null)
             {
                 authenticationMethod = builder.AuthenticationMethod;

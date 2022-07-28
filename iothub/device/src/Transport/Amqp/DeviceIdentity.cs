@@ -15,20 +15,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class DeviceIdentity : IDeviceIdentity
     {
         internal DeviceIdentity(
-            IotHubConnectionInfo iotHubConnectionString,
+            IotHubConnectionInfo connectionInfo,
             IotHubClientAmqpSettings amqpTransportSettings,
             ProductInfo productInfo,
             IotHubClientOptions options)
         {
-            IotHubConnectionString = iotHubConnectionString;
+            IotHubConnectionInfo = connectionInfo;
             AmqpTransportSettings = amqpTransportSettings;
             ProductInfo = productInfo;
             Options = options;
 
             if (amqpTransportSettings.ClientCertificate == null)
             {
-                Audience = CreateAudience(IotHubConnectionString);
-                AuthenticationModel = iotHubConnectionString.SharedAccessKeyName == null
+                Audience = CreateAudience(IotHubConnectionInfo);
+                AuthenticationModel = connectionInfo.SharedAccessKeyName == null
                     ? AuthenticationModel.SasIndividual
                     : AuthenticationModel.SasGrouped;
             }
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public IotHubConnectionInfo IotHubConnectionString { get; }
+        public IotHubConnectionInfo IotHubConnectionInfo { get; }
 
         public IotHubClientAmqpSettings AmqpTransportSettings { get; }
 
@@ -50,18 +50,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public IotHubClientOptions Options { get; }
 
-        private static string CreateAudience(IotHubConnectionInfo connectionString)
+        private static string CreateAudience(IotHubConnectionInfo connectionInfo)
         {
-            if (connectionString.SharedAccessKeyName.IsNullOrWhiteSpace())
+            if (connectionInfo.SharedAccessKeyName.IsNullOrWhiteSpace())
             {
-                return connectionString.ModuleId.IsNullOrWhiteSpace()
-                    ? $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}"
-                    : $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}/modules/{WebUtility.UrlEncode(connectionString.ModuleId)}";
+                return connectionInfo.ModuleId.IsNullOrWhiteSpace()
+                    ? $"{connectionInfo.HostName}/devices/{WebUtility.UrlEncode(connectionInfo.DeviceId)}"
+                    : $"{connectionInfo.HostName}/devices/{WebUtility.UrlEncode(connectionInfo.DeviceId)}/modules/{WebUtility.UrlEncode(connectionInfo.ModuleId)}";
             }
             else
             {
                 // this is a group shared key
-                return connectionString.HostName;
+                return connectionInfo.HostName;
             }
         }
 
@@ -74,18 +74,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             return obj is DeviceIdentity identity
                 && GetHashCode() == identity.GetHashCode()
-                && Equals(IotHubConnectionString.DeviceId, identity.IotHubConnectionString.DeviceId)
-                && Equals(IotHubConnectionString.HostName, identity.IotHubConnectionString.HostName)
-                && Equals(IotHubConnectionString.ModuleId, identity.IotHubConnectionString.ModuleId)
+                && Equals(IotHubConnectionInfo.DeviceId, identity.IotHubConnectionInfo.DeviceId)
+                && Equals(IotHubConnectionInfo.HostName, identity.IotHubConnectionInfo.HostName)
+                && Equals(IotHubConnectionInfo.ModuleId, identity.IotHubConnectionInfo.ModuleId)
                 && Equals(AmqpTransportSettings.Protocol, identity.AmqpTransportSettings.Protocol)
                 && Equals(AuthenticationModel.GetHashCode(), identity.AuthenticationModel.GetHashCode());
         }
 
         public override int GetHashCode()
         {
-            int hashCode = UpdateHashCode(620602339, IotHubConnectionString.DeviceId);
-            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.HostName);
-            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.ModuleId);
+            int hashCode = UpdateHashCode(620602339, IotHubConnectionInfo.DeviceId);
+            hashCode = UpdateHashCode(hashCode, IotHubConnectionInfo.HostName);
+            hashCode = UpdateHashCode(hashCode, IotHubConnectionInfo.ModuleId);
             hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.Protocol);
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;

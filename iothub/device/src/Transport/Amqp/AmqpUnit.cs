@@ -497,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Logging.Enter(this, lockToken, nameof(DisposeMessageAsync));
 
             AmqpIotOutcome disposeOutcome;
-            if (_deviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
+            if (_deviceIdentity.IotHubConnectionInfo.ModuleId.IsNullOrWhiteSpace())
             {
                 await EnsureMessageReceivingLinkIsOpenAsync(cancellationToken).ConfigureAwait(false);
 

@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
 
             deviceIdentity.Setup(m => m.IsPooling()).Returns(true);
             deviceIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
-            deviceIdentity.Setup(m => m.IotHubConnectionString).Returns(new IotHubConnectionInfo(sharedAccessKeyName: sharedAccessKeyName));
+            deviceIdentity.Setup(m => m.IotHubConnectionInfo).Returns(new IotHubConnectionInfo(sharedAccessKeyName: sharedAccessKeyName));
             deviceIdentity.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings

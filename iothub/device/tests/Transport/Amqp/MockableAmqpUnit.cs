@@ -16,13 +16,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public MockableAmqpUnit()
             : this(
                 new DeviceIdentity(
-                    IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
+                    IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
                     new IotHubClientAmqpSettings(),
                     new ProductInfo(),
                     new IotHubClientOptions()),
                 new AmqpConnectionHolder(
                     new DeviceIdentity(
-                        IotHubConnectionStringExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
+                        IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
                         new IotHubClientAmqpSettings(),
                         new ProductInfo(),
                         new IotHubClientOptions())))

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public AmqpConnectionHolder(IDeviceIdentity deviceIdentity)
         {
             _deviceIdentity = deviceIdentity;
-            _amqpIotConnector = new AmqpIotConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
+            _amqpIotConnector = new AmqpIotConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionInfo.HostName);
             if (Logging.IsEnabled)
                 Logging.Associate(this, _deviceIdentity, nameof(_deviceIdentity));
         }

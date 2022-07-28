@@ -57,15 +57,17 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string, based on the hostname of the IoT hub, the hostname of Gateway and the authentication
-        /// method passed as a parameter.
+        /// Creates an instnace of this class based on an authentication method and the hostname of the IoT hub.
         /// </summary>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
-        /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway.</param>
+        /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
         public IotHubConnectionStringBuilder(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
         {
+            Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+
             AuthenticationMethod = authenticationMethod;
             HostName = hostName;
             GatewayHostName = gatewayHostName;
@@ -77,14 +79,24 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class using a connection string.
         /// </summary>
         /// <param name="iotHubConnectionString">The IoT hub device connection string.</param>
+        /// <param name="authenticationMethod">The authentication method to use (optional).</param>
         /// <returns>A new instance of this class.</returns>
-        public IotHubConnectionStringBuilder(string iotHubConnectionString)
+        public IotHubConnectionStringBuilder(string iotHubConnectionString, IAuthenticationMethod authenticationMethod = null)
         {
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionString, nameof(iotHubConnectionString));
 
-            // We'll parse the connection string and use that to build an auth method
-            ExtractPropertiesFromConnectionString(iotHubConnectionString);
-            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(this);
+            if (authenticationMethod == null)
+            {
+                // We'll parse the connection string and use that to build an auth method
+                ExtractPropertiesFromConnectionString(iotHubConnectionString);
+                AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(this);
+            }
+            else
+            {
+                // We'll set the auth method, which will set some properties on this class, and then parse.
+                AuthenticationMethod = authenticationMethod;
+                ExtractPropertiesFromConnectionString(iotHubConnectionString);
+            }
 
             Validate();
         }
