@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 #pragma warning restore CS0618 // Type or member is obsolete
 
             // act
-            client.InternalClient.OnDesiredStatePatchReceived(myPatch);
+            await client.InternalClient.OnDesiredStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // act
-            client.InternalClient.OnDesiredStatePatchReceived(myPatch);
+            await client.InternalClient.OnDesiredStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);
