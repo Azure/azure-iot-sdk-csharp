@@ -145,6 +145,7 @@ namespace Microsoft.Azure.Devices
         /// Subclient of <see cref="IotHubServiceClient"/> for query.
         /// Executes SQL query.
         /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
         public QueryClient Query { get; protected set; }
 
         /// <summary>

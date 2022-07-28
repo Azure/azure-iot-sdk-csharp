@@ -11,8 +11,9 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="IotHubServiceClient"/> for query. Executes SQL query.
+    /// Subclient of <see cref="IotHubServiceClient"/> for executing queries using a SQL-like syntax.
     /// </summary>
+    /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
     public class QueryClient
     {
         private const string ContinuationTokenHeader = "x-ms-continuation";
@@ -58,13 +59,14 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public virtual IQuery CreateQuery(string sqlQueryString, int? pageSize = null, CancellationToken cancellationToken = default)
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
+        public virtual IQuery CreateAsync(string sqlQueryString, int? pageSize = null, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Creating query", nameof(CreateQuery));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Creating query", nameof(CreateAsync));
             try
             {
-                return new Query((token) => ExecuteAsync(
+                return new Query(async (token) => await ExecuteAsync(
                     sqlQueryString,
                     pageSize,
                     token,
@@ -72,12 +74,12 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(CreateQuery)} threw an exception: {ex}", nameof(CreateQuery));
+                Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Creating query", nameof(CreateQuery));
+                Logging.Exit(this, $"Creating query", nameof(CreateAsync));
             }
         }
 
