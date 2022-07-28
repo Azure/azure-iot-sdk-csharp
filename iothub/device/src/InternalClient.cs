@@ -1167,7 +1167,7 @@ namespace Microsoft.Azure.Devices.Client
             await InnerHandler.SendClientTwinPropertyPatchAsync(bodyStream, cancellationToken).ConfigureAwait(false);
         }
 
-        internal async void OnDesiredStatePatchReceived(IDictionary<string, object> patch)
+        internal async Task OnDesiredStatePatchReceived(IDictionary<string, object> patch)
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, string.Join(",", patch), nameof(OnDesiredStatePatchReceived));

@@ -307,7 +307,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Properties
                 .ConfigureAwait(false);
 
             // Validate the updated properties from the device-client
-            ClientProperties clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+
+            // Since this will depend on the SDK updating the properties asynchronously under-the-cover,
+            // we will need to fetch the properties until we receive an updated version number.
+            ClientProperties clientProperties;
+            do
+            {
+                // Adding a delay because we don't want to throttle the service.
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                // Fetch the client properties that the device has received and reported.
+                // If it has processed the writable property update request, the reported properties patch version will be greater than 1.
+                clientProperties = await deviceClient.GetClientPropertiesAsync().ConfigureAwait(false);
+            }
+            while (clientProperties.ReportedByClient.Version <= 1);
 
             // Validate that the writable property update request was received
             clientProperties.WritablePropertyRequests.TryGetWritableClientProperty(propName, out WritableClientProperty writableClientProperty).Should().BeTrue();
