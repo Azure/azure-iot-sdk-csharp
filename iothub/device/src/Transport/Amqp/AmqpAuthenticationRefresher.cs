@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly AmqpIotCbsLink _amqpIotCbsLink;
-        private readonly IotHubConnectionString _connectionString;
+        private readonly IotHubConnectionInfo _connectionString;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private Task _refreshLoop;

@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string FakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
         private const string TestModelId = "dtmi:com:example:testModel;1";
 
-        private static readonly IotHubConnectionStringBuilder s_csBuilder = IotHubConnectionStringBuilder.Create(FakeConnectionString);
-        private static readonly IotHubConnectionString s_cs = new IotHubConnectionString(s_csBuilder);
+        private static readonly IotHubConnectionStringBuilder s_csBuilder = new IotHubConnectionStringBuilder(FakeConnectionString);
+        private static readonly IotHubConnectionInfo s_cs = new IotHubConnectionInfo(s_csBuilder);
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()

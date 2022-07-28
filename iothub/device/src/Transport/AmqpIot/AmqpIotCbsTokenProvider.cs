@@ -10,10 +10,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal class AmqpIotCbsTokenProvider : ICbsTokenProvider, IDisposable
     {
-        private readonly IotHubConnectionString _connectionString;
+        private readonly IotHubConnectionInfo _connectionString;
         private bool _isDisposed;
 
-        public AmqpIotCbsTokenProvider(IotHubConnectionString connectionString)
+        public AmqpIotCbsTokenProvider(IotHubConnectionInfo connectionString)
         {
             _connectionString = connectionString;
         }
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         this,
                         namespaceAddress,
                         appliesTo,
-                        $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
+                        $"{nameof(IotHubConnectionInfo)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
 
                 string tokenValue;
                 DateTime expiresOn;
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         this,
                         namespaceAddress,
                         appliesTo,
-                        $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
+                        $"{nameof(IotHubConnectionInfo)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
             }
         }
 

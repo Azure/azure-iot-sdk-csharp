@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(connectionString, null);
+            var builder = new IotHubConnectionStringBuilder(connectionString);
 
             return CreateInternal(null, connectionString, builder.AuthenticationMethod, options);
         }
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
                 options = new();
             }
 
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostName, options.GatewayHostName, authenticationMethod);
+            var connectionStringBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options.GatewayHostName);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
@@ -129,9 +129,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
-            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
-                connectionString,
-                authenticationMethod);
+            var builder = new IotHubConnectionStringBuilder(authenticationMethod, connectionString);
             if (authenticationMethod == null)
             {
                 authenticationMethod = builder.AuthenticationMethod;
@@ -156,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
             }
 
-            var iotHubConnectionString = builder.ToIotHubConnectionString();
+            IotHubConnectionInfo iotHubConnectionString = builder.ToIotHubConnectionInfo();
 
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate
                 && builder.Certificate == null)

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class DeviceIdentity : IDeviceIdentity
     {
         internal DeviceIdentity(
-            IotHubConnectionString iotHubConnectionString,
+            IotHubConnectionInfo iotHubConnectionString,
             IotHubClientAmqpSettings amqpTransportSettings,
             ProductInfo productInfo,
             IotHubClientOptions options)
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public IotHubConnectionString IotHubConnectionString { get; }
+        public IotHubConnectionInfo IotHubConnectionString { get; }
 
         public IotHubClientAmqpSettings AmqpTransportSettings { get; }
 
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public IotHubClientOptions Options { get; }
 
-        private static string CreateAudience(IotHubConnectionString connectionString)
+        private static string CreateAudience(IotHubConnectionInfo connectionString)
         {
             if (connectionString.SharedAccessKeyName.IsNullOrWhiteSpace())
             {

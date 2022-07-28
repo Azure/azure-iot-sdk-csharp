@@ -39,12 +39,12 @@ namespace Microsoft.Azure.Devices.Client
 
         private const RegexOptions CommonRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private static readonly Regex s_hostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_idNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", CommonRegexOptions, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_sharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_sharedAccessKeyRegex = new Regex(@"^.+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_sharedAccessSignatureRegex = new Regex(@"^.+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
-        private static readonly Regex s_x509CertRegex = new Regex(@"^[true|false]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_hostNameRegex = new(@"[a-zA-Z0-9_\-\.]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_idNameRegex = new(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyNameRegex = new(@"^[a-zA-Z0-9_\-@\.]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessKeyRegex = new(@"^.+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_sharedAccessSignatureRegex = new(@"^.+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
+        private static readonly Regex s_x509CertRegex = new(@"^[true|false]+$", CommonRegexOptions, s_regexTimeoutMilliseconds);
 
         private string _hostName;
         private IAuthenticationMethod _authenticationMethod;
@@ -57,36 +57,20 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string based on the hostname of the IoT hub and the authentication method passed as a parameter.
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
-        public static IotHubConnectionStringBuilder Create(string hostname, IAuthenticationMethod authenticationMethod)
-        {
-            return Create(hostname, null, authenticationMethod);
-        }
-
-        /// <summary>
-        /// Creates a connection string based on the hostname of the IoT hub, the hostname of Gateway and the authentication
+        /// Creates a connection string, based on the hostname of the IoT hub, the hostname of Gateway and the authentication
         /// method passed as a parameter.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT hub</param>
-        /// <param name="gatewayHostname">The fully-qualified DNS hostname of the gateway</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway.</param>
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
-        public static IotHubConnectionStringBuilder Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
+        public IotHubConnectionStringBuilder(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
         {
-            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder
-            {
-                HostName = hostname,
-                GatewayHostName = gatewayHostname,
-                AuthenticationMethod = authenticationMethod,
-            };
+            AuthenticationMethod = authenticationMethod;
+            HostName = hostName;
+            GatewayHostName = gatewayHostName;
 
-            iotHubConnectionStringBuilder.Validate();
-
-            return iotHubConnectionStringBuilder;
+            Validate();
         }
 
         /// <summary>
@@ -94,37 +78,29 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="iotHubConnectionString">The connection string.</param>
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
-        public static IotHubConnectionStringBuilder Create(string iotHubConnectionString)
+        public IotHubConnectionStringBuilder(string iotHubConnectionString)
+            : this(iotHubConnectionString, null)
         {
-            if (iotHubConnectionString.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(iotHubConnectionString));
-            }
-
-            return CreateWithIAuthenticationOverride(iotHubConnectionString, null);
         }
 
-        internal static IotHubConnectionStringBuilder CreateWithIAuthenticationOverride(
-            string iotHubConnectionString,
-            IAuthenticationMethod authenticationMethod)
+        internal IotHubConnectionStringBuilder(string iotHubConnectionString, IAuthenticationMethod authenticationMethod)
         {
-            var csBuilder = new IotHubConnectionStringBuilder
-            {
-                HostName = "TEMP.HUB",
-            };
+            Argument.AssertNotNullOrWhiteSpace(iotHubConnectionString, nameof(iotHubConnectionString));
 
             if (authenticationMethod == null)
             {
-                csBuilder.Parse(iotHubConnectionString);
-                csBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(csBuilder);
+                // We'll parse the connection string and use that to build an auth method
+                Parse(iotHubConnectionString);
+                AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(this);
             }
             else
             {
-                csBuilder.AuthenticationMethod = authenticationMethod;
-                csBuilder.Parse(iotHubConnectionString);
+                // We'll set the auth method, which will set some properties on this class, and then parse.
+                AuthenticationMethod = authenticationMethod;
+                Parse(iotHubConnectionString);
             }
 
-            return csBuilder;
+            Validate();
         }
 
         /// <summary>
@@ -201,10 +177,10 @@ namespace Microsoft.Azure.Devices.Client
         // This setting is valid only for SAS authenticated clients.
         internal int SasTokenRenewalBuffer { get; set; }
 
-        internal IotHubConnectionString ToIotHubConnectionString()
+        internal IotHubConnectionInfo ToIotHubConnectionInfo()
         {
             Validate();
-            return new IotHubConnectionString(this);
+            return new IotHubConnectionInfo(this);
         }
 
         /// <summary>
@@ -245,8 +221,6 @@ namespace Microsoft.Azure.Devices.Client
             UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, ParseX509, true)
                 || GetConnectionStringOptionalValueOrDefault<bool>(map, CommonX509CertPropertyName, ParseX509, true);
             GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
-
-            Validate();
         }
 
         private void Validate()
@@ -265,8 +239,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            if ((UsingX509Cert || Certificate != null) &&
-                (!SharedAccessKey.IsNullOrWhiteSpace()
+            if ((UsingX509Cert || Certificate != null)
+                && (!SharedAccessKey.IsNullOrWhiteSpace()
                     || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
                 throw new ArgumentException(
@@ -291,7 +265,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid SharedAccessSignature (SAS)");
+                    throw new ArgumentException("Invalid shared access signature (SAS).");
                 }
             }
 
@@ -309,16 +283,13 @@ namespace Microsoft.Azure.Devices.Client
             ValidateFormatIfSpecified(UsingX509Cert.ToString(CultureInfo.InvariantCulture), X509CertPropertyName, s_x509CertRegex);
         }
 
-        private void SetHostName(string hostname)
+        private void SetHostName(string hostName)
         {
-            if (hostname.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
 
-            ValidateFormat(hostname, HostNamePropertyName, s_hostNameRegex);
+            ValidateFormat(hostName, HostNamePropertyName, s_hostNameRegex);
 
-            _hostName = hostname;
+            _hostName = hostName;
             SetIotHubName();
         }
 
@@ -329,7 +300,7 @@ namespace Microsoft.Azure.Devices.Client
             // We expect the hostname to be of the format "acme.azure-devices.net", in which case the IotHubName is "acme".
             // For transparent gateway scenarios, we can simplify the input credentials to only specify the gateway device hostname,
             // instead of having to specify both the IoT hub hostname and the gateway device hostname.
-            // In this case, the hostname will be of the format "myGatewayDevice", and will not have ".azure-devices.net" suffix.
+            // In this case, the host name will be of the format "myGatewayDevice", and will not have ".azure-devices.net" suffix.
             if (IotHubName.IsNullOrWhiteSpace())
             {
                 if (Logging.IsEnabled)
@@ -340,14 +311,10 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetAuthenticationMethod(IAuthenticationMethod authMethod)
         {
-            if (authMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authMethod));
-            }
+            Argument.AssertNotNull(authMethod, nameof(authMethod));
 
             authMethod.Populate(this);
             _authenticationMethod = authMethod;
-            Validate();
         }
 
         private static void ValidateFormat(string value, string propertyName, Regex regex)

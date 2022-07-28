@@ -5,10 +5,10 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 {
     internal class IotHubConnectionStringExtensions
     {
-        internal static IotHubConnectionString Parse(string connectionString)
+        internal static IotHubConnectionInfo Parse(string connectionString)
         {
-            var builder = IotHubConnectionStringBuilder.Create(connectionString);
-            return builder.ToIotHubConnectionString();
+            var builder = new IotHubConnectionStringBuilder(connectionString);
+            return builder.ToIotHubConnectionInfo();
         }
     }
 }

@@ -65,8 +65,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
-        public InternalClient(
-            IotHubConnectionString iotHubConnectionString,
+        protected internal InternalClient(
+            IotHubConnectionInfo iotHubConnectionString,
             IDeviceClientPipelineBuilder pipelineBuilder,
             IotHubClientOptions options)
         {
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionString IotHubConnectionString { get; private set; }
+        internal IotHubConnectionInfo IotHubConnectionString { get; private set; }
 
         /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,

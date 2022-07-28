@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         /// <summary>
         /// Device connection string details.
         /// </summary>
-        IotHubConnectionString IotHubConnectionString { get; }
+        IotHubConnectionInfo IotHubConnectionString { get; }
 
         /// <summary>
         /// SDK,.NET version, Operating system and environment information.

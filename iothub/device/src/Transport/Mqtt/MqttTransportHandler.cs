@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         internal MqttTransportHandler(
             PipelineContext context,
-            IotHubConnectionString iotHubConnectionString,
+            IotHubConnectionInfo iotHubConnectionString,
             IotHubClientMqttSettings settings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         internal MqttTransportHandler(
             PipelineContext context,
-            IotHubConnectionString iotHubConnectionString,
+            IotHubConnectionInfo iotHubConnectionString,
             IotHubClientMqttSettings settings,
             Func<IPAddress[], int, Task<IChannel>> channelFactory)
             : base(context, settings)
@@ -1102,7 +1102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, IotHubClientMqttSettings settings, ProductInfo productInfo, IotHubClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionInfo iotHubConnectionString, IotHubClientMqttSettings settings, ProductInfo productInfo, IotHubClientOptions options)
         {
             return async (addresses, port) =>
             {
@@ -1176,7 +1176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
-            IotHubConnectionString iotHubConnectionString,
+            IotHubConnectionInfo iotHubConnectionString,
             IotHubClientMqttSettings settings,
             ProductInfo productInfo,
             IotHubClientOptions options)

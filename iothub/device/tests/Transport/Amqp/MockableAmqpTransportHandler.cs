@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         internal MockableAmqpTransportHandler(
             PipelineContext context,
-            IotHubConnectionString connectionString,
+            IotHubConnectionInfo connectionString,
             IotHubClientAmqpSettings transportSettings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
