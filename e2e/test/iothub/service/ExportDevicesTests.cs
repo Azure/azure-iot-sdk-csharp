@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string devicesFileName = $"{idPrefix}-devicesexport-{StorageContainer.GetRandomSuffix(4)}.txt";
             string configsFileName = $"{idPrefix}-configsexport-{StorageContainer.GetRandomSuffix(4)}.txt";
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
@@ -105,8 +104,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     })
                     .ConfigureAwait(false);
 
-                Configuration configuration = await registryManager
-                    .AddConfigurationAsync(
+                Configuration configuration = await serviceClient.Configurations
+                    .CreateAsync(
                         new Configuration(configurationId)
                         {
                             Priority = 2,
@@ -150,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
             finally
             {
-                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, registryManager, serviceClient).ConfigureAwait(false);
+                await CleanUpDevicesAsync(edgeId1, edgeId2, deviceId, configurationId, serviceClient).ConfigureAwait(false);
             }
         }
 
@@ -307,7 +306,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string edgeId2,
             string deviceId,
             string configurationId,
-            RegistryManager registryManager,
             IotHubServiceClient serviceClient)
         {
             try
@@ -315,7 +313,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
                 await serviceClient.Devices.DeleteAsync(edgeId2).ConfigureAwait(false);
                 await serviceClient.Devices.DeleteAsync(edgeId1).ConfigureAwait(false);
-                await registryManager.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
+                await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
