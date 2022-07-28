@@ -138,6 +138,7 @@ namespace Microsoft.Azure.Devices
         /// Subclient of <see cref="IotHubServiceClient"/> that handles configurations
         /// getting/adding/setting/deleting configurations.
         /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
         public ConfigurationsClient Configurations { get; protected set; }
 
         /// <summary>

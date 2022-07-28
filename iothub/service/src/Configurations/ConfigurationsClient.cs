@@ -95,6 +95,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The Configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided configuration Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the configuration Id is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -112,7 +113,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
             try
             {
-                Argument.RequireNotNull(configurationId, nameof(configurationId));
+                Argument.RequireNotNullOrEmpty(configurationId, nameof(configurationId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
@@ -138,6 +139,7 @@ namespace Microsoft.Azure.Devices
         /// Results are not ordered.
         /// </summary>
         /// <returns>The list of configurations.</returns>
+        /// <exception cref="ArgumentException">Thrown if the maxCount value less than zero.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -155,6 +157,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
             try
             {
+                if(maxCount < 0)
+                {
+                    throw new ArgumentException(ApiResources.ArgumentMustBeNonNegative, nameof(maxCount));
+                }
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, ConfigurationsRequestUriFormat.FormatInvariant(maxCount));
@@ -253,9 +259,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Deletes a configuration from IoT hub.
         /// </summary>
-        /// <param name="configurationId">The id of the configurationId being deleted.</param>
+        /// <param name="configurationId">The id of the configuration being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided configuration Id is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the configuration Id is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -274,7 +281,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(configurationId, nameof(configurationId));
+                Argument.RequireNotNullOrEmpty(configurationId, nameof(configurationId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // use wild-card ETag
@@ -353,6 +360,18 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device Id.</param>
         /// <param name="content">The configuration.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided device Id or content is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the device Id is empty or whitespace.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public async virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -360,7 +379,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(deviceId, nameof(deviceId));
+                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                Argument.RequireNotNull(content, nameof(content));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);
