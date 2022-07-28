@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Http2
@@ -48,7 +50,17 @@ namespace Microsoft.Azure.Devices.Http2
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
-                throw await ExceptionHandlingHelper.GetDefaultErrorMapping()[responseMessage.StatusCode].Invoke(responseMessage);
+                IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping =
+                    ExceptionHandlingHelper.GetDefaultErrorMapping();
+                if (defaultErrorMapping.TryGetValue(responseMessage.StatusCode, out Func<HttpResponseMessage, Task<Exception>> mappedException))
+                {
+                    throw await mappedException.Invoke(responseMessage);
+                }
+
+                // Default case for when the mapping of this error code to an exception does not exist yet
+                ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
+                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
+                throw new IotHubException(errorCode, errorMessage);
             }
         }
 

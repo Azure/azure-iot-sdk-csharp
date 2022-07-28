@@ -54,7 +54,22 @@ namespace Microsoft.Azure.Devices.Http2
             if (payload != null)
             {
                 message.Headers.Add(HttpRequestHeader.ContentType.ToString(), ApplicationJson);
-                message.Content = HttpMessageHelper2.SerializePayload(payload);
+
+                if (payload != null)
+                {
+                    if (payload is string)
+                    {
+                        // This is a special case reserved for the digital twins subclient where
+                        // users are expected to pass in an already serialized string. For example,
+                        // invoking a digital twin command or updating a digital twin both use
+                        // this functionality.
+                        message.Content = new StringContent((string)payload);
+                    }
+                    else
+                    {
+                        message.Content = HttpMessageHelper2.SerializePayload(payload);
+                    }
+                }
             }
 
             return message;

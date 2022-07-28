@@ -17,5 +17,10 @@ namespace Microsoft.Azure.Devices
         /// Command invocation result payload, as supplied by the device.
         /// </summary>
         public string Payload { get; internal set; }
+
+        /// <summary>
+        /// Server Generated Request Id (GUID), to uniquely identify this request in the service.
+        /// </summary>
+        public string RequestId { get; internal set; }
     }
 }

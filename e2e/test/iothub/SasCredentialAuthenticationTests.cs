@@ -129,16 +129,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
-            using var digitalTwinClient = DigitalTwinClient.Create(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
             // act
-            HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
-                .GetDigitalTwinAsync<ThermostatTwin>(testDevice.Id)
+            DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
+                .GetAsync<ThermostatTwin>(testDevice.Id)
                 .ConfigureAwait(false);
-            ThermostatTwin twin = response.Body;
-
+            ThermostatTwin twin = response.DigitalTwin;
             // assert
             twin.Metadata.ModelId.Should().Be(thermostatModelId);
 

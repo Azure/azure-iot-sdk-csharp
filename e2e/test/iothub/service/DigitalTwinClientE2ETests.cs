@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Serialization;
-using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -47,13 +45,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 // Perform operations on the digital twin.
-                using var digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(s_connectionString);
+                using var serviceClient = new IotHubServiceClient(s_connectionString);
 
                 // Retrieve the digital twin.
-                HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response =
-                    await digitalTwinClient.GetDigitalTwinAsync<ThermostatTwin>(deviceId).ConfigureAwait(false);
-                ThermostatTwin twin = response.Body;
-                twin.Metadata.ModelId.Should().Be(ThermostatModelId);
+                DigitalTwinGetResponse<ThermostatTwin> response =
+                    await serviceClient.DigitalTwins.GetAsync<ThermostatTwin>(deviceId).ConfigureAwait(false);
+                ThermostatTwin twin = response.DigitalTwin;
+                response.ETag.Should().NotBeNull();
 
                 // Set callback handler for receiving root-level twin property updates.
                 await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
@@ -68,9 +66,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 var ops = new UpdateOperationsUtility();
                 ops.AppendAddPropertyOp($"/{propertyName}", propertyValue);
                 string patch = ops.Serialize();
-                HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateResponse =
-                    await digitalTwinClient.UpdateDigitalTwinAsync(deviceId, patch);
-                updateResponse.Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+                DigitalTwinUpdateResponse updateResponse =
+                    await serviceClient.DigitalTwins.UpdateAsync(deviceId, patch);
 
                 // Set callback to handle root-level command invocation request.
                 int expectedCommandStatus = 200;
@@ -87,10 +84,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // Invoke the root-level command "getMaxMinReport" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
                 string payload = JsonConvert.SerializeObject(since);
-                HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> commandResponse =
-                    await digitalTwinClient.InvokeCommandAsync(deviceId, commandName, payload).ConfigureAwait(false);
-                commandResponse.Body.Status.Should().Be(expectedCommandStatus);
-                commandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(commandName));
+                DigitalTwinCommandResponse commandResponse =
+                    await serviceClient.DigitalTwins.InvokeCommandAsync(deviceId, commandName, payload).ConfigureAwait(false);
+                commandResponse.Status.Should().Be(expectedCommandStatus);
+                commandResponse.Payload.Should().Be(JsonConvert.SerializeObject(commandName));
             }
             finally
             {
@@ -119,13 +116,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 // Perform operations on the digital twin.
-                using var digitalTwinClient = DigitalTwinClient.CreateFromConnectionString(s_connectionString);
+                using var serviceClient = new IotHubServiceClient(s_connectionString);
 
                 // Retrieve the digital twin.
-                HttpOperationResponse<TemperatureControllerTwin, DigitalTwinGetHeaders> response =
-                    await digitalTwinClient.GetDigitalTwinAsync<TemperatureControllerTwin>(deviceId).ConfigureAwait(false);
-                TemperatureControllerTwin twin = response.Body;
+                DigitalTwinGetResponse<TemperatureControllerTwin> response =
+                    await serviceClient.DigitalTwins.GetAsync<TemperatureControllerTwin>(deviceId).ConfigureAwait(false);
+                TemperatureControllerTwin twin = response.DigitalTwin;
                 twin.Metadata.ModelId.Should().Be(TemperatureControllerModelId);
+                response.ETag.Should().NotBeNull();
 
                 string componentName = "thermostat1";
 
@@ -146,9 +144,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 var ops = new UpdateOperationsUtility();
                 ops.AppendAddComponentOp($"/{componentName}", propertyValues);
                 string patch = ops.Serialize();
-                HttpOperationHeaderResponse<DigitalTwinUpdateHeaders> updateResponse =
-                    await digitalTwinClient.UpdateDigitalTwinAsync(deviceId, patch);
-                updateResponse.Response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+                DigitalTwinUpdateResponse updateResponse =
+                    await serviceClient.DigitalTwins.UpdateAsync(deviceId, patch);
 
                 // Set callbacks to handle command requests.
                 int expectedCommandStatus = 200;
@@ -167,10 +164,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // Invoke the root-level command "reboot" on the digital twin.
                 int delay = 1;
                 string rootCommandPayload = JsonConvert.SerializeObject(delay);
-                HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> rootCommandResponse =
-                    await digitalTwinClient.InvokeCommandAsync(deviceId, rootCommandName, rootCommandPayload).ConfigureAwait(false);
-                rootCommandResponse.Body.Status.Should().Be(expectedCommandStatus);
-                rootCommandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
+                DigitalTwinCommandResponse rootCommandResponse =
+                    await serviceClient.DigitalTwins.InvokeCommandAsync(deviceId, rootCommandName, rootCommandPayload).ConfigureAwait(false);
+                rootCommandResponse.Status.Should().Be(expectedCommandStatus);
+                rootCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
 
                 // Set callback to handle component-level command invocation request.
                 // For a component-level command, the command name is in the format "<component-name>*<command-name>".
@@ -188,10 +185,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // Invoke the command "getMaxMinReport" under component "thermostat1" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
                 string componentCommandPayload = JsonConvert.SerializeObject(since);
-                HttpOperationResponse<DigitalTwinCommandResponse, DigitalTwinInvokeCommandHeaders> componentCommandResponse =
-                    await digitalTwinClient.InvokeComponentCommandAsync(deviceId, componentName, componentCommandName, componentCommandPayload).ConfigureAwait(false);
-                componentCommandResponse.Body.Status.Should().Be(expectedCommandStatus);
-                componentCommandResponse.Body.Payload.Should().Be(JsonConvert.SerializeObject(componentCommandNamePnp));
+                DigitalTwinCommandResponse componentCommandResponse =
+                    await serviceClient.DigitalTwins.InvokeComponentCommandAsync(deviceId, componentName, componentCommandName, componentCommandPayload).ConfigureAwait(false);
+                componentCommandResponse.Status.Should().Be(expectedCommandStatus);
+                componentCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(componentCommandNamePnp));
             }
             finally
             {
