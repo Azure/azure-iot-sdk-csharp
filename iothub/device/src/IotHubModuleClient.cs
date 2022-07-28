@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
             _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
 
-            if (string.IsNullOrWhiteSpace(InternalClient.IotHubConnectionString?.ModuleId))
+            if (string.IsNullOrWhiteSpace(InternalClient.IotHubConnectionInfo?.ModuleId))
             {
                 throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
             }
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
             // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = internalClient.IotHubConnectionString.IsUsingGateway;
+            _isAnEdgeModule = internalClient.IotHubConnectionInfo.IsUsingGateway;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
@@ -490,7 +490,7 @@ namespace Microsoft.Azure.Devices.Client
                     transportSettings.ClientCertificate = InternalClient.Certificate;
                 }
 
-                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings, httpClientHandler);
+                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionInfo, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
                 MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
 

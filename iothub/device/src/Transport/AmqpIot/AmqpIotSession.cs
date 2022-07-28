@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Role = false,
                 InitialDeliveryCount = 0,
                 Target = new Target { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
-                Source = new Source { Address = deviceIdentity.IotHubConnectionString.DeviceId },
+                Source = new Source { Address = deviceIdentity.IotHubConnectionInfo.DeviceId },
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
                 Source = new Source { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
-                Target = new Target { Address = deviceIdentity.IotHubConnectionString.DeviceId },
+                Target = new Target { Address = deviceIdentity.IotHubConnectionInfo.DeviceId },
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
@@ -348,17 +348,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private static string BuildLinkAddress(IDeviceIdentity deviceIdentity, string deviceTemplate, string moduleTemplate)
         {
-            string path = string.IsNullOrEmpty(deviceIdentity.IotHubConnectionString.ModuleId)
+            string path = string.IsNullOrEmpty(deviceIdentity.IotHubConnectionInfo.ModuleId)
                 ? string.Format(
                     CultureInfo.InvariantCulture,
                     deviceTemplate,
-                    WebUtility.UrlEncode(deviceIdentity.IotHubConnectionString.DeviceId))
+                    WebUtility.UrlEncode(deviceIdentity.IotHubConnectionInfo.DeviceId))
                 : string.Format(
                     CultureInfo.InvariantCulture,
                     moduleTemplate,
-                    WebUtility.UrlEncode(deviceIdentity.IotHubConnectionString.DeviceId), WebUtility.UrlEncode(deviceIdentity.IotHubConnectionString.ModuleId));
+                    WebUtility.UrlEncode(deviceIdentity.IotHubConnectionInfo.DeviceId), WebUtility.UrlEncode(deviceIdentity.IotHubConnectionInfo.ModuleId));
 
-            return deviceIdentity.IotHubConnectionString.BuildLinkAddress(path).AbsoluteUri;
+            return deviceIdentity.IotHubConnectionInfo.BuildLinkAddress(path).AbsoluteUri;
         }
 
         #endregion Common link handling

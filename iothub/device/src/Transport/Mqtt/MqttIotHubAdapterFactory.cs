@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public MqttIotHubAdapter Create(
             IMqttIotHubEventHandler mqttIotHubEventHandler,
-            IotHubConnectionString iotHubConnectionString,
+            IotHubConnectionInfo iotHubConnectionString,
             IotHubClientMqttSettings mqttTransportSettings,
             ProductInfo productInfo,
             IotHubClientOptions options)

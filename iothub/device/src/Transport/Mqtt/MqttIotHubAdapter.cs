@@ -1019,7 +1019,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                if (_passwordProvider is IotHubConnectionString iotHubConnectionString
+                if (_passwordProvider is IotHubConnectionInfo iotHubConnectionString
                     && iotHubConnectionString.TokenRefresher != null
                     && iotHubConnectionString.TokenRefresher.DisposalWithClient)
                 {

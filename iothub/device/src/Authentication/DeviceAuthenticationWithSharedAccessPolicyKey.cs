@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(deviceId));
+                throw new ArgumentException("Device Id cannot be null or white space.");
             }
 
             _deviceId = deviceId;
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException("Shared access key cannot be null or white space.");
             }
 
             if (!StringValidationHelper.IsBase64String(key))
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (policyName.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(policyName));
+                throw new ArgumentException("Policy name cannot be null or white space.");
             }
 
             _policyName = policyName;

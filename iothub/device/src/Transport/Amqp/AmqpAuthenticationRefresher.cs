@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly AmqpIotCbsLink _amqpIotCbsLink;
-        private readonly IotHubConnectionString _connectionString;
+        private readonly IotHubConnectionInfo _connInfo;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private Task _refreshLoop;
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         internal AmqpAuthenticationRefresher(IDeviceIdentity deviceIdentity, AmqpIotCbsLink amqpCbsLink)
         {
             _amqpIotCbsLink = amqpCbsLink;
-            _connectionString = deviceIdentity.IotHubConnectionString;
+            _connInfo = deviceIdentity.IotHubConnectionInfo;
             _audience = deviceIdentity.Audience;
-            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_connectionString);
+            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_connInfo);
 
             if (Logging.IsEnabled)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DateTime refreshOn = await _amqpIotCbsLink
                 .SendTokenAsync(
                     _amqpIotCbsTokenProvider,
-                    _connectionString.AmqpEndpoint,
+                    _connInfo.AmqpEndpoint,
                     _audience,
                     _audience,
                     s_accessRightsStringArray,
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
             TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-            Debug.Assert(_connectionString.TokenRefresher != null);
+            Debug.Assert(_connInfo.TokenRefresher != null);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         refreshesOn = await _amqpIotCbsLink
                             .SendTokenAsync(
                                 _amqpIotCbsTokenProvider,
-                                _connectionString.AmqpEndpoint,
+                                _connInfo.AmqpEndpoint,
                                 _audience,
                                 _audience,
                                 s_accessRightsStringArray,

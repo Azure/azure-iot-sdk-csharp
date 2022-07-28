@@ -65,8 +65,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
-        public InternalClient(
-            IotHubConnectionString iotHubConnectionString,
+        protected internal InternalClient(
+            IotHubConnectionInfo connectionInfo,
             IDeviceClientPipelineBuilder pipelineBuilder,
             IotHubClientOptions options)
         {
@@ -75,12 +75,12 @@ namespace Microsoft.Azure.Devices.Client
 
             _transportSettings = options.TransportSettings;
             _clientOptions = options;
-            IotHubConnectionString = iotHubConnectionString;
+            IotHubConnectionInfo = connectionInfo;
 
             var pipelineContext = new PipelineContext
             {
                 TransportSettings = options.TransportSettings,
-                IotHubConnectionString = iotHubConnectionString,
+                IotHubConnectionInfo = connectionInfo,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
                 ConnectionStatusChangesHandler = OnConnectionStatusChanged,
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Associate(this, options.TransportSettings, nameof(InternalClient));
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionInfo, options.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionString IotHubConnectionString { get; private set; }
+        internal IotHubConnectionInfo IotHubConnectionInfo { get; private set; }
 
         /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
@@ -1151,7 +1151,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void ValidateModuleTransportHandler(string apiName)
         {
-            if (string.IsNullOrEmpty(IotHubConnectionString.ModuleId))
+            if (string.IsNullOrEmpty(IotHubConnectionInfo.ModuleId))
             {
                 throw new InvalidOperationException("{0} is available for Modules only.".FormatInvariant(apiName));
             }

@@ -3,15 +3,16 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal sealed partial class IotHubConnectionString : IAuthorizationProvider
+    internal class IotHubConnectionInfo : IAuthorizationProvider
     {
-        private const int DefaultSecurePort = 5671;
+        private const int DefaultAmqpSecurePort = 5671;
 
-        public IotHubConnectionString(IotHubConnectionStringBuilder builder)
+        public IotHubConnectionInfo(IotHubConnectionStringBuilder builder)
         {
             if (builder == null)
             {
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
 
             HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
 
-            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, DefaultSecurePort).Uri;
+            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, DefaultAmqpSecurePort).Uri;
 
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
             {
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         // This constructor is only used for unit testing.
-        internal IotHubConnectionString(
+        internal IotHubConnectionInfo(
             string ioTHubName = null,
             string deviceId = null,
             string moduleId = null,
@@ -125,6 +126,8 @@ namespace Microsoft.Azure.Devices.Client
             IsUsingGateway = isUsingGateway;
         }
 
+        public AuthenticationWithTokenRefresh TokenRefresher { get; private set; }
+
         public string IotHubName { get; private set; }
 
         public string DeviceId { get; private set; }
@@ -146,5 +149,43 @@ namespace Microsoft.Azure.Devices.Client
         public string SharedAccessSignature { get; private set; }
 
         public bool IsUsingGateway { get; private set; }
+
+        async Task<string> IAuthorizationProvider.GetPasswordAsync()
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"{nameof(IotHubConnectionInfo)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+
+                Debug.Assert(
+                    !string.IsNullOrWhiteSpace(SharedAccessSignature)
+                        || TokenRefresher != null,
+                    "The token refresher and the shared access signature can't both be null");
+
+                if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
+                {
+                    return SharedAccessSignature;
+                }
+
+                return TokenRefresher == null
+                    ? null
+                    : await TokenRefresher.GetTokenAsync(Audience);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(IotHubConnectionInfo)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+            }
+        }
+
+        public Uri BuildLinkAddress(string path)
+        {
+            var builder = new UriBuilder(AmqpEndpoint)
+            {
+                Path = path,
+            };
+
+            return builder.Uri;
+        }
     }
 }
