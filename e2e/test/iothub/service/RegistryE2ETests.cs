@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // act
 
             string queryText = $"select * from devices where deviceId = '{deviceId}'";
-            IQuery query = registryManager.CreateQuery(queryText);
+            IQuery query = serviceClient.Query.CreateQuery(queryText);
             IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
 
             // assert
