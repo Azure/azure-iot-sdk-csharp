@@ -42,15 +42,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Port = AmqpConstants.DefaultSecurePort,
             };
 
-            SslProtocols protocols = TlsVersions.Instance.Preferred;
-
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = hostName,
                 Certificate = null,
                 CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback
                     ?? OnRemoteCertificateValidation,
-                Protocols = protocols,
+                Protocols = amqpTransportSettings.SslProtocols,
             };
 
             if (_amqpTransportSettings.ClientCertificate != null)

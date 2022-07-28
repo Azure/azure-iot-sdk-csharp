@@ -465,12 +465,14 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                var transportSettings = new IotHubClientHttpSettings();
+
                 if (customCertificateValidation != null)
                 {
                     httpClientHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = TlsVersions.Instance.Preferred,
+                        SslProtocols = transportSettings.SslProtocols,
                     };
                 }
 
@@ -482,7 +484,6 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 };
 
-                var transportSettings = new IotHubClientHttpSettings();
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
                 if (InternalClient.Certificate != null)
                 {

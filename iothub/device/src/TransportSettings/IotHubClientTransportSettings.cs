@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
@@ -65,6 +66,19 @@ namespace Microsoft.Azure.Devices.Client
         /// </c>
         /// </example>
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// The version of TLS to use by default.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux).
+        /// </remarks>
+        public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; }
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
