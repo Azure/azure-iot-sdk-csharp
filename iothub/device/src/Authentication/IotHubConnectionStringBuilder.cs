@@ -74,31 +74,17 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates a connection string based on the hostname of the IoT hub and the authentication method passed as a parameter.
+        /// Creates an instance of this class using a connection string.
         /// </summary>
-        /// <param name="iotHubConnectionString">The connection string.</param>
-        /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
+        /// <param name="iotHubConnectionString">The IoT hub device connection string.</param>
+        /// <returns>A new instance of this class.</returns>
         public IotHubConnectionStringBuilder(string iotHubConnectionString)
-            : this(iotHubConnectionString, null)
-        {
-        }
-
-        internal IotHubConnectionStringBuilder(string iotHubConnectionString, IAuthenticationMethod authenticationMethod)
         {
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionString, nameof(iotHubConnectionString));
 
-            if (authenticationMethod == null)
-            {
-                // We'll parse the connection string and use that to build an auth method
-                Parse(iotHubConnectionString);
-                AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(this);
-            }
-            else
-            {
-                // We'll set the auth method, which will set some properties on this class, and then parse.
-                AuthenticationMethod = authenticationMethod;
-                Parse(iotHubConnectionString);
-            }
+            // We'll parse the connection string and use that to build an auth method
+            ExtractPropertiesFromConnectionString(iotHubConnectionString);
+            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(this);
 
             Validate();
         }
@@ -208,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client
             return stringBuilder.ToString();
         }
 
-        private void Parse(string iotHubConnectionString)
+        private void ExtractPropertiesFromConnectionString(string iotHubConnectionString)
         {
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
