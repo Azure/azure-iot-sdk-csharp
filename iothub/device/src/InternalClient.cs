@@ -1181,31 +1181,28 @@ namespace Microsoft.Azure.Devices.Client
             {
                 var writableClientPropertyCollection = new WritableClientPropertyCollection(patch, PayloadConvention);
 
-                var propertiesToBeReported = new ClientPropertyCollection();
                 try
                 {
-                    propertiesToBeReported = await _writableClientPropertyUpdateCallback.Invoke(writableClientPropertyCollection);
+                    ClientPropertyCollection propertiesToBeReported = await _writableClientPropertyUpdateCallback.Invoke(writableClientPropertyCollection);
+
+                    if (propertiesToBeReported.Any())
+                    {
+                        try
+                        {
+                            _ = await UpdateClientPropertiesAsync(propertiesToBeReported, CancellationToken.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(this, $"Received an exception when updating writable client property acknowledgement: {ex}", nameof(OnDesiredStatePatchReceived));
+                        }
+                    }
                 }
                 catch(Exception ex)
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(this, $"Received an exception when invoking user-supplied writable client property callback: {ex}", nameof(OnDesiredStatePatchReceived));
                 }
-
-                if (propertiesToBeReported != null && propertiesToBeReported.Any())
-                {
-                    try
-                    {
-                        _ = await UpdateClientPropertiesAsync(propertiesToBeReported, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, $"Received an exception when updating writable client property acknowledgement: {ex}", nameof(OnDesiredStatePatchReceived));
-                    }
-                }
-                else if (Logging.IsEnabled)
-                    Logging.Info(this, $"Did not receive any properties to update", nameof(OnDesiredStatePatchReceived));
             }
         }
 
