@@ -21,8 +21,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string VersionName = "$version";
 
-        // TODO: Unit-testable and mockable
-
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>

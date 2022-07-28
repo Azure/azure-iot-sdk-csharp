@@ -15,10 +15,16 @@ namespace Microsoft.Azure.Devices.Client
         private readonly ReadOnlyCollection<byte> _payload;
         private readonly PayloadConvention _payloadConvention;
 
-        // TODO: Unit-testable and mockable
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected CommandRequest()
+        {
+
+        }
 
         /// <summary>
-        /// For internal use only, unless used in mocking for testing.
+        /// Creates an instance of this class. Provided for internal use only.
         /// </summary>
         /// <param name="payloadConvention">The instance of the payload convention to use.</param>
         /// <param name="commandName">The name of the command.</param>

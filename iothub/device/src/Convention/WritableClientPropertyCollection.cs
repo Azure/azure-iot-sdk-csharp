@@ -23,8 +23,16 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string VersionName = "$version";
 
-        // TODO: Unit-testable and mockable
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected WritableClientPropertyCollection()
+        {
+        }
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for internal use only.
+        /// </summary>
         internal WritableClientPropertyCollection(IDictionary<string, object> writableClientPropertyRequests, PayloadConvention payloadConvention)
         {
             Convention = payloadConvention;

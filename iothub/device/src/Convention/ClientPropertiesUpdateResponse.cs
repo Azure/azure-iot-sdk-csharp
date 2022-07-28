@@ -9,9 +9,10 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientPropertiesUpdateResponse
     {
-        // TODO: Unit-testable and mockable
-
-        internal ClientPropertiesUpdateResponse()
+        /// <summary>
+        /// Creates an instance of this class. Provided for internal use only, unless used in mocking for testing.
+        /// </summary>
+        protected internal ClientPropertiesUpdateResponse()
         {
         }
 

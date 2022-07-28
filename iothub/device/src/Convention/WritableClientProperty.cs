@@ -13,8 +13,16 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class WritableClientProperty
     {
-        // TODO: Unit-testable and mockable
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected WritableClientProperty()
+        {
+        }
 
+        /// <summary>
+        /// Creates an instance of this class. Provided for internal use only.
+        /// </summary>
         internal WritableClientProperty(long version, PayloadConvention payloadConvention)
         {
             Version = version;

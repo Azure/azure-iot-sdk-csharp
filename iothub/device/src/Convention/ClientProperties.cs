@@ -8,10 +8,16 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class ClientProperties
     {
-        // TODO: Unit-testable and mockable
+        /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected ClientProperties()
+        {
+
+        }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ClientProperties"/> with the specified collections.
+        /// Creates an instance of this class with the specified collections. Provided for internal use only.
         /// </summary>
         /// <param name="writablePropertyRequestCollection">A collection of writable property requests returned from IoT Hub.</param>
         /// <param name="clientReportedPropertyCollection">A collection of client reported properties returned from IoT Hub.</param>
