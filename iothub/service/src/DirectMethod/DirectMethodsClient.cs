@@ -88,8 +88,6 @@ namespace Microsoft.Azure.Devices
             try
             {
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, uri, _credentialProvider, cloudToDeviceMethod);
-                TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
-                request.Headers.Add(HttpRequestHeader.Expires.ToString(), timeout.ToString());
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
