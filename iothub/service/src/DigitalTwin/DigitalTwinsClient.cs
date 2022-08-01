@@ -28,6 +28,9 @@ namespace Microsoft.Azure.Devices
         private const string DigitalTwinCommandRequestUriFormat = "/digitaltwins/{0}/commands/{1}";
         private const string DigitalTwinComponentCommandRequestUriFormat = "/digitaltwins/{0}/components/{1}/commands/{2}";
 
+        private const string StatusCodeHeaderKey = "x-ms-command-statuscode";
+        private const string RequestIdHeaderKey = "x-ms-request-id";
+
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an
         // HTTP patch request.
         private readonly HttpMethod _patch = new HttpMethod("PATCH");
@@ -220,8 +223,8 @@ namespace Microsoft.Azure.Devices
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                int responseStatusCode = int.Parse(response.Headers.GetValues("x-ms-command-statuscode").FirstOrDefault());
-                string requestId = response.Headers.GetValues("x-ms-request-id").FirstOrDefault();
+                int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
+                string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
                 var commandResponse = new InvokeDigitalTwinCommandResponse()
                 {
                     Payload = responsePayload,
@@ -297,8 +300,8 @@ namespace Microsoft.Azure.Devices
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                int responseStatusCode = int.Parse(response.Headers.GetValues("x-ms-command-statuscode").FirstOrDefault());
-                string requestId = response.Headers.GetValues("x-ms-request-id").FirstOrDefault();
+                int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
+                string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
                 var commandResponse = new InvokeDigitalTwinCommandResponse()
                 {
                     Payload = responsePayload,

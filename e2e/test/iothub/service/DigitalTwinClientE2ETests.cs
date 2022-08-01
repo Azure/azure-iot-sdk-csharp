@@ -53,6 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     .ConfigureAwait(false);
 
                 ThermostatTwin twin = response.DigitalTwin;
+                twin.Metadata.ModelId.Should().Be(ThermostatModelId);
                 response.ETag.Should().NotBeNull();
 
                 // Set callback handler for receiving root-level twin property updates.
