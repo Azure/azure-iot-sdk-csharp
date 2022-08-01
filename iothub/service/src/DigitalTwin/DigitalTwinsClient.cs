@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<DigitalTwinGetResponse<T>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
+        public virtual async Task<GetDigitalTwinResponse<T>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting digital twin with Id: {digitalTwinId}", nameof(GetAsync));
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 T digitalTwin = await HttpMessageHelper2.DeserializeResponse<T>(response, cancellationToken);
                 string etag = response.Headers.GetValues("ETag").FirstOrDefault();
-                return new DigitalTwinGetResponse<T>(digitalTwin, etag);
+                return new GetDigitalTwinResponse<T>(digitalTwin, etag);
             }
             catch (Exception ex)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<DigitalTwinUpdateResponse> UpdateAsync(
+        public virtual async Task<UpdateDigitalTwinResponse> UpdateAsync(
             string digitalTwinId,
             string digitalTwinUpdateOperations,
             DigitalTwinUpdateRequestOptions requestOptions = default,
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.Accepted, response);
 
-                var updateResponse = new DigitalTwinUpdateResponse()
+                var updateResponse = new UpdateDigitalTwinResponse()
                 {
                     ETag = response.Headers.GetValues("ETag").FirstOrDefault(),
                     Location = response.Headers.GetValues("Location").FirstOrDefault()
@@ -166,7 +166,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="commandName">The command to be invoked.</param>
-        /// <param name="payload">The serialized command payload.</param>
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The serialized application/json command invocation response, the command response status code, and the request id.</returns>
@@ -185,7 +184,6 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<DigitalTwinCommandResponse> InvokeCommandAsync(
             string digitalTwinId,
             string commandName,
-            string payload = default,
             DigitalTwinInvokeCommandRequestOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
@@ -199,7 +197,13 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string queryStringParameters = BuildCommandRequestQueryStringParameters(requestOptions);
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDigitalTwinCommandRequestUri(digitalTwinId, commandName), _credentialProvider, payload, queryStringParameters);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Post,
+                    GetDigitalTwinCommandRequestUri(digitalTwinId, commandName),
+                    _credentialProvider,
+                    requestOptions?.Payload,
+                    queryStringParameters);
+
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
 
@@ -236,7 +240,6 @@ namespace Microsoft.Azure.Devices
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="componentName">The component name under which the command is defined.</param>
         /// <param name="commandName">The command to be invoked.</param>
-        /// <param name="payload">The serialized command payload.</param>
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The serialized application/json command invocation response, the command response status code, and the request id.</returns>
@@ -256,7 +259,6 @@ namespace Microsoft.Azure.Devices
             string digitalTwinId,
             string componentName,
             string commandName,
-            string payload = default,
             DigitalTwinInvokeCommandRequestOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
@@ -270,7 +272,13 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string queryStringParameters = BuildCommandRequestQueryStringParameters(requestOptions);
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDigitalTwinComponentCommandRequestUri(digitalTwinId, componentName, commandName), _credentialProvider, payload, queryStringParameters);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Post,
+                    GetDigitalTwinComponentCommandRequestUri(digitalTwinId, componentName, commandName),
+                    _credentialProvider,
+                    requestOptions?.Payload,
+                    queryStringParameters);
+
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
 

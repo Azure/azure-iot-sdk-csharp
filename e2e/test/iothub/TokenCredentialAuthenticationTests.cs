@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 
             // act
-            DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
+            GetDigitalTwinResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
                 .GetAsync<ThermostatTwin>(testDevice.Id)
                 .ConfigureAwait(false);
             ThermostatTwin twin = response.DigitalTwin;
