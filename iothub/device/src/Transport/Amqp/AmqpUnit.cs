@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     internal class AmqpUnit : IDisposable
     {
         // If the first argument is set to true, we are disconnecting gracefully via CloseAsync.
-        private readonly IotHubConnectionInfo _iotHubConnectionInfo;
+        private readonly IIotHubConnectionInfo _iotHubConnectionInfo;
 
         private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection, IotHubException> _twinMessageListener;
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
 
         public AmqpUnit(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Logging.Associate(this, _iotHubConnectionInfo, nameof(_iotHubConnectionInfo));
         }
 
-        internal IotHubConnectionInfo GetIotHubConnectionInfo()
+        internal IIotHubConnectionInfo GetIotHubConnectionInfo()
         {
             return _iotHubConnectionInfo;
         }

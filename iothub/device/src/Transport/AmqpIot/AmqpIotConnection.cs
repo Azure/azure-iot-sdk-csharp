@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
+        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IIotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
         {
             if (_amqpConnection.IsClosing())
             {

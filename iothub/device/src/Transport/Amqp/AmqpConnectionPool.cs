@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, amqpUnit, nameof(RemoveAmqpUnit));
 
-            IotHubConnectionInfo iotHubConnectionInfo = amqpUnit.GetIotHubConnectionInfo();
+            IIotHubConnectionInfo iotHubConnectionInfo = amqpUnit.GetIotHubConnectionInfo();
             if (iotHubConnectionInfo.IsPooling())
             {
                 AmqpConnectionHolder amqpConnectionHolder;
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
         }
 
-        private AmqpConnectionHolder[] ResolveConnectionGroup(IotHubConnectionInfo iotHubConnectionInfo)
+        private AmqpConnectionHolder[] ResolveConnectionGroup(IIotHubConnectionInfo iotHubConnectionInfo)
         {
             if (iotHubConnectionInfo.AmqpTransportSettings.ConnectionPoolSettings == null)
             {
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return amqpConnectionHolders;
         }
 
-        private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IotHubConnectionInfo iotHubConnectionInfo)
+        private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IIotHubConnectionInfo iotHubConnectionInfo)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubConnectionInfo, nameof(ResolveConnectionByHashing));
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return pool[index];
         }
 
-        private static int GetDeviceIdentityIndex(IotHubConnectionInfo iotHubConnectionInfo, int poolLength)
+        private static int GetDeviceIdentityIndex(IIotHubConnectionInfo iotHubConnectionInfo, int poolLength)
         {
             return iotHubConnectionInfo == null
                 ? throw new ArgumentNullException(nameof(iotHubConnectionInfo))

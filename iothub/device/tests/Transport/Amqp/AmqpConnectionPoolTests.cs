@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IotHubConnectionInfo testDeviceConnectionInfo = CreatePooledSasGroupedDeviceConnectionInfo(sharedAccessKeyName, poolSize);
+            IIotHubConnectionInfo testDeviceConnectionInfo = CreatePooledSasGroupedDeviceConnectionInfo(sharedAccessKeyName, poolSize);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
@@ -52,14 +52,14 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IotHubConnectionInfo CreatePooledSasGroupedDeviceConnectionInfo(string sharedAccessKeyName, uint poolSize)
+        private IIotHubConnectionInfo CreatePooledSasGroupedDeviceConnectionInfo(string sharedAccessKeyName, uint poolSize)
         {
-            Mock<IotHubConnectionInfo> deviceConnectionInfo = new Mock<IotHubConnectionInfo>();
+            Mock<IIotHubConnectionInfo> connectionInfo = new Mock<IIotHubConnectionInfo>();
 
-            deviceConnectionInfo.Setup(m => m.IsPooling()).Returns(true);
-            deviceConnectionInfo.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
-            deviceConnectionInfo.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
-            deviceConnectionInfo.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
+            connectionInfo.Setup(m => m.IsPooling()).Returns(true);
+            connectionInfo.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
+            connectionInfo.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
+            connectionInfo.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
                 }
             });
 
-            return deviceConnectionInfo.Object;
+            return connectionInfo.Object;
         }
     }
 }

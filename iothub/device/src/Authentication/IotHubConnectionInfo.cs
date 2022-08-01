@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IAuthorizationProvider
+    internal class IotHubConnectionInfo : IIotHubConnectionInfo
     {
         private const int DefaultAmqpSecurePort = 5671;
 
@@ -112,29 +112,29 @@ namespace Microsoft.Azure.Devices.Client
             // AuthenticationModel = AuthenticationModel.X509;
         }
 
-        public AuthenticationWithTokenRefresh TokenRefresher { get; private set; }
+        public AuthenticationWithTokenRefresh TokenRefresher { get; }
 
-        public string IotHubName { get; private set; }
+        public string IotHubName { get; }
 
-        public string DeviceId { get; private set; }
+        public string DeviceId { get; }
 
-        public string ModuleId { get; private set; }
+        public string ModuleId { get; }
 
-        public string HostName { get; private set; }
+        public string HostName { get; }
 
-        public Uri HttpsEndpoint { get; private set; }
+        public Uri HttpsEndpoint { get; }
 
-        public Uri AmqpEndpoint { get; private set; }
+        public Uri AmqpEndpoint { get; }
 
-        public string Audience { get; private set; }
+        public string Audience { get; }
 
-        public string SharedAccessKeyName { get; private set; }
+        public string SharedAccessKeyName { get; }
 
-        public string SharedAccessKey { get; private set; }
+        public string SharedAccessKey { get; }
 
-        public string SharedAccessSignature { get; private set; }
+        public string SharedAccessSignature { get; }
 
-        public bool IsUsingGateway { get; private set; }
+        public bool IsUsingGateway { get; }
 
         public AuthenticationModel AuthenticationModel { get; }
 

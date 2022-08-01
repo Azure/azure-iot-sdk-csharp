@@ -10,10 +10,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal class AmqpIotCbsTokenProvider : ICbsTokenProvider, IDisposable
     {
-        private readonly IotHubConnectionInfo _connInfo;
+        private readonly IIotHubConnectionInfo _connInfo;
         private bool _isDisposed;
 
-        public AmqpIotCbsTokenProvider(IotHubConnectionInfo connectionInfo)
+        public AmqpIotCbsTokenProvider(IIotHubConnectionInfo connectionInfo)
         {
             _connInfo = connectionInfo;
         }

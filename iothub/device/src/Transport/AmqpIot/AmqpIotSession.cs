@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Telemetry links
 
         internal async Task<AmqpIotSendingLink> OpenTelemetrySenderLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMessageReceiverLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region EventLink
 
         internal async Task<AmqpIotReceivingLink> OpenEventsReceiverLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region MethodLink
 
         internal async Task<AmqpIotSendingLink> OpenMethodsSenderLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMethodsReceiverLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region TwinLink
 
         internal async Task<AmqpIotReceivingLink> OpenTwinReceiverLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotSendingLink> OpenTwinSenderLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Common link handling
 
         private static async Task<AmqpIotSendingLink> OpenSendingAmqpLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         private static async Task<AmqpIotReceivingLink> OpenReceivingAmqpLinkAsync(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -345,7 +345,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private static string BuildLinkAddress(IotHubConnectionInfo iotHubConnectionInfo, string deviceTemplate, string moduleTemplate)
+        private static string BuildLinkAddress(IIotHubConnectionInfo iotHubConnectionInfo, string deviceTemplate, string moduleTemplate)
         {
             string path = string.IsNullOrEmpty(iotHubConnectionInfo.ModuleId)
                 ? string.Format(

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpConnectionHolder : IAmqpConnectionHolder, IAmqpUnitManager
     {
-        private readonly IotHubConnectionInfo _iotHubConnectionInfo;
+        private readonly IIotHubConnectionInfo _iotHubConnectionInfo;
         private readonly AmqpIotConnector _amqpIotConnector;
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
         private readonly HashSet<AmqpUnit> _amqpUnits = new HashSet<AmqpUnit>();
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
         private volatile bool _disposed;
 
-        public AmqpConnectionHolder(IotHubConnectionInfo iotHubConnectionInfo)
+        public AmqpConnectionHolder(IIotHubConnectionInfo iotHubConnectionInfo)
         {
             _iotHubConnectionInfo = iotHubConnectionInfo;
             _amqpIotConnector = new AmqpIotConnector(iotHubConnectionInfo.AmqpTransportSettings, iotHubConnectionInfo.HostName);
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IotHubConnectionInfo iotHubConnectionInfo,
+            IIotHubConnectionInfo iotHubConnectionInfo,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
+        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IIotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubConnectionInfo, nameof(CreateRefresherAsync));
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return amqpAuthenticator;
         }
 
-        public async Task<AmqpIotSession> OpenSessionAsync(IotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
+        public async Task<AmqpIotSession> OpenSessionAsync(IIotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubConnectionInfo, nameof(OpenSessionAsync));

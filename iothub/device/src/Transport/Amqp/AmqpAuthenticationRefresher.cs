@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly AmqpIotCbsLink _amqpIotCbsLink;
-        private readonly IotHubConnectionInfo _connInfo;
+        private readonly IIotHubConnectionInfo _connInfo;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private Task _refreshLoop;
         private bool _disposed;
 
-        internal AmqpAuthenticationRefresher(IotHubConnectionInfo iotHubConnectionInfo, AmqpIotCbsLink amqpCbsLink)
+        internal AmqpAuthenticationRefresher(IIotHubConnectionInfo iotHubConnectionInfo, AmqpIotCbsLink amqpCbsLink)
         {
             _amqpIotCbsLink = amqpCbsLink;
             _connInfo = iotHubConnectionInfo;
