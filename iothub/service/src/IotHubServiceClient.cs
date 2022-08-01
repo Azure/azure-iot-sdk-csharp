@@ -148,6 +148,12 @@ namespace Microsoft.Azure.Devices
         public QueryClient Query { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for Scheduled Jobs management.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>
+        public ScheduledJobsClient ScheduledJobsClient { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -162,6 +168,7 @@ namespace Microsoft.Azure.Devices
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            ScheduledJobsClient = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }

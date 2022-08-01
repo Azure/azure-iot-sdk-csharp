@@ -88,8 +88,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 Tags = new TwinCollection(),
             };
             twin.Tags[JobTestTagName] = JobDeviceId;
-
-            using var jobClient = JobClient.CreateFromConnectionString(s_connectionString, httpTransportSettings);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions();
+            options.Proxy = httpTransportSettings.Proxy;
+            using var sc = new IotHubServiceClient(s_connectionString, options);
             int tryCount = 0;
             while (true)
             {
@@ -97,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 {
                     string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
                     string query = $"DeviceId IN ['{JobDeviceId}']";
-                    JobResponse createJobResponse = await jobClient
+                    JobResponse createJobResponse = await sc.ScheduledJobsClient
                         .ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds)
                         .ConfigureAwait(false);
                     break;

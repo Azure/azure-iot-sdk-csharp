@@ -61,9 +61,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         [LoggedTestMethod]
         public async Task JobClient_ScheduleTwinUpdateInvalidServiceCertificateHttp_Fails()
         {
-            using var jobClient = JobClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
+            using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
             IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
-                () => jobClient.ScheduleTwinUpdateAsync(
+                () => sc.ScheduledJobsClient.ScheduleTwinUpdateAsync(
                     "testDevice",
                     "DeviceId IN ['testDevice']",
                     new Twin(),

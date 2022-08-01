@@ -84,9 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         {
             // arrange
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
-            using var jobClient = JobClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                new AzureSasCredential(signature));
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.GetIotHubHostName(), new AzureSasCredential(signature));
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
@@ -96,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             try
             {
                 // act
-                JobResponse createJobResponse = await jobClient
+                JobResponse createJobResponse = await serviceClient.ScheduledJobsClient
                     .ScheduleTwinUpdateAsync(
                         jobId,
                         query,
