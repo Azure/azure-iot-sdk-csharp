@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -15,10 +17,10 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class ConfigurationsClient
     {
-        private string _hostName;
-        private IotHubConnectionProperties _credentialProvider;
-        private HttpClient _httpClient;
-        private HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
         private const string ConfigurationsRequestUriFormat = "&top={0}";
@@ -32,8 +34,8 @@ namespace Microsoft.Azure.Devices
 
         internal ConfigurationsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {
-            _credentialProvider = credentialProvider;
             _hostName = hostName;
+            _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
         }
@@ -56,7 +58,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task<Configuration> CreateAsync(Configuration configuration, CancellationToken cancellationToken = default)
+        public virtual async Task<Configuration> CreateAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
@@ -107,7 +109,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task<Configuration> GetAsync(string configurationId, CancellationToken cancellationToken = default)
+        public virtual async Task<Configuration> GetAsync(string configurationId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
@@ -151,13 +153,13 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task<IEnumerable<Configuration>> GetAsync(int maxCount, CancellationToken cancellationToken = default)
+        public virtual async Task<IEnumerable<Configuration>> GetAsync(int maxCount, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
             try
             {
-                if(maxCount < 0)
+                if (maxCount < 0)
                 {
                     throw new ArgumentException(ApiResources.ArgumentMustBeNonNegative, nameof(maxCount));
                 }
@@ -223,7 +225,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task<Configuration> SetAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<Configuration> SetAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating configuration: {configuration?.Id} - Force update: {forceUpdate}", nameof(SetAsync));
@@ -274,7 +276,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task DeleteAsync(string configurationId, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(string configurationId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
@@ -321,7 +323,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
-        public async virtual Task DeleteAsync(Configuration configuration, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
@@ -329,7 +331,7 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.RequireNotNull(configuration, nameof(configuration));
                 cancellationToken.ThrowIfCancellationRequested();
-                if (string.IsNullOrWhiteSpace(configuration.ETag)) 
+                if (string.IsNullOrWhiteSpace(configuration.ETag))
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration);
                 }
@@ -372,7 +374,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public async virtual Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken = default)
+        public virtual async Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));

@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DevicesClient
     {
-        private string _hostName;
-        private IotHubConnectionProperties _credentialProvider;
-        private HttpClient _httpClient;
-        private HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string DeviceRequestUriFormat = "/devices/{0}";
         private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
@@ -43,8 +43,8 @@ namespace Microsoft.Azure.Devices
 
         internal DevicesClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {
-            _credentialProvider = credentialProvider;
             _hostName = hostName;
+            _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
         }
