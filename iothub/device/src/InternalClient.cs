@@ -73,9 +73,15 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
+            _clientOptions = options ?? new();
             _transportSettings = options.TransportSettings;
-            _clientOptions = options;
             IotHubConnectionInfo = connectionInfo;
+
+            if (!string.IsNullOrWhiteSpace(options.ModelId)
+                && options.TransportSettings is IotHubClientHttpSettings)
+            {
+                throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
+            }
 
             var pipelineContext = new PipelineContext
             {
@@ -90,6 +96,7 @@ namespace Microsoft.Azure.Devices.Client
                 ClientOptions = options,
             };
 
+            pipelineBuilder ??= BuildPipeline();
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             if (Logging.IsEnabled)
@@ -104,6 +111,17 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+        }
+
+        private static IDeviceClientPipelineBuilder BuildPipeline()
+        {
+            var transporthandlerFactory = new TransportHandlerFactory();
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
+
+            return pipelineBuilder;
         }
 
         /// <summary>

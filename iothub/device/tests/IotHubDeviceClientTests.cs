@@ -1366,8 +1366,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                FakeConnectionString,
-                null,
+                new IotHubConnectionStringBuilder(FakeConnectionString),
                 options);
 
             // assert
@@ -1411,8 +1410,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                FakeConnectionString,
-                authMethod1,
+                new IotHubConnectionStringBuilder(FakeConnectionString),
                 options);
 
             // assert
