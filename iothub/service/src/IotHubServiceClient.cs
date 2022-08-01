@@ -146,6 +146,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods"/>
         public DirectMethodsClient DirectMethods { get; protected set; }
+        
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for executing queries using a SQL-like syntax.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
+        public QueryClient Query { get; protected set; }
 
         /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
@@ -160,6 +166,7 @@ namespace Microsoft.Azure.Devices
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
