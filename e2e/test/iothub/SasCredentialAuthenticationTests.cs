@@ -13,7 +13,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using SAS credential succeeds in all the clients.

@@ -73,7 +73,9 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            _clientOptions = options ?? new();
+            Argument.AssertNotNull(options, nameof(options));
+
+            _clientOptions = options;
             _transportSettings = options.TransportSettings;
             IotHubConnectionInfo = connectionInfo;
 

@@ -21,6 +21,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
+            if (options == default)
+            {
+                options = new();
+            }
+
             var csBuilder = new IotHubConnectionStringBuilder(connectionString);
             if (csBuilder.UsingX509Cert)
             {
