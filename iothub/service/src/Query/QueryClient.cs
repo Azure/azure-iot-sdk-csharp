@@ -80,7 +80,8 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(this, $"Creating query", nameof(CreateAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Creating query", nameof(CreateAsync));
             }
         }
 
