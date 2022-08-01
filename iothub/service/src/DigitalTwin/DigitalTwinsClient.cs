@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<DigitalTwinCommandResponse> InvokeCommandAsync(
+        public virtual async Task<InvokeDigitalTwinCommandResponse> InvokeCommandAsync(
             string digitalTwinId,
             string commandName,
             InvokeDigitalTwinCommandOptions requestOptions = default,
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues("x-ms-command-statuscode").FirstOrDefault());
                 string requestId = response.Headers.GetValues("x-ms-request-id").FirstOrDefault();
-                var commandResponse = new DigitalTwinCommandResponse()
+                var commandResponse = new InvokeDigitalTwinCommandResponse()
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<DigitalTwinCommandResponse> InvokeComponentCommandAsync(
+        public virtual async Task<InvokeDigitalTwinCommandResponse> InvokeComponentCommandAsync(
             string digitalTwinId,
             string componentName,
             string commandName,
@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues("x-ms-command-statuscode").FirstOrDefault());
                 string requestId = response.Headers.GetValues("x-ms-request-id").FirstOrDefault();
-                var commandResponse = new DigitalTwinCommandResponse()
+                var commandResponse = new InvokeDigitalTwinCommandResponse()
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
