@@ -142,8 +142,7 @@ namespace Microsoft.Azure.Devices
         public ConfigurationsClient Configurations { get; protected set; }
 
         /// <summary>
-        /// Subclient of <see cref="IotHubServiceClient"/> for query.
-        /// Executes SQL query.
+        /// Subclient of <see cref="IotHubServiceClient"/> for executing queries using a SQL-like syntax.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
         public QueryClient Query { get; protected set; }
