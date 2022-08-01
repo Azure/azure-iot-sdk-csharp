@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         protected ClientProperties()
         {
-
         }
 
         /// <summary>
