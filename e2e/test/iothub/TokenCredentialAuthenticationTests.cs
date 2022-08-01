@@ -101,6 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             GetDigitalTwinResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
                 .GetAsync<ThermostatTwin>(testDevice.Id)
                 .ConfigureAwait(false);
+
             ThermostatTwin twin = response.DigitalTwin;
 
             // assert
