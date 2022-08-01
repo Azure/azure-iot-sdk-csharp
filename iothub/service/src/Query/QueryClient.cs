@@ -70,11 +70,12 @@ namespace Microsoft.Azure.Devices
                     sqlQueryString,
                     pageSize,
                     token,
-                    cancellationToken));
+                    cancellationToken).ConfigureAwait(false));
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
