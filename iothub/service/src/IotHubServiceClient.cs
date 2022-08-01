@@ -142,6 +142,12 @@ namespace Microsoft.Azure.Devices
         public ConfigurationsClient Configurations { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> to directly invoke direct methods on devices and modules in IoT hub.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods"/>
+        public DirectMethodsClient DirectMethods { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -155,6 +161,7 @@ namespace Microsoft.Azure.Devices
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }
