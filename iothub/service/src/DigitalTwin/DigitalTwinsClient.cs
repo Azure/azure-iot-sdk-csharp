@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
     /// This client contains methods to retrieve and update digital twin information, and invoke commands
     /// on a digital twin device.
     /// </summary>
-    /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-develop/concepts-digital-twin"/>
+    /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
     public class DigitalTwinsClient
     {
         private readonly string _hostName;
