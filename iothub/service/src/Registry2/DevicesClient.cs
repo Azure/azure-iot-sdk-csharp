@@ -726,7 +726,7 @@ namespace Microsoft.Azure.Devices
                 JobProperties.CreateForExportJob(
                     exportBlobContainerUri,
                     excludeKeys),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
         }
 
         /// <summary>
@@ -758,7 +758,7 @@ namespace Microsoft.Azure.Devices
                     exportBlobContainerUri,
                     excludeKeys,
                     outputBlobName),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
         }
 
         /// <summary>
@@ -789,7 +789,7 @@ namespace Microsoft.Azure.Devices
             try
             {
                 jobParameters.Type = JobType.ExportDevices;
-                return CreateJobAsync(jobParameters, cancellationToken).ConfigureAwait(false);
+                return CreateJobAsync(jobParameters, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -831,7 +831,7 @@ namespace Microsoft.Azure.Devices
                JobProperties.CreateForImportJob(
                    importBlobContainerUri,
                    outputBlobContainerUri),
-               cancellationToken).ConfigureAwait(false);
+               cancellationToken);
         }
 
         /// <summary>
@@ -864,7 +864,7 @@ namespace Microsoft.Azure.Devices
                    importBlobContainerUri,
                    outputBlobContainerUri,
                    inputBlobName),
-               cancellationToken).ConfigureAwait(false);
+               cancellationToken);
         }
 
         /// <summary>
@@ -897,7 +897,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 jobParameters.Type = JobType.ImportDevices;
-                return CreateJobAsync(jobParameters, cancellationToken).ConfigureAwait(false);
+                return CreateJobAsync(jobParameters, cancellationToken);
             }
             catch (Exception ex)
             {

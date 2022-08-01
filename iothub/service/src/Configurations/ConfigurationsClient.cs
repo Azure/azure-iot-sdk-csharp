@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
         public virtual Task<Configuration> SetAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
-            return SetAsync(configuration, false, cancellationToken).ConfigureAwait(false);
+            return SetAsync(configuration, false, cancellationToken);
         }
 
         /// <summary>
