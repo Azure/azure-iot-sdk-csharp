@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-develop/concepts-digital-twin"/>
     public class DigitalTwinsClient
     {
-        private string _hostName;
+        private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
@@ -78,8 +78,8 @@ namespace Microsoft.Azure.Devices
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                T digitalTwin = await HttpMessageHelper2.DeserializeResponse<T>(response, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                T digitalTwin = await HttpMessageHelper2.DeserializeResponse<T>(response, cancellationToken).ConfigureAwait(false);
                 string etag = response.Headers.GetValues("ETag").FirstOrDefault();
                 return new GetDigitalTwinResponse<T>(digitalTwin, etag);
             }
@@ -146,8 +146,8 @@ namespace Microsoft.Azure.Devices
                     HttpMessageHelper2.InsertEtag(request, requestOptions?.IfMatch);
                 }
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.Accepted, response);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.Accepted, response).ConfigureAwait(false);
 
                 var updateResponse = new UpdateDigitalTwinResponse()
                 {
@@ -214,12 +214,12 @@ namespace Microsoft.Azure.Devices
                     requestOptions?.Payload,
                     queryStringParameters);
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
 
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
-                string responsePayload = await response.Content.ReadAsStringAsync();
+                string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues("x-ms-command-statuscode").FirstOrDefault());
                 string requestId = response.Headers.GetValues("x-ms-request-id").FirstOrDefault();
                 var commandResponse = new DigitalTwinCommandResponse()
@@ -291,12 +291,12 @@ namespace Microsoft.Azure.Devices
                     requestOptions?.Payload,
                     queryStringParameters);
 
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
 
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
-                string responsePayload = await response.Content.ReadAsStringAsync();
+                string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues("x-ms-command-statuscode").FirstOrDefault());
                 string requestId = response.Headers.GetValues("x-ms-request-id").FirstOrDefault();
                 var commandResponse = new DigitalTwinCommandResponse()
