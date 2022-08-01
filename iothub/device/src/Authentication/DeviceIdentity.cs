@@ -3,8 +3,9 @@
 
 using System.Net;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Transport;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Device configurations

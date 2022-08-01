@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IAuthorizationProvider
+    internal class IotHubConnectionInfo : IAuthorizationProvider, IDeviceIdentity
     {
         private const int DefaultAmqpSecurePort = 5671;
 
@@ -99,6 +101,28 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        internal IotHubConnectionInfo(
+            IotHubClientAmqpSettings amqpTransportSettings,
+            ProductInfo productInfo,
+            IotHubClientOptions options)
+        {
+            AmqpTransportSettings = amqpTransportSettings;
+            ProductInfo = productInfo;
+            Options = options;
+
+            if (amqpTransportSettings.ClientCertificate == null)
+            {
+                Audience = CreateAudience();
+                AuthenticationModel = SharedAccessKeyName == null
+                    ? AuthenticationModel.SasIndividual
+                    : AuthenticationModel.SasGrouped;
+            }
+            else
+            {
+                AuthenticationModel = AuthenticationModel.X509;
+            }
+        }
+
         // This constructor is only used for unit testing.
         internal IotHubConnectionInfo(
             string iotHubName = null,
@@ -150,6 +174,14 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool IsUsingGateway { get; private set; }
 
+        public AuthenticationModel AuthenticationModel { get; }
+
+        public IotHubClientAmqpSettings AmqpTransportSettings { get; }
+
+        public ProductInfo ProductInfo { get; }
+
+        public IotHubClientOptions Options { get; }
+
         async Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
             try
@@ -186,6 +218,54 @@ namespace Microsoft.Azure.Devices.Client
             };
 
             return builder.Uri;
+        }
+
+        public bool IsPooling()
+        {
+            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is IotHubConnectionInfo iotHubConnectionInfo
+                && GetHashCode() == iotHubConnectionInfo.GetHashCode()
+                && Equals(DeviceId, iotHubConnectionInfo.DeviceId)
+                && Equals(HostName, iotHubConnectionInfo.HostName)
+                && Equals(ModuleId, iotHubConnectionInfo.ModuleId)
+                && Equals(AmqpTransportSettings.Protocol, iotHubConnectionInfo.AmqpTransportSettings.Protocol)
+                && Equals(AuthenticationModel.GetHashCode(), iotHubConnectionInfo.AuthenticationModel.GetHashCode());
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = UpdateHashCode(620602339, DeviceId);
+            hashCode = UpdateHashCode(hashCode, HostName);
+            hashCode = UpdateHashCode(hashCode, ModuleId);
+            hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.Protocol);
+            hashCode = UpdateHashCode(hashCode, AuthenticationModel);
+            return hashCode;
+        }
+
+        private static int UpdateHashCode(int hashCode, object field)
+        {
+            return field == null
+                ? hashCode
+                : hashCode * -1521134295 + field.GetHashCode();
+        }
+
+        private string CreateAudience()
+        {
+            if (SharedAccessKeyName.IsNullOrWhiteSpace())
+            {
+                return ModuleId.IsNullOrWhiteSpace()
+                    ? $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}"
+                    : $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}/modules/{WebUtility.UrlEncode(ModuleId)}";
+            }
+            else
+            {
+                // this is a group shared key
+                return HostName;
+            }
         }
     }
 }

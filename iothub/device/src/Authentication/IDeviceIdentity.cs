@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+using Microsoft.Azure.Devices.Client.Transport;
+
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Interface for device configurations and common attributes.
@@ -17,11 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         /// AMQP transport layer settings of the device.
         /// </summary>
         IotHubClientAmqpSettings AmqpTransportSettings { get; }
-
-        /// <summary>
-        /// Device connection information details.
-        /// </summary>
-        IotHubConnectionInfo IotHubConnectionInfo { get; }
 
         /// <summary>
         /// SDK,.NET version, Operating system and environment information.
