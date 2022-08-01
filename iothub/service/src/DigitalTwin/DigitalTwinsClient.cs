@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices
     public class DigitalTwinsClient
     {
         private string _hostName;
-        private IotHubConnectionProperties _credentialProvider;
-        private HttpClient _httpClient;
-        private HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string DigitalTwinRequestUriFormat = "/digitaltwins/{0}";
         private const string DigitalTwinCommandRequestUriFormat = "/digitaltwins/{0}/commands/{1}";
@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices
 
         internal DigitalTwinsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {
-            _credentialProvider = credentialProvider;
             _hostName = hostName;
+            _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
         }
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
                 T digitalTwin = await HttpMessageHelper2.DeserializeResponse<T>(response, cancellationToken);
                 string etag = response.Headers.GetValues("ETag").FirstOrDefault();

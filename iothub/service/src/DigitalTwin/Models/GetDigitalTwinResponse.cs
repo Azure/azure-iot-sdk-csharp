@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="eTag">Weak Etag of the modified resource.</param>
+        /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="digitalTwin">The deserialized digital twin.</param>
         internal GetDigitalTwinResponse(T digitalTwin, string eTag = default(string))
         {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         public T DigitalTwin { get; internal set; }
 
         /// <summary>
-        /// Gets the weak Etag of the modified resource
+        /// Gets the weak ETag of the modified resource.
         /// </summary>
         public string ETag { get; internal set; }
     }

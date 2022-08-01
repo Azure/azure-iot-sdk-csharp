@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices
         /// Subclient of <see cref="IotHubServiceClient"/> that handles all digital twin operations including
         /// getting a digital twin, updating a digital twin, and invoking commands on a digital twin.
         /// </summary>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-develop/concepts-digital-twin"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
         public DigitalTwinsClient DigitalTwins { get; protected set; }
 
         /// <summary>

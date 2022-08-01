@@ -83,12 +83,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
                 // Invoke the root-level command "getMaxMinReport" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
-                var requestOptions = new DigitalTwinInvokeCommandRequestOptions()
+                var requestOptions = new DigitalTwinInvokeCommandRequestOptions
                 {
                     Payload = JsonConvert.SerializeObject(since)
                 };
-                DigitalTwinCommandResponse commandResponse =
-                    await serviceClient.DigitalTwins.InvokeCommandAsync(deviceId, commandName, requestOptions).ConfigureAwait(false);
+                DigitalTwinCommandResponse commandResponse = await serviceClient
+                    .DigitalTwins.InvokeCommandAsync(deviceId, commandName, requestOptions)
+                    .ConfigureAwait(false);
                 commandResponse.Status.Should().Be(expectedCommandStatus);
                 commandResponse.Payload.Should().Be(JsonConvert.SerializeObject(commandName));
             }
