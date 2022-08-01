@@ -28,6 +28,10 @@ namespace Microsoft.Azure.Devices
         private const string DigitalTwinCommandRequestUriFormat = "/digitaltwins/{0}/commands/{1}";
         private const string DigitalTwinComponentCommandRequestUriFormat = "/digitaltwins/{0}/components/{1}/commands/{2}";
 
+        // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an
+        // HTTP patch request.
+        private readonly HttpMethod _patch = new HttpMethod("PATCH");
+
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
@@ -127,10 +131,15 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
+                Argument.RequireNotNullOrEmpty(digitalTwinUpdateOperations, nameof(digitalTwinUpdateOperations));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(new HttpMethod("PATCH"), GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider, digitalTwinUpdateOperations);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    _patch,
+                    GetDigitalTwinRequestUri(digitalTwinId),
+                    _credentialProvider,
+                    digitalTwinUpdateOperations);
 
                 if (!string.IsNullOrWhiteSpace(requestOptions?.IfMatch))
                 {
@@ -193,6 +202,7 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
+                Argument.RequireNotNullOrEmpty(commandName, nameof(commandName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -268,6 +278,8 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
+                Argument.RequireNotNullOrEmpty(componentName, nameof(componentName));
+                Argument.RequireNotNullOrEmpty(commandName, nameof(commandName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
