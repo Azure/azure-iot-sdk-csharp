@@ -23,13 +23,11 @@ namespace Microsoft.Azure.Devices.Api.Test
         private readonly TimeSpan timeout = TimeSpan.FromMinutes(1);
 
         private Mock<IHttpClientHelper> httpClientHelperMock;
-        private ScheduledJobsClient jobClient;
 
         [TestInitialize]
         public void Setup()
         {
             httpClientHelperMock = new Mock<IHttpClientHelper>();
-            jobClient = new ScheduledJobsClient(httpClientHelperMock.Object);
         }
 
         private void NoExtraJobParamTestSetup(JobType jobType, CancellationToken cancellationToken)
@@ -71,15 +69,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void DisposeTest()
         {
             httpClientHelperMock.Setup(restOp => restOp.Dispose());
-            jobClient.Dispose();
             httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Once());
         }
 
         [TestMethod]
-        public async Task CloseAsyncTest()
+        public void CloseAsyncTest()
         {
             httpClientHelperMock.Setup(restOp => restOp.Dispose());
-            await jobClient.CloseAsync().ConfigureAwait(false);
             httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Never());
         }
     }
