@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         protected CommandRequest()
         {
-
         }
 
         /// <summary>
