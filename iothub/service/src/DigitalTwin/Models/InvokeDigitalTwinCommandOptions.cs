@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// General request options that are applicable, but optional, for invoke command APIs.
     /// </summary>
-    public class DigitalTwinInvokeCommandRequestOptions
+    public class InvokeDigitalTwinCommandOptions
     {
         /// <summary>
         /// The serialized command payload.

@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<UpdateDigitalTwinResponse> UpdateAsync(
             string digitalTwinId,
             string digitalTwinUpdateOperations,
-            DigitalTwinUpdateRequestOptions requestOptions = default,
+            UpdateDigitalTwinOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<DigitalTwinCommandResponse> InvokeCommandAsync(
             string digitalTwinId,
             string commandName,
-            DigitalTwinInvokeCommandRequestOptions requestOptions = default,
+            InvokeDigitalTwinCommandOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices
             string digitalTwinId,
             string componentName,
             string commandName,
-            DigitalTwinInvokeCommandRequestOptions requestOptions = default,
+            InvokeDigitalTwinCommandOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices
 
         // Root level commands and component level commands append the connect and read timeout values as query string values such as:
         // /digitaltwins/myDigitalTwin/commands/myCommand?api-version="2021-04-12"&connectTimeoutInSeconds=10&readTimeoutInSeconds=20
-        private static string BuildCommandRequestQueryStringParameters(DigitalTwinInvokeCommandRequestOptions requestOptions)
+        private static string BuildCommandRequestQueryStringParameters(InvokeDigitalTwinCommandOptions requestOptions)
         {
             string queryStringParameters = "";
             if (requestOptions?.ConnectTimeoutInSeconds != null)

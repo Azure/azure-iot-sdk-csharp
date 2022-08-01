@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents the device command invocation results.
     /// </summary>
-    public class DigitalTwinCommandResponse
+    public class InvokeDigitalTwinCommandResponse
     {
         /// <summary>
         /// Command invocation result status, as supplied by the device.
