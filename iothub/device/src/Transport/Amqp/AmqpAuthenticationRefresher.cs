@@ -20,16 +20,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private Task _refreshLoop;
         private bool _disposed;
 
-        internal AmqpAuthenticationRefresher(IDeviceIdentity deviceIdentity, AmqpIotCbsLink amqpCbsLink)
+        internal AmqpAuthenticationRefresher(IotHubConnectionInfo iotHubConnectionInfo, AmqpIotCbsLink amqpCbsLink)
         {
             _amqpIotCbsLink = amqpCbsLink;
-            _connInfo = deviceIdentity.IotHubConnectionInfo;
-            _audience = deviceIdentity.Audience;
+            _connInfo = iotHubConnectionInfo;
+            _audience = iotHubConnectionInfo.Audience;
             _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_connInfo);
 
             if (Logging.IsEnabled)
             {
-                Logging.Associate(this, deviceIdentity, nameof(DeviceIdentity));
+                Logging.Associate(this, iotHubConnectionInfo, nameof(IotHubConnectionInfo));
                 Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
         }

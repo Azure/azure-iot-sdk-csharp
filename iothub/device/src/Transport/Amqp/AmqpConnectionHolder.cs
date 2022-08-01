@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpConnectionHolder : IAmqpConnectionHolder, IAmqpUnitManager
     {
-        private readonly IDeviceIdentity _deviceIdentity;
+        private readonly IotHubConnectionInfo _iotHubConnectionInfo;
         private readonly AmqpIotConnector _amqpIotConnector;
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
         private readonly HashSet<AmqpUnit> _amqpUnits = new HashSet<AmqpUnit>();
@@ -23,16 +23,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
         private volatile bool _disposed;
 
-        public AmqpConnectionHolder(IDeviceIdentity deviceIdentity)
+        public AmqpConnectionHolder(IotHubConnectionInfo iotHubConnectionInfo)
         {
-            _deviceIdentity = deviceIdentity;
-            _amqpIotConnector = new AmqpIotConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionInfo.HostName);
+            _iotHubConnectionInfo = iotHubConnectionInfo;
+            _amqpIotConnector = new AmqpIotConnector(iotHubConnectionInfo.AmqpTransportSettings, iotHubConnectionInfo.HostName);
             if (Logging.IsEnabled)
-                Logging.Associate(this, _deviceIdentity, nameof(_deviceIdentity));
+                Logging.Associate(this, _iotHubConnectionInfo, nameof(_iotHubConnectionInfo));
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IDeviceIdentity deviceIdentity,
+            IotHubConnectionInfo iotHubConnectionInfo,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
@@ -40,10 +40,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, deviceIdentity, nameof(CreateAmqpUnit));
+                Logging.Enter(this, iotHubConnectionInfo, nameof(CreateAmqpUnit));
 
             var amqpUnit = new AmqpUnit(
-                deviceIdentity,
+                iotHubConnectionInfo,
                 this,
                 onMethodCallback,
                 twinMessageListener,
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
+                Logging.Exit(this, iotHubConnectionInfo, nameof(CreateAmqpUnit));
 
             return amqpUnit;
         }
@@ -137,33 +137,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken)
+        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, deviceIdentity, nameof(CreateRefresherAsync));
+                Logging.Enter(this, iotHubConnectionInfo, nameof(CreateRefresherAsync));
 
             AmqpIotConnection amqpIotConnection = await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             IAmqpAuthenticationRefresher amqpAuthenticator = await amqpIotConnection
-                .CreateRefresherAsync(deviceIdentity, cancellationToken)
+                .CreateRefresherAsync(iotHubConnectionInfo, cancellationToken)
                 .ConfigureAwait(false);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, deviceIdentity, nameof(CreateRefresherAsync));
+                Logging.Exit(this, iotHubConnectionInfo, nameof(CreateRefresherAsync));
 
             return amqpAuthenticator;
         }
 
-        public async Task<AmqpIotSession> OpenSessionAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken)
+        public async Task<AmqpIotSession> OpenSessionAsync(IotHubConnectionInfo iotHubConnectionInfo, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, deviceIdentity, nameof(OpenSessionAsync));
+                Logging.Enter(this, iotHubConnectionInfo, nameof(OpenSessionAsync));
 
             AmqpIotConnection amqpIotConnection = await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             AmqpIotSession amqpIotSession = await amqpIotConnection.OpenSessionAsync(cancellationToken).ConfigureAwait(false);
             if (Logging.IsEnabled)
             {
                 Logging.Associate(amqpIotConnection, amqpIotSession, nameof(OpenSessionAsync));
-                Logging.Exit(this, deviceIdentity, nameof(OpenSessionAsync));
+                Logging.Exit(this, iotHubConnectionInfo, nameof(OpenSessionAsync));
             }
 
             return amqpIotSession;
@@ -195,12 +195,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // Create AmqpConnection
                     amqpIotConnection = await _amqpIotConnector.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
+                    if (_iotHubConnectionInfo.AuthenticationModel == AuthenticationModel.SasGrouped)
                     {
                         if (Logging.IsEnabled)
                             Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
 
-                        amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_deviceIdentity, amqpIotConnection.GetCbsLink());
+                        amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_iotHubConnectionInfo, amqpIotConnection.GetCbsLink());
                         await amqpAuthenticationRefresher.InitLoopAsync(cancellationToken).ConfigureAwait(false);
                     }
 

@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IAuthorizationProvider, IDeviceIdentity
+    internal class IotHubConnectionInfo : IAuthorizationProvider
     {
         private const int DefaultAmqpSecurePort = 5671;
 
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            Audience = builder.HostName;
+            Audience = CreateAudience();
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
             HostName = IsUsingGateway
                 ? builder.GatewayHostName
@@ -99,55 +99,17 @@ namespace Microsoft.Azure.Devices.Client
             {
                 SharedAccessSignature = builder.SharedAccessSignature;
             }
+
+            AuthenticationModel = SharedAccessKeyName == null
+                ? AuthenticationModel.SasIndividual
+                : AuthenticationModel.SasGrouped;
         }
 
-        internal IotHubConnectionInfo(
-            IotHubClientAmqpSettings amqpTransportSettings,
-            ProductInfo productInfo,
-            IotHubClientOptions options)
+        // This contructor is intended for creating an IotHubConnectionInfo that uses an IAuthenticationMethod-based authentication.
+        internal IotHubConnectionInfo()
         {
-            AmqpTransportSettings = amqpTransportSettings;
-            ProductInfo = productInfo;
-            Options = options;
-
-            if (amqpTransportSettings.ClientCertificate == null)
-            {
-                Audience = CreateAudience();
-                AuthenticationModel = SharedAccessKeyName == null
-                    ? AuthenticationModel.SasIndividual
-                    : AuthenticationModel.SasGrouped;
-            }
-            else
-            {
-                AuthenticationModel = AuthenticationModel.X509;
-            }
-        }
-
-        // This constructor is only used for unit testing.
-        internal IotHubConnectionInfo(
-            string iotHubName = null,
-            string deviceId = null,
-            string moduleId = null,
-            string hostName = null,
-            Uri httpsEndpoint = null,
-            Uri amqpEndpoint = null,
-            string audience = null,
-            string sharedAccessKeyName = null,
-            string sharedAccessKey = null,
-            string sharedAccessSignature = null,
-            bool isUsingGateway = false)
-        {
-            IotHubName = iotHubName;
-            DeviceId = deviceId;
-            ModuleId = moduleId;
-            HostName = hostName;
-            HttpsEndpoint = httpsEndpoint;
-            AmqpEndpoint = amqpEndpoint;
-            Audience = audience;
-            SharedAccessKeyName = sharedAccessKeyName;
-            SharedAccessKey = sharedAccessKey;
-            SharedAccessSignature = sharedAccessSignature;
-            IsUsingGateway = isUsingGateway;
+            // if certificate information is present, set:
+            // AuthenticationModel = AuthenticationModel.X509;
         }
 
         public AuthenticationWithTokenRefresh TokenRefresher { get; private set; }
@@ -176,11 +138,11 @@ namespace Microsoft.Azure.Devices.Client
 
         public AuthenticationModel AuthenticationModel { get; }
 
-        public IotHubClientAmqpSettings AmqpTransportSettings { get; }
+        public IotHubClientAmqpSettings AmqpTransportSettings { get; internal set; }
 
-        public ProductInfo ProductInfo { get; }
+        public ProductInfo ProductInfo { get; internal set; }
 
-        public IotHubClientOptions Options { get; }
+        public IotHubClientOptions ClientOptions { get; internal set; }
 
         async Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
@@ -255,6 +217,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private string CreateAudience()
         {
+            // If the shared access key name is null then this is an individual sas authenticated client.
             if (SharedAccessKeyName.IsNullOrWhiteSpace())
             {
                 return ModuleId.IsNullOrWhiteSpace()
@@ -263,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-                // this is a group shared key
+                // If the shared access key name is not null then this is a group sas authenticated client.
                 return HostName;
             }
         }

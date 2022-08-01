@@ -35,12 +35,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IDeviceIdentity testDevice = CreatePooledSasGroupedDeviceIdentity(sharedAccessKeyName, poolSize);
+            IotHubConnectionInfo testDeviceConnectionInfo = CreatePooledSasGroupedDeviceConnectionInfo(sharedAccessKeyName, poolSize);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
 
-            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, null, null, null, null);
+            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDeviceConnectionInfo, null, null, null, null, null);
 
             injectedDictionary[sharedAccessKeyName].Count().Should().Be((int)poolSize);
 
@@ -52,14 +52,14 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IDeviceIdentity CreatePooledSasGroupedDeviceIdentity(string sharedAccessKeyName, uint poolSize)
+        private IotHubConnectionInfo CreatePooledSasGroupedDeviceConnectionInfo(string sharedAccessKeyName, uint poolSize)
         {
-            Mock<IDeviceIdentity> deviceIdentity = new Mock<IDeviceIdentity>();
+            Mock<IotHubConnectionInfo> deviceConnectionInfo = new Mock<IotHubConnectionInfo>();
 
-            deviceIdentity.Setup(m => m.IsPooling()).Returns(true);
-            deviceIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
-            deviceIdentity.Setup(m => m.IotHubConnectionInfo).Returns(new IotHubConnectionInfo(sharedAccessKeyName: sharedAccessKeyName));
-            deviceIdentity.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
+            deviceConnectionInfo.Setup(m => m.IsPooling()).Returns(true);
+            deviceConnectionInfo.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
+            deviceConnectionInfo.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
+            deviceConnectionInfo.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
                 }
             });
 
-            return deviceIdentity.Object;
+            return deviceConnectionInfo.Object;
         }
     }
 }

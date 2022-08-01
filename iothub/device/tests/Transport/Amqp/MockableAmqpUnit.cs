@@ -18,35 +18,20 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         public MockableAmqpUnit()
             : this(
-                new DeviceIdentity(
-                    IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                    s_transportSettings,
-                    new ProductInfo(),
-                    new IotHubClientOptions(s_transportSettings)),
+                IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
                 new AmqpConnectionHolder(
-                    new DeviceIdentity(
-                        IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                        s_transportSettings,
-                        new ProductInfo(),
-                        new IotHubClientOptions())))
+                    IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString)))
         {
         }
 
-        public MockableAmqpUnit(DeviceIdentity deviceIdentity,
+        public MockableAmqpUnit(IotHubConnectionInfo iotHubConnectionInfo,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
-            : base(
-                  deviceIdentity,
-                  amqpConnectionHolder,
-                  onMethodCallback,
-                  twinMessageListener,
-                  onModuleMessageReceivedCallback,
-                  onDeviceMessageReceivedCallback,
-                  onUnitDisconnected)
+            : base(iotHubConnectionInfo, amqpConnectionHolder, onMethodCallback, twinMessageListener, onModuleMessageReceivedCallback, onDeviceMessageReceivedCallback, onUnitDisconnected)
         {
         }
 

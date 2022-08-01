@@ -48,9 +48,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _operationTimeout = transportSettings.OperationTimeout;
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
-            IDeviceIdentity deviceIdentity = new DeviceIdentity(connectionInfo, transportSettings, context.ProductInfo, context.ClientOptions);
+
+            // Set the context information required for setting up the connection into IotHubConnectionInfo
+            connectionInfo.AmqpTransportSettings = transportSettings;
+            connectionInfo.ProductInfo = context.ProductInfo;
+            connectionInfo.ClientOptions = context.ClientOptions;
+
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
-                deviceIdentity,
+                connectionInfo,
                 onMethodCallback,
                 TwinMessageListener,
                 onModuleMessageReceivedCallback,
