@@ -5,7 +5,7 @@ using System.Text;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Options that allow configuration of the Provisioning device client instance during initialization.
+    /// Options that allow configuration of the provisioning device client instance during initialization.
     /// </summary>
     public class ProvisioningClientOptions
     {
