@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        protected override Task<string> SafeCreateNewToken(string iotHubHostname, int suggestedTimeToLive)
         {
             var builder = new SharedAccessSignatureBuilder()
             {
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
             if (_connInfo.SharedAccessKeyName == null)
             {
                 builder.Target = "{0}/devices/{1}/modules/{2}".FormatInvariant(
-                    iotHub,
+                    iotHubHostname,
                     WebUtility.UrlEncode(DeviceId),
                     WebUtility.UrlEncode(ModuleId));
             }

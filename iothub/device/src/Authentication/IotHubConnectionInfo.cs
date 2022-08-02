@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            Audience = builder.HostName;
+            //Audience = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
             HostName = IsUsingGateway
                 ? builder.GatewayHostName
@@ -32,6 +32,8 @@ namespace Microsoft.Azure.Devices.Client
             IotHubName = builder.IotHubName;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
+
+            Audience = CreateAmqpCbsAudience();
 
             HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
 
@@ -189,6 +191,9 @@ namespace Microsoft.Azure.Devices.Client
                 && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
         }
 
+        /// <summary>
+        /// This is used specifically by the AMQP CBS link to send the CBS token to IoT Hub.
+        /// </summary>
         public string CreateAmqpCbsAudience()
         {
             // If the shared access key name is null then this is an individual sas authenticated client.
@@ -220,6 +225,15 @@ namespace Microsoft.Azure.Devices.Client
                 && Equals(AuthenticationModel.GetHashCode(), iotHubConnectionInfo.AuthenticationModel.GetHashCode());
         }
 
+        /// <summary>
+        /// This hashing algorithm is used in two places:
+        /// - when fetching the object hashcode for our logging implementation
+        /// - when fetching the client identity from an AMQP connection pool with multiplexed client connections
+        /// This algorithm only uses device ID, hostname, module ID, authentication model and optional Amqp transport settings (protocol name)
+        /// when evaluating the hash.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
         public override int GetHashCode()
         {
             int hashCode = UpdateHashCode(620602339, DeviceId);

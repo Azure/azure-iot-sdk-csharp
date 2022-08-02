@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIotCbsTokenProvider.GetTokenAsync));
 
                     Debug.Assert(_clientIdentity.TokenRefresher != null);
-                    tokenValue = await _clientIdentity.TokenRefresher.GetTokenAsync(_clientIdentity.Audience).ConfigureAwait(false);
+                    tokenValue = await _clientIdentity.TokenRefresher.GetTokenAsync(_clientIdentity.HostName).ConfigureAwait(false);
                     expiresOn = _clientIdentity.TokenRefresher.RefreshesOn;
                 }
 
