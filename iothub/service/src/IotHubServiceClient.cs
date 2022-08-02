@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-twin-getstarted"/>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-module-twin-getstarted"/>
-        public TwinClient Twin { get; protected set; }
+        public TwinsClient Twin { get; protected set; }
 
         /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices
             Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Twin = new TwinClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Twin = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }

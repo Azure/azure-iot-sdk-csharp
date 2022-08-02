@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-twin-getstarted"/>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-module-twin-getstarted"/>
-    public class TwinClient
+    public class TwinsClient
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
@@ -41,11 +41,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        protected TwinClient()
+        protected TwinsClient()
         {
         }
 
-        internal TwinClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
+        internal TwinsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
