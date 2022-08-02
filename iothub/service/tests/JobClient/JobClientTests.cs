@@ -77,20 +77,5 @@ namespace Microsoft.Azure.Devices.Api.Test
                 It.IsAny<Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
         }
-
-        [TestMethod]
-        public void DisposeTest()
-        {
-            httpClientHelperMock.Setup(restOp => restOp.Dispose());
-            httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Once());
-        }
-
-        [TestMethod]
-        public async Task CloseAsyncTest()
-        {
-            httpClientHelperMock.Setup(restOp => restOp.Dispose());
-            await jobClient.CloseAsync().ConfigureAwait(false);
-            httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Never());
-        }
     }
 }
