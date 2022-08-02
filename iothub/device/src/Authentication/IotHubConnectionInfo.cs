@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IIotHubConnectionInfo
+    internal class IotHubConnectionInfo : IDeviceIdentity
     {
         private const int DefaultAmqpSecurePort = 5671;
 
@@ -184,7 +184,8 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool IsPooling()
         {
-            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
+            return AuthenticationModel != AuthenticationModel.X509
+                && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
         }
 
         public override bool Equals(object obj)

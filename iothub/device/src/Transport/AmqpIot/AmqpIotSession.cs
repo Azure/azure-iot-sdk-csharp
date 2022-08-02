@@ -54,11 +54,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Telemetry links
 
         internal async Task<AmqpIotSendingLink> OpenTelemetrySenderLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     null,
                     null,
@@ -71,11 +71,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMessageReceiverLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     null,
                     (byte)ReceiverSettleMode.Second,
@@ -92,11 +92,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region EventLink
 
         internal async Task<AmqpIotReceivingLink> OpenEventsReceiverLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     null,
                     (byte)ReceiverSettleMode.First,
@@ -113,12 +113,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region MethodLink
 
         internal async Task<AmqpIotSendingLink> OpenMethodsSenderLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -131,12 +131,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMethodsReceiverLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -153,12 +153,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region TwinLink
 
         internal async Task<AmqpIotReceivingLink> OpenTwinReceiverLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -171,12 +171,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotSendingLink> OpenTwinSenderLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
-                    iotHubConnectionInfo,
+                    deviceIdentity,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Common link handling
 
         private static async Task<AmqpIotSendingLink> OpenSendingAmqpLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(typeof(AmqpIotSession), iotHubConnectionInfo, nameof(OpenSendingAmqpLinkAsync));
+                Logging.Enter(typeof(AmqpIotSession), deviceIdentity, nameof(OpenSendingAmqpLinkAsync));
             }
 
             var amqpLinkSettings = new AmqpLinkSettings
@@ -213,29 +213,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 LinkName = linkSuffix,
                 Role = false,
                 InitialDeliveryCount = 0,
-                Target = new Target { Address = BuildLinkAddress(iotHubConnectionInfo, deviceTemplate, moduleTemplate) },
-                Source = new Source { Address = iotHubConnectionInfo.DeviceId },
+                Target = new Target { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
+                Source = new Source { Address = deviceIdentity.DeviceId },
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
 
-            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, iotHubConnectionInfo.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
 
             if (correlationId != null)
             {
                 amqpLinkSettings.AddProperty(AmqpIotConstants.ChannelCorrelationId, correlationId);
             }
 
-            if (!iotHubConnectionInfo.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+            if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
             {
-                amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, iotHubConnectionInfo.AmqpTransportSettings.AuthenticationChain);
+                amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
 
             // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
             // the SDK will enable plug and play features by setting the modelId to AMQP link settings.
-            if (!string.IsNullOrWhiteSpace(iotHubConnectionInfo.ClientOptions?.ModelId))
+            if (!string.IsNullOrWhiteSpace(deviceIdentity.ClientOptions?.ModelId))
             {
-                amqpLinkSettings.AddProperty(AmqpIotConstants.ModelId, iotHubConnectionInfo.ClientOptions.ModelId);
+                amqpLinkSettings.AddProperty(AmqpIotConstants.ModelId, deviceIdentity.ClientOptions.ModelId);
             }
 
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
@@ -268,13 +268,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(typeof(AmqpIotSession), iotHubConnectionInfo, nameof(OpenSendingAmqpLinkAsync));
+                    Logging.Exit(typeof(AmqpIotSession), deviceIdentity, nameof(OpenSendingAmqpLinkAsync));
                 }
             }
         }
 
         private static async Task<AmqpIotReceivingLink> OpenReceivingAmqpLinkAsync(
-            IIotHubConnectionInfo iotHubConnectionInfo,
+            IDeviceIdentity deviceIdentity,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -285,9 +285,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(typeof(AmqpIotSession), iotHubConnectionInfo, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+                Logging.Enter(typeof(AmqpIotSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
 
-            uint prefetchCount = iotHubConnectionInfo.AmqpTransportSettings.PrefetchCount;
+            uint prefetchCount = deviceIdentity.AmqpTransportSettings.PrefetchCount;
 
             var amqpLinkSettings = new AmqpLinkSettings
             {
@@ -295,18 +295,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Role = true,
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
-                Source = new Source { Address = BuildLinkAddress(iotHubConnectionInfo, deviceTemplate, moduleTemplate) },
-                Target = new Target { Address = iotHubConnectionInfo.DeviceId },
+                Source = new Source { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
+                Target = new Target { Address = deviceIdentity.DeviceId },
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
 
-            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, iotHubConnectionInfo.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, deviceIdentity.ProductInfo.ToString());
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 
-            if (!iotHubConnectionInfo.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
+            if (!deviceIdentity.AmqpTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
             {
-                amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, iotHubConnectionInfo.AmqpTransportSettings.AuthenticationChain);
+                amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, deviceIdentity.AmqpTransportSettings.AuthenticationChain);
             }
 
             if (correlationId != null)
@@ -341,23 +341,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(typeof(AmqpIotSession), iotHubConnectionInfo, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+                    Logging.Exit(typeof(AmqpIotSession), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
             }
         }
 
-        private static string BuildLinkAddress(IIotHubConnectionInfo iotHubConnectionInfo, string deviceTemplate, string moduleTemplate)
+        private static string BuildLinkAddress(IDeviceIdentity deviceIdentity, string deviceTemplate, string moduleTemplate)
         {
-            string path = string.IsNullOrEmpty(iotHubConnectionInfo.ModuleId)
+            string path = string.IsNullOrEmpty(deviceIdentity.ModuleId)
                 ? string.Format(
                     CultureInfo.InvariantCulture,
                     deviceTemplate,
-                    WebUtility.UrlEncode(iotHubConnectionInfo.DeviceId))
+                    WebUtility.UrlEncode(deviceIdentity.DeviceId))
                 : string.Format(
                     CultureInfo.InvariantCulture,
                     moduleTemplate,
-                    WebUtility.UrlEncode(iotHubConnectionInfo.DeviceId), WebUtility.UrlEncode(iotHubConnectionInfo.ModuleId));
+                    WebUtility.UrlEncode(deviceIdentity.DeviceId), WebUtility.UrlEncode(deviceIdentity.ModuleId));
 
-            return iotHubConnectionInfo.BuildLinkAddress(path).AbsoluteUri;
+            return deviceIdentity.BuildLinkAddress(path).AbsoluteUri;
         }
 
         #endregion Common link handling

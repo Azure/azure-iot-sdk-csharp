@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Interface for device configurations and common attributes.
     /// </summary>
-    internal interface IIotHubConnectionInfo : IAuthorizationProvider
+    internal interface IDeviceIdentity : IAuthorizationProvider
     {
         AuthenticationWithTokenRefresh TokenRefresher { get; }
 

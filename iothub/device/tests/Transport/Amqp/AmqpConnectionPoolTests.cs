@@ -35,12 +35,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IIotHubConnectionInfo testDeviceConnectionInfo = CreatePooledSasGroupedDeviceConnectionInfo(sharedAccessKeyName, poolSize);
+            IDeviceIdentity testDeviceIdentity = CreatePooledSasGroupedDeviceIdentity(sharedAccessKeyName, poolSize);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
 
-            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDeviceConnectionInfo, null, null, null, null, null);
+            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDeviceIdentity, null, null, null, null, null);
 
             injectedDictionary[sharedAccessKeyName].Count().Should().Be((int)poolSize);
 
@@ -52,9 +52,9 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IIotHubConnectionInfo CreatePooledSasGroupedDeviceConnectionInfo(string sharedAccessKeyName, uint poolSize)
+        private IDeviceIdentity CreatePooledSasGroupedDeviceIdentity(string sharedAccessKeyName, uint poolSize)
         {
-            Mock<IIotHubConnectionInfo> connectionInfo = new Mock<IIotHubConnectionInfo>();
+            Mock<IDeviceIdentity> connectionInfo = new Mock<IDeviceIdentity>();
 
             connectionInfo.Setup(m => m.IsPooling()).Returns(true);
             connectionInfo.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
