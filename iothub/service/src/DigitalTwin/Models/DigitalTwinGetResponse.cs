@@ -7,14 +7,14 @@ namespace Microsoft.Azure.Devices
     /// The service response to a get digital twin request.
     /// </summary>
     /// <typeparam name="T">The type of the digital twin.</typeparam>
-    public class GetDigitalTwinResponse<T>
+    public class DigitalTwinGetResponse<T>
     {
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="digitalTwin">The deserialized digital twin.</param>
-        internal GetDigitalTwinResponse(T digitalTwin, string eTag = default(string))
+        internal DigitalTwinGetResponse(T digitalTwin, string eTag = default(string))
         {
             DigitalTwin = digitalTwin;
             ETag = eTag;

@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 using var serviceClient = new IotHubServiceClient(s_connectionString);
 
                 // Retrieve the digital twin.
-                GetDigitalTwinResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
+                DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
                     .GetAsync<ThermostatTwin>(deviceId)
                     .ConfigureAwait(false);
 
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 var ops = new UpdateOperationsUtility();
                 ops.AppendAddPropertyOp($"/{propertyName}", propertyValue);
                 string patch = ops.Serialize();
-                UpdateDigitalTwinResponse updateResponse = await serviceClient.DigitalTwins.UpdateAsync(deviceId, patch);
+                DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins.UpdateAsync(deviceId, patch);
 
                 // Set callback to handle root-level command invocation request.
                 int expectedCommandStatus = 200;
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 using var serviceClient = new IotHubServiceClient(s_connectionString);
 
                 // Retrieve the digital twin.
-                GetDigitalTwinResponse<TemperatureControllerTwin> response = await serviceClient.DigitalTwins
+                DigitalTwinGetResponse<TemperatureControllerTwin> response = await serviceClient.DigitalTwins
                     .GetAsync<TemperatureControllerTwin>(deviceId)
                     .ConfigureAwait(false);
 
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 var ops = new UpdateOperationsUtility();
                 ops.AppendAddComponentOp($"/{componentName}", propertyValues);
                 string patch = ops.Serialize();
-                UpdateDigitalTwinResponse updateResponse = await serviceClient.DigitalTwins
+                DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins
                     .UpdateAsync(deviceId, patch)
                     .ConfigureAwait(false);
 

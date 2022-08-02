@@ -8,14 +8,14 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The service response to a digital twin update operation.
     /// </summary>
-    public class UpdateDigitalTwinResponse
+    public class DigitalTwinUpdateResponse
     {
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="location">URI of the digital twin.</param>
-        public UpdateDigitalTwinResponse(string eTag = default(string), string location = default(string))
+        public DigitalTwinUpdateResponse(string eTag = default(string), string location = default(string))
         {
             ETag = eTag;
             Location = location;

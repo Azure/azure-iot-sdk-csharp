@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<GetDigitalTwinResponse<T>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
+        public virtual async Task<DigitalTwinGetResponse<T>> GetAsync<T>(string digitalTwinId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting digital twin with Id: {digitalTwinId}", nameof(GetAsync));
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
                 T digitalTwin = await HttpMessageHelper2.DeserializeResponse<T>(response, cancellationToken).ConfigureAwait(false);
                 string etag = response.Headers.GetValues("ETag").FirstOrDefault();
-                return new GetDigitalTwinResponse<T>(digitalTwin, etag);
+                return new DigitalTwinGetResponse<T>(digitalTwin, etag);
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<UpdateDigitalTwinResponse> UpdateAsync(
+        public virtual async Task<DigitalTwinUpdateResponse> UpdateAsync(
             string digitalTwinId,
             string digitalTwinUpdateOperations,
             UpdateDigitalTwinOptions requestOptions = default,
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.Accepted, response).ConfigureAwait(false);
 
-                var updateResponse = new UpdateDigitalTwinResponse()
+                var updateResponse = new DigitalTwinUpdateResponse()
                 {
                     ETag = response.Headers.GetValues("ETag").FirstOrDefault(),
                     Location = response.Headers.GetValues("Location").FirstOrDefault()
