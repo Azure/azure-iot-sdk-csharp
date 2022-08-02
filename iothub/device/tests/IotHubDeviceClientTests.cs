@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string FakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
         private const string TestModelId = "dtmi:com:example:testModel;1";
 
-        private static readonly IotHubConnectionStringBuilder s_csBuilder = new IotHubConnectionStringBuilder(FakeConnectionString);
-        private static readonly IotHubConnectionInfo s_connInfo = new IotHubConnectionInfo(s_csBuilder);
+        private static readonly IotHubConnectionStringBuilder s_csBuilder = new(FakeConnectionString);
+        private static readonly IotHubConnectionInfo s_connInfo = new(s_csBuilder);
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string gatewayHostName = "gateway.acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", s_connInfo);
 
-            var options = new IotHubClientOptions { GatewayHostName = gatewayHostName };
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings()) { GatewayHostName = gatewayHostName };
             using var deviceClient = IotHubDeviceClient.Create(hostName, authMethod, options);
         }
 
@@ -1181,7 +1181,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var messageId = Guid.NewGuid().ToString();
-            var options = new IotHubClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
@@ -1210,7 +1210,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var messageId = Guid.NewGuid().ToString();
-            var options = new IotHubClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
@@ -1264,7 +1264,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var messageId = Guid.NewGuid().ToString();
-            var options = new IotHubClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
@@ -1293,7 +1293,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var messageId = Guid.NewGuid().ToString();
-            var options = new IotHubClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
@@ -1321,7 +1321,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_CreateFromConnectionString_InvalidSasTimeToLive_ThrowsException()
         {
             // arrange
-            var options = new IotHubClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SasTokenTimeToLive = TimeSpan.FromSeconds(-60),
             };
@@ -1337,7 +1337,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_CreateFromConnectionString_InvalidSasRenewalBuffer_ThrowsException()
         {
             // arrange
-            var options = new IotHubClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 SasTokenRenewalBuffer = 200,
             };
@@ -1366,8 +1366,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                FakeConnectionString,
-                null,
+                new IotHubConnectionStringBuilder(FakeConnectionString),
                 options);
 
             // assert
@@ -1396,6 +1395,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
+                // Pass these values, but expect them to be ignored, given the use of AuthenticationWithTokenRefresh below.
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
@@ -1411,8 +1411,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                FakeConnectionString,
-                authMethod1,
+                new IotHubConnectionStringBuilder(FakeConnectionString, authMethod1),
                 options);
 
             // assert

@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
@@ -13,17 +14,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
     internal class MockableAmqpUnit : AmqpUnit
     {
+        private static IotHubClientAmqpSettings s_transportSettings = new();
+
         public MockableAmqpUnit()
             : this(
                 new DeviceIdentity(
                     IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                    new IotHubClientAmqpSettings(),
+                    s_transportSettings,
                     new ProductInfo(),
-                    new IotHubClientOptions()),
+                    new IotHubClientOptions(s_transportSettings)),
                 new AmqpConnectionHolder(
                     new DeviceIdentity(
                         IotHubConnectionInfoExtensions.Parse(AmqpTransportHandlerTests.TestConnectionString),
-                        new IotHubClientAmqpSettings(),
+                        s_transportSettings,
                         new ProductInfo(),
                         new IotHubClientOptions())))
         {
@@ -36,7 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
-            : base(deviceIdentity, amqpConnectionHolder, onMethodCallback, twinMessageListener, onModuleMessageReceivedCallback, onDeviceMessageReceivedCallback, onUnitDisconnected)
+            : base(
+                  deviceIdentity,
+                  amqpConnectionHolder,
+                  onMethodCallback,
+                  twinMessageListener,
+                  onModuleMessageReceivedCallback,
+                  onDeviceMessageReceivedCallback,
+                  onUnitDisconnected)
         {
         }
 

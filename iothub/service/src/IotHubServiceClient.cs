@@ -16,6 +16,13 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     /// <remarks>
     /// This client is <see cref="IDisposable"/> but users are not responsible for disposing subclients within this client.
+    /// <para>
+    /// This client creates a lifetime long instance of <see cref="HttpClient"/> that is tied to the URI of the
+    /// IoT hub specified and configured with any proxy settings provided.
+    /// For that reason, the instances are not static and an application using this client
+    /// should create and save it for all use. Repeated creation may cause
+    /// <see href="https://docs.microsoft.com/azure/architecture/antipatterns/improper-instantiation/">socket exhaustion</see>.
+    /// </para>
     /// </remarks>
     public class IotHubServiceClient : IDisposable
     {
@@ -154,6 +161,13 @@ namespace Microsoft.Azure.Devices
         public QueryClient Query { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles all digital twin operations including
+        /// getting a digital twin, updating a digital twin, and invoking commands on a digital twin.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
+        public DigitalTwinsClient DigitalTwins { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -169,6 +183,7 @@ namespace Microsoft.Azure.Devices
             Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }

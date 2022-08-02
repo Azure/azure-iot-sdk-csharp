@@ -8,8 +8,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>ModernDotNet/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
@@ -41,9 +39,6 @@
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
     <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
-    <None Include="DigitalTwin\generateCode.ps1" />
-    <None Include="DigitalTwin\readme.md" />
-    <None Include="DigitalTwin\DigitalTwin.json" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -129,11 +124,9 @@
 
   <ItemGroup>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="DigitalTwin\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.22.0" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />

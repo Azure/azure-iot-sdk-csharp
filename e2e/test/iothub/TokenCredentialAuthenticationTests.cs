@@ -8,12 +8,11 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ClientOptions = Microsoft.Azure.Devices.Client.IotHubClientOptions;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using Azure active directory succeeds in all the clients.
@@ -93,15 +92,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            using var digitalTwinClient = DigitalTwinClient.Create(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 
             // act
-            HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
-                .GetDigitalTwinAsync<ThermostatTwin>(testDevice.Id)
+            DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
+                .GetAsync<ThermostatTwin>(testDevice.Id)
                 .ConfigureAwait(false);
-            ThermostatTwin twin = response.Body;
+
+            ThermostatTwin twin = response.DigitalTwin;
 
             // assert
             twin.Metadata.ModelId.Should().Be(thermostatModelId);
