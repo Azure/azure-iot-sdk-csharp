@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _connectionStringBuilder = IotHubConnectionStringBuilder.Create(connectionString);
             }
 
-            protected override Task<string> SafeCreateNewToken(string iotHubHostname, int suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewToken(string audience, int suggestedTimeToLive)
             {
                 var builder = new SharedAccessSignatureBuilder
                 {
@@ -309,19 +309,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
                 };
 
-                if (_connectionStringBuilder.SharedAccessKeyName == null)
-                {
-                    builder.Target = string.Format(
-                        CultureInfo.InvariantCulture,
-                        SasTokenTargetFormat,
-                        iotHubHostname,
-                        WebUtility.UrlEncode(DeviceId));
-                }
-                else
+                if (_connectionStringBuilder.SharedAccessKeyName != null)
                 {
                     builder.KeyName = _connectionStringBuilder.SharedAccessKeyName;
-                    builder.Target = _connectionStringBuilder.HostName;
                 }
+
+                builder.Target = audience;
 
                 return Task.FromResult(builder.ToSignature());
             }
