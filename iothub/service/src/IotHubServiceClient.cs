@@ -155,12 +155,12 @@ namespace Microsoft.Azure.Devices
         public QueryClient Query { get; protected set; }
 
         /// <summary>
-
         /// Subclient of <see cref="IotHubServiceClient"/> for scheduled jobs management.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-jobs"/>
         public ScheduledJobsClient ScheduledJobsClient { get; protected set; }
 
+        /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> that handles all digital twin operations including
         /// getting a digital twin, updating a digital twin, and invoking commands on a digital twin.
         /// </summary>
