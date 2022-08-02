@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
@@ -43,10 +44,18 @@ namespace Microsoft.Azure.Devices
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> is null.</exception>
-        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException">When <paramref name="deviceId"/> is empty or whitespace.</exception>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-direct-methods"/>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="cloudToDeviceMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<CloudToDeviceMethodResult> InvokeAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -84,10 +93,18 @@ namespace Microsoft.Azure.Devices
         /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the module.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> or <paramref name="moduleId"/> are null.</exception>
-        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException">When <paramref name="deviceId"/> or <paramref name="moduleId"/> are empty or whitespace.</exception>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-direct-methods"/>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="cloudToDeviceMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<CloudToDeviceMethodResult> InvokeAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
