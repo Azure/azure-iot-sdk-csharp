@@ -204,7 +204,12 @@ namespace Microsoft.Azure.Devices.Client
             int hashCode = UpdateHashCode(620602339, DeviceId);
             hashCode = UpdateHashCode(hashCode, HostName);
             hashCode = UpdateHashCode(hashCode, ModuleId);
-            hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.Protocol);
+
+            if (AmqpTransportSettings?.Protocol != null)
+            {
+                hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.Protocol);
+            }
+
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;
         }
