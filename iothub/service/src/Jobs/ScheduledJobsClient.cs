@@ -15,15 +15,15 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Scheduled Jobs management.
+    /// Scheduled jobs management.
     /// </summary>
-    /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
+    /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-jobs"/>.
     public class ScheduledJobsClient
     {
-        private string _hostName;
-        private IotHubConnectionProperties _credentialProvider;
-        private HttpClient _httpClient;
-        private HttpRequestMessageFactory _httpRequestMessageFactory;
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string JobsUriFormat = "/jobs/v2/{0}";
         private const string JobsQueryFormat = "/jobs/v2/query";
@@ -35,22 +35,22 @@ namespace Microsoft.Azure.Devices
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         /// <summary>
-        /// Creates scheduled jobs client, provided for unit testing purposes only.
+        /// Creates client, provided for unit testing purposes only.
         /// </summary>
-        public ScheduledJobsClient()
+        protected ScheduledJobsClient()
         {
         }
 
         internal ScheduledJobsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
         {
-            _credentialProvider = credentialProvider;
             _hostName = hostName;
+            _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
         }
 
         /// <summary>
-        /// Explicitly open the ScheduledJobsClient instance.
+        /// Explicitly open the client instance.
         /// </summary>
         public virtual Task OpenAsync()
         {
@@ -58,9 +58,8 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Closes the ScheduledJobsClient instance and disposes its resources.
+        /// Closes the client instance and disposes its resources.
         /// </summary>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
         public virtual Task CloseAsync()
         {
             return TaskHelpers.CompletedTask;
@@ -84,7 +83,6 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
         public virtual async Task<JobResponse> GetAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -98,7 +96,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken);
+                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -130,7 +128,6 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
         public virtual IQuery CreateQuery(JobType? jobType = null, JobStatus? jobStatus = null, int? pageSize = null)
         {
             return new Query(async (token) => await GetAsync(jobType, jobStatus, pageSize, token, CancellationToken.None).ConfigureAwait(false));
@@ -154,7 +151,6 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
         public virtual async Task<JobResponse> CancelAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -168,7 +164,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri(CancelJobUriFormat.FormatInvariant(jobId), UriKind.Relative), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken);
+                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -205,9 +201,10 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
         public virtual async Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, string queryCondition, CloudToDeviceMethod cloudToDeviceMethod, DateTime startTimeUtc, long maxExecutionTimeInSeconds, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
             try
             {
                 Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
@@ -235,6 +232,11 @@ namespace Microsoft.Azure.Devices
                     Logging.Error(this, $"{nameof(ScheduleDeviceMethodAsync)} threw an exception: {ex}", nameof(ScheduleDeviceMethodAsync));
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
+            }
         }
 
         /// <summary>
@@ -259,9 +261,10 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs"/>.
         public virtual Task<JobResponse> ScheduleTwinUpdateAsync(string jobId, string queryCondition, Twin twin, DateTime startTimeUtc, long maxExecutionTimeInSeconds, CancellationToken cancellationToken = default)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
             try
             {
                 Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
@@ -289,12 +292,12 @@ namespace Microsoft.Azure.Devices
                     Logging.Error(this, $"{nameof(ScheduleTwinUpdateAsync)} threw an exception: {ex}", nameof(ScheduleTwinUpdateAsync));
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
+            }
 
-        }
-
-        private static Uri GetJobUri(string jobId)
-        {
-            return new Uri(JobsUriFormat.FormatInvariant(jobId ?? string.Empty), UriKind.Relative);
         }
 
         private async Task<JobResponse> CreateAsync(JobRequest jobRequest, CancellationToken cancellationToken)
@@ -307,7 +310,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken);
+                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -320,23 +323,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateAsync));
             }
-        }
-
-        private static string BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
-        {
-            var stringBuilder = new StringBuilder();
-
-            if (jobType != null)
-            {
-                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
-            }
-
-            if (jobStatus != null)
-            {
-                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
-            }
-
-            return stringBuilder.ToString();
         }
 
         private async Task<QueryResult> GetAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
@@ -373,6 +359,28 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetAsync));
             }
+        }
+
+        private static string BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
+        {
+            var stringBuilder = new StringBuilder();
+
+            if (jobType != null)
+            {
+                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
+            }
+
+            if (jobStatus != null)
+            {
+                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private static Uri GetJobUri(string jobId)
+        {
+            return new Uri(JobsUriFormat.FormatInvariant(jobId ?? string.Empty), UriKind.Relative);
         }
     }
 }
