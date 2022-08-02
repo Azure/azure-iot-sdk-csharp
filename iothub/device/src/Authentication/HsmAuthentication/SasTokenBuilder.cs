@@ -37,17 +37,5 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             long seconds = Convert.ToInt64(secondsFromBaseTime.TotalSeconds, CultureInfo.InvariantCulture);
             return Convert.ToString(seconds, CultureInfo.InvariantCulture);
         }
-
-        public static string BuildAudience(string iotHub, string deviceId, string moduleId)
-        {
-            // DeviceId and ModuleId need to be double encoded.
-            string audience = WebUtility.UrlEncode(
-                "{0}/devices/{1}/modules/{2}".FormatInvariant(
-                    iotHub,
-                    WebUtility.UrlEncode(deviceId),
-                    WebUtility.UrlEncode(moduleId)));
-
-            return audience;
-        }
     }
 }

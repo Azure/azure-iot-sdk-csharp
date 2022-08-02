@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _amqpIotCbsLink = amqpCbsLink;
             _clientIdentity = clientIdentity;
-            _audience = clientIdentity.CreateAmqpCbsAudience();
+            _audience = clientIdentity.Audience;
             _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_clientIdentity);
 
             if (Logging.IsEnabled)

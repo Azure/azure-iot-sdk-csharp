@@ -47,7 +47,5 @@ namespace Microsoft.Azure.Devices.Client
         bool IsPooling();
 
         Uri BuildLinkAddress(string path);
-
-        string CreateAmqpCbsAudience();
     }
 }

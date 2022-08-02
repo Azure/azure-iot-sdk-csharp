@@ -77,14 +77,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHubHostname, int suggestedTimeToLiveSeconds)
+        protected override Task<string> SafeCreateNewToken(string audience, int suggestedTimeToLiveSeconds)
         {
             var builder = new TpmSharedAccessSignatureBuilder(_authProvider)
             {
                 TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLiveSeconds),
-                Target = "{0}/devices/{1}".FormatInvariant(
-                    iotHubHostname,
-                    WebUtility.UrlEncode(DeviceId)),
+                Target = audience,
             };
 
             return Task.FromResult(builder.ToSignature());

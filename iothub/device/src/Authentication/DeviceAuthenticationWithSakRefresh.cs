@@ -31,12 +31,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHubHostname, int suggestedTimeToLive)
+        protected override Task<string> SafeCreateNewToken(string audience, int suggestedTimeToLive)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, iotHubHostname, suggestedTimeToLive, nameof(SafeCreateNewToken));
+                    Logging.Enter(this, audience, suggestedTimeToLive, nameof(SafeCreateNewToken));
 
                 var builder = new SharedAccessSignatureBuilder
                 {
@@ -44,24 +44,19 @@ namespace Microsoft.Azure.Devices.Client
                     TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
                 };
 
-                if (_connInfo.SharedAccessKeyName == null)
-                {
-                    builder.Target = "{0}/devices/{1}".FormatInvariant(
-                        iotHubHostname,
-                        WebUtility.UrlEncode(DeviceId));
-                }
-                else
+                if (_connInfo.SharedAccessKeyName != null)
                 {
                     builder.KeyName = _connInfo.SharedAccessKeyName;
-                    builder.Target = _connInfo.Audience;
                 }
+
+                builder.Target = audience;
 
                 return Task.FromResult(builder.ToSignature());
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, iotHubHostname, suggestedTimeToLive, nameof(SafeCreateNewToken));
+                    Logging.Exit(this, audience, suggestedTimeToLive, nameof(SafeCreateNewToken));
             }
         }
     }

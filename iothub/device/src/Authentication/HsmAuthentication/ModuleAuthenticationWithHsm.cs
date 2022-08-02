@@ -44,10 +44,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         }
 
         ///<inheritdoc/>
-        protected override async Task<string> SafeCreateNewToken(string iotHubHostname, int suggestedTimeToLive)
+        protected override async Task<string> SafeCreateNewToken(string audience, int suggestedTimeToLive)
         {
             DateTime startTime = DateTime.UtcNow;
-            string audience = SasTokenBuilder.BuildAudience(iotHubHostname, DeviceId, ModuleId);
             string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, TimeSpan.FromSeconds(suggestedTimeToLive));
             string data = string.Join("\n", new string[] { audience, expiresOn });
             string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);

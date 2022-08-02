@@ -25,18 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         }
 
         [TestMethod]
-        public void TestBuildAudience_ShouldReturnSasToken()
-        {
-            string audience = WebUtility.UrlEncode("iothub.test/devices/device1/modules/module1");
-            string deviceId = "device1";
-            string iotHub = "iothub.test";
-            string moduleId = "module1";
-            string builtAudience = SasTokenBuilder.BuildAudience(iotHub, deviceId, moduleId);
-
-            Assert.AreEqual(audience, builtAudience);
-        }
-
-        [TestMethod]
         public void TestBuildSasToken_ShouldReturnSasToken()
         {
             string audience = "iothub.test/devices/device1/modules/module1";

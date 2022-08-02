@@ -64,10 +64,9 @@ namespace Microsoft.Azure.Devices.Client
             return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
-        private string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        private string BuildSignature(string keyName, string key, string audience, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
-            string audience = WebUtility.UrlEncode(target);
             var fields = new List<string>
             {
                 audience,
