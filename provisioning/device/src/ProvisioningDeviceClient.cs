@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 ProductInfo = ProductInfo,
             };
 
-            return _options.ProvisioningTransportSettings.RegisterAsync(request, cancellationToken);
+            return _options.ProvisioningTransportHandler.RegisterAsync(request, cancellationToken);
         }
     }
 }

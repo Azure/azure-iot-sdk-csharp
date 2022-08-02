@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         public ProvisioningClientOptions()
         {
-            ProvisioningTransportSettings = new ProvisioningTransportHandlerAmqp();
+            ProvisioningTransportHandler = new ProvisioningTransportHandlerAmqp();
         }
 
         /// <summary>
@@ -25,12 +25,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <exception cref="ArgumentNullException">When <paramref name="transportHandler"/> is null.</exception>
         public ProvisioningClientOptions(ProvisioningTransportHandler transportHandler)
         {
-            ProvisioningTransportSettings = transportHandler ?? throw new ArgumentNullException(nameof(transportHandler));
+            ProvisioningTransportHandler = transportHandler ?? throw new ArgumentNullException(nameof(transportHandler));
         }
 
         /// <summary>
         /// The transport settings to use (i.e., <see cref="ProvisioningTransportHandlerAmqp"/>, <see cref="ProvisioningTransportHandlerMqtt"/>, or <see cref="ProvisioningTransportHandlerHttp"/>).
         /// </summary>
-        public ProvisioningTransportHandler ProvisioningTransportSettings { get; }
+        public ProvisioningTransportHandler ProvisioningTransportHandler { get; }
     }
 }
