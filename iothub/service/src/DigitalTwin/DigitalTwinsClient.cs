@@ -225,14 +225,12 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
                 string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
-                var commandResponse = new InvokeDigitalTwinCommandResponse()
+                return new InvokeDigitalTwinCommandResponse
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
                     RequestId = requestId,
                 };
-
-                return commandResponse;
             }
             catch (Exception ex)
             {
