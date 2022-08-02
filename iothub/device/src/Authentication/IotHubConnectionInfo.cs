@@ -10,10 +10,11 @@ using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IDeviceIdentity
+    internal class IotHubConnectionInfo : IClientIdentity
     {
         private const int DefaultAmqpSecurePort = 5671;
 
+        // Called by connection string based clients
         public IotHubConnectionInfo(IotHubConnectionStringBuilder builder)
         {
             if (builder == null)
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            Audience = CreateAudience();
+            Audience = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
             HostName = IsUsingGateway
                 ? builder.GatewayHostName
@@ -188,6 +189,26 @@ namespace Microsoft.Azure.Devices.Client
                 && (AmqpTransportSettings?.ConnectionPoolSettings?.Pooling ?? false);
         }
 
+        public string CreateAmqpCbsAudience()
+        {
+            // If the shared access key name is null then this is an individual sas authenticated client.
+            if (SharedAccessKeyName.IsNullOrWhiteSpace())
+            {
+                string clientAudience = $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}";
+                if (!ModuleId.IsNullOrWhiteSpace())
+                {
+                    clientAudience += $"/modules/{WebUtility.UrlEncode(ModuleId)}";
+                }
+
+                return clientAudience;
+            }
+            else
+            {
+                // If the shared access key name is not null then this is a group sas authenticated client.
+                return HostName;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             return obj is IotHubConnectionInfo iotHubConnectionInfo
@@ -221,20 +242,5 @@ namespace Microsoft.Azure.Devices.Client
                 : hashCode * -1521134295 + field.GetHashCode();
         }
 
-        private string CreateAudience()
-        {
-            // If the shared access key name is null then this is an individual sas authenticated client.
-            if (SharedAccessKeyName.IsNullOrWhiteSpace())
-            {
-                return ModuleId.IsNullOrWhiteSpace()
-                    ? $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}"
-                    : $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}/modules/{WebUtility.UrlEncode(ModuleId)}";
-            }
-            else
-            {
-                // If the shared access key name is not null then this is a group sas authenticated client.
-                return HostName;
-            }
-        }
     }
 }

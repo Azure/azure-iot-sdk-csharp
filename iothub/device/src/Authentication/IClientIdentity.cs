@@ -8,8 +8,9 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Interface for device configurations and common attributes.
+    /// This has been included for our own unit testing.
     /// </summary>
-    internal interface IDeviceIdentity : IAuthorizationProvider
+    internal interface IClientIdentity : IAuthorizationProvider
     {
         AuthenticationWithTokenRefresh TokenRefresher { get; }
 
@@ -46,5 +47,7 @@ namespace Microsoft.Azure.Devices.Client
         bool IsPooling();
 
         Uri BuildLinkAddress(string path);
+
+        string CreateAmqpCbsAudience();
     }
 }
