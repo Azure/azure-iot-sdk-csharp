@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_ShouldCreateClientWithOptions()
         {
             // setup
-            var clientOptions = new IotHubClientOptions
+            var clientOptions = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
                 ModelId = "tempModuleId"
             };

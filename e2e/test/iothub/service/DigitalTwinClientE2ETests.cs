@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // Create a device client instance over Mqtt, initializing it with the "TemperatureController" model which has "Thermostat" components.
-                var options = new IotHubClientOptions
+                var options = new IotHubClientOptions(new IotHubClientMqttSettings())
                 {
                     ModelId = TemperatureControllerModelId,
                 };
