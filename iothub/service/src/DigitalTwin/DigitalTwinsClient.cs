@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices
 
                 if (!string.IsNullOrWhiteSpace(requestOptions?.IfMatch))
                 {
-                    HttpMessageHelper2.InsertEtag(request, requestOptions?.IfMatch);
+                    HttpMessageHelper2.InsertETag(request, requestOptions?.IfMatch);
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);

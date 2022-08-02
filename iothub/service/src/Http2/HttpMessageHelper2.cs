@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <param name="requestMessage">The request to add the If-Match header to.</param>
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
-        public static void InsertEtag(HttpRequestMessage requestMessage, string eTag)
+        public static void InsertETag(HttpRequestMessage requestMessage, string eTag)
         {
             if (string.IsNullOrWhiteSpace(eTag))
             {

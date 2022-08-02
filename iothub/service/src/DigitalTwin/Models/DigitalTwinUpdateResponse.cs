@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initializes a new instance of this class.
         /// </summary>
-        /// <param name="eTag">Weak Etag of the modified resource.</param>
+        /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="location">URI of the digital twin.</param>
         public UpdateDigitalTwinResponse(string eTag = default(string), string location = default(string))
         {
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets or sets weak Etag of the modified resource.
+        /// Gets or sets weak ETag of the modified resource.
         /// </summary>
         [JsonProperty(PropertyName = "ETag")]
         public string ETag { get; internal set; }
