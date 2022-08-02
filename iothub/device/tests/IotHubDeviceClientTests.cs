@@ -1366,8 +1366,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                FakeConnectionString,
-                null,
+                new IotHubConnectionStringBuilder(FakeConnectionString),
                 options);
 
             // assert
@@ -1396,6 +1395,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
+                // Pass these values, but expect them to be ignored, given the use of AuthenticationWithTokenRefresh below.
                 SasTokenTimeToLive = sasTokenTimeToLive,
                 SasTokenRenewalBuffer = sasTokenRenewalBuffer,
             };
@@ -1411,8 +1411,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                FakeConnectionString,
-                authMethod1,
+                new IotHubConnectionStringBuilder(FakeConnectionString, authMethod1),
                 options);
 
             // assert

@@ -4,7 +4,6 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -22,9 +21,18 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-            var builder = new IotHubConnectionStringBuilder(connectionString);
+            if (options == default)
+            {
+                options = new();
+            }
 
-            return CreateInternal(null, connectionString, builder.AuthenticationMethod, options);
+            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            if (csBuilder.UsingX509Cert)
+            {
+                throw new ArgumentException("To use X509 certificates, use the initializer with the IAuthenticationMethod parameter.", nameof(connectionString));
+            }
+
+            return CreateInternal(null, csBuilder, options);
         }
 
         /// <summary>
@@ -51,46 +59,53 @@ namespace Microsoft.Azure.Devices.Client
                 options = new();
             }
 
-            var connectionStringBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options.GatewayHostName);
+            var csBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options.GatewayHostName);
 
             // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(connectionStringBuilder.Certificate, ref options);
+            EnsureOptionsIsSetup(csBuilder.Certificate, ref options);
 
-            if (authenticationMethod is not DeviceAuthenticationWithX509Certificate)
+            // Validate certs.
+            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
-                return CreateInternal(null, connectionStringBuilder.ToString(), authenticationMethod, options);
-            }
+                // Prep for certificate auth.
+                if (csBuilder.AuthenticationMethod is DeviceAuthenticationWithX509Certificate
+                    && csBuilder.Certificate == null)
+                {
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
+                }
 
-            // Prep for certificate auth.
+                if (csBuilder.AuthenticationMethod is DeviceAuthenticationWithX509Certificate certificate
+                    && certificate.ChainCertificates != null
+                    && (options.TransportSettings is not IotHubClientAmqpSettings
+                    && options.TransportSettings is not IotHubClientMqttSettings
+                    || options.TransportSettings.Protocol != TransportProtocol.Tcp))
+                {
+                    throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
+                }
 
-            if (connectionStringBuilder.Certificate == null)
-            {
-                throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
+                // Install all the intermediate certificates in the chain if specified.
+                if (csBuilder.ChainCertificates != null)
+                {
+                    try
+                    {
+                        CertificateInstaller.EnsureChainIsInstalled(csBuilder.ChainCertificates);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+
+                        throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
+                    }
+                }
             }
 
             InternalClient internalClient = CreateInternal(
                 null,
-                connectionStringBuilder.ToString(),
-                authenticationMethod,
+                csBuilder,
                 options);
 
-            internalClient.Certificate = connectionStringBuilder.Certificate;
-
-            // Install all the intermediate certificates in the chain if specified.
-            if (connectionStringBuilder.ChainCertificates != null)
-            {
-                try
-                {
-                    CertificateInstaller.EnsureChainIsInstalled(connectionStringBuilder.ChainCertificates);
-                }
-                catch (Exception ex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
-
-                    throw new UnauthorizedException($"Failed to provide certificates in the chain - {ex.Message}", ex);
-                }
-            }
+            internalClient.Certificate = csBuilder.Certificate;
 
             return internalClient;
         }
@@ -99,8 +114,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This initializer exists only for unit tests to override the pipeline creation
         /// </summary>
         /// <param name="pipelineBuilder">Should only be specified by SDK tests to override the operation pipeline.</param>
-        /// <param name="connectionString">The device connection string.</param>
-        /// <param name="authenticationMethod">The authentication method.</param>
+        /// <param name="csBuilder">The device connection string builder.</param>
         /// <param name="options">The optional client settings.</param>
 #if DEBUG
         internal
@@ -109,70 +123,30 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         static InternalClient CreateInternal(
             IDeviceClientPipelineBuilder pipelineBuilder,
-            string connectionString,
-            IAuthenticationMethod authenticationMethod,
+            IotHubConnectionStringBuilder csBuilder,
             IotHubClientOptions options)
         {
-            if (options == null)
-            {
-                options = new();
-            }
-
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (!string.IsNullOrWhiteSpace(options.ModelId)
-                && options.TransportSettings is IotHubClientHttpSettings)
-            {
-                throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
-            }
-
-            var builder = new IotHubConnectionStringBuilder(connectionString, authenticationMethod);
-            if (authenticationMethod == null)
-            {
-                authenticationMethod = builder.AuthenticationMethod;
-            }
+            Argument.AssertNotNull(csBuilder, nameof(csBuilder));
+            Argument.AssertNotNull(options, nameof(options));
 
             // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
             // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
-            // implementation constructors instead, and these values are irrelevant for cert-based auth.
-            if (builder.AuthenticationMethod is not AuthenticationWithTokenRefresh
-                && builder.AuthenticationMethod is not DeviceAuthenticationWithX509Certificate)
+            // implementation constructors instead.
+            if (csBuilder.AuthenticationMethod is not AuthenticationWithTokenRefresh
+                && csBuilder.AuthenticationMethod is not DeviceAuthenticationWithX509Certificate)
             {
-                builder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
-                builder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
+                csBuilder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
+                csBuilder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate certificate
-                && certificate.ChainCertificates != null
-                && (options.TransportSettings is not IotHubClientAmqpSettings
-                && options.TransportSettings is not IotHubClientMqttSettings
-                || options.TransportSettings.Protocol != TransportProtocol.Tcp))
-            {
-                throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
-            }
+            IotHubConnectionInfo connInfo = csBuilder.ToIotHubConnectionInfo();
 
-            IotHubConnectionInfo iotHubConnectionString = builder.ToIotHubConnectionInfo();
-
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate
-                && builder.Certificate == null)
-            {
-                throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
-            }
-
-            // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(builder.Certificate, ref options);
-
-            pipelineBuilder ??= BuildPipeline();
-
-            var client = new InternalClient(iotHubConnectionString, pipelineBuilder, options);
+            var client = new InternalClient(connInfo, pipelineBuilder, options);
 
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
-                    $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId};ModuleId={iotHubConnectionString.ModuleId}",
+                    $"HostName={connInfo.HostName};DeviceId={connInfo.DeviceId};ModuleId={connInfo.ModuleId}",
                     options.TransportSettings,
                     options);
 
@@ -207,18 +181,6 @@ namespace Microsoft.Azure.Devices.Client
                     options.TransportSettings.ClientCertificate = cert;
                 }
             }
-
-        }
-
-        private static IDeviceClientPipelineBuilder BuildPipeline()
-        {
-            var transporthandlerFactory = new TransportHandlerFactory();
-            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
-                .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
-
-            return pipelineBuilder;
         }
     }
 }

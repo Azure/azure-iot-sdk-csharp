@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // This constructor is only used for unit testing.
         internal IotHubConnectionInfo(
-            string ioTHubName = null,
+            string iotHubName = null,
             string deviceId = null,
             string moduleId = null,
             string hostName = null,
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client
             string sharedAccessSignature = null,
             bool isUsingGateway = false)
         {
-            IotHubName = ioTHubName;
+            IotHubName = iotHubName;
             DeviceId = deviceId;
             ModuleId = moduleId;
             HostName = hostName;
