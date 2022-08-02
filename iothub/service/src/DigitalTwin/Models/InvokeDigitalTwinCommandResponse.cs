@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents the device command invocation results.
     /// </summary>
-    public class DigitalTwinCommandResponse
+    public class InvokeDigitalTwinCommandResponse
     {
         /// <summary>
         /// Command invocation result status, as supplied by the device.
@@ -17,5 +17,10 @@ namespace Microsoft.Azure.Devices
         /// Command invocation result payload, as supplied by the device.
         /// </summary>
         public string Payload { get; internal set; }
+
+        /// <summary>
+        /// Server generated request Id (GUID), to uniquely identify this request in the service.
+        /// </summary>
+        public string RequestId { get; internal set; }
     }
 }

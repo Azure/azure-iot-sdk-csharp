@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public IotHubClientOptions()
         {
-            TransportSettings = new IotHubClientAmqpSettings();
+            TransportSettings = new IotHubClientMqttSettings();
         }
 
         /// <summary>
