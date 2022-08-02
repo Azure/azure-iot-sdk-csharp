@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ModuleClient_CreateFromConnectionStringWithClientOptions_DoesNotThrow()
         {
             // setup
-            var clientOptions = new IotHubClientOptions
+            var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 ModelId = "tempModuleId"
             };

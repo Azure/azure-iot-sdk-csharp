@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var productInfo = new ProductInfo();
-            var options = new IotHubClientOptions();
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var mqttTransportSetting = new IotHubClientMqttSettings { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
             var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var passwordProvider = new Mock<IAuthorizationProvider>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var productInfo = new ProductInfo();
-            var options = new IotHubClientOptions();
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var mqttTransportSetting = new IotHubClientMqttSettings { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
 
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new IotHubClientMqttSettings();
             var productInfo = new ProductInfo();
-            var options = new IotHubClientOptions { ModelId = "someModel" };
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings()) { ModelId = "someModel" };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
             var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
 
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new IotHubClientMqttSettings();
             var productInfo = new ProductInfo();
-            var options = new IotHubClientOptions();
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
             var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo, options);
 
