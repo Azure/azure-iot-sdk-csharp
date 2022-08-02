@@ -32,15 +32,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("To use X509 certificates, use the initializer with the IAuthenticationMethod parameter.", nameof(connectionString));
             }
 
-            // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
-            // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
-            // implementation constructors instead.
-            if (csBuilder.AuthenticationMethod is not AuthenticationWithTokenRefresh)
-            {
-                csBuilder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
-                csBuilder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
-            }
-
             return CreateInternal(null, csBuilder, options);
         }
 
@@ -137,6 +128,16 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNull(csBuilder, nameof(csBuilder));
             Argument.AssertNotNull(options, nameof(options));
+
+
+            // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
+            // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
+            // implementation constructors instead.
+            if (!(csBuilder.AuthenticationMethod is AuthenticationWithTokenRefresh or DeviceAuthenticationWithX509Certificate))
+            {
+                csBuilder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
+                csBuilder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
+            }
 
             IotHubConnectionInfo connInfo = csBuilder.ToIotHubConnectionInfo();
 
