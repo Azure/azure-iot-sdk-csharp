@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
@@ -46,12 +47,15 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         ///<inheritdoc/>
         protected override async Task<string> SafeCreateNewToken(string audience, int suggestedTimeToLive)
         {
+            // DeviceId and ModuleId need to be double encoded.
+            string encodedAudience = WebUtility.UrlEncode(audience);
+
             DateTime startTime = DateTime.UtcNow;
             string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, TimeSpan.FromSeconds(suggestedTimeToLive));
-            string data = string.Join("\n", new string[] { audience, expiresOn });
+            string data = string.Join("\n", new string[] { encodedAudience, expiresOn });
             string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);
 
-            return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
+            return SasTokenBuilder.BuildSasToken(encodedAudience, signature, expiresOn);
         }
     }
 }
