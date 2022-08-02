@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,6 +71,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 _port = value;
             }
         }
+
+        /// <summary>
+        /// The version of TLS to use by default.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to "None", which means let the OS decide the proper TLS version (SChannel in Windows / OpenSSL in Linux).
+        /// </remarks>
+        public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
+
+        /// <summary>
+        /// To enable certificate revocation check. Default to be false.
+        /// </summary>
+        public bool CertificateRevocationCheck { get; set; }
 
         /// <summary>
         /// Registers a device described by the message.

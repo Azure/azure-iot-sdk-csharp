@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
 
             await provisioningDeviceClient.RegisterAsync().ConfigureAwait(false);
         }
