@@ -35,12 +35,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IDeviceIdentity testDeviceIdentity = CreatePooledSasGroupedDeviceIdentity(sharedAccessKeyName, poolSize);
+            IDeviceIdentity testDevice = CreatePooledSasGroupedDeviceIdentity(sharedAccessKeyName, poolSize);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
 
-            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDeviceIdentity, null, null, null, null, null);
+            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, null, null, null, null);
 
             injectedDictionary[sharedAccessKeyName].Count().Should().Be((int)poolSize);
 
@@ -54,12 +54,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
 
         private IDeviceIdentity CreatePooledSasGroupedDeviceIdentity(string sharedAccessKeyName, uint poolSize)
         {
-            Mock<IDeviceIdentity> connectionInfo = new Mock<IDeviceIdentity>();
+            Mock<IDeviceIdentity> deviceIdentity = new Mock<IDeviceIdentity>();
 
-            connectionInfo.Setup(m => m.IsPooling()).Returns(true);
-            connectionInfo.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
-            connectionInfo.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
-            connectionInfo.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
+            deviceIdentity.Setup(m => m.IsPooling()).Returns(true);
+            deviceIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
+            deviceIdentity.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
+            deviceIdentity.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
                 }
             });
 
-            return connectionInfo.Object;
+            return deviceIdentity.Object;
         }
     }
 }
