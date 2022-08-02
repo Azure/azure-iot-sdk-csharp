@@ -56,6 +56,7 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
                 Argument.RequireNotNull(cloudToDeviceMethod, nameof(cloudToDeviceMethod));
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, cloudToDeviceMethod);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
@@ -97,6 +98,7 @@ namespace Microsoft.Azure.Devices
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
                 Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
                 Argument.RequireNotNull(cloudToDeviceMethod, nameof(cloudToDeviceMethod));
+                cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, cloudToDeviceMethod);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
