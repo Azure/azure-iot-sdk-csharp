@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             X509Certificate2 clientCertificate = ((AuthenticationProviderX509)message.Authentication).GetAuthenticationCertificate();
 
             var tlsSettings = new ClientTlsSettings(
-                this.SslProtocols,
+                SslProtocols,
                 true,
                 new List<X509Certificate> { clientCertificate },
                 message.GlobalDeviceEndpoint);
