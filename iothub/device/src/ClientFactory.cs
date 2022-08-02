@@ -129,11 +129,11 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(csBuilder, nameof(csBuilder));
             Argument.AssertNotNull(options, nameof(options));
 
-
             // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
             // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
             // implementation constructors instead.
-            if (!(csBuilder.AuthenticationMethod is AuthenticationWithTokenRefresh or DeviceAuthenticationWithX509Certificate))
+            if (csBuilder.AuthenticationMethod is not AuthenticationWithTokenRefresh
+                && csBuilder.AuthenticationMethod is not DeviceAuthenticationWithX509Certificate)
             {
                 csBuilder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
                 csBuilder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
