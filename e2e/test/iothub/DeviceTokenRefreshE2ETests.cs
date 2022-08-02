@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             ///<inheritdoc/>
-            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewToken(string audience, int suggestedTimeToLive)
             {
                 _logger.Trace($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 
@@ -309,11 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     Key = _key,
                     TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
-                    Target = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0}/devices/{1}",
-                        iotHub,
-                        WebUtility.UrlEncode(DeviceId)),
+                    Target = audience,
                 };
 
                 string token = builder.ToSignature();
