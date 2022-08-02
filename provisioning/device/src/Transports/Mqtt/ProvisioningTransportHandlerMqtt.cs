@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             var tlsSettings = new ClientTlsSettings(
-                this.SslProtocols,
+                SslProtocols,
                 false,
                 new List<X509Certificate>(0),
                 message.GlobalDeviceEndpoint);
