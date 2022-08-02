@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.DigitalTwin.Authentication;
 using Azure.Core;
 
 namespace Microsoft.Azure.Devices.Tests

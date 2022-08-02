@@ -92,15 +92,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            using var digitalTwinClient = DigitalTwinClient.Create(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 
             // act
-            HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
-                .GetDigitalTwinAsync<ThermostatTwin>(testDevice.Id)
+            DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
+                .GetAsync<ThermostatTwin>(testDevice.Id)
                 .ConfigureAwait(false);
-            ThermostatTwin twin = response.Body;
+
+            ThermostatTwin twin = response.DigitalTwin;
 
             // assert
             twin.Metadata.ModelId.Should().Be(thermostatModelId);
