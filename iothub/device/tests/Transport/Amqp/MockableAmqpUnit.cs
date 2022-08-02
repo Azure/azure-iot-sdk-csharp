@@ -31,7 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
-            : base(iotHubConnectionInfo, amqpConnectionHolder, onMethodCallback, twinMessageListener, onModuleMessageReceivedCallback, onDeviceMessageReceivedCallback, onUnitDisconnected)
+            : base(iotHubConnectionInfo,
+                  amqpConnectionHolder,
+                  onMethodCallback,
+                  twinMessageListener,
+                  onModuleMessageReceivedCallback,
+                  onDeviceMessageReceivedCallback,
+                  onUnitDisconnected)
         {
         }
 
