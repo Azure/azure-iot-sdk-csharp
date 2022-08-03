@@ -36,8 +36,6 @@ namespace Microsoft.Azure.Devices.Client
 
             ClientOptions = iotHubClientOptions;
 
-            HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
-
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
             {
                 TokenRefresher = authWithTokenRefresh;
@@ -124,9 +122,6 @@ namespace Microsoft.Azure.Devices.Client
         public string ModuleId { get; }
 
         public string HostName { get; }
-
-        // TODO (abmisr): Move to transport layer
-        public Uri HttpsEndpoint { get; }
 
         public string Audience { get; }
 

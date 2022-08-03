@@ -59,14 +59,17 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             clientIdentity.Setup(m => m.IsPooling()).Returns(true);
             clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
             clientIdentity.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
-            clientIdentity.Setup(m => m.ClientOptions.TransportSettings).Returns(new IotHubClientAmqpSettings()
-            {
-                ConnectionPoolSettings = new AmqpConnectionPoolSettings
-                {
-                    Pooling = true,
-                    MaxPoolSize = poolSize,
-                }
-            });
+            clientIdentity.Setup(m => m.ClientOptions).Returns(
+                new IotHubClientOptions(
+                    new IotHubClientAmqpSettings()
+                    {
+                        ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                        {
+                            Pooling = true,
+                            MaxPoolSize = poolSize,
+                        }
+                    })
+                );
 
             return clientIdentity.Object;
         }

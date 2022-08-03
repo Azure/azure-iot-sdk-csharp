@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (Logging.IsEnabled)
             {
-                Logging.Associate(this, clientIdentity, nameof(DeviceIdentity));
+                Logging.Associate(this, clientIdentity, nameof(clientIdentity));
                 Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
         }
