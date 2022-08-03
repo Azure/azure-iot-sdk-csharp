@@ -214,12 +214,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 attempt++;
                 try
                 {
-                    using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+                    using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
                     CloudToDeviceMethodResult response =
-                        await serviceClient
-                            .InvokeDeviceMethodAsync(
+                        await serviceClient.DirectMethods
+                            .InvokeAsync(
                                 deviceName,
                                 new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson))
                             .ConfigureAwait(false);
@@ -230,7 +230,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     string payload = response.GetPayloadAsJson();
                     Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
 
-                    await serviceClient.CloseAsync().ConfigureAwait(false);
                     done = true;
                 }
                 catch (DeviceNotFoundException ex)
