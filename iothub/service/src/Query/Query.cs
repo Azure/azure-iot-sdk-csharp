@@ -72,18 +72,18 @@ namespace Microsoft.Azure.Devices
         ///     fetch the next paged result as job responses
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<JobResponse>> GetNextAsJobResponseAsync()
+        public async Task<IEnumerable<ScheduledJob>> GetNextAsScheduledJobAsync()
         {
-            return await GetNextAsJobResponseAsync(null).ConfigureAwait(false);
+            return await GetNextAsScheduledJobAsync(null).ConfigureAwait(false);
         }
 
-        public async Task<QueryResponse<JobResponse>> GetNextAsJobResponseAsync(QueryOptions options)
+        public async Task<QueryResponse<ScheduledJob>> GetNextAsScheduledJobAsync(QueryOptions options)
         {
-            IEnumerable<JobResponse> result = HasMoreResults
-                ? await GetAndCastNextResultAsync<JobResponse>(QueryResultType.JobResponse, options).ConfigureAwait(false)
-                : new List<JobResponse>();
+            IEnumerable<ScheduledJob> result = HasMoreResults
+                ? await GetAndCastNextResultAsync<ScheduledJob>(QueryResultType.JobResponse, options).ConfigureAwait(false)
+                : new List<ScheduledJob>();
 
-            return new QueryResponse<JobResponse>(result, _continuationToken);
+            return new QueryResponse<ScheduledJob>(result, _continuationToken);
         }
 
         /// <summary>

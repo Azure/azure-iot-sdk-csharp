@@ -4,8 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Holds the API version numbers required in data-plane calls to the service for <see cref="RegistryManager"/>,
-    /// <see cref="ServiceClient"/>, and <see cref="ScheduledJobsClient"/>.
+    /// The API version used in all service requests.
     /// </summary>
     internal class ClientApiVersionHelper
     {

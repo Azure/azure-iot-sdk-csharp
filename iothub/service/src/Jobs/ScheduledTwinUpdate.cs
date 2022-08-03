@@ -11,19 +11,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Query condition to evaluate which devices to run the job on.
         /// </summary>
-        [JsonProperty(PropertyName = "QueryCondition", Required = Required.Always)]
+        [JsonProperty(PropertyName = "queryCondition", Required = Required.Always)]
         public string QueryCondition { get; set; }
 
         /// <summary>
         /// Twin object to use for the update.
         /// </summary>
-        [JsonProperty(PropertyName = "Twin", Required = Required.Always)]
+        [JsonProperty(PropertyName = "twin", Required = Required.Always)]
         public Twin Twin { get; set; }
 
         /// <summary>
         /// Date time in UTC to start the job.
-        /// </summary>\
-        [JsonProperty(PropertyName = "StartTimeUtc", Required = Required.Always)]
+        /// </summary>
+        [JsonProperty(PropertyName = "startTimeUtc", Required = Required.Always)]
         public DateTime StartTimeUtc { get; set; }
     }
 }

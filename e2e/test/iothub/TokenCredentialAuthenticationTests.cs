@@ -67,9 +67,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
-                    MaxExecutionTimeInSeconds = (long)TimeSpan.FromMinutes(2).TotalSeconds
+                    MaxExecutionTime = TimeSpan.FromMinutes(2)
                 };
-                JobResponse createJobResponse = await serviceClient.ScheduledJobs
+                ScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
                         twinUpdate,
                         twinUpdateOptions)

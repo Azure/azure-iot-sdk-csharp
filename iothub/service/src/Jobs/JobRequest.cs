@@ -26,29 +26,35 @@ namespace Microsoft.Azure.Devices
         public JobType JobType { get; set; }
 
         /// <summary>
-        /// Required if jobType is cloudToDeviceMethod.
         /// The method type and parameters.
         /// </summary>
+        /// /// <remarks>
+        /// Required if jobType is cloudToDeviceMethod.
+        /// </remarks>
         [JsonProperty(PropertyName = "cloudToDeviceMethod")]
         public CloudToDeviceMethod CloudToDeviceMethod { get; set; }
 
         /// <summary>
-        /// Required if jobType is updateTwin.
         /// The Update Twin tags and desired properties.
         /// </summary>
+        /// <remarks>
+        /// Required if jobType is updateTwin.
+        /// </remarks>
         [JsonProperty(PropertyName = "updateTwin")]
         public Twin UpdateTwin { get; set; }
 
         /// <summary>
-        /// Required if jobType is updateTwin or cloudToDeviceMethod.
-        /// Condition for device query to get devices to execute the job on
+        /// Condition for device query to get devices to execute the job on.
         /// </summary>
+        /// <remarks>
+        /// Required if jobType is updateTwin or cloudToDeviceMethod.
+        /// </remarks>
         [JsonProperty(PropertyName = "queryCondition")]
         public string QueryCondition { get; set; }
 
 
         /// <summary>
-        /// ISO 8601 date time to start the job
+        /// ISO 8601 date time to start the job.
         /// </summary>
         [JsonProperty(PropertyName = "startTime")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
@@ -56,9 +62,16 @@ namespace Microsoft.Azure.Devices
         public DateTime StartTime { get; set; }
 
         /// <summary>
-        /// Max execution time in seconds (ttl duration)
+        /// Max execution time in seconds (TTL duration).
         /// </summary>
+        [JsonIgnore]
+        public TimeSpan MaxExecutionTime { get; set; }
+
         [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public long MaxExecutionTimeInSeconds { get; set; }
+        internal long MaxExecutionTimeInSeconds
+        {
+            get => (long)MaxExecutionTime.TotalSeconds;
+            set => MaxExecutionTime = TimeSpan.FromSeconds(value);
+        }
     }
 }

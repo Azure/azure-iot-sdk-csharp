@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<JobResponse> GetAsync(string jobId, CancellationToken cancellationToken = default)
+        public virtual async Task<ScheduledJob> GetAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, jobId, nameof(GetAsync));
@@ -78,9 +78,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponse<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<JobResponse> CancelAsync(string jobId, CancellationToken cancellationToken = default)
+        public virtual async Task<ScheduledJob> CancelAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, jobId, nameof(CancelAsync));
@@ -146,9 +146,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri(CancelJobUriFormat.FormatInvariant(jobId), UriKind.Relative), _credentialProvider);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponse<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -166,12 +166,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates a new Job to run a device method on one or multiple devices.
         /// </summary>
-        /// <param name="scheduledDeviceMethod">Required parameters for scheduled device method, i.e: <paramref name="scheduledDeviceMethod.CloudToDeviceMethod"/>, <paramref name="scheduledDeviceMethod.QueryCondition"/>, <paramref name="scheduledDeviceMethod.StartTimeUtc"/></param>
+        /// <param name="scheduledDirectMethod">Required parameters for scheduled device method, i.e: <paramref name="scheduledDirectMethod.CloudToDeviceMethod"/>, <paramref name="scheduledDirectMethod.QueryCondition"/>, <paramref name="scheduledDirectMethod.StartTimeUtc"/></param>
         /// <param name="scheduledJobsOptions">Optional parameters for scheduled device method, i.e: <paramref name="scheduledJobsOptions.JobId"/> and <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/></param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>A JobResponse object.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDeviceMethod"/> or <paramref name="scheduledDeviceMethod.queryCondition"/> or <paramref name="scheduledDeviceMethod.cloudToDeviceMethod"/> or <paramref name="scheduledDeviceMethod.startTimeUtc"/> or <paramref name="scheduledDeviceMethod.maxExecutionTimeInSeconds"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDeviceMethod.queryCondition"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDirectMethod"/> or <paramref name="scheduledDirectMethod.queryCondition"/> or <paramref name="scheduledDirectMethod.cloudToDeviceMethod"/> or <paramref name="scheduledDirectMethod.startTimeUtc"/> or <paramref name="scheduledDirectMethod.maxExecutionTimeInSeconds"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDirectMethod.queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -182,31 +182,31 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<JobResponse> ScheduleDeviceMethodAsync(ScheduledDeviceMethod scheduledDeviceMethod, ScheduledJobsOptions scheduledJobsOptions, CancellationToken cancellationToken = default)
+        public virtual async Task<ScheduledJob> ScheduleDeviceMethodAsync(ScheduledDirectMethod scheduledDirectMethod, ScheduledJobsOptions scheduledJobsOptions, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDeviceMethod.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(scheduledJobsOptions.JobId, nameof(scheduledJobsOptions.JobId));
-                Argument.RequireNotNull(scheduledDeviceMethod, nameof(scheduledDeviceMethod));
-                Argument.RequireNotNullOrEmpty(scheduledDeviceMethod.QueryCondition, nameof(scheduledDeviceMethod.QueryCondition));
-                Argument.RequireNotNull(scheduledDeviceMethod.CloudToDeviceMethod, nameof(scheduledDeviceMethod.CloudToDeviceMethod));
-                Argument.RequireNotNull(scheduledDeviceMethod.StartTimeUtc, nameof(scheduledDeviceMethod.StartTimeUtc));
-                Argument.RequireNotNull(scheduledDeviceMethod.MaxExecutionTimeInSeconds, nameof(scheduledDeviceMethod.MaxExecutionTimeInSeconds));
+                Argument.RequireNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
+                Argument.RequireNotNullOrEmpty(scheduledDirectMethod.QueryCondition, nameof(scheduledDirectMethod.QueryCondition));
+                Argument.RequireNotNull(scheduledDirectMethod.CloudToDeviceMethod, nameof(scheduledDirectMethod.CloudToDeviceMethod));
+                Argument.RequireNotNull(scheduledDirectMethod.StartTimeUtc, nameof(scheduledDirectMethod.StartTimeUtc));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
                 {
-                    JobId = scheduledJobsOptions.JobId,
+                    JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleDeviceMethod,
-                    CloudToDeviceMethod = scheduledDeviceMethod.CloudToDeviceMethod,
-                    QueryCondition = scheduledDeviceMethod.QueryCondition,
-                    StartTime = scheduledDeviceMethod.StartTimeUtc,
-                    MaxExecutionTimeInSeconds = scheduledDeviceMethod.MaxExecutionTimeInSeconds
+                    CloudToDeviceMethod = scheduledDirectMethod.CloudToDeviceMethod,
+                    QueryCondition = scheduledDirectMethod.QueryCondition,
+                    StartTime = scheduledDirectMethod.StartTimeUtc,
+                    MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime
                 };
-
-                return await CreateAsync(jobRequest, cancellationToken).ConfigureAwait(false);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponse<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDeviceMethod.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                    Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
             }
         }
 
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual Task<JobResponse> ScheduleTwinUpdateAsync(ScheduledTwinUpdate scheduledTwinUpdate, ScheduledJobsOptions scheduledJobsOptions = default, CancellationToken cancellationToken = default)
+        public virtual async Task<ScheduledJob> ScheduleTwinUpdateAsync(ScheduledTwinUpdate scheduledTwinUpdate, ScheduledJobsOptions scheduledJobsOptions = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
@@ -254,15 +254,17 @@ namespace Microsoft.Azure.Devices
 
                 var jobRequest = new JobRequest
                 {
-                    JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? "job_" + Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
+                    JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleUpdateTwin,
                     UpdateTwin = scheduledTwinUpdate.Twin,
                     QueryCondition = scheduledTwinUpdate.QueryCondition,
                     StartTime = scheduledTwinUpdate.StartTimeUtc,
-                    MaxExecutionTimeInSeconds = scheduledJobsOptions.MaxExecutionTimeInSeconds
+                    MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime
                 };
-
-                return CreateAsync(jobRequest, cancellationToken);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponse<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -276,31 +278,6 @@ namespace Microsoft.Azure.Devices
                     Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
             }
 
-        }
-
-        private async Task<JobResponse> CreateAsync(JobRequest jobRequest, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateAsync));
-
-            try
-            {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<JobResponse>(response, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"jobId=[{jobRequest?.JobId}], jobType=[{jobRequest?.JobType}]", nameof(CreateAsync));
-            }
         }
 
         private async Task<QueryResult> GetAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
@@ -322,8 +299,8 @@ namespace Microsoft.Azure.Devices
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, new Uri(JobsQueryFormat, UriKind.Relative), _credentialProvider, null, BuildQueryJobUri(jobType, jobStatus));
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
             }
             catch (Exception ex)

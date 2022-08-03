@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class JobClientTests
     {
         private readonly string jobId = "testJobId";
-        private readonly JobResponse expectedJobResponse = new JobResponse();
+        private readonly ScheduledJob scheduledJob = new ScheduledJob();
         private readonly TimeSpan timeout = TimeSpan.FromMinutes(1);
         private const string HostName = "acme.azure-devices.net";
         private static Uri HttpUri = new Uri("https://" + HostName);
@@ -45,33 +45,33 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         private void NoExtraJobParamTestSetup(JobType jobType, CancellationToken cancellationToken)
         {
-            httpClientHelperMock.Setup(s => s.PutAsync<JobRequest, JobResponse>(
+            httpClientHelperMock.Setup(s => s.PutAsync<JobRequest, ScheduledJob>(
                 It.IsAny<Uri>(),
                 It.Is<JobRequest>(
                     r =>
                         r.JobId == jobId && r.JobType == jobType),
                 It.IsAny<Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                 It.Is<CancellationToken>(c => c == cancellationToken)))
-                .Returns(Task.FromResult(expectedJobResponse));
+                .Returns(Task.FromResult(scheduledJob));
         }
 
         private void NoExtraJobParamMultiDeviceTestSetup(JobType jobType, CancellationToken cancellationToken)
         {
-            httpClientHelperMock.Setup(s => s.PutAsync<JobRequest, JobResponse>(
+            httpClientHelperMock.Setup(s => s.PutAsync<JobRequest, ScheduledJob>(
                 It.IsAny<Uri>(),
                 It.Is<JobRequest>(
                     r =>
                         r.JobId == jobId && r.JobType == jobType),
                 It.IsAny<Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                 It.Is<CancellationToken>(c => c == cancellationToken)))
-                .Returns(Task.FromResult(expectedJobResponse));
+                .Returns(Task.FromResult(scheduledJob));
         }
 
-        private void TestVerify(JobResponse actualJobResponse)
+        private void TestVerify(ScheduledJob actualJobResponse)
         {
-            Assert.AreEqual(expectedJobResponse, actualJobResponse);
+            Assert.AreEqual(scheduledJob, actualJobResponse);
 
-            httpClientHelperMock.Verify(v => v.PutAsync<JobRequest, JobResponse>(
+            httpClientHelperMock.Verify(v => v.PutAsync<JobRequest, ScheduledJob>(
                 It.IsAny<Uri>(),
                 It.IsAny<JobRequest>(),
                 It.IsAny<Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),

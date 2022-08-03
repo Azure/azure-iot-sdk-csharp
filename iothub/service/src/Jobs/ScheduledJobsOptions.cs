@@ -11,13 +11,20 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Unique Job Id for the twin update job.
         /// </summary>
-        [JsonProperty(PropertyName = "JobId", Required = Required.Default)]
+        [JsonProperty(PropertyName = "jobId", Required = Required.Default)]
         public string JobId { get; set; }
 
         /// <summary>
-        /// Max execution time in seconds, i.e., ttl duration the job can run.
+        /// Max execution time in seconds (TTL duration).
         /// </summary>
-        [JsonProperty(PropertyName = "MaxExecutionTimeInSeconds", Required = Required.Default)]
-        public long MaxExecutionTimeInSeconds { get; set; }
+        [JsonIgnore]
+        public TimeSpan MaxExecutionTime { get; set; }
+
+        [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        internal long MaxExecutionTimeInSeconds
+        {
+            get => (long)MaxExecutionTime.TotalSeconds;
+            set => MaxExecutionTime = TimeSpan.FromSeconds(value);
+        }
     }
 }

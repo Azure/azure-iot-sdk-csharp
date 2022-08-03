@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             ScheduledJobsOptions ScheduledTwinUpdateOptions = new ScheduledJobsOptions
             {
                 JobId = "testDevice",
-                MaxExecutionTimeInSeconds = 60
+                MaxExecutionTime = TimeSpan.FromSeconds(60)
             };
             IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => sc.ScheduledJobs.ScheduleTwinUpdateAsync(

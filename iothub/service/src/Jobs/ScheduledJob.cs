@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Provides current job report when fetched
     /// </summary>
-    public class JobResponse
+    public class ScheduledJob
     {
         /// <summary>
         /// System generated.  Ignored at creation.
