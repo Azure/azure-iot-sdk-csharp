@@ -12,12 +12,16 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const int DefaultAmqpSecurePort = 5671;
 
-        public IotHubConnectionInfo(IotHubConnectionStringBuilder builder)
+        public IotHubConnectionInfo(
+            IotHubConnectionStringBuilder builder,
+            IotHubClientOptions iotHubClientOptions)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
+
+            builder.Validate();
 
             Audience = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);

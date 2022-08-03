@@ -175,12 +175,6 @@ namespace Microsoft.Azure.Devices.Client
         // This setting is valid only for SAS authenticated clients.
         internal int SasTokenRenewalBuffer { get; set; }
 
-        internal IotHubConnectionInfo ToIotHubConnectionInfo()
-        {
-            Validate();
-            return new IotHubConnectionInfo(this);
-        }
-
         /// <summary>
         /// Produces the connection string based on the values of the <see cref="IotHubConnectionStringBuilder"/> instance properties.
         /// </summary>
@@ -221,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client
             GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
         }
 
-        private void Validate()
+        internal void Validate()
         {
             if (DeviceId.IsNullOrWhiteSpace())
             {

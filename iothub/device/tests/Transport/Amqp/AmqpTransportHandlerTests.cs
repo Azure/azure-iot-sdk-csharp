@@ -98,33 +98,39 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public void AmqpTransportHandler_RejectAmqpSettingsChange()
         {
+            var transportSettings1 = new IotHubClientAmqpSettings
+            {
+                PrefetchCount = 60,
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                {
+                    Pooling = true,
+                    MaxPoolSize = 10,
+                },
+            };
+            var clientOptions1 = new IotHubClientOptions(transportSettings1);
+
             var amqpTransportHandler1 = new AmqpTransportHandler(
                 new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString)),
-                new IotHubClientAmqpSettings
+                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
+                transportSettings1);
+
+            try
+            {
+                var transportSettings2 = new IotHubClientAmqpSettings
                 {
                     PrefetchCount = 60,
                     ConnectionPoolSettings = new AmqpConnectionPoolSettings
                     {
                         Pooling = true,
-                        MaxPoolSize = 10,
+                        MaxPoolSize = 7, // different pool size
                     },
-                });
+                };
+                var clientOptions2 = new IotHubClientOptions(transportSettings2);
 
-            try
-            {
                 var amqpTransportHandler2 = new AmqpTransportHandler(
                     new PipelineContext(),
-                    new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString)),
-                    new IotHubClientAmqpSettings
-                    {
-                        PrefetchCount = 60,
-                        ConnectionPoolSettings = new AmqpConnectionPoolSettings
-                        {
-                            Pooling = true,
-                            MaxPoolSize = 7, // different pool size
-                        },
-                    });
+                    new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
+                    transportSettings2);
             }
             catch (ArgumentException ex)
             {
