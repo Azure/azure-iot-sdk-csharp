@@ -1033,15 +1033,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void ProductInfoStoresProductInfoOk()
-        {
-            const string userAgent = "name/version (runtime; os; arch)";
-            IotHubDeviceClient client = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
-            client.ProductInfo = userAgent;
-            Assert.AreEqual(userAgent, client.ProductInfo);
-        }
-
-        [TestMethod]
         public void CompleteAsyncThrowsForNullMessage()
         {
             IotHubDeviceClient client = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
