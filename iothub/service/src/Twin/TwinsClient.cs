@@ -662,6 +662,10 @@ namespace Microsoft.Azure.Devices
             var exportImportDeviceList = new List<ExportImportDevice>(twins.Count());
             foreach (Twin twin in twins)
             {
+                if (twin == null)
+                {
+                    throw new ArgumentNullException(nameof(twin));
+                }
                 switch (importMode)
                 {
                     case ImportMode.UpdateTwin:
