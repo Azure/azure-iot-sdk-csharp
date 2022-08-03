@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             X509Certificate2 clientCertificate = ((AuthenticationProviderX509)message.Authentication).GetAuthenticationCertificate();
 
             var tlsSettings = new ClientTlsSettings(
-                TlsVersions.Instance.Preferred,
+                SslProtocols,
                 true,
                 new List<X509Certificate> { clientCertificate },
                 message.GlobalDeviceEndpoint);
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             cancellationToken.ThrowIfCancellationRequested();
 
             var tlsSettings = new ClientTlsSettings(
-                TlsVersions.Instance.Preferred,
+                SslProtocols,
                 false,
                 new List<X509Certificate>(0),
                 message.GlobalDeviceEndpoint);
