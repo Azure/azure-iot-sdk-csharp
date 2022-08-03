@@ -131,15 +131,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
-        /// </summary>
-        public string ProductInfo
-        {
-            get => InternalClient.ProductInfo;
-            set => InternalClient.ProductInfo = value;
-        }
-
-        /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
@@ -476,13 +467,15 @@ namespace Microsoft.Azure.Devices.Client
                     };
                 }
 
-                var context = new PipelineContext()
+                // TODO (abmisr) - fix when ClientOptions is made available in PipelineContext (InternalClient)
+
+                /*var context = new PipelineContext()
                 {
                     ProductInfo = new ProductInfo
                     {
                         Extra = InternalClient.ProductInfo
                     }
-                };
+                };*/
 
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
                 if (InternalClient.Certificate != null)
@@ -490,7 +483,7 @@ namespace Microsoft.Azure.Devices.Client
                     transportSettings.ClientCertificate = InternalClient.Certificate;
                 }
 
-                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionInfo, transportSettings, httpClientHandler);
+                using var httpTransport = new HttpTransportHandler(new PipelineContext(), InternalClient.IotHubConnectionInfo, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
                 MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
 
