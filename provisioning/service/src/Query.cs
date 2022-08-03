@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ServiceConnectionString serviceConnectionString,
             string serviceName,
             QuerySpecification querySpecification,
-            HttpTransportSettings httpTransportSettings,
+            ProvisioningServiceHttpSettings httpTransportSettings,
             int pageSize,
             CancellationToken cancellationToken)
         {

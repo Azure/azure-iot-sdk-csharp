@@ -77,32 +77,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         ///
         /// <param name="connectionString">The <c>string</c> that cares the connection string of the Device Provisioning Service.</param>
+        /// <param name="options"> The options that allow configuration of the provisioning service client instance during initialization.</param>
         /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
-        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString)
+        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, ProvisioningServiceClientOptions options = default)
         {
-            return new ProvisioningServiceClient(connectionString, new HttpTransportSettings());
+            return new ProvisioningServiceClient(connectionString, options);
         }
 
-        /// <summary>
-        /// Create a new instance of the <c>ProvisioningServiceClient</c> that exposes
-        /// the API to the Device Provisioning Service.
-        /// </summary>
-        /// <remarks>
-        /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
-        /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
-        /// </remarks>
-        ///
-        /// <param name="connectionString">The <c>string</c> that cares the connection string of the Device Provisioning Service.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings for the request</param>
-        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
-        /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
-        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, HttpTransportSettings httpTransportSettings)
-        {
-            return new ProvisioningServiceClient(connectionString, httpTransportSettings);
-        }
-
-        private ProvisioningServiceClient(string connectionString, HttpTransportSettings httpTransportSettings)
+        private ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options)
         {
             if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
             {
@@ -113,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
-                httpTransportSettings);
+                options.ProvisioningServiceHttpSettings);
         }
 
         /// <summary>
@@ -449,7 +432,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 CancellationToken.None);
         }
 
@@ -467,7 +450,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, HttpTransportSettings httpTransportSettings)
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, ProvisioningServiceHttpSettings httpTransportSettings)
         {
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
@@ -495,7 +478,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 cancellationToken);
         }
 
@@ -522,7 +505,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 CancellationToken.None,
                 pageSize);
         }
@@ -551,7 +534,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 cancellationToken,
                 pageSize);
         }
@@ -575,7 +558,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, HttpTransportSettings httpTransportSettings)
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, ProvisioningServiceHttpSettings httpTransportSettings)
         {
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
@@ -815,7 +798,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 CancellationToken.None);
         }
 
@@ -833,7 +816,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
-        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, HttpTransportSettings httpTransportSettings)
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, ProvisioningServiceHttpSettings httpTransportSettings)
         {
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
@@ -861,7 +844,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 cancellationToken);
         }
 
@@ -888,7 +871,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 CancellationToken.None,
                 pageSize);
         }
@@ -917,7 +900,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 cancellationToken,
                 pageSize);
         }
@@ -941,7 +924,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, HttpTransportSettings httpTransportSettings)
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, ProvisioningServiceHttpSettings httpTransportSettings)
         {
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
@@ -1129,7 +1112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 CancellationToken.None,
                 enrollmentGroupId);
         }
@@ -1148,7 +1131,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        public Query CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification querySpecification, string enrollmentGroupId, HttpTransportSettings httpTransportSettings)
+        public Query CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification querySpecification, string enrollmentGroupId, ProvisioningServiceHttpSettings httpTransportSettings)
         {
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
@@ -1180,7 +1163,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 cancellationToken,
                 enrollmentGroupId);
         }
@@ -1209,7 +1192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 CancellationToken.None,
                 enrollmentGroupId,
                 pageSize);
@@ -1239,7 +1222,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             QuerySpecification querySpecification,
             string enrollmentGroupId,
             int pageSize,
-            HttpTransportSettings httpTransportSettings)
+            ProvisioningServiceHttpSettings httpTransportSettings)
         {
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
@@ -1279,7 +1262,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new HttpTransportSettings(),
+                new ProvisioningServiceHttpSettings(),
                 cancellationToken,
                 enrollmentGroupId,
                 pageSize);

@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices
                         .AuthenticateAsClientAsync(
                             host,
                             x509CertificateCollection,
-                            TlsVersions.Instance.Preferred,
+                            new IotHubServiceClientOptions().SslProtocols,
                             checkCertificateRevocation: false)
                         .ConfigureAwait(false);
                     WebSocketStream = sslStream;
