@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             // validate
             Assert.IsTrue(q.HasMoreResults);
-            IEnumerable<ScheduledJob> content = q.GetNextAsJobResponseAsync().Result;
+            IEnumerable<ScheduledJob> content = q.GetNextAsScheduledJobAsync().Result;
 
             Assert.AreEqual(1, content.Count());
             Assert.IsInstanceOfType(content.ElementAt(0), typeof(ScheduledJob));
