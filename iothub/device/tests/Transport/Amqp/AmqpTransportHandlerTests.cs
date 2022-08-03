@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             return new AmqpTransportHandler(
                 new PipelineContext(),
-                IotHubConnectionInfoExtensions.Parse(TestConnectionString),
+                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
                 new IotHubClientAmqpSettings());
         }
     }

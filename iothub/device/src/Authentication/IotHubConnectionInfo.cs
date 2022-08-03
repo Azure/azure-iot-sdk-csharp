@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IAuthorizationProvider
+    internal class IotHubConnectionInfo : IClientIdentity, IAuthorizationProvider
     {
         private const int DefaultAmqpSecurePort = 5671;
 
@@ -34,8 +36,9 @@ namespace Microsoft.Azure.Devices.Client
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
 
-            HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
+            ClientOptions = iotHubClientOptions;
 
+            HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
             AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, DefaultAmqpSecurePort).Uri;
 
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
@@ -101,6 +104,18 @@ namespace Microsoft.Azure.Devices.Client
             {
                 SharedAccessSignature = builder.SharedAccessSignature;
             }
+
+            if (ClientOptions.TransportSettings.ClientCertificate == null)
+            {
+                AmqpCbsAudience = CreateAmqpCbsAudience();
+                AuthenticationModel = SharedAccessKeyName == null
+                    ? AuthenticationModel.SasIndividual
+                    : AuthenticationModel.SasGrouped;
+            }
+            else
+            {
+                AuthenticationModel = AuthenticationModel.X509;
+            }
         }
 
         // This constructor is only used for unit testing.
@@ -130,29 +145,46 @@ namespace Microsoft.Azure.Devices.Client
             IsUsingGateway = isUsingGateway;
         }
 
-        public AuthenticationWithTokenRefresh TokenRefresher { get; private set; }
+        public AuthenticationWithTokenRefresh TokenRefresher { get; }
 
-        public string IotHubName { get; private set; }
+        public string IotHubName { get; }
 
-        public string DeviceId { get; private set; }
+        public string DeviceId { get; }
 
-        public string ModuleId { get; private set; }
+        public string ModuleId { get; }
 
-        public string HostName { get; private set; }
+        public string HostName { get; }
 
-        public Uri HttpsEndpoint { get; private set; }
+        // TODO (abmisr): Move to transport layer
+        public Uri HttpsEndpoint { get; }
 
-        public Uri AmqpEndpoint { get; private set; }
+        // TODO (abmisr): Move to transport layer
+        public Uri AmqpEndpoint { get; }
 
-        public string Audience { get; private set; }
+        public string Audience { get; }
 
-        public string SharedAccessKeyName { get; private set; }
+        public string SharedAccessKeyName { get; }
 
-        public string SharedAccessKey { get; private set; }
+        public string SharedAccessKey { get; }
 
-        public string SharedAccessSignature { get; private set; }
+        public string SharedAccessSignature { get; }
 
-        public bool IsUsingGateway { get; private set; }
+        public bool IsUsingGateway { get; }
+
+        public AuthenticationModel AuthenticationModel { get; }
+
+        public IotHubClientOptions ClientOptions { get; }
+
+        // TODO (abmisr): Consolidate with Audience
+        public string AmqpCbsAudience { get; }
+
+        public bool IsPooling()
+        {
+
+            return AuthenticationModel != AuthenticationModel.X509
+                && ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings1
+                && (iotHubClientAmqpSettings1?.ConnectionPoolSettings?.Pooling ?? false);
+        }
 
         async Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
@@ -190,6 +222,65 @@ namespace Microsoft.Azure.Devices.Client
             };
 
             return builder.Uri;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is IotHubConnectionInfo iotHubConnectionInfo
+                && GetHashCode() == iotHubConnectionInfo.GetHashCode()
+                && Equals(DeviceId, iotHubConnectionInfo.DeviceId)
+                && Equals(HostName, iotHubConnectionInfo.HostName)
+                && Equals(ModuleId, iotHubConnectionInfo.ModuleId)
+                && Equals(ClientOptions.TransportSettings.Protocol, iotHubConnectionInfo.ClientOptions.TransportSettings.Protocol)
+                && Equals(AuthenticationModel.GetHashCode(), iotHubConnectionInfo.AuthenticationModel.GetHashCode());
+        }
+
+        /// <summary>
+        /// This hashing algorithm is used in two places:
+        /// - when fetching the object hashcode for our logging implementation
+        /// - when fetching the client identity from an AMQP connection pool with multiplexed client connections
+        /// This algorithm only uses device ID, hostname, module ID, authentication model and the transport settings protocol type
+        /// when evaluating the hash.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            int hashCode = UpdateHashCode(620602339, DeviceId);
+            hashCode = UpdateHashCode(hashCode, HostName);
+            hashCode = UpdateHashCode(hashCode, ModuleId);
+            hashCode = UpdateHashCode(hashCode, ClientOptions.TransportSettings.Protocol);
+            hashCode = UpdateHashCode(hashCode, AuthenticationModel);
+            return hashCode;
+        }
+
+        private static int UpdateHashCode(int hashCode, object field)
+        {
+            return field == null
+                ? hashCode
+                : hashCode * -1521134295 + field.GetHashCode();
+        }
+
+        private string CreateAmqpCbsAudience()
+        {
+            // If the shared access key name is null then this is an individual sas authenticated client.
+            // SAS tokens granted to an individual sas authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
+            if (SharedAccessKeyName.IsNullOrWhiteSpace())
+            {
+                string clientAudience = $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}";
+                if (!ModuleId.IsNullOrWhiteSpace())
+                {
+                    clientAudience += $"/modules/{WebUtility.UrlEncode(ModuleId)}";
+                }
+
+                return clientAudience;
+            }
+            else
+            {
+                // If the shared access key name is not null then this is a group sas authenticated client.
+                // SAS tokens granted to a group sas authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
+                return HostName;
+            }
         }
     }
 }

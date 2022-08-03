@@ -179,7 +179,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 new DeviceAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestSharedAccessKey),
                 TestIotHubName);
 
-            IotHubConnectionInfo connInfo = csBuilder.ToIotHubConnectionInfo();
+            var clientOptions = new IotHubClientOptions();
+            IotHubConnectionInfo connInfo = new IotHubConnectionInfo(csBuilder, clientOptions);
 
             Assert.IsNotNull(connInfo.TokenRefresher);
             Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));
