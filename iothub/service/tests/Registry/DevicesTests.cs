@@ -477,7 +477,6 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
-            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
             await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
