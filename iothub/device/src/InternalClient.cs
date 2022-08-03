@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
-        private readonly IotHubClientTransportSettings _transportSettings;
         private readonly IotHubClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
@@ -66,40 +65,30 @@ namespace Microsoft.Azure.Devices.Client
 
         protected internal InternalClient(
             IotHubConnectionInfo connectionInfo,
-            IDeviceClientPipelineBuilder pipelineBuilder,
-            IotHubClientOptions options)
+            IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, connectionInfo.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            Argument.AssertNotNull(options, nameof(options));
+            Argument.AssertNotNull(connectionInfo.ClientOptions, nameof(connectionInfo.ClientOptions));
 
-            _clientOptions = options;
-            _transportSettings = options.TransportSettings;
+            _clientOptions = connectionInfo.ClientOptions;
             IotHubConnectionInfo = connectionInfo;
 
-            if (!string.IsNullOrWhiteSpace(options.ModelId)
-                && options.TransportSettings is IotHubClientHttpSettings)
+            if (!string.IsNullOrWhiteSpace(connectionInfo.ClientOptions.ModelId)
+                && connectionInfo.ClientOptions.TransportSettings is IotHubClientHttpSettings)
             {
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
-            var productInfo = new ProductInfo
-            {
-                Extra = options.ProductInfo
-            };
-
             var pipelineContext = new PipelineContext
             {
-                TransportSettings = options.TransportSettings,
                 IotHubConnectionInfo = connectionInfo,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
                 ConnectionStatusChangesHandler = OnConnectionStatusChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
-                ProductInfo = productInfo,
-                ClientOptions = options,
             };
 
             pipelineBuilder ??= BuildPipeline();
@@ -111,12 +100,12 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = innerHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, options.TransportSettings, nameof(InternalClient));
+                Logging.Associate(this, connectionInfo.ClientOptions.TransportSettings, nameof(InternalClient));
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionInfo, options.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionInfo, connectionInfo.ClientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, options.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, connectionInfo.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
         private static IDeviceClientPipelineBuilder BuildPipeline()
@@ -1229,13 +1218,13 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsE2eDiagnosticSupportedProtocol()
         {
-            if (_transportSettings is IotHubClientAmqpSettings
-                || _transportSettings is IotHubClientMqttSettings)
+            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings
+                || _clientOptions.TransportSettings is IotHubClientMqttSettings)
             {
                 return true;
             }
 
-            throw new NotSupportedException($"The {_transportSettings.GetType().Name} transport doesn't support E2E diagnostic.");
+            throw new NotSupportedException($"The {_clientOptions.TransportSettings.GetType().Name} transport doesn't support E2E diagnostic.");
         }
     }
 }

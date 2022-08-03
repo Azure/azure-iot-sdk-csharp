@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
-            ProductInfo productInfo = context.ProductInfo;
+            ProductInfo productInfo = context.IotHubConnectionInfo.ClientOptions.ProductInfo;
             _deviceId = iotHubConnectionString.DeviceId;
             _moduleId = iotHubConnectionString.ModuleId;
             _httpClientHelper = new HttpClientHelper(

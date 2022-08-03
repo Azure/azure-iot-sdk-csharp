@@ -12,8 +12,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class IotHubConnectionInfo : IClientIdentity, IAuthorizationProvider
     {
-        private const int DefaultAmqpSecurePort = 5671;
-
         public IotHubConnectionInfo(
             IotHubConnectionStringBuilder builder,
             IotHubClientOptions iotHubClientOptions)
@@ -39,7 +37,6 @@ namespace Microsoft.Azure.Devices.Client
             ClientOptions = iotHubClientOptions;
 
             HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
-            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, DefaultAmqpSecurePort).Uri;
 
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
             {
@@ -118,33 +115,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        // This constructor is only used for unit testing.
-        internal IotHubConnectionInfo(
-            string iotHubName = null,
-            string deviceId = null,
-            string moduleId = null,
-            string hostName = null,
-            Uri httpsEndpoint = null,
-            Uri amqpEndpoint = null,
-            string audience = null,
-            string sharedAccessKeyName = null,
-            string sharedAccessKey = null,
-            string sharedAccessSignature = null,
-            bool isUsingGateway = false)
-        {
-            IotHubName = iotHubName;
-            DeviceId = deviceId;
-            ModuleId = moduleId;
-            HostName = hostName;
-            HttpsEndpoint = httpsEndpoint;
-            AmqpEndpoint = amqpEndpoint;
-            Audience = audience;
-            SharedAccessKeyName = sharedAccessKeyName;
-            SharedAccessKey = sharedAccessKey;
-            SharedAccessSignature = sharedAccessSignature;
-            IsUsingGateway = isUsingGateway;
-        }
-
         public AuthenticationWithTokenRefresh TokenRefresher { get; }
 
         public string IotHubName { get; }
@@ -157,9 +127,6 @@ namespace Microsoft.Azure.Devices.Client
 
         // TODO (abmisr): Move to transport layer
         public Uri HttpsEndpoint { get; }
-
-        // TODO (abmisr): Move to transport layer
-        public Uri AmqpEndpoint { get; }
 
         public string Audience { get; }
 
@@ -212,16 +179,6 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(IotHubConnectionInfo)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
             }
-        }
-
-        public Uri BuildLinkAddress(string path)
-        {
-            var builder = new UriBuilder(AmqpEndpoint)
-            {
-                Path = path,
-            };
-
-            return builder.Uri;
         }
 
         public override bool Equals(object obj)

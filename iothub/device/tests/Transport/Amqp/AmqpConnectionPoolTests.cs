@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IDeviceIdentity testDevice = CreatePooledSasGroupedDeviceIdentity(sharedAccessKeyName, poolSize);
+            IClientIdentity testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName, poolSize);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
@@ -52,14 +52,14 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IDeviceIdentity CreatePooledSasGroupedDeviceIdentity(string sharedAccessKeyName, uint poolSize)
+        private IClientIdentity CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName, uint poolSize)
         {
-            Mock<IDeviceIdentity> deviceIdentity = new Mock<IDeviceIdentity>();
+            Mock<IClientIdentity> clientIdentity = new Mock<IClientIdentity>();
 
-            deviceIdentity.Setup(m => m.IsPooling()).Returns(true);
-            deviceIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
-            deviceIdentity.Setup(m => m.IotHubConnectionInfo).Returns(new IotHubConnectionInfo(sharedAccessKeyName: sharedAccessKeyName));
-            deviceIdentity.Setup(m => m.AmqpTransportSettings).Returns(new IotHubClientAmqpSettings()
+            clientIdentity.Setup(m => m.IsPooling()).Returns(true);
+            clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
+            clientIdentity.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
+            clientIdentity.Setup(m => m.ClientOptions.TransportSettings).Returns(new IotHubClientAmqpSettings()
             {
                 ConnectionPoolSettings = new AmqpConnectionPoolSettings
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
                 }
             });
 
-            return deviceIdentity.Object;
+            return clientIdentity.Object;
         }
     }
 }

@@ -18,21 +18,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         public MockableAmqpUnit()
             : this(
-                new DeviceIdentity(
-                    new IotHubConnectionInfo(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings)),
-                    s_transportSettings,
-                    new ProductInfo(),
-                    new IotHubClientOptions(s_transportSettings)),
-                new AmqpConnectionHolder(
-                    new DeviceIdentity(
-                        new IotHubConnectionInfo(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings)),
-                        s_transportSettings,
-                        new ProductInfo(),
-                        new IotHubClientOptions())))
+                  new IotHubConnectionInfo(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings)),
+                  new AmqpConnectionHolder(
+                      new IotHubConnectionInfo(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings))))
         {
         }
 
-        public MockableAmqpUnit(DeviceIdentity deviceIdentity,
+        public MockableAmqpUnit(IClientIdentity clientIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener = null,
@@ -40,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
             : base(
-                  deviceIdentity,
+                  clientIdentity,
                   amqpConnectionHolder,
                   onMethodCallback,
                   twinMessageListener,

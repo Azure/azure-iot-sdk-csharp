@@ -12,49 +12,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public IDelegatingHandler Create(PipelineContext context)
         {
-            // ProtocolRoutingDelegatingHandler configures the TransportSettings configuration
-            // which is different from TransportSettings[] element.
-            IotHubClientTransportSettings transportSettings = context.TransportSettings;
             IotHubConnectionInfo connInfo = context.IotHubConnectionInfo;
             InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
             InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
             InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
-            if (transportSettings is IotHubClientAmqpSettings)
+            if (connInfo.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
                 return new AmqpTransportHandler(
                     context,
-                    connInfo,
-                    transportSettings as IotHubClientAmqpSettings,
-                    new Func<MethodRequestInternal, Task>(onMethodCallback),
-                    onDesiredStatePatchReceived,
-                    new Func<string, Message, Task>(onModuleEventReceivedCallback),
-                    new Func<Message, Task>(onDeviceMessageReceivedCallback));
+                    iotHubClientAmqpSettings);
             }
 
-            if (transportSettings is IotHubClientMqttSettings)
+            if (connInfo.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
             {
                 return new MqttTransportHandler(
                     context,
                     connInfo,
-                    transportSettings as IotHubClientMqttSettings,
+                    iotHubClientMqttSettings,
                     new Func<MethodRequestInternal, Task>(onMethodCallback),
                     onDesiredStatePatchReceived,
                     new Func<string, Message, Task>(onModuleEventReceivedCallback),
                     new Func<Message, Task>(onDeviceMessageReceivedCallback));
             }
 
-            if (transportSettings is IotHubClientHttpSettings)
+            if (connInfo.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
             {
                 return new HttpTransportHandler(
                     context,
                     connInfo,
-                    transportSettings as IotHubClientHttpSettings,
+                    iotHubClientHttpSettings,
                     isClientPrimaryTransportHandler: true);
             }
 
-            throw new InvalidOperationException($"Unsupported transport setting {transportSettings.GetType()}");
+            throw new InvalidOperationException($"Unsupported transport setting {connInfo.ClientOptions.TransportSettings.GetType()}");
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     internal class AmqpUnit : IDisposable
     {
         // If the first argument is set to true, we are disconnecting gracefully via CloseAsync.
-        private readonly IDeviceIdentity _deviceIdentity;
+        private readonly IClientIdentity _clientIdentity;
 
         private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection, IotHubException> _twinMessageListener;
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
 
         public AmqpUnit(
-            IDeviceIdentity deviceIdentity,
+            IClientIdentity clientIdentity,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            _deviceIdentity = deviceIdentity;
+            _clientIdentity = clientIdentity;
             _onMethodCallback = onMethodCallback;
             _twinMessageListener = twinMessageListener;
             _onModuleMessageReceivedCallback = onModuleMessageReceivedCallback;
@@ -73,12 +73,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _onUnitDisconnected = onUnitDisconnected;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _deviceIdentity, nameof(_deviceIdentity));
+                Logging.Associate(this, _clientIdentity, nameof(_clientIdentity));
         }
 
-        internal IDeviceIdentity GetDeviceIdentity()
+        internal IClientIdentity GetClientIdentity()
         {
-            return _deviceIdentity;
+            return _clientIdentity;
         }
 
         #region Open-Close
@@ -139,14 +139,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     // If the operation throws an exception, the error handling code will determine if it is to be tried, and it will retry, if necessary.
                     _amqpIotSession?.SafeClose();
 
-                    _amqpIotSession = await _amqpConnectionHolder.OpenSessionAsync(_deviceIdentity, cancellationToken).ConfigureAwait(false);
+                    _amqpIotSession = await _amqpConnectionHolder.OpenSessionAsync(_clientIdentity, cancellationToken).ConfigureAwait(false);
 
                     if (Logging.IsEnabled)
                         Logging.Associate(this, _amqpIotSession, nameof(_amqpIotSession));
 
-                    if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
+                    if (_clientIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                     {
-                        _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresherAsync(_deviceIdentity, cancellationToken).ConfigureAwait(false);
+                        _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresherAsync(_clientIdentity, cancellationToken).ConfigureAwait(false);
 
                         if (Logging.IsEnabled)
                             Logging.Associate(this, _amqpAuthenticationRefresher, nameof(_amqpAuthenticationRefresher));
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                     _amqpIotSession.Closed += OnSessionDisconnected;
 
-                    _messageSendingLink = await _amqpIotSession.OpenTelemetrySenderLinkAsync(_deviceIdentity, cancellationToken).ConfigureAwait(false);
+                    _messageSendingLink = await _amqpIotSession.OpenTelemetrySenderLinkAsync(_clientIdentity, cancellationToken).ConfigureAwait(false);
 
                     _messageSendingLink.Closed += (obj, arg) =>
                     {
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpIotSession?.SafeClose();
             _amqpAuthenticationRefresher?.StopLoop();
 
-            if (!_deviceIdentity.IsPooling())
+            if (!_clientIdentity.IsPooling())
             {
                 _amqpConnectionHolder?.Shutdown();
             }
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     // Another way to avoid ResourceLocked conflicts is to open links with unique names. This approach was previously adopted but later modified in an attempt to reduce link name length.
                     _messageReceivingLink?.SafeClose();
 
-                    _messageReceivingLink = await _amqpIotSession.OpenMessageReceiverLinkAsync(_deviceIdentity, cancellationToken).ConfigureAwait(false);
+                    _messageReceivingLink = await _amqpIotSession.OpenMessageReceiverLinkAsync(_clientIdentity, cancellationToken).ConfigureAwait(false);
 
                     if (_eventReceiverLinkDisconnected == null)
                     {
@@ -497,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Logging.Enter(this, lockToken, nameof(DisposeMessageAsync));
 
             AmqpIotOutcome disposeOutcome;
-            if (_deviceIdentity.IotHubConnectionInfo.ModuleId.IsNullOrWhiteSpace())
+            if (_clientIdentity.ModuleId.IsNullOrWhiteSpace())
             {
                 await EnsureMessageReceivingLinkIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     // Another way to avoid ResourceLocked conflicts is to open links with unique names. This approach was previously adopted but later modified in an attempt to reduce link name length.
                     _eventReceivingLink?.SafeClose();
 
-                    _eventReceivingLink = await _amqpIotSession.OpenEventsReceiverLinkAsync(_deviceIdentity, cancellationToken).ConfigureAwait(false);
+                    _eventReceivingLink = await _amqpIotSession.OpenEventsReceiverLinkAsync(_clientIdentity, cancellationToken).ConfigureAwait(false);
 
                     if (_eventReceiverLinkDisconnected == null)
                     {
@@ -677,7 +677,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _methodReceivingLink?.SafeClose();
 
                 _methodReceivingLink = await amqpIotSession
-                    .OpenMethodsReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
+                    .OpenMethodsReceiverLinkAsync(_clientIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (_methodReceiverLinkDisconnected == null)
@@ -826,7 +826,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _methodSendingLink?.SafeClose();
 
                 _methodSendingLink = await amqpIotSession
-                    .OpenMethodsSenderLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
+                    .OpenMethodsSenderLinkAsync(_clientIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (_methodSenderLinkDisconnected == null)
@@ -937,7 +937,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _twinReceivingLink?.SafeClose();
 
                 _twinReceivingLink = await amqpIotSession
-                    .OpenTwinReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
+                    .OpenTwinReceiverLinkAsync(_clientIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (_twinReceiverLinkDisconnected == null)
@@ -972,7 +972,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 _twinSendingLink?.SafeClose();
 
                 _twinSendingLink = await amqpIotSession
-                    .OpenTwinSenderLinkAsync(_deviceIdentity, correlationIdSuffix, cancellationToken)
+                    .OpenTwinSenderLinkAsync(_clientIdentity, correlationIdSuffix, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (_twinSenderLinkDisconnected == null)
@@ -1094,7 +1094,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Enter(this, $"Device pooling={_deviceIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
+                    Logging.Enter(this, $"Device pooling={_clientIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
                 }
 
                 if (!_disposed)
@@ -1102,7 +1102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     if (disposing)
                     {
                         Cleanup();
-                        if (!_deviceIdentity.IsPooling())
+                        if (!_clientIdentity.IsPooling())
                         {
                             _amqpConnectionHolder?.Dispose();
                         }
@@ -1129,7 +1129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 if (Logging.IsEnabled)
                 {
-                    Logging.Exit(this, $"Device pooling={_deviceIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"Device pooling={_clientIdentity?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
                 }
             }
         }

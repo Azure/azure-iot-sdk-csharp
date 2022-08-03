@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly TimeSpan _operationTimeout;
         protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
         private bool _closed;
 
@@ -38,7 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         internal AmqpTransportHandler(
             PipelineContext context,
-            IotHubConnectionInfo connectionInfo,
             IotHubClientAmqpSettings transportSettings,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
@@ -48,9 +47,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _operationTimeout = transportSettings.OperationTimeout;
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
-            IDeviceIdentity deviceIdentity = new DeviceIdentity(connectionInfo, transportSettings, context.ProductInfo, context.ClientOptions);
+
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
-                deviceIdentity,
+                context.IotHubConnectionInfo,
                 onMethodCallback,
                 TwinMessageListener,
                 onModuleMessageReceivedCallback,

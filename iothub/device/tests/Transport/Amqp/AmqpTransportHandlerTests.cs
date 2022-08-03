@@ -108,10 +108,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 },
             };
             var clientOptions1 = new IotHubClientOptions(transportSettings1);
+            var pipelineContext1 = new PipelineContext
+            {
+                IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
+            };
 
             var amqpTransportHandler1 = new AmqpTransportHandler(
-                new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
+                pipelineContext1,
                 transportSettings1);
 
             try
@@ -126,10 +129,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     },
                 };
                 var clientOptions2 = new IotHubClientOptions(transportSettings2);
+                var pipelineContext2 = new PipelineContext
+                {
+                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
+                };
 
                 var amqpTransportHandler2 = new AmqpTransportHandler(
-                    new PipelineContext(),
-                    new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
+                    pipelineContext2,
                     transportSettings2);
             }
             catch (ArgumentException ex)
@@ -153,9 +159,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         private AmqpTransportHandler CreateFromConnectionString()
         {
+            var pipelineContext = new PipelineContext
+            {
+                IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+            };
+
             return new AmqpTransportHandler(
-                new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+                pipelineContext,
                 new IotHubClientAmqpSettings());
         }
     }

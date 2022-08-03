@@ -140,14 +140,12 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             var connInfo = new IotHubConnectionInfo(csBuilder, options);
-
-            var client = new InternalClient(connInfo, pipelineBuilder, options);
+            var client = new InternalClient(connInfo, pipelineBuilder);
 
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
                     $"HostName={connInfo.HostName};DeviceId={connInfo.DeviceId};ModuleId={connInfo.ModuleId}",
-                    options.TransportSettings,
                     options);
 
             return client;

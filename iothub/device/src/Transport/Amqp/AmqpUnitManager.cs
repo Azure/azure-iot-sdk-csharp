@@ -27,16 +27,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IDeviceIdentity deviceIdentity,
+            IClientIdentity clientIdentity,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(deviceIdentity.IotHubConnectionInfo.HostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(clientIdentity.HostName);
             return amqpConnectionPool.CreateAmqpUnit(
-                deviceIdentity,
+                clientIdentity,
                 onMethodCallback,
                 twinMessageListener,
                 onModuleMessageReceivedCallback,
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(amqpUnit.GetDeviceIdentity().IotHubConnectionInfo.HostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(amqpUnit.GetClientIdentity().HostName);
             amqpConnectionPool.RemoveAmqpUnit(amqpUnit);
             amqpUnit.Dispose();
         }
