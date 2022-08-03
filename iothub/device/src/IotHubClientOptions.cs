@@ -85,5 +85,10 @@ namespace Microsoft.Azure.Devices.Client
         /// or the <see cref="IotHubModuleClient.CreateFromEnvironmentAsync(IotHubClientOptions)"/> flow.
         /// </remarks>
         public int SasTokenRenewalBuffer { get; set; }
+
+        /// <summary>
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
+        /// </summary>
+        public string ProductInfo { get; set; }
     }
 }
