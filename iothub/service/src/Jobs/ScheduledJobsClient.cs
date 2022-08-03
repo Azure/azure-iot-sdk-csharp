@@ -71,8 +71,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="jobId">Id of the job to retrieve</param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>The matching JobResponse object</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the job Id is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="jobId"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="jobId"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<JobResponse> GetAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -139,8 +139,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="jobId">Id of the job to cancel</param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>A JobResponse object</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the job Id is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="jobId"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="jobId"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<JobResponse> CancelAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -183,14 +183,11 @@ namespace Microsoft.Azure.Devices
         /// Creates a new Job to run a device method on one or multiple devices
         /// </summary>
         /// <param name="jobId">Unique Job Id for this job</param>
-        /// <param name="queryCondition">Query condition to evaluate which devices to run the job on</param>
-        /// <param name="cloudToDeviceMethod">Method call parameters</param>
-        /// <param name="startTimeUtc">Date time in Utc to start the job</param>
-        /// <param name="maxExecutionTimeInSeconds">Max execution time in seconds, i.e., ttl duration the job can run</param>
+        /// <param name="scheduledDeviceMethod"></param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>A JobResponse object</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided jobId or queryCondition or cloudToDeviceMethod or startTimeUtc or maxExecutionTimeInSeconds is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the jobId or queryCondition is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="jobId"/> or <paramref name="scheduledDeviceMethod"/> or <paramref name="scheduledDeviceMethod.queryCondition"/> or <paramref name="scheduledDeviceMethod.cloudToDeviceMethod"/> or <paramref name="scheduledDeviceMethod.startTimeUtc"/> or <paramref name="scheduledDeviceMethod.maxExecutionTimeInSeconds"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="jobId"/> or <paramref name="scheduledDeviceMethod.queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -200,28 +197,29 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, string queryCondition, CloudToDeviceMethod cloudToDeviceMethod, DateTime startTimeUtc, long maxExecutionTimeInSeconds, CancellationToken cancellationToken = default)
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public virtual async Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, ScheduledDeviceMethod scheduledDeviceMethod, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{scheduledDeviceMethod.queryCondition}]", nameof(ScheduleDeviceMethodAsync));
             try
             {
                 Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
-                Argument.RequireNotNullOrEmpty(queryCondition, nameof(queryCondition));
-                Argument.RequireNotNull(cloudToDeviceMethod, nameof(cloudToDeviceMethod));
-                Argument.RequireNotNull(startTimeUtc, nameof(startTimeUtc));
-                Argument.RequireNotNull(maxExecutionTimeInSeconds, nameof(maxExecutionTimeInSeconds));
+                Argument.RequireNotNull(scheduledDeviceMethod, nameof(scheduledDeviceMethod));
+                Argument.RequireNotNullOrEmpty(scheduledDeviceMethod.queryCondition, nameof(scheduledDeviceMethod.queryCondition));
+                Argument.RequireNotNull(scheduledDeviceMethod.cloudToDeviceMethod, nameof(scheduledDeviceMethod.cloudToDeviceMethod));
+                Argument.RequireNotNull(scheduledDeviceMethod.startTimeUtc, nameof(scheduledDeviceMethod.startTimeUtc));
+                Argument.RequireNotNull(scheduledDeviceMethod.maxExecutionTimeInSeconds, nameof(scheduledDeviceMethod.maxExecutionTimeInSeconds));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
                 {
                     JobId = jobId,
                     JobType = JobType.ScheduleDeviceMethod,
-                    CloudToDeviceMethod = cloudToDeviceMethod,
-                    QueryCondition = queryCondition,
-                    StartTime = startTimeUtc,
-                    MaxExecutionTimeInSeconds = maxExecutionTimeInSeconds
+                    CloudToDeviceMethod = scheduledDeviceMethod.cloudToDeviceMethod,
+                    QueryCondition = scheduledDeviceMethod.queryCondition,
+                    StartTime = scheduledDeviceMethod.startTimeUtc,
+                    MaxExecutionTimeInSeconds = scheduledDeviceMethod.maxExecutionTimeInSeconds
                 };
 
                 return await CreateAsync(jobRequest, cancellationToken).ConfigureAwait(false);
@@ -235,7 +233,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                    Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{scheduledDeviceMethod.queryCondition}]", nameof(ScheduleDeviceMethodAsync));
             }
         }
 
@@ -243,14 +241,11 @@ namespace Microsoft.Azure.Devices
         /// Creates a new Job to update twin tags and desired properties on one or multiple devices
         /// </summary>
         /// <param name="jobId">Unique Job Id for this job</param>
-        /// <param name="queryCondition">Query condition to evaluate which devices to run the job on</param>
-        /// <param name="twin">Twin object to use for the update</param>
-        /// <param name="startTimeUtc">Date time in Utc to start the job</param>
-        /// <param name="maxExecutionTimeInSeconds">Max execution time in seconds, i.e., ttl duration the job can run</param>
+        /// <param name="scheduledTwinUpdate"></param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>A JobResponse object</returns>\
-        /// <exception cref="ArgumentNullException">Thrown when the provided jobId or queryCondition or twin or startTimeUtc or maxExecutionTimeInSeconds is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the jobId or queryCondition is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="jobId"/> or <paramref name="scheduledTwinUpdate"/> or <paramref name="scheduledTwinUpdate.queryCondition"/> or <paramref name="scheduledTwinUpdate.twin"/> or <paramref name="scheduledTwinUpdate.startTimeUtc"/> or <paramref name="scheduledTwinUpdate.maxExecutionTimeInSeconds"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="jobId"/> or <paramref name="scheduledTwinUpdate.queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -260,28 +255,29 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobResponse> ScheduleTwinUpdateAsync(string jobId, string queryCondition, Twin twin, DateTime startTimeUtc, long maxExecutionTimeInSeconds, CancellationToken cancellationToken = default)
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public virtual Task<JobResponse> ScheduleTwinUpdateAsync(string jobId, ScheduledTwinUpdate scheduledTwinUpdate, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{scheduledTwinUpdate.queryCondition}]", nameof(ScheduleDeviceMethodAsync));
             try
             {
                 Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
-                Argument.RequireNotNullOrEmpty(queryCondition, nameof(queryCondition));
-                Argument.RequireNotNull(twin, nameof(twin));
-                Argument.RequireNotNull(startTimeUtc, nameof(startTimeUtc));
-                Argument.RequireNotNull(maxExecutionTimeInSeconds, nameof(maxExecutionTimeInSeconds));
+                Argument.RequireNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
+                Argument.RequireNotNullOrEmpty(scheduledTwinUpdate.queryCondition, nameof(scheduledTwinUpdate.queryCondition));
+                Argument.RequireNotNull(scheduledTwinUpdate.twin, nameof(scheduledTwinUpdate.twin));
+                Argument.RequireNotNull(scheduledTwinUpdate.startTimeUtc, nameof(scheduledTwinUpdate.startTimeUtc));
+                Argument.RequireNotNull(scheduledTwinUpdate.maxExecutionTimeInSeconds, nameof(scheduledTwinUpdate.maxExecutionTimeInSeconds));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
                 {
                     JobId = jobId,
                     JobType = JobType.ScheduleUpdateTwin,
-                    UpdateTwin = twin,
-                    QueryCondition = queryCondition,
-                    StartTime = startTimeUtc,
-                    MaxExecutionTimeInSeconds = maxExecutionTimeInSeconds
+                    UpdateTwin = scheduledTwinUpdate.twin,
+                    QueryCondition = scheduledTwinUpdate.queryCondition,
+                    StartTime = scheduledTwinUpdate.startTimeUtc,
+                    MaxExecutionTimeInSeconds = scheduledTwinUpdate.maxExecutionTimeInSeconds
                 };
 
                 return CreateAsync(jobRequest, cancellationToken);
@@ -295,7 +291,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{queryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                    Logging.Enter(this, $"jobId=[{jobId}], queryCondition=[{scheduledTwinUpdate.queryCondition}]", nameof(ScheduleDeviceMethodAsync));
             }
 
         }
