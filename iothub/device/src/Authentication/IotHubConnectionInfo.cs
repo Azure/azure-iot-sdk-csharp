@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const int DefaultAmqpSecurePort = 5671;
 
-        // Called by connection string based clients
+        // Called by connection string-based clients
         public IotHubConnectionInfo(IotHubConnectionStringBuilder builder)
         {
             if (builder == null)
@@ -107,7 +107,8 @@ namespace Microsoft.Azure.Devices.Client
                 : AuthenticationModel.SasGrouped;
         }
 
-        // This contructor is intended for creating an IotHubConnectionInfo that uses an IAuthenticationMethod-based authentication.
+        // TODO (deviceIdentity)
+        // This contructor is intended to be called by IAuthenticationMethod-based clients.
         internal IotHubConnectionInfo()
         {
             // if certificate information is present, set:
@@ -138,7 +139,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool IsUsingGateway { get; }
 
-        public AuthenticationModel AuthenticationModel { get; }
+        // TODO (deviceIdentity): the internal setter for AuthenticationModel should be removed once IAuthenticationMethod based
+        // contructor for IotHubConnectionInfo is implemented.
+        public AuthenticationModel AuthenticationModel { get; internal set; }
 
         public IotHubClientAmqpSettings AmqpTransportSettings { get; internal set; }
 

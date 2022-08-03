@@ -54,6 +54,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             connectionInfo.ProductInfo = context.ProductInfo;
             connectionInfo.ClientOptions = context.ClientOptions;
 
+            // TODO (deviceIdentity): this setter should be removed once IAuthenticationMethod based
+            // contructor for IotHubConnectionInfo is implemented.
+            if (transportSettings.ClientCertificate != null)
+            {
+                connectionInfo.AuthenticationModel = AuthenticationModel.X509;
+            }
+
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 connectionInfo,
                 onMethodCallback,
