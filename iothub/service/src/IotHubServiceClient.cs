@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices
         /// Subclient of <see cref="IotHubServiceClient"/> for scheduled jobs management.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-jobs"/>
-        public ScheduledJobsClient ScheduledJobsClient { get; protected set; }
+        public ScheduledJobsClient ScheduledJobs { get; protected set; }
 
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> that handles all digital twin operations including
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            ScheduledJobsClient = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }

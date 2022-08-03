@@ -58,13 +58,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                JobResponse createJobResponse = await serviceClient.ScheduledJobsClient
+                ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate();
+                twinUpdate.twin = twin;
+                twinUpdate.queryCondition = query;
+                twinUpdate.startTimeUtc = DateTime.UtcNow;
+                twinUpdate.maxExecutionTimeInSeconds = (long)TimeSpan.FromMinutes(2).TotalSeconds;
+                JobResponse createJobResponse = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
                         jobId,
-                        query,
-                        twin,
-                        DateTime.UtcNow,
-                        (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                        twinUpdate)
                     .ConfigureAwait(false);
             }
             catch (ThrottlingException)

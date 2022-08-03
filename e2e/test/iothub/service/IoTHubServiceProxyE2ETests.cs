@@ -98,8 +98,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
                     string query = $"DeviceId IN ['{JobDeviceId}']";
-                    JobResponse createJobResponse = await sc.ScheduledJobsClient
-                        .ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                    ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate();
+                    twinUpdate.queryCondition = query;
+                    twinUpdate.twin = twin;
+                    twinUpdate.startTimeUtc = DateTime.UtcNow;
+                    twinUpdate.maxExecutionTimeInSeconds = (long)TimeSpan.FromMinutes(2).TotalSeconds;
+                    JobResponse createJobResponse = await sc.ScheduledJobs
+                        .ScheduleTwinUpdateAsync(jobId, twinUpdate)
                         .ConfigureAwait(false);
                     break;
                 }
