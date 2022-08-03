@@ -433,9 +433,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123");
             var badTwin = new Twin("/badTwin");
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
         }
 
@@ -445,8 +452,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin("234");
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
         }
 
@@ -456,8 +471,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123") { ETag = "234" };
             Twin badTwin = null;
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
         }
 
@@ -476,8 +499,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin();
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
         }
 
@@ -486,9 +517,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin1 = new Twin("123");
             var goodTwin2 = new Twin("234");
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -497,9 +535,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var badTwin1 = new Twin("123");
             var badTwin2 = new Twin("234");
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -507,9 +552,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin1 = new Twin("123") { ETag = "234" };
             var goodTwin2 = new Twin("234") { ETag = "123" };
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
