@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
             methodInvocation.SetPayloadJson("10");
 
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.InvokeDeviceMethodAsync("SomeNonExistantDevice", methodInvocation);
+                await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
             }
             catch (DeviceNotFoundException ex)
             {
@@ -152,8 +152,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
 
             Assert.AreEqual(ErrorCode.DeviceNotFound, actualErrorCode);
-
-            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
@@ -209,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
             methodInvocation.SetPayloadJson("10");
 
@@ -218,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.InvokeDeviceMethodAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", methodInvocation).ConfigureAwait(false);
+                await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", methodInvocation).ConfigureAwait(false);
             }
             catch (DeviceNotFoundException ex)
             {
@@ -227,8 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
 
             Assert.AreEqual(ErrorCode.ModuleNotFound, actualErrorCode);
-
-            await serviceClient.CloseAsync().ConfigureAwait(false);
+            serviceClient.Dispose();
         }
 
         [LoggedTestMethod]
@@ -258,12 +255,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         null)
                     .ConfigureAwait(false);
 
-                using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+                using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
                 CloudToDeviceMethod c2dMethod = new CloudToDeviceMethod(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
 
                 // act
 
-                CloudToDeviceMethodResult result = await serviceClient.InvokeDeviceMethodAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
+                CloudToDeviceMethodResult result = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
 
                 // assert
 
@@ -288,16 +285,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            ServiceClient serviceClient = serviceClientTransportSettings == default
-                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString)
-                : ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+            IotHubServiceClient serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             try
             {
-                CloudToDeviceMethodResult response = await serviceClient
-                    .InvokeDeviceMethodAsync(
+                CloudToDeviceMethodResult response = await serviceClient.DirectMethods
+                    .InvokeAsync(
                         deviceId,
                         new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(null))
                     .ConfigureAwait(false);
@@ -307,7 +302,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
             finally
             {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
                 serviceClient.Dispose();
             }
         }
@@ -321,13 +315,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            ServiceClient serviceClient = serviceClientTransportSettings == default
-                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString)
-                : ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+            IotHubServiceClient serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             CloudToDeviceMethodResult response =
-                await serviceClient.InvokeDeviceMethodAsync(
+                await serviceClient.DirectMethods.InvokeAsync(
                     deviceId,
                     new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
@@ -336,7 +328,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             string payload = response.GetPayloadAsJson();
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
-            await serviceClient.CloseAsync().ConfigureAwait(false);
             serviceClient.Dispose();
         }
 
@@ -350,15 +341,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
-            ServiceClient serviceClient = serviceClientTransportSettings == default
-                ? ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString)
-                : ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, TransportType.Amqp, serviceClientTransportSettings);
+            IotHubServiceClient serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             CloudToDeviceMethodResult response =
-                await serviceClient.InvokeDeviceMethodAsync(
+                await serviceClient.DirectMethods.InvokeAsync(
                     deviceId,
                     moduleId,
                     new CloudToDeviceMethod(methodName, responseTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
@@ -368,7 +357,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             string payload = response.GetPayloadAsJson();
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
-            await serviceClient.CloseAsync().ConfigureAwait(false);
             serviceClient.Dispose();
         }
 

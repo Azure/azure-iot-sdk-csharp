@@ -48,8 +48,6 @@ namespace Microsoft.Azure.Devices
     public class ServiceClient : IDisposable
     {
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -419,66 +417,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Interactively invokes a method on a device.
-        /// Additional 15s is added to the timeout in cloudToDeviceMethod to account for time taken to wire a request
-        /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> is null, empty string, or whitespace.</exception>
-        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
-        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(
-            string deviceId,
-            CloudToDeviceMethod cloudToDeviceMethod,
-            CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrWhiteSpace(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-            if (cloudToDeviceMethod == null)
-            {
-                throw new ArgumentNullException(nameof(cloudToDeviceMethod));
-            }
-
-            return InvokeDeviceMethodAsync(GetDeviceMethodUri(deviceId), cloudToDeviceMethod, cancellationToken);
-        }
-
-        /// <summary>
-        /// Interactively invokes a method on a module.
-        /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="moduleId">The module identifier for the target module.</param>
-        /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the module.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> or <paramref name="moduleId"/> are null, empty string, or whitespace.</exception>
-        /// <exception cref="ArgumentNullException">When <paramref name="cloudToDeviceMethod"/> is null.</exception>
-        public virtual Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(
-            string deviceId,
-            string moduleId,
-            CloudToDeviceMethod cloudToDeviceMethod,
-            CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrWhiteSpace(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (string.IsNullOrWhiteSpace(moduleId))
-            {
-                throw new ArgumentNullException(nameof(moduleId));
-            }
-            if (cloudToDeviceMethod == null)
-            {
-                throw new ArgumentNullException(nameof(cloudToDeviceMethod));
-            }
-
-            return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
-        }
-
-        /// <summary>
         /// Send a cloud-to-device message to the specified module.
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
@@ -580,80 +518,9 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(Uri uri,
-            CloudToDeviceMethod cloudToDeviceMethod,
-            CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Invoking device method for: {uri}", nameof(InvokeDeviceMethodAsync));
-
-            try
-            {
-                TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
-
-                return _httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
-                    uri,
-                    cloudToDeviceMethod,
-                    timeout,
-                    null,
-                    null,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(InvokeDeviceMethodAsync)} threw an exception: {ex}", nameof(InvokeDeviceMethodAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Invoking device method for: {uri}", nameof(InvokeDeviceMethodAsync));
-            }
-        }
-
-        private static TimeSpan GetInvokeDeviceMethodOperationTimeout(CloudToDeviceMethod cloudToDeviceMethod)
-        {
-            // For InvokeDeviceMethod, we need to take into account the timeouts specified
-            // for the Device to connect and send a response. We also need to take into account
-            // the transmission time for the request send/receive
-            var timeout = TimeSpan.FromSeconds(15); // For wire time
-            var connectionTimeOut = TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
-            var responseTimeOut = TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
-
-            ValidateTimeOut(connectionTimeOut);
-            ValidateTimeOut(responseTimeOut);
-
-            timeout += connectionTimeOut;
-            timeout += responseTimeOut;
-
-            return timeout;
-        }
-
-        private static void ValidateTimeOut(TimeSpan connectionTimeOut)
-        {
-            if (connectionTimeOut.Seconds < 0)
-            {
-                throw new ArgumentException("Negative timeout");
-            }
-        }
-
         private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
         {
             return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
-        }
-
-        private static Uri GetDeviceMethodUri(string deviceId)
-        {
-            deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(DeviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
-        }
-
-        private static Uri GetModuleMethodUri(string deviceId, string moduleId)
-        {
-            deviceId = WebUtility.UrlEncode(deviceId);
-            moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
         }
     }
 }

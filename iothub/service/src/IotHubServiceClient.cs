@@ -149,6 +149,12 @@ namespace Microsoft.Azure.Devices
         public ConfigurationsClient Configurations { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> to directly invoke direct methods on devices and modules in IoT hub.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods"/>
+        public DirectMethodsClient DirectMethods { get; protected set; }
+        
+        /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> for executing queries using a SQL-like syntax.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
@@ -184,6 +190,7 @@ namespace Microsoft.Azure.Devices
             Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             ScheduledJobsClient = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
