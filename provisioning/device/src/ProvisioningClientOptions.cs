@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         public ProvisioningClientOptions()
         {
-            ProvisioningTransportHandler = new ProvisioningTransportHandlerAmqp();
+            ProvisioningTransportHandler = new ProvisioningTransportHandlerMqtt();
         }
 
         /// <summary>
