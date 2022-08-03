@@ -489,7 +489,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task UpdateTwinsAsyncWithNullTwinListTest()
         {
             var serviceClient = new IotHubServiceClient(validMockConnectionString);
-            await serviceClient.Twin.UpdateAsync(new List<Twin>()).ConfigureAwait(false);
+            await serviceClient.Twins.UpdateAsync(new List<Twin>()).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin list was used.");
         }
 

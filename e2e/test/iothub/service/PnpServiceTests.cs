@@ -44,14 +44,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Get device twin.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            Twin twin = await serviceClient.Twin.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
 
             // Cleanup
             await serviceClient.Devices.DeleteAsync(testDevice.Id).ConfigureAwait(false);
-            serviceClient.Dispose();
         }
 
         [TestMethod]
@@ -76,14 +75,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Get device twin.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            Twin twin = await serviceClient.Twin.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
 
             // Cleanup
             await serviceClient.Devices.DeleteAsync(testDevice.Id).ConfigureAwait(false);
-            serviceClient.Dispose();
 
             if (authCertificate is IDisposable disposableCert)
             {
@@ -111,14 +109,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // Get module twin.
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            Twin twin = await serviceClient.Twin.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");
 
             // Cleanup
             await serviceClient.Devices.DeleteAsync(testModule.DeviceId).ConfigureAwait(false);
-            serviceClient.Dispose();
         }
     }
 }

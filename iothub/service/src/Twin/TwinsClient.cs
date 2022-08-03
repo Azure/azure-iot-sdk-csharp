@@ -30,11 +30,6 @@ namespace Microsoft.Azure.Devices
         private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}";
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
-        private static readonly Regex s_deviceIdRegex = new Regex(
-            @"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase,
-            s_regexTimeoutMilliseconds);
-
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an HTTP patch request.
         private readonly HttpMethod _patch = new HttpMethod("PATCH");
 
@@ -54,7 +49,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets a device's twin from Iot hub.
+        /// Gets a device's twin from IoT hub.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
@@ -99,7 +94,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets a module's twin from Iot hub.
+        /// Gets a module's twin from IoT hub.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
@@ -584,7 +579,6 @@ namespace Microsoft.Azure.Devices
             try
             {
                 twin.DeviceId = deviceId;
-                ValidateTwinId(twin);
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(isReplace ? HttpMethod.Put : _patch, GetTwinUri(deviceId), _credentialProvider, twin);
                 HttpMessageHelper2.InsertETag(request, etag);
@@ -614,7 +608,6 @@ namespace Microsoft.Azure.Devices
             {
                 twin.DeviceId = deviceId;
                 twin.ModuleId = moduleId;
-                ValidateTwinId(twin);
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(isReplace ? HttpMethod.Put : _patch, GetModuleTwinRequestUri(deviceId, moduleId), _credentialProvider, twin);
                 HttpMessageHelper2.InsertETag(request, etag);
@@ -669,8 +662,6 @@ namespace Microsoft.Azure.Devices
             var exportImportDeviceList = new List<ExportImportDevice>(twins.Count());
             foreach (Twin twin in twins)
             {
-                ValidateTwinId(twin);
-
                 switch (importMode)
                 {
                     case ImportMode.UpdateTwin:
@@ -703,24 +694,6 @@ namespace Microsoft.Azure.Devices
             }
 
             return exportImportDeviceList;
-        }
-
-        private static void ValidateTwinId(Twin twin)
-        {
-            if (twin == null)
-            {
-                throw new ArgumentNullException(nameof(twin));
-            }
-
-            if (string.IsNullOrWhiteSpace(twin.DeviceId))
-            {
-                throw new ArgumentException("twin.DeviceId");
-            }
-
-            if (!s_deviceIdRegex.IsMatch(twin.DeviceId))
-            {
-                throw new ArgumentException(ApiResources.DeviceIdInvalid.FormatInvariant(twin.DeviceId));
-            }
         }
 
         private static Uri GetModuleTwinRequestUri(string deviceId, string moduleId)
