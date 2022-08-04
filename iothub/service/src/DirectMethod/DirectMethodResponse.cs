@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents the Device Method Invocation Results.
+    /// The result of a device's direct method invocation.
     /// </summary>
     public class DirectMethodResponse
     {

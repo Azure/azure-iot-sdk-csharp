@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     public class DirectMethodRequest
     {
         /// <summary>
-        /// Method to run
+        /// The method name to run.
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
         public string MethodName { get; set; }
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices
         internal JRaw Payload { get; set; }
 
         /// <summary>
-        /// Set payload as json
+        /// Set the serialized JSON payload.
         /// </summary>
         public DirectMethodRequest SetPayloadJson(string json)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Get payload as json
+        /// Get the serialized JSON payload.
         /// </summary>
         public string GetPayloadAsJson()
         {

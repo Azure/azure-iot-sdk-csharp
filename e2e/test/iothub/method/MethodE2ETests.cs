@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .ConfigureAwait(false);
 
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-                DirectMethodRequest c2dMethod = new DirectMethodRequest(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
+                var c2dMethod = new DirectMethodRequest(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
 
                 // act
 
