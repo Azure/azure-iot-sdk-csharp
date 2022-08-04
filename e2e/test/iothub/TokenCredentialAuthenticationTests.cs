@@ -48,9 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var jobClient = JobClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential());
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.GetIotHubHostName(), TestConfiguration.IoTHub.GetClientSecretCredential());
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
@@ -60,13 +58,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                JobResponse createJobResponse = await jobClient
+                ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate
+                {
+                    Twin = twin,
+                    QueryCondition = query,
+                    StartTimeUtc = DateTime.UtcNow
+                };
+                ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
+                {
+                    JobId = jobId,
+                    MaxExecutionTime = TimeSpan.FromMinutes(2)
+                };
+                ScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
-                        jobId,
-                        query,
-                        twin,
-                        DateTime.UtcNow,
-                        (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                        twinUpdate,
+                        twinUpdateOptions)
                     .ConfigureAwait(false);
             }
             catch (ThrottlingException)

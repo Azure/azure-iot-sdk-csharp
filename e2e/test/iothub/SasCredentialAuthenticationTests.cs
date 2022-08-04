@@ -84,9 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             string signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
-            using var jobClient = JobClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                new AzureSasCredential(signature));
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.GetIotHubHostName(), new AzureSasCredential(signature));
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
@@ -96,13 +94,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                JobResponse createJobResponse = await jobClient
+                var twinUpdate = new ScheduledTwinUpdate
+                {
+                    QueryCondition = query,
+                    Twin = twin,
+                    StartTimeUtc = DateTime.UtcNow
+                };
+                var scheduledTwinUpdateOptions = new ScheduledJobsOptions
+                {
+                    JobId = jobId,
+                    MaxExecutionTime = TimeSpan.FromMinutes(2)
+                };
+                ScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
-                        jobId,
-                        query,
-                        twin,
-                        DateTime.UtcNow,
-                        (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                        twinUpdate,
+                        scheduledTwinUpdateOptions)
                     .ConfigureAwait(false);
             }
             catch (ThrottlingException)

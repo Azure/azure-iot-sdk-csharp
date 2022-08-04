@@ -130,9 +130,9 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void QueryResultCastContentToJobResponseTest()
         {
             // simulate json serialize/deserialize
-            IEnumerable<JobResponse> jobs = new List<JobResponse>()
+            IEnumerable<ScheduledJob> jobs = new List<ScheduledJob>()
             {
-                new JobResponse()
+                new ScheduledJob()
                 {
                     DeviceId = "123456",
                     JobId = "789",
@@ -161,10 +161,10 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             // validate
             Assert.IsTrue(q.HasMoreResults);
-            IEnumerable<JobResponse> content = q.GetNextAsJobResponseAsync().Result;
+            IEnumerable<ScheduledJob> content = q.GetNextAsScheduledJobAsync().Result;
 
             Assert.AreEqual(1, content.Count());
-            Assert.IsInstanceOfType(content.ElementAt(0), typeof(JobResponse));
+            Assert.IsInstanceOfType(content.ElementAt(0), typeof(ScheduledJob));
             Assert.AreEqual("123456", content.ElementAt(0).DeviceId);
             Assert.AreEqual("789", content.ElementAt(0).JobId);
             Assert.AreEqual(JobType.ScheduleUpdateTwin, content.ElementAt(0).Type);
