@@ -62,18 +62,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal HttpTransportHandler(
             PipelineContext context,
-            IotHubConnectionInfo iotHubConnectionString,
             IotHubClientHttpSettings transportSettings,
             HttpClientHandler httpClientHandler = null,
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
             ProductInfo productInfo = context.IotHubConnectionInfo.ClientOptions.ProductInfo;
-            _deviceId = iotHubConnectionString.DeviceId;
-            _moduleId = iotHubConnectionString.ModuleId;
+            _deviceId = context.IotHubConnectionInfo.DeviceId;
+            _moduleId = context.IotHubConnectionInfo.ModuleId;
+            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.IotHubConnectionInfo.HostName).Uri;
             _httpClientHelper = new HttpClientHelper(
-                iotHubConnectionString.HttpsEndpoint,
-                iotHubConnectionString,
+                httpsEndpoint,
+                context.IotHubConnectionInfo,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 null,

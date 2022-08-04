@@ -22,14 +22,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new AmqpTransportHandler(
                     context,
-                    iotHubClientAmqpSettings);
+                    iotHubClientAmqpSettings,
+                    new Func<MethodRequestInternal, Task>(onMethodCallback),
+                    onDesiredStatePatchReceived,
+                    new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                    new Func<Message, Task>(onDeviceMessageReceivedCallback));
             }
 
             if (connInfo.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
             {
                 return new MqttTransportHandler(
                     context,
-                    connInfo,
                     iotHubClientMqttSettings,
                     new Func<MethodRequestInternal, Task>(onMethodCallback),
                     onDesiredStatePatchReceived,
@@ -41,7 +44,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new HttpTransportHandler(
                     context,
-                    connInfo,
                     iotHubClientHttpSettings,
                     isClientPrimaryTransportHandler: true);
             }

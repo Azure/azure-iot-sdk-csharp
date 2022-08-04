@@ -600,8 +600,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         private MqttTransportHandler CreateFromConnectionString()
         {
             return new MqttTransportHandler(
-                new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(DummyConnectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                new PipelineContext
+                {
+                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(DummyConnectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                },
                 new IotHubClientMqttSettings());
         }
 
@@ -633,8 +635,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             };
 
             transport = new MqttTransportHandler(
-                new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                new PipelineContext
+                {
+                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                },
                 new IotHubClientMqttSettings(),
                 factory);
             return transport;
@@ -645,8 +649,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
             return new MqttTransportHandler(
-                new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                new PipelineContext
+                {
+                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                },
                 new IotHubClientMqttSettings(),
                 null);
         }

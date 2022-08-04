@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Associate(this, connectionInfo.ClientOptions.TransportSettings, nameof(InternalClient));
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionInfo, connectionInfo.ClientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, connectionInfo.ClientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, connectionInfo.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
