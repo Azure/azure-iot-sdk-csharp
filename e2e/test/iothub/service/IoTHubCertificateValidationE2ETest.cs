@@ -62,13 +62,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task JobClient_ScheduleTwinUpdateInvalidServiceCertificateHttp_Fails()
         {
             using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
-            ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate
+            var twinUpdate = new ScheduledTwinUpdate
             {
                 QueryCondition = "DeviceId IN ['testDevice']",
                 Twin = new Twin(),
                 StartTimeUtc = DateTime.UtcNow
             };
-            ScheduledJobsOptions ScheduledTwinUpdateOptions = new ScheduledJobsOptions
+            var ScheduledTwinUpdateOptions = new ScheduledJobsOptions
             {
                 JobId = "testDevice",
                 MaxExecutionTime = TimeSpan.FromSeconds(60)

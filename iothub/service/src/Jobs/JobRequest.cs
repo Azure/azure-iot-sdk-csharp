@@ -8,12 +8,12 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Job input
+    /// Job input.
     /// </summary>
     public class JobRequest
     {
         /// <summary>
-        /// Job identifier
+        /// Job identifier.
         /// </summary>
         [JsonProperty(PropertyName = "jobId", Required = Required.Always)]
         public string JobId { get; set; }
@@ -56,10 +56,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
-        [JsonProperty(PropertyName = "startTime")]
+        [JsonProperty(PropertyName = "startTimeUtc")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
         // TODO: siport : validate if we want utc on the internal propname but not on the external
-        public DateTime StartTime { get; set; }
+        public DateTime StartTimeUtc { get; set; }
 
         /// <summary>
         /// Max execution time in seconds (TTL duration).

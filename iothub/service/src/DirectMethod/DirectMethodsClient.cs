@@ -68,9 +68,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, cloudToDeviceMethod);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<CloudToDeviceMethodResult>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -118,9 +118,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, cloudToDeviceMethod);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<CloudToDeviceMethodResult>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

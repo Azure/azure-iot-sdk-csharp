@@ -4,12 +4,12 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// 
+    /// Contains optional fields when creating a job.
     /// </summary>
     public class ScheduledJobsOptions
     {
         /// <summary>
-        /// Unique Job Id for the twin update job.
+        /// Unique job Id for the job.
         /// </summary>
         [JsonProperty(PropertyName = "jobId", Required = Required.Default)]
         public string JobId { get; set; }
