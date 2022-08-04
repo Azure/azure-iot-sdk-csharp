@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-                // If the shared access key name is not null then this is a group sas authenticated client.
+                // If the shared access key name is not null then this is a group SAS authenticated client.
                 // SAS tokens granted to a group sas authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
                 return HostName;
             }
