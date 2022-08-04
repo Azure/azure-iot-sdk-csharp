@@ -90,15 +90,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
-        /// </summary>
-        public string ProductInfo
-        {
-            get => InternalClient.ProductInfo;
-            set => InternalClient.ProductInfo = value;
-        }
-
-        /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use
         /// HTTP, as that protocol is stateless.

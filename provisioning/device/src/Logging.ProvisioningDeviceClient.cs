@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices
             object thisOrContextObject,
             string globalDeviceEndpoint,
             string idScope,
-            object transport,
+            object options,
             object security)
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(security);
-            DebugValidateArg(transport);
+            DebugValidateArg(options);
 
             if (IsEnabled)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices
                 IdOf(thisOrContextObject),
                 globalDeviceEndpoint,
                 idScope,
-                IdOf(transport),
+                IdOf(options),
                 IdOf(security));
             }
         }
@@ -39,8 +39,8 @@ namespace Microsoft.Azure.Devices
             string thisOrContextObject,
             string globalDeviceEndpoint,
             string idScope,
-            string transport,
+            string options,
             string security) =>
-            WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, transport, security);
+            WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, options, security);
     }
 }

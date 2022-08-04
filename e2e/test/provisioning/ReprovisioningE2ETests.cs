@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
             DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
             ValidateDeviceRegistrationResult(result);
