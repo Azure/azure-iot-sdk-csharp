@@ -168,6 +168,13 @@ namespace Microsoft.Azure.Devices
         public DigitalTwinsClient DigitalTwins { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles getting, updating, and replacing device and module twins.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-twin-getstarted"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-module-twin-getstarted"/>
+        public TwinsClient Twins { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -184,6 +191,7 @@ namespace Microsoft.Azure.Devices
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }
