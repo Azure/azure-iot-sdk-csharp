@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="directMethodRequest">Parameters to execute a direct method on the device.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="DirectMethodResponse"/>.</returns>
+        /// <returns>The direct method response.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="directMethodRequest"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="moduleId">The module identifier for the target module.</param>
         /// <param name="directMethodRequest">Parameters to execute a direct method on the module.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="DirectMethodResponse"/>.</returns>
+        /// <returns>The direct method response.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="directMethodRequest"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
