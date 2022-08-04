@@ -192,11 +192,11 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<ScheduledJob> ScheduleDeviceMethodAsync(ScheduledDirectMethod scheduledDirectMethod,
+        public virtual async Task<ScheduledJob> ScheduleDirectMethodAsync(ScheduledDirectMethod scheduledDirectMethod,
             ScheduledJobsOptions scheduledJobsOptions, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             try
             {
                 Argument.RequireNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
@@ -222,13 +222,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ScheduleDeviceMethodAsync)} threw an exception: {ex}", nameof(ScheduleDeviceMethodAsync));
+                    Logging.Error(this, $"{nameof(ScheduleDirectMethodAsync)} threw an exception: {ex}", nameof(ScheduleDirectMethodAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                    Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             }
         }
 
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices
             ScheduledJobsOptions scheduledJobsOptions = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             try
             {
                 Argument.RequireNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDeviceMethodAsync));
+                    Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             }
         }
 
