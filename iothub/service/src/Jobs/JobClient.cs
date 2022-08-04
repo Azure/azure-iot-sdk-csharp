@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="startTimeUtc">Date time in Utc to start the job</param>
         /// <param name="maxExecutionTimeInSeconds">Max execution time in seconds, i.e., ttl duration the job can run</param>
         /// <returns>A JobResponse object</returns>
-        public virtual Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, string queryCondition, CloudToDeviceMethod cloudToDeviceMethod, DateTime startTimeUtc, long maxExecutionTimeInSeconds)
+        public virtual Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, string queryCondition, DirectMethodRequest cloudToDeviceMethod, DateTime startTimeUtc, long maxExecutionTimeInSeconds)
         {
             return ScheduleDeviceMethodAsync(jobId, queryCondition, cloudToDeviceMethod, startTimeUtc, maxExecutionTimeInSeconds, CancellationToken.None);
         }
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="maxExecutionTimeInSeconds">Max execution time in seconds, i.e., ttl duration the job can run</param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <returns>A JobResponse object</returns>
-        public virtual Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, string queryCondition, CloudToDeviceMethod cloudToDeviceMethod, DateTime startTimeUtc, long maxExecutionTimeInSeconds, CancellationToken cancellationToken)
+        public virtual Task<JobResponse> ScheduleDeviceMethodAsync(string jobId, string queryCondition, DirectMethodRequest cloudToDeviceMethod, DateTime startTimeUtc, long maxExecutionTimeInSeconds, CancellationToken cancellationToken)
         {
             EnsureInstanceNotClosed();
 

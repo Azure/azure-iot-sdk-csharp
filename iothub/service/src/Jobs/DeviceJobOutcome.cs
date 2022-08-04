@@ -7,13 +7,13 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains the DeviceJob outcome
-    /// </summary>    
+    /// </summary>
     public class DeviceJobOutcome
     {
         /// <summary>
         /// Outcome for a device method job
         /// </summary>
         [JsonProperty(PropertyName = "deviceMethodResponse")]
-        public CloudToDeviceMethodResult DeviceMethodResponse { get; set; }
+        public DirectMethodResponse DirectMethodResponse { get; set; }
     }
 }
