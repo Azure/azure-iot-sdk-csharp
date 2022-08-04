@@ -65,6 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
+        private readonly ProvisioningServiceClientOptions _options;
         private readonly IContractApiHttp _contractApiHttp;
 
         /// <summary>
@@ -98,6 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
+            _options = options;
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
@@ -437,7 +439,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 CancellationToken.None);
         }
 
@@ -483,7 +485,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 cancellationToken);
         }
 
@@ -510,7 +512,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 CancellationToken.None,
                 pageSize);
         }
@@ -539,7 +541,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 cancellationToken,
                 pageSize);
         }
@@ -803,7 +805,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 CancellationToken.None);
         }
 
@@ -849,7 +851,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 cancellationToken);
         }
 
@@ -876,7 +878,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 CancellationToken.None,
                 pageSize);
         }
@@ -905,7 +907,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 cancellationToken,
                 pageSize);
         }
@@ -1117,7 +1119,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 CancellationToken.None,
                 enrollmentGroupId);
         }
@@ -1168,7 +1170,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 cancellationToken,
                 enrollmentGroupId);
         }
@@ -1197,7 +1199,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 CancellationToken.None,
                 enrollmentGroupId,
                 pageSize);
@@ -1267,7 +1269,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                new ProvisioningServiceHttpSettings(),
+                _options.ProvisioningServiceHttpSettings,
                 cancellationToken,
                 enrollmentGroupId,
                 pageSize);
