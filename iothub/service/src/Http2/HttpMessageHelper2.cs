@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <param name="expectedHttpStatusCode">The HTTP status code that indicates that the operation was a success and no exception should be thrown.</param>
         /// <param name="responseMessage">The HTTP response that contains the actual status code as well as the payload that contains error details if an error occurred.</param>
-        internal static async Task ValidateHttpResponseStatus(HttpStatusCode expectedHttpStatusCode, HttpResponseMessage responseMessage)
+        internal static async Task ValidateHttpResponseStatusAsync(HttpStatusCode expectedHttpStatusCode, HttpResponseMessage responseMessage)
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// <param name="response">The HTTP response containing the payload to deserialize.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The deserialized object.</returns>
-        internal static async Task<T> DeserializeResponse<T>(HttpResponseMessage response, CancellationToken cancellationToken)
+        internal static async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             string str = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(str);

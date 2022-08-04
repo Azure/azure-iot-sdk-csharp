@@ -69,8 +69,8 @@ namespace Microsoft.Azure.Devices
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, cloudToDeviceMethod);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponseAsync<CloudToDeviceMethodResult>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -119,8 +119,8 @@ namespace Microsoft.Azure.Devices
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, cloudToDeviceMethod);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
+                return await HttpMessageHelper2.DeserializeResponseAsync<CloudToDeviceMethodResult>(response, cancellationToken);
             }
             catch (Exception ex)
             {

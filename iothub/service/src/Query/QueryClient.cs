@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -104,7 +107,7 @@ namespace Microsoft.Azure.Devices
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = sqlQueryString });
             AddCustomHeaders(request, customHeaders, contentType);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+            await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
             return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
