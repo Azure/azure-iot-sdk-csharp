@@ -18,20 +18,31 @@ namespace Microsoft.Azure.Devices
         public string MethodName { get; set; }
 
         /// <summary>
-        /// The timeout (in seconds) before the direct method request will fail if the device doesn't respond to the request.
+        /// The timeout before the direct method request will fail if the device doesn't respond to the request.
         /// This timeout may happen if the target device is slow in handling the direct method.
         /// </summary>
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        public int? ResponseTimeout { get; set; }
+        [JsonIgnore]
+        public TimeSpan ResponseTimeout { get; set; }
 
         /// <summary>
-        /// The timeout (in seconds) before the direct method request will fail if the request takes too long to reach the device.
+        /// The timeout before the direct method request will fail if the request takes too long to reach the device.
         /// This timeout may happen if the target device is not connected to the cloud or if the cloud fails to deliver
         /// the request to the target device in time. If this value is set to 0 seconds, then the target device must be online
         /// when this direct method request is made.
         /// </summary>
+        [JsonIgnore]
+        public TimeSpan ConnectionTimeout { get; set; }
+
+        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout <= TimeSpan.Zero
+            ? null
+            : (int)ResponseTimeout.TotalSeconds;
+
+
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        public int? ConnectionTimeout { get; set; }
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout <= TimeSpan.Zero
+            ? null
+            : (int)ConnectionTimeout.TotalSeconds;
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
