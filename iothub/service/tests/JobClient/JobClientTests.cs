@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class JobClientTests
     {
         private readonly string jobId = "testJobId";
-        private readonly ScheduledJob scheduledJob = new ScheduledJob();
+        private readonly ScheduledJob scheduledJob = new();
         private readonly TimeSpan timeout = TimeSpan.FromMinutes(1);
         private const string HostName = "acme.azure-devices.net";
-        private static Uri HttpUri = new Uri("https://" + HostName);
+        private static Uri HttpUri = new("https://" + HostName);
         private const string validMockAuthenticationHeaderValue = $"SharedAccessSignature sr={HostName}&sig=thisIsFake&se=000000&skn=registryRead";
 
         private Mock<IHttpClientHelper> httpClientHelperMock;

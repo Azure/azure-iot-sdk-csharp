@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         ///     fetch the next paged result as twins
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of <see cref="Twin"/>.</returns>
         public async Task<IEnumerable<Twin>> GetNextAsTwinAsync()
         {
             return await GetNextAsTwinAsync(null).ConfigureAwait(false);
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         ///     fetch the next paged result as device jobs
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of <see cref="DeviceJob"/>.</returns>
         public async Task<IEnumerable<DeviceJob>> GetNextAsDeviceJobAsync()
         {
             return await GetNextAsDeviceJobAsync(null).ConfigureAwait(false);
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         ///     fetch the next paged result as job responses
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of <see cref="ScheduledJob"/>.</returns>
         public async Task<IEnumerable<ScheduledJob>> GetNextAsScheduledJobAsync()
         {
             return await GetNextAsScheduledJobAsync(null).ConfigureAwait(false);
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         ///     fetch the next paged result as Json strings
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of <see cref="string"/>.</returns>
         public async Task<IEnumerable<string>> GetNextAsJsonAsync()
         {
             return await GetNextAsJsonAsync(null).ConfigureAwait(false);
