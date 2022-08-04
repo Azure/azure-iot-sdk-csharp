@@ -7,22 +7,19 @@ using System.Security.Authentication;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// contains Http1 transport-specific settings for Service Client
+    /// Contains HTTP transport-specific settings for the provisioning service client
     /// </summary>
     public sealed class ProvisioningServiceHttpSettings
     {
         /// <summary>
-        /// Creates an instance of Http1TransportSettings
+        /// Creates an instance of ProvisioningServiceHttpSettings
         /// </summary>
-        public ProvisioningServiceHttpSettings()
-        {
-            Proxy = DefaultWebProxySettings.Instance;
-        }
+        public ProvisioningServiceHttpSettings() { }
 
         /// <summary>
         /// Gets or sets proxy information for the request.
         /// </summary>
-        public IWebProxy Proxy { get; set; }
+        public IWebProxy Proxy { get; set; } = DefaultWebProxySettings.Instance;
 
         /// <summary>
         /// The version of TLS to use by default.
@@ -33,8 +30,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
 
         /// <summary>
-        /// To enable certificate revocation check. Default to be false.
+        /// To enable certificate revocation check.
         /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
         public bool CertificateRevocationCheck { get; set; }
     }
 }

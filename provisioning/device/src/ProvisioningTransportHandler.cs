@@ -81,8 +81,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public SslProtocols SslProtocols { get; set; } = SslProtocols.None;
 
         /// <summary>
-        /// To enable certificate revocation check. Default to be false.
+        /// To enable certificate revocation check.
         /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
         public bool CertificateRevocationCheck { get; set; }
 
         /// <summary>

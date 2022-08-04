@@ -82,9 +82,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
         public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, ProvisioningServiceClientOptions options = default)
         {
-            if (options == null)
+            if (options == default)
             {
-                options = new ProvisioningServiceClientOptions();
+                options = new();
             }
 
             return new ProvisioningServiceClient(connectionString, options);

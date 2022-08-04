@@ -10,16 +10,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ProvisioningServiceClientOptions
     {
         /// <summary>
-        /// Creates an instances of this class with the default transport settings.
+        /// The transport settings to use.
         /// </summary>
-        public ProvisioningServiceClientOptions()
-        {
-            ProvisioningServiceHttpSettings = new ProvisioningServiceHttpSettings();
-        }
-
-        /// <summary>
-        /// The <see cref="ProvisioningServiceHttpSettings"/> transport settings to use.
-        /// </summary>
-        public ProvisioningServiceHttpSettings ProvisioningServiceHttpSettings { get; }
+        public ProvisioningServiceHttpSettings ProvisioningServiceHttpSettings { get; } = new();
     }
 }
