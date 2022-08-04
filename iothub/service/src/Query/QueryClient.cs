@@ -50,8 +50,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="pageSize">The maximum number of items per page.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>A handle used to fetch results for a SQL query.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided SQL query string is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the provided SQL query string is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="sqlQueryString"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="sqlQueryString"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -61,8 +61,7 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual IQuery CreateAsync(string sqlQueryString, int? pageSize = null, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -106,8 +105,8 @@ namespace Microsoft.Azure.Devices
 
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = sqlQueryString });
             AddCustomHeaders(request, customHeaders, contentType);
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
             return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
