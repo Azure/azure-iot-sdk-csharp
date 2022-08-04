@@ -4,8 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Holds the API version numbers required in data-plane calls to the service for <see cref="RegistryManager"/>,
-    /// <see cref="ServiceClient"/>, and <see cref="JobClient"/>.
+    /// The API version used in all service requests.
     /// </summary>
     internal class ClientApiVersionHelper
     {
@@ -13,8 +12,7 @@ namespace Microsoft.Azure.Devices
         private const string ApiVersionDefault = "2021-04-12";
 
         /// <summary>
-        /// The default API version query string parameter to use for all data-plane service calls in <see cref="RegistryManager"/>,
-        /// <see cref="ServiceClient"/>, and <see cref="JobClient"/>.
+        /// The API version used in all service requests.
         /// </summary>
         public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionDefault;
 
