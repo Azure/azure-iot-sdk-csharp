@@ -14,7 +14,7 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="IotHubServiceClient"/> that handles creating, getting, setting and deleting <see cref="Configuration"/>.
+    /// Subclient of <see cref="IotHubServiceClient"/> that handles creating, getting, setting and deleting configurations.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
     public class ConfigurationsClient
@@ -44,11 +44,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new <see cref="Configuration"/> for Azure IoT Edge in IoT hub.
+        /// Creates a new configuration for Azure IoT Edge in IoT hub.
         /// </summary>
-        /// <param name="configuration">The <see cref="Configuration"/> object being created.</param>
+        /// <param name="configuration">The configuration object being created.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The <see cref="Configuration"/> object.</returns>
+        /// <returns>The configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -93,11 +93,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves the specified <see cref="Configuration"/> object.
+        /// Retrieves the specified configuration object.
         /// </summary>
-        /// <param name="configurationId">The id of the <see cref="Configuration"/> being retrieved.</param>
+        /// <param name="configurationId">The id of the configuration being retrieved.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The <see cref="Configuration"/> object.</returns>
+        /// <returns>The configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configurationId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="configurationId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
@@ -138,10 +138,10 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves specified number of <see cref="Configuration"/> from every IoT hub partition.
+        /// Retrieves specified number of configuration from every IoT hub partition.
         /// Results are not ordered.
         /// </summary>
-        /// <returns>The list of <see cref="Configuration"/>.</returns>
+        /// <returns>The list of configuration.</returns>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="maxCount"/> value less than zero.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -184,11 +184,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Replace the mutable fields of the <see cref="Configuration"/> registration.
+        /// Replace the mutable fields of the configuration registration.
         /// </summary>
         /// <param name="configuration">The configuration object with replaced fields.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The <see cref="Configuration"/> object with replaced ETags.</returns>
+        /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -206,12 +206,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// replace the mutable fields of the <see cref="Configuration"/> registration.
+        /// replace the mutable fields of the configuration registration.
         /// </summary>
         /// <param name="configuration">The configuration object with replaced fields.</param>
         /// <param name="forceUpdate">Forces the configuration object to be replaced even if it was replaced since it was retrieved last time.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The <see cref="Configuration"/> object with replaced ETags.</returns>
+        /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Deletes a <see cref="Configuration"/> from IoT hub.
+        /// Deletes a configuration from IoT hub.
         /// </summary>
         /// <param name="configurationId">The id of the configuration being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Deletes a <see cref="Configuration"/> from IoT hub.
+        /// Deletes a configuration from IoT hub.
         /// </summary>
         /// <param name="configuration">The configuration being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Applies <see cref="Configuration"/> content to an Edge device.
+        /// Applies configuration content to an Edge device.
         /// </summary>
         /// <remarks><see cref="ConfigurationContent.ModulesContent"/> is required.
         /// <see cref="ConfigurationContent.DeviceContent"/> is optional.

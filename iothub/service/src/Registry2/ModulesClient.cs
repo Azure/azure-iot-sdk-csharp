@@ -12,8 +12,8 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="IotHubServiceClient"/> that handles all <see cref="Module"/> registry operations including
-    /// getting/creating/setting/deleting <see cref="Module"/> identities.
+    /// Subclient of <see cref="IotHubServiceClient"/> that handles all module registry operations including
+    /// getting/creating/setting/deleting module identities.
     /// </summary>
     public class ModulesClient
     {
@@ -40,11 +40,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create a <see cref="Module"/> identity in your IoT hub's registry.
+        /// Create a module identity in your IoT hub's registry.
         /// </summary>
         /// <param name="module">The module identity to register.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The registered <see cref="Module"/> with the generated keys and ETags.</returns>
+        /// <returns>The registered module with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -86,12 +86,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Get a <see cref="Module"/> identity by its Id and by the Id of the device it is registered on.
+        /// Get a module identity by its Id and by the Id of the device it is registered on.
         /// </summary>
         /// <param name="moduleId">The unique identifier of the module identity to retrieve.</param>
         /// <param name="deviceId">The unique identifier of the device identity that the module is registered on.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The retrieved <see cref="Module"/> identity.</returns>
+        /// <returns>The retrieved module identity.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
@@ -135,11 +135,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Replace a <see cref="Module"/> identity's state with the provided module identity's state.
+        /// Replace a module identity's state with the provided module identity's state.
         /// </summary>
         /// <param name="module">The module identity's new state.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The newly updated <see cref="Module"/> identity including its new ETag.</returns>
+        /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Replace a <see cref="Module"/> identity's state with the provided module identity's state.
+        /// Replace a module identity's state with the provided module identity's state.
         /// </summary>
         /// <param name="module">The module identity's new state.</param>
         /// <param name="forceUpdate">
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The newly updated <see cref="Module"/> identity including its new ETag.</returns>
+        /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Delete the <see cref="Module"/> identity with the provided Id from the device with the provided Id from your IoT hub's registry.
+        /// Delete the module identity with the provided Id from the device with the provided Id from your IoT hub's registry.
         /// </summary>
         /// <param name="deviceId">The Id of the device identity that contains the module to be deleted.</param>
         /// <param name="moduleId">The Id of the module identity to be deleted.</param>
@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Delete the <see cref="Module"/> identity from your IoT hub's registry.
+        /// Delete the module identity from your IoT hub's registry.
         /// </summary>
         /// <param name="module">
         /// The module identity to delete from your IoT hub's registry. If the provided module's ETag

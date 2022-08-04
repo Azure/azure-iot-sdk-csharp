@@ -41,8 +41,11 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal ScheduledJobsClient(string hostName, IotHubConnectionProperties credentialProvider,
-            HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
+        internal ScheduledJobsClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            HttpClient httpClient,
+            HttpRequestMessageFactory httpRequestMessageFactory)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
@@ -51,11 +54,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the <see cref="ScheduledJob"/> with the specified Id.
+        /// Gets the job with the specified Id.
         /// </summary>
-        /// <param name="jobId">Id of the <see cref="ScheduledJob"/> to get.</param>
+        /// <param name="jobId">Id of the job to get.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>The matching <see cref="ScheduledJob"/> object.</returns>
+        /// <returns>The matching sheduled job object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="jobId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="jobId"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
@@ -125,11 +128,11 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Cancels/deletes the <see cref="ScheduledJob"/> with the specified Id.
+        /// Cancels/deletes the job with the specified Id.
         /// </summary>
-        /// <param name="jobId">Id of the <see cref="ScheduledJob"/> to cancel.</param>
+        /// <param name="jobId">Id of the job to cancel.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>A <see cref="ScheduledJob"/> object</returns>
+        /// <returns>A job object</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="jobId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="jobId"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
@@ -171,12 +174,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new <see cref="ScheduledJob"/> to run a device method on one or multiple devices.
+        /// Creates a new job to run a device method on one or multiple devices.
         /// </summary>
         /// <param name="scheduledDirectMethod">Required parameters for scheduled device method, i.e: <paramref name="scheduledDirectMethod.CloudToDeviceMethod"/>, <paramref name="scheduledDirectMethod.QueryCondition"/>, <paramref name="scheduledDirectMethod.StartTimeUtc"/>.</param>
         /// <param name="scheduledJobsOptions">Optional parameters for scheduled device method, i.e: <paramref name="scheduledJobsOptions.JobId"/> and <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/>.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>A <see cref="ScheduledJob"/> object.</returns>
+        /// <returns>A job object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDirectMethod"/> or <paramref name="scheduledDirectMethod.queryCondition"/> or <paramref name="scheduledDirectMethod.cloudToDeviceMethod"/> or <paramref name="scheduledDirectMethod.startTimeUtc"/> or <paramref name="scheduledDirectMethod.maxExecutionTimeInSeconds"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledDirectMethod.queryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
@@ -230,12 +233,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a new <see cref="ScheduledJob"/> to update twin tags and desired properties on one or multiple devices.
+        /// Creates a new job to update twin tags and desired properties on one or multiple devices.
         /// </summary>
         /// <param name="scheduledTwinUpdate">Required parameters for scheduled twin update, i.e: <paramref name="scheduledTwinUpdate.Twin"/>, <paramref name="scheduledTwinUpdate.QueryCondition"/>, <paramref name="scheduledTwinUpdate.StartTimeUtc"/>.</param>
         /// <param name="scheduledJobsOptions">Optional parameters for scheduled twin update, i.e: <paramref name="scheduledJobsOptions.JobId"/> and <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/>.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>A <see cref="ScheduledJob"/> object.</returns>
+        /// <returns>A job object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledTwinUpdate"/> or <paramref name="scheduledTwinUpdate.QueryCondition"/> or <paramref name="scheduledTwinUpdate.Twin"/> or <paramref name="scheduledTwinUpdate.StartTimeUtc"/> or <paramref name="scheduledJobsOptions.MaxExecutionTimeInSeconds"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="scheduledJobsOptions.JobId"/> or <paramref name="scheduledTwinUpdate.QueryCondition"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">

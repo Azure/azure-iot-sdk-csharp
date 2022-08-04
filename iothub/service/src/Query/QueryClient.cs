@@ -41,12 +41,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves a <see cref="IQuery"/> handle through which a result for a given query can be fetched.
+        /// Retrieves a handle through which a result for a given query can be fetched.
         /// </summary>
         /// <param name="sqlQueryString">The SQL query.</param>
         /// <param name="pageSize">The maximum number of items per page.</param>
         /// <param name="cancellationToken"></param>
-        /// <returns>A <see cref="IQuery"/> handle used to fetch results for a SQL query.</returns>
+        /// <returns>A handle used to fetch results for a SQL query.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="sqlQueryString"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the provided <paramref name="sqlQueryString"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubException">

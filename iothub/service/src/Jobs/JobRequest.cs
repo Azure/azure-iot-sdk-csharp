@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices
         /// The Update Twin tags and desired properties.
         /// </summary>
         /// <remarks>
-        /// Required if jobType is updateTwin.
+        /// Required if the job type is UpdateTwin.
         /// </remarks>
         [JsonProperty(PropertyName = "updateTwin")]
         public Twin UpdateTwin { get; set; }
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         /// Condition for device query to get devices to execute the job on.
         /// </summary>
         /// <remarks>
-        /// Required if jobType is updateTwin or cloudToDeviceMethod.
+        /// Required if job type is UpdateTwin or CloudToDeviceMethod.
         /// </remarks>
         [JsonProperty(PropertyName = "queryCondition")]
         public string QueryCondition { get; set; }
