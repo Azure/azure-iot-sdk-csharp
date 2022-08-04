@@ -6,7 +6,8 @@ using Microsoft.Azure.Devices.Client.Transport;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Interface for device configurations and common attributes.
+    /// Interface for client configurations and common attributes.
+    /// This has been included for our own unit testing.
     /// </summary>
     internal interface IClientIdentity
     {
