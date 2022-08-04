@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            // Frist validate that the IotHubConnectionStringBuilder is set with the expected fields.
             builder.Validate();
 
             Audience = builder.HostName;
