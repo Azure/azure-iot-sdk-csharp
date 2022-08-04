@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         string IotHubName { get; }
 
         /// <summary>
-        /// The device ID associated with this client.
+        /// The device Id associated with this client.
         /// </summary>
         string DeviceId { get; }
 
