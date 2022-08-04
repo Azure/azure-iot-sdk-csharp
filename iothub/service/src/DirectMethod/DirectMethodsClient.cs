@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -41,11 +44,12 @@ namespace Microsoft.Azure.Devices
         /// Invokes a method on a device.
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the device.</param>
+        /// <param name="methodName">The name of the method to invoke.</param>
+        /// <param name="options">The optional parameters for invoking a method.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="cloudToDeviceMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <returns>The <see cref="DirectMethodResponse"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="methodName"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="methodName"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -56,7 +60,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<CloudToDeviceMethodResult> InvokeAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodResponse> InvokeAsync(string deviceId, string methodName, DirectMethodRequestOptions options = null, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId}", nameof(InvokeAsync));
@@ -64,13 +68,15 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNull(cloudToDeviceMethod, nameof(cloudToDeviceMethod));
+                Argument.RequireNotNullOrEmpty(methodName, nameof(methodName));
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, cloudToDeviceMethod);
+                var directMethodRequest = new DirectMethodRequest(methodName, options);
+
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
+                return await HttpMessageHelper2.DeserializeResponse<DirectMethodResponse>(response, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -90,11 +96,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="moduleId">The module identifier for the target module.</param>
-        /// <param name="cloudToDeviceMethod">Parameters to execute a direct method on the module.</param>
+        /// <param name="methodName">The name of the method to invoke.</param>
+        /// <param name="options">The optional parameters for invoking a method.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The <see cref="CloudToDeviceMethodResult"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="cloudToDeviceMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
+        /// <returns>The <see cref="DirectMethodResponse"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="methodName"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="methodName"/> is empty or white space.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -105,7 +112,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<CloudToDeviceMethodResult> InvokeAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken = default)
+        public virtual async Task<DirectMethodResponse> InvokeAsync(string deviceId, string moduleId, string methodName, DirectMethodRequestOptions options = null, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking device method for device id: {deviceId} and module id: {moduleId}", nameof(InvokeAsync));
@@ -114,13 +121,15 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
                 Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
-                Argument.RequireNotNull(cloudToDeviceMethod, nameof(cloudToDeviceMethod));
+                Argument.RequireNotNullOrEmpty(methodName, nameof(methodName));
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, cloudToDeviceMethod);
+                var directMethodRequest = new DirectMethodRequest(methodName, options);
+
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponse<CloudToDeviceMethodResult>(response, cancellationToken);
+                return await HttpMessageHelper2.DeserializeResponse<DirectMethodResponse>(response, cancellationToken);
             }
             catch (Exception ex)
             {

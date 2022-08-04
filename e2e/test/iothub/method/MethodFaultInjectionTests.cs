@@ -217,12 +217,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-                    CloudToDeviceMethodResult response =
-                        await serviceClient.DirectMethods
-                            .InvokeAsync(
-                                deviceName,
-                                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson))
-                            .ConfigureAwait(false);
+                    var options = new DirectMethodRequestOptions()
+                    {
+                        ResponseTimeout = TimeSpan.FromMinutes(5).Seconds,
+                        Payload = reqJson,
+                    };
+
+                    DirectMethodResponse response = await serviceClient.DirectMethods.InvokeAsync(
+                        deviceName,
+                        methodName,
+                        options).ConfigureAwait(false);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 

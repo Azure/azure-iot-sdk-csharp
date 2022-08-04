@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         /// The method type and parameters.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod")]
-        public CloudToDeviceMethod CloudToDeviceMethod { get; set; }
+        public DirectMethodRequest DirectMethod { get; set; }
 
         /// <summary>
         /// Required if jobType is updateTwin.
@@ -46,13 +46,11 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "queryCondition")]
         public string QueryCondition { get; set; }
 
-
         /// <summary>
         /// ISO 8601 date time to start the job
         /// </summary>
         [JsonProperty(PropertyName = "startTime")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
-        // TODO: siport : validate if we want utc on the internal propname but not on the external
         public DateTime StartTime { get; set; }
 
         /// <summary>

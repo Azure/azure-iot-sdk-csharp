@@ -136,15 +136,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
-            methodInvocation.SetPayloadJson("10");
+            var methodInvocation = new DirectMethodRequestOptions();
+            methodInvocation.Payload = "10";
 
             // act
             ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
+                await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", "SetTelemetryInterval", methodInvocation);
             }
             catch (DeviceNotFoundException ex)
             {
@@ -208,15 +208,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
-            methodInvocation.SetPayloadJson("10");
+            var methodInvocation = new DirectMethodRequestOptions();
+            methodInvocation.Payload = "10";
 
             // act
             ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", methodInvocation).ConfigureAwait(false);
+                await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", "SetTelemetryInterval", methodInvocation).ConfigureAwait(false);
             }
             catch (DeviceNotFoundException ex)
             {
@@ -256,11 +256,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .ConfigureAwait(false);
 
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-                CloudToDeviceMethod c2dMethod = new CloudToDeviceMethod(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
+                DirectMethodRequestOptions c2dMethod = new DirectMethodRequestOptions()
+                {
+                    ConnectionTimeout = 60,
+                    ResponseTimeout = 60,
+                };
 
                 // act
 
-                CloudToDeviceMethodResult result = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
+                DirectMethodResponse result = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, commandName, c2dMethod).ConfigureAwait(false);
 
                 // assert
 
@@ -291,10 +295,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             try
             {
-                CloudToDeviceMethodResult response = await serviceClient.DirectMethods
+                var options = new DirectMethodRequestOptions()
+                {
+                    ResponseTimeout = methodTimeout.Seconds,
+                };
+
+                DirectMethodResponse response = await serviceClient.DirectMethods
                     .InvokeAsync(
                         deviceId,
-                        new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(null))
+                        methodName,
+                        options)
                     .ConfigureAwait(false);
             }
             catch (DeviceNotFoundException)
@@ -318,10 +328,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubServiceClient serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
-                await serviceClient.DirectMethods.InvokeAsync(
-                    deviceId,
-                    new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
+            var options = new DirectMethodRequestOptions()
+            {
+                ResponseTimeout = methodTimeout.Seconds,
+                Payload = reqJson,
+            };
+
+            DirectMethodResponse response = await serviceClient.DirectMethods.InvokeAsync(
+                deviceId,
+                methodName,
+                options).ConfigureAwait(false);
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
@@ -346,11 +362,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
-                await serviceClient.DirectMethods.InvokeAsync(
-                    deviceId,
-                    moduleId,
-                    new CloudToDeviceMethod(methodName, responseTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
+
+            var options = new DirectMethodRequestOptions()
+            {
+                ResponseTimeout = methodTimeout.Seconds,
+                Payload = reqJson,
+            };
+
+            DirectMethodResponse response = await serviceClient.DirectMethods.InvokeAsync(
+                deviceId,
+                moduleId,
+                methodName,
+                options).ConfigureAwait(false);
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");

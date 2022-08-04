@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents the Device Method Invocation Results.
     /// </summary>
-    public class CloudToDeviceMethodResult
+    public class DirectMethodResponse
     {
         /// <summary>
         /// Gets or sets the status of device method invocation.
