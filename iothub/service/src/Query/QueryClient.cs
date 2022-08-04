@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = sqlQueryString });
             AddCustomHeaders(request, customHeaders, contentType);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-            await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response);
+            await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
             return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
