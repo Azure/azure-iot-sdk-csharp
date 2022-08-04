@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings);
+            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
 
             InitializeSubclients();
         }
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings);
+            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
 
             InitializeSubclients();
         }
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings);
+            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
 
             InitializeSubclients();
         }
