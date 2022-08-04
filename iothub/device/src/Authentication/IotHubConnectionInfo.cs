@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client
         private string CreateAmqpCbsAudience()
         {
             // If the shared access key name is null then this is an individual SAS authenticated client.
-            // SAS tokens granted to an individual sas authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
+            // SAS tokens granted to an individual SAS authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
             if (SharedAccessKeyName.IsNullOrWhiteSpace())
             {
                 string clientAudience = $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}";
