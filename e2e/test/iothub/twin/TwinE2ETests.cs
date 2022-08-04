@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2ETests)}_";
 
-        private static readonly RegistryManager _registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+        private static readonly IotHubServiceClient _serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
         private static readonly List<object> s_listOfPropertyValues = new()
         {
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            Twin completeTwin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
+            Twin completeTwin = await _serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Reported[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
         }
@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
+            await _serviceClient.Twins.UpdateAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
@@ -518,7 +518,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            Twin completeTwin = await _registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin completeTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
 
@@ -538,7 +538,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
+            await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
@@ -562,7 +562,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient.UpdateReportedPropertiesAsync(patch).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
 
-            Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             Logger.Trace("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
@@ -586,7 +586,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         [propName1] = null
                     })
                 .ConfigureAwait(false);
-            Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
 
             await deviceClient
@@ -599,7 +599,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         }
                     })
                 .ConfigureAwait(false);
-            serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
             string value1 = serviceTwin.Properties.Reported[propName1].ToString();
 
@@ -615,7 +615,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         }
                     })
                 .ConfigureAwait(false);
-            serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            serviceTwin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
             string value2 = serviceTwin.Properties.Reported[propName1].ToString();
             Assert.AreEqual(value2, propEmptyValue);
@@ -627,7 +627,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string propName2 = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
 
@@ -650,7 +650,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             Assert.IsTrue(exceptionThrown, "IotHubException was expected for updating reported property with an invalid property name, but was not thrown.");
 
-            Twin serviceTwin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin serviceTwin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
         }
     }

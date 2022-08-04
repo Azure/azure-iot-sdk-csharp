@@ -255,13 +255,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
         {
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
-            await registryManager.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Twins.UpdateAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryAsync(

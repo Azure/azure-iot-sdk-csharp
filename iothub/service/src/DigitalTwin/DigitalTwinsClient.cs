@@ -81,8 +81,8 @@ namespace Microsoft.Azure.Devices
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
-                T digitalTwin = await HttpMessageHelper2.DeserializeResponse<T>(response, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                T digitalTwin = await HttpMessageHelper2.DeserializeResponseAsync<T>(response, cancellationToken).ConfigureAwait(false);
                 string etag = response.Headers.GetValues("ETag").FirstOrDefault();
                 return new DigitalTwinGetResponse<T>(digitalTwin, etag);
             }
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.Accepted, response).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.Accepted, response).ConfigureAwait(false);
 
                 var updateResponse = new DigitalTwinUpdateResponse()
                 {
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices
                     queryStringParameters);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
 
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices
                     queryStringParameters);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatus(HttpStatusCode.OK, response).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
 
                 // No need to deserialize here since the user will deserialize this into their expected type
                 // after this function returns.

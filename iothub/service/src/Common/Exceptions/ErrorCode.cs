@@ -51,8 +51,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ArgumentNull = 400005,
 
         /// <summary>
-        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for
-        /// <see cref="RegistryManager.UpdateTwinAsync(string, Twin, string)"/> is invalid.
+        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, Twin, string, System.Threading.CancellationToken)"/> is invalid.
         /// </summary>
         IotHubFormatError = 400006,
 
@@ -145,8 +144,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// The ETag in the request does not match the ETag of the existing resource, as per <see href="https://datatracker.ietf.org/doc/html/rfc7232">RFC7232</see>.
         /// <para>
         /// The ETag is a mechanism for protecting against the race conditions of multiple clients updating the same resource and overwriting each other.
-        /// In order to get the up-to-date ETag for a twin, see <see cref="RegistryManager.GetTwinAsync(string, System.Threading.CancellationToken)"/> or
-        /// <see cref="RegistryManager.GetTwinAsync(string, string, System.Threading.CancellationToken)"/>.
+        /// In order to get the up-to-date ETag for a twin, see <see cref="TwinsClient.GetAsync(string, System.Threading.CancellationToken)"/> or <see cref="TwinsClient.GetAsync(string, string, System.Threading.CancellationToken)"/>.
         /// </para>
         /// </summary>
         PreconditionFailed = 412001, // PreconditionFailed - 412
