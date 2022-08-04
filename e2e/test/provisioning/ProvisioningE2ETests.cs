@@ -959,7 +959,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
 
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
@@ -1106,7 +1106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
             // Test registering with valid additional data payload
@@ -1153,7 +1153,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
@@ -1191,7 +1191,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 s_globalDeviceEndpoint,
                 InvalidIdScope,
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
@@ -1243,7 +1243,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 InvalidGlobalAddress,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
-                transport);
+                new ProvisioningClientOptions(transport));
 
             using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 

@@ -121,6 +121,7 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper2.DeserializeResponseAsync<CloudToDeviceMethodResult>(response, cancellationToken).ConfigureAwait(false);
+
             }
             catch (Exception ex)
             {

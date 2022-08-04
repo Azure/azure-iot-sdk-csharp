@@ -24,7 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
-        private readonly ProductInfo _productInfo = new();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly IotHubClientTransportSettings _transportSettings;
         private readonly IotHubClientOptions _clientOptions;
@@ -85,6 +84,11 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
+            var productInfo = new ProductInfo
+            {
+                Extra = options.ProductInfo
+            };
+
             var pipelineContext = new PipelineContext
             {
                 TransportSettings = options.TransportSettings,
@@ -94,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
                 ConnectionStatusChangesHandler = OnConnectionStatusChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
-                ProductInfo = _productInfo,
+                ProductInfo = productInfo,
                 ClientOptions = options,
             };
 
@@ -148,18 +152,6 @@ namespace Microsoft.Azure.Devices.Client
                     _diagnosticSamplingPercentage = value;
                 }
             }
-        }
-
-        /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
-        /// </summary>
-        public string ProductInfo
-        {
-            // We store InternalClient.ProductInfo as a string property of an object (rather than directly as a string)
-            // so that updates will propagate down to the transport layer throughout the lifetime of the InternalClient
-            // object instance.
-            get => _productInfo.Extra;
-            set => _productInfo.Extra = value;
         }
 
         internal X509Certificate2 Certificate { get; set; }

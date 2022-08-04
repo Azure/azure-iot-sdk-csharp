@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     {
         private readonly string _globalDeviceEndpoint;
         private readonly string _idScope;
-        private readonly ProvisioningTransportHandler _transport;
         private readonly AuthenticationProvider _authentication;
+        private readonly ProvisioningClientOptions _options;
 
         /// <summary>
         /// Creates an instance of the Device Provisioning Client.
@@ -23,35 +23,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
         /// <param name="idScope">The IDScope for the Device Provisioning Service.</param>
         /// <param name="authenticationProvider">The security provider instance.</param>
-        /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
+        /// <param name="options">The options that allow configuration of the provisioning device client instance during initialization.</param>
         /// <returns>An instance of the ProvisioningDeviceClient</returns>
         public static ProvisioningDeviceClient Create(
             string globalDeviceEndpoint,
             string idScope,
             AuthenticationProvider authenticationProvider,
-            ProvisioningTransportHandler transport)
+            ProvisioningClientOptions options = default)
         {
             if (authenticationProvider is AuthenticationProviderX509 x509Auth)
             {
                 CertificateInstaller.EnsureChainIsInstalled(x509Auth.GetAuthenticationCertificateChain());
             }
 
-            return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, authenticationProvider, transport);
+            return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, authenticationProvider, options);
         }
 
         private ProvisioningDeviceClient(
             string globalDeviceEndpoint,
             string idScope,
             AuthenticationProvider authenticationProvider,
-            ProvisioningTransportHandler transport)
+            ProvisioningClientOptions options = default)
         {
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
-            _transport = transport;
+            _options = options;
             _authentication = authenticationProvider;
 
             Logging.Associate(this, _authentication);
-            Logging.Associate(this, _transport);
+            Logging.Associate(this, _options);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken = default)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _authentication);
+            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
             return RegisterAsync(null, cancellationToken);
         }
@@ -82,14 +82,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(ProvisioningRegistrationAdditionalData data, CancellationToken cancellationToken = default)
         {
-            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _authentication);
+            Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _options, _authentication);
 
             var request = new ProvisioningTransportRegisterRequest(_globalDeviceEndpoint, _idScope, _authentication, data?.JsonData)
             {
                 ProductInfo = ProductInfo,
             };
 
-            return _transport.RegisterAsync(request, cancellationToken);
+            return _options.ProvisioningTransportHandler.RegisterAsync(request, cancellationToken);
         }
     }
 }
