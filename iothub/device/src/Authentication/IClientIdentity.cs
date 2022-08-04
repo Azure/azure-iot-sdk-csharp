@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         string DeviceId { get; }
 
         /// <summary>
-        /// The module ID associated with this client.
+        /// The module Id associated with this client.
         /// </summary>
         string ModuleId { get; }
 

@@ -91,9 +91,9 @@ namespace Microsoft.Azure.Devices.Client
             }
             // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
             // not of type AuthenticationWithTokenRefresh.
-            // Setting the sas value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+            // Setting the SAS value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
             // This flow can be hit if the same authentication method is always used to initialize the client;
-            // as in, on disposal and reinitialization. This is because the value of the sas token computed is stored within the authentication method,
+            // as in, on disposal and reinitialization. This is because the value of the SAS token computed is stored within the authentication method,
             // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
             // instead of being identified as a sas-token-refresh-enabled-client.
             else if (!string.IsNullOrWhiteSpace(builder.SharedAccessSignature))
@@ -143,10 +143,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool IsPooling()
         {
-
             return AuthenticationModel != AuthenticationModel.X509
-                && ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings1
-                && (iotHubClientAmqpSettings1?.ConnectionPoolSettings?.Pooling ?? false);
+                && ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings
+                && (iotHubClientAmqpSettings?.ConnectionPoolSettings?.Pooling ?? false);
         }
 
         async Task<string> IAuthorizationProvider.GetPasswordAsync()
@@ -177,6 +176,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        /// <summary>
+        /// This overridden Equals implementation is being referenced when fetching the client identity (AmqpUnit)
+        /// from an AMQP connection pool with multiplexed client connections.
+        /// This implementation only uses device Id, hostname, module Id, authentication model and the transport settings protocol type
+        /// when evaluating equality.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
         public override bool Equals(object obj)
         {
             return obj is IotHubConnectionInfo iotHubConnectionInfo
@@ -191,8 +198,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// This hashing algorithm is used in two places:
         /// - when fetching the object hashcode for our logging implementation
-        /// - when fetching the client identity from an AMQP connection pool with multiplexed client connections
-        /// This algorithm only uses device ID, hostname, module ID, authentication model and the transport settings protocol type
+        /// - when fetching the client identity (AmqpUnit) from an AMQP connection pool with multiplexed client connections
+        /// This algorithm only uses device Id, hostname, module Id, authentication model and the transport settings protocol type
         /// when evaluating the hash.
         /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
         /// so the algorithm has been retained as-is.
