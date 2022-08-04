@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal static Query CreateQuery(
             ServiceConnectionString provisioningConnectionString,
             QuerySpecification querySpecification,
-            HttpTransportSettings httpTransportSettings,
+            ProvisioningServiceHttpSettings httpTransportSettings,
             CancellationToken cancellationToken,
             int pageSize = 0)
         {

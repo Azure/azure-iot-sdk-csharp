@@ -75,9 +75,10 @@ namespace Microsoft.Azure.Devices
             IotHubConnectionProperties connectionProperties,
             bool useWebSocketOnly,
             ServiceClientTransportSettings transportSettings,
-            ServiceClientOptions options)
+            ServiceClientOptions options,
+            IotHubServiceClientOptions options2)
         {
-            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings); ;
+            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings, options2);
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
@@ -133,13 +134,15 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
         /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <param name="options2">The <see cref="IotHubServiceClientOptions"/> that allow configuration of the service subclient instance during initialization.</param>
         /// <returns>A ServiceClient instance.</returns>
         public static ServiceClient Create(
             string hostName,
             TokenCredential credential,
             TransportType transportType = TransportType.Amqp,
             ServiceClientTransportSettings transportSettings = default,
-            ServiceClientOptions options = default)
+            ServiceClientOptions options = default,
+            IotHubServiceClientOptions options2 = default)
         {
             if (string.IsNullOrEmpty(hostName))
             {
@@ -158,7 +161,8 @@ namespace Microsoft.Azure.Devices
                 tokenCredentialProperties,
                 useWebSocketOnly,
                 transportSettings ?? new ServiceClientTransportSettings(),
-                options);
+                options,
+                options2);
         }
 
         /// <summary>
@@ -174,13 +178,15 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
         /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
         /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <param name="options2">The <see cref="IotHubServiceClientOptions"/> that allow configuration of the service subclient instance during initialization.</param>
         /// <returns>A ServiceClient instance.</returns>
         public static ServiceClient Create(
             string hostName,
             AzureSasCredential credential,
             TransportType transportType = TransportType.Amqp,
             ServiceClientTransportSettings transportSettings = default,
-            ServiceClientOptions options = default)
+            ServiceClientOptions options = default,
+            IotHubServiceClientOptions options2 = default)
         {
             if (string.IsNullOrEmpty(hostName))
             {
@@ -199,7 +205,8 @@ namespace Microsoft.Azure.Devices
                 sasCredentialProperties,
                 useWebSocketOnly,
                 transportSettings ?? new ServiceClientTransportSettings(),
-                options);
+                options,
+                options2);
         }
 
         internal IotHubConnection Connection { get; }
@@ -246,8 +253,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="transportType">The <see cref="TransportType"/> used (Amqp or Amqp_WebSocket_Only).</param>
         /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client.</param>
         /// <param name="options">The <see cref="ServiceClientOptions"/> that allow configuration of the service client instance during initialization.</param>
+        /// <param name="options2">The <see cref="IotHubServiceClientOptions"/> that allow configuration of the service subclient instance during initialization.</param>
         /// <returns>An instance of ServiceClient.</returns>
-        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings, ServiceClientOptions options = default)
+        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings, ServiceClientOptions options = default, IotHubServiceClientOptions options2 = default)
         {
             if (transportSettings == null)
             {
@@ -261,7 +269,8 @@ namespace Microsoft.Azure.Devices
                 iotHubConnectionString,
                 useWebSocketOnly,
                 transportSettings,
-                options);
+                options,
+                options2);
         }
 
         /// <summary>

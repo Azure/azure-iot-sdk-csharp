@@ -36,6 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 CertificateInstaller.EnsureChainIsInstalled(x509Auth.GetAuthenticationCertificateChain());
             }
 
+            if (options == default)
+            {
+                options = new();
+            }
+
             return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, authenticationProvider, options);
         }
 

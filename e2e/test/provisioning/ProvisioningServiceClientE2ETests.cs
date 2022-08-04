@@ -620,14 +620,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         /// <returns>the provisioning service client instance</returns>
         public static ProvisioningServiceClient CreateProvisioningService(string proxyServerAddress = null)
         {
-            var transportSettings = new Devices.Provisioning.Service.HttpTransportSettings();
+            var options = new ProvisioningServiceClientOptions();
+            var transportSettings = options.ProvisioningServiceHttpSettings;
 
             if (!string.IsNullOrWhiteSpace(proxyServerAddress))
             {
                 transportSettings.Proxy = new WebProxy(proxyServerAddress);
             }
 
-            return ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString, transportSettings);
+            return ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString, options);
         }
 
         /// <summary>

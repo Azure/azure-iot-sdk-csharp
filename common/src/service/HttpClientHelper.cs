@@ -871,8 +871,9 @@ namespace Microsoft.Azure.Devices
         internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
             var httpMessageHandler = new HttpClientHandler();
-            httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+            var options = new IotHubServiceClientOptions();
+            httpMessageHandler.SslProtocols = options.SslProtocols;
+            httpMessageHandler.CheckCertificateRevocationList = options.CertificateRevocationCheck;
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {
