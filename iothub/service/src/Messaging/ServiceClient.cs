@@ -53,7 +53,6 @@ namespace Microsoft.Azure.Devices
 
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
         private readonly string _sendingPath;
-        private readonly AmqpFeedbackReceiver _feedbackReceiver;
         private readonly AmqpFileNotificationReceiver _fileNotificationReceiver;
         private readonly IHttpClientHelper _httpClientHelper;
         private readonly string _iotHubName;
@@ -81,7 +80,6 @@ namespace Microsoft.Azure.Devices
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
-            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
             _iotHubName = connectionProperties.IotHubName;
             _clientOptions = options;
@@ -103,7 +101,6 @@ namespace Microsoft.Azure.Devices
         {
             Connection = connection;
             _httpClientHelper = httpClientHelper;
-            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
         }
@@ -221,7 +218,6 @@ namespace Microsoft.Azure.Devices
             {
                 _faultTolerantSendingLink.Dispose();
                 _fileNotificationReceiver.Dispose();
-                _feedbackReceiver.Dispose();
                 Connection.Dispose();
                 _httpClientHelper.Dispose();
             }
@@ -275,7 +271,6 @@ namespace Microsoft.Azure.Devices
             using var ctx = new CancellationTokenSource(_openTimeout);
 
             await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
-            await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
@@ -290,7 +285,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
 
             await _faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
-            await _feedbackReceiver.CloseAsync().ConfigureAwait(false);
             await _fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
             await Connection.CloseAsync().ConfigureAwait(false);
 
@@ -392,17 +386,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
             }
-        }
-
-        /// <summary>
-        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT hub.
-        /// This call is made over AMQP.
-        /// For more information see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
-        /// </summary>
-        /// <returns>An instance of <see cref="FeedbackReceiver{FeedbackBatch}"/>.</returns>
-        public virtual FeedbackReceiver<FeedbackBatch> GetFeedbackReceiver()
-        {
-            return _feedbackReceiver;
         }
 
         /// <summary>

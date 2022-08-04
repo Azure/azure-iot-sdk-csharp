@@ -17,6 +17,8 @@ namespace Microsoft.Azure.Devices
         public IotHubServiceClientOptions()
         {
             Proxy = DefaultWebProxySettings.Instance;
+            UseWebSocketOnly = false;
+            TransportSettings = new ServiceClientTransportSettings();
         }
 
         /// <summary>
@@ -57,5 +59,17 @@ namespace Microsoft.Azure.Devices
         /// an HTTP client will be created for you based on the other provided settings.
         /// </summary>
         public HttpClient HttpClient { get; set; }
+
+        /// <summary>
+        /// Whether to use web sockets or not (Only used for AMQP or MQTT).
+        /// </summary>
+        public bool UseWebSocketOnly { get; set; }
+
+        /// <summary>
+        /// Service client transport settings used for AMQP/MQTT operations.
+        /// If provided, all other settings will be ignored. If not provided,
+        /// a transport settings client will be created for you based on the other provided settings.
+        /// </summary>
+        public ServiceClientTransportSettings TransportSettings { get; set; }
     }
 }
