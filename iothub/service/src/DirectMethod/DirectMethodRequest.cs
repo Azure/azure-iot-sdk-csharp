@@ -34,42 +34,38 @@ namespace Microsoft.Azure.Devices
         public int? ConnectionTimeout { get; set; }
 
         [JsonProperty("payload")]
-        internal JRaw Payload { get; set; }
+        internal JRaw JsonPayload { get; set; }
 
         /// <summary>
-        /// Set the serialized JSON payload.
+        /// Get payload as json
         /// </summary>
-        public DirectMethodRequest SetPayloadJson(string json)
+        [JsonIgnore]
+        public string Payload
         {
-            if (json == null)
+            get
             {
-                Payload = null;
-            }
-            else
-            {
-                try
-                {
-                    JToken.Parse(json); // @ailn: this is just a check for valid json as JRaw does not do the validation.
-                    Payload = new JRaw(json);
-                }
-                catch (JsonException ex)
-                {
-                    throw new ArgumentException(ex.Message, nameof(json)); // @ailn: here we want to hide the fact we're using Json.net
-                }
+                return (string)JsonPayload.Value;
             }
 
-            return this; // @ailn: it will allow such code: new CloudToDeviceMethod("c2dmethodname").SetPayloadJson("{ ... }");
-        }
-
-        /// <summary>
-        /// Get the serialized JSON payload.
-        /// </summary>
-        public string GetPayloadAsJson()
-        {
-            // @ailn:
-            //  JRaw inherits from JToken which implements explicit string operator.
-            //  It takes care of null ref and performs to string logic.
-            return (string)Payload;
+            internal set
+            {
+                if (value == null)
+                {
+                    Payload = null;
+                }
+                else
+                {
+                    try
+                    {
+                        JToken.Parse(value);
+                        JsonPayload = new JRaw(value);
+                    }
+                    catch (JsonException ex)
+                    {
+                        throw new ArgumentException(ex.Message, nameof(value));
+                    }
+                }
+            }
         }
     }
 }

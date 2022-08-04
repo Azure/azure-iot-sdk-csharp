@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 // act
 
-                DirectMethodResponse result = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
+                DirectMethodResponse response = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
 
                 // assert
 

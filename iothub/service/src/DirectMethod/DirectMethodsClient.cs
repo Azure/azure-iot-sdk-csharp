@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -70,9 +71,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -120,9 +121,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response);
-                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
