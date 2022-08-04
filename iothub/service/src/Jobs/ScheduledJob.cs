@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
         /// The method type and parameters.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
-        public DirectMethodRequest CloudToDeviceMethod { get; set; }
+        public DirectMethodRequest DirectMethodRequest { get; set; }
 
         /// <summary>
         /// Required if jobType is updateTwin.

@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices
                 {
                     JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleDeviceMethod,
-                    CloudToDeviceMethod = scheduledDirectMethod.CloudToDeviceMethod,
+                    DirectMethodRequest = scheduledDirectMethod.CloudToDeviceMethod,
                     QueryCondition = scheduledDirectMethod.QueryCondition,
                     StartTimeUtc = scheduledDirectMethod.StartTimeUtc,
                     MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime
