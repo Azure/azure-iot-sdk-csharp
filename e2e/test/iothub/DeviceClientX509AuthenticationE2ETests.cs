@@ -201,20 +201,17 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static IotHubClientTransportSettings CreateHttpTransportSettingWithCertificateRevocationCheck()
         {
-            TlsVersions.Instance.CertificateRevocationCheck = true;
-            return new IotHubClientHttpSettings();
+            return new IotHubClientHttpSettings { CertificateRevocationCheck = true };
         }
 
         private static IotHubClientTransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
         {
-            TlsVersions.Instance.CertificateRevocationCheck = true;
-            return new IotHubClientMqttSettings(transportProtocol);
+            return new IotHubClientMqttSettings { CertificateRevocationCheck = true };
         }
 
         private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
         {
-            TlsVersions.Instance.CertificateRevocationCheck = true;
-            return new IotHubClientAmqpSettings(transportProtocol);
+            return new IotHubClientAmqpSettings { CertificateRevocationCheck = true };
         }
 
         private async Task X509InvalidDeviceIdOpenAsyncTest(IotHubClientTransportSettings transportSettings)

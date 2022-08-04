@@ -89,6 +89,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
         /// </summary>
-        public string ProductInfo { get; set; }
+        public string CustomProductInfo
+        { 
+            get => ProductInfo.Extra;
+            set => ProductInfo.Extra = value;
+        }
+
+        internal ProductInfo ProductInfo { get; } = new();
     }
 }

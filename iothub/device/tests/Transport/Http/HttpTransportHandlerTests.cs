@@ -91,7 +91,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         HttpTransportHandler CreateFromConnectionString()
         {
-            return new HttpTransportHandler(new PipelineContext(), IotHubConnectionInfoExtensions.Parse(DumpyConnectionString), new IotHubClientHttpSettings());
+            return new HttpTransportHandler(
+                new PipelineContext
+                {
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(DumpyConnectionString), new IotHubClientOptions(new IotHubClientHttpSettings())),
+                },                
+                new IotHubClientHttpSettings());
         }
 
         private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)

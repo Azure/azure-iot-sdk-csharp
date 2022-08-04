@@ -517,11 +517,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // corresponding transport layers (MQTT/ AMQP), the diposal should be delegated to them and it should not be disposed here.
                 // The only scenario where the TokenRefresher should be disposed here is when the client has been initialized using HTTP.
                 if (_isClientPrimaryTransportHandler
-                    && _authenticationHeaderProvider is IotHubConnectionInfo iotHubConnectionString
-                    && iotHubConnectionString.TokenRefresher != null
-                    && iotHubConnectionString.TokenRefresher.DisposalWithClient)
+                    && _authenticationHeaderProvider is ClientConfiguration clientConfiguration
+                    && clientConfiguration.TokenRefresher != null
+                    && clientConfiguration.TokenRefresher.DisposalWithClient)
                 {
-                    iotHubConnectionString.TokenRefresher.Dispose();
+                    clientConfiguration.TokenRefresher.Dispose();
                 }
 
                 _isDisposed = true;

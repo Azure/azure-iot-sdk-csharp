@@ -54,6 +54,8 @@ namespace Microsoft.Azure.Devices
 
         private readonly string _webSocketRole;
         private readonly string _requestPath;
+        private readonly IotHubServiceClientOptions _options;
+
         private string _webSocketKey;
         private string _host;
 
@@ -65,16 +67,17 @@ namespace Microsoft.Azure.Devices
             public const string SecWebSocketVersion = "Sec-WebSocket-Version";
         }
 
-        public IotHubClientWebSocket(string webSocketRole)
-            : this(webSocketRole, WebSocketConstants.UriSuffix)
+        public IotHubClientWebSocket(string webSocketRole, IotHubServiceClientOptions options)
+            : this(webSocketRole, WebSocketConstants.UriSuffix, options)
         {
         }
 
-        public IotHubClientWebSocket(string webSocketRole, string requestPath)
+        public IotHubClientWebSocket(string webSocketRole, string requestPath, IotHubServiceClientOptions options)
         {
             State = WebSocketState.Initial;
             _webSocketRole = webSocketRole;
             _requestPath = requestPath;
+            _options = options;
         }
 
         public enum WebSocketMessageType
@@ -144,7 +147,7 @@ namespace Microsoft.Azure.Devices
                         .AuthenticateAsClientAsync(
                             host,
                             x509CertificateCollection,
-                            TlsVersions.Instance.Preferred,
+                            _options.SslProtocols,
                             checkCertificateRevocation: false)
                         .ConfigureAwait(false);
                     WebSocketStream = sslStream;

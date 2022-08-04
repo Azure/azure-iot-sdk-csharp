@@ -50,8 +50,8 @@ namespace Microsoft.Azure.Devices.Http2
             // This handler is used within the returned HttpClient, so it cannot be disposed within this scope.
             var httpMessageHandler = new HttpClientHandler();
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+            httpMessageHandler.SslProtocols = options.SslProtocols;
+            httpMessageHandler.CheckCertificateRevocationList = options.CertificateRevocationCheck;
 
             if (options.Proxy != DefaultWebProxySettings.Instance)
             {

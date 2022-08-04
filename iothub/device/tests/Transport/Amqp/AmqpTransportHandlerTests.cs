@@ -98,33 +98,45 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public void AmqpTransportHandler_RejectAmqpSettingsChange()
         {
+            var transportSettings1 = new IotHubClientAmqpSettings
+            {
+                PrefetchCount = 60,
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                {
+                    Pooling = true,
+                    MaxPoolSize = 10,
+                },
+            };
+            var clientOptions1 = new IotHubClientOptions(transportSettings1);
+            var pipelineContext1 = new PipelineContext
+            {
+                ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
+            };
+
             var amqpTransportHandler1 = new AmqpTransportHandler(
-                new PipelineContext(),
-                new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString)),
-                new IotHubClientAmqpSettings
+                pipelineContext1,
+                transportSettings1);
+
+            try
+            {
+                var transportSettings2 = new IotHubClientAmqpSettings
                 {
                     PrefetchCount = 60,
                     ConnectionPoolSettings = new AmqpConnectionPoolSettings
                     {
                         Pooling = true,
-                        MaxPoolSize = 10,
+                        MaxPoolSize = 7, // different pool size
                     },
-                });
+                };
+                var clientOptions2 = new IotHubClientOptions(transportSettings2);
+                var pipelineContext2 = new PipelineContext
+                {
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
+                };
 
-            try
-            {
                 var amqpTransportHandler2 = new AmqpTransportHandler(
-                    new PipelineContext(),
-                    new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString)),
-                    new IotHubClientAmqpSettings
-                    {
-                        PrefetchCount = 60,
-                        ConnectionPoolSettings = new AmqpConnectionPoolSettings
-                        {
-                            Pooling = true,
-                            MaxPoolSize = 7, // different pool size
-                        },
-                    });
+                    pipelineContext2,
+                    transportSettings2);
             }
             catch (ArgumentException ex)
             {
@@ -147,9 +159,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         private AmqpTransportHandler CreateFromConnectionString()
         {
+            var pipelineContext = new PipelineContext
+            {
+                ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+            };
+
             return new AmqpTransportHandler(
-                new PipelineContext(),
-                IotHubConnectionInfoExtensions.Parse(TestConnectionString),
+                pipelineContext,
                 new IotHubClientAmqpSettings());
         }
     }

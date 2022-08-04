@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string AmqpsScheme = "amqps";
         public const string AmqpScheme = "amqp";
         public const string AmqpDnsWSPrefix = "amqpws";
+        public const int DefaultAmqpSecurePort = 5671;
 
         // IotHub WindowsFabric Constants
         public const int WindowsFabricRetryLimit = 20;
