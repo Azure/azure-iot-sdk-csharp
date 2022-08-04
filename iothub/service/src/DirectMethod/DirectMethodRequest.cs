@@ -21,6 +21,11 @@ namespace Microsoft.Azure.Devices
         /// The timeout before the direct method request will fail if the device doesn't respond to the request.
         /// This timeout may happen if the target device is slow in handling the direct method.
         /// </summary>
+        /// <remarks>
+        /// This value is propagated to the service in terms of seconds, so this value does not have a level of 
+        /// precision below seconds. For example, setting this value to TimeSpan.FromMilliseconds(500) will result
+        /// in this request having a timeout of 0 seconds.
+        /// </remarks>
         [JsonIgnore]
         public TimeSpan ResponseTimeout { get; set; }
 
@@ -30,6 +35,11 @@ namespace Microsoft.Azure.Devices
         /// the request to the target device in time. If this value is set to 0 seconds, then the target device must be online
         /// when this direct method request is made.
         /// </summary>
+        /// <remarks>
+        /// This value is propagated to the service in terms of seconds, so this value does not have a level of 
+        /// precision below seconds. For example, setting this value to TimeSpan.FromMilliseconds(500) will result
+        /// in this request having a timeout of 0 seconds.
+        /// </remarks>
         [JsonIgnore]
         public TimeSpan ConnectionTimeout { get; set; }
 
