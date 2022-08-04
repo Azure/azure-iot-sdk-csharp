@@ -13,23 +13,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher, IDisposable
     {
         private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
+        private readonly Uri _amqpEndpoint;
         private readonly AmqpIotCbsLink _amqpIotCbsLink;
-        private readonly IotHubConnectionInfo _connInfo;
+        private readonly IClientConfiguration _clientConfiguration;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private Task _refreshLoop;
         private bool _disposed;
 
-        internal AmqpAuthenticationRefresher(IDeviceIdentity deviceIdentity, AmqpIotCbsLink amqpCbsLink)
+        internal AmqpAuthenticationRefresher(IClientConfiguration clientConfiguration, AmqpIotCbsLink amqpCbsLink)
         {
             _amqpIotCbsLink = amqpCbsLink;
-            _connInfo = deviceIdentity.IotHubConnectionInfo;
-            _audience = deviceIdentity.Audience;
-            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_connInfo);
+            _clientConfiguration = clientConfiguration;
+            _audience = clientConfiguration.AmqpCbsAudience;
+            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_clientConfiguration);
+            _amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientConfiguration.HostName, CommonConstants.DefaultAmqpSecurePort).Uri;
 
             if (Logging.IsEnabled)
             {
-                Logging.Associate(this, deviceIdentity, nameof(DeviceIdentity));
+                Logging.Associate(this, clientConfiguration, nameof(clientConfiguration));
                 Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
         }
@@ -42,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DateTime refreshOn = await _amqpIotCbsLink
                 .SendTokenAsync(
                     _amqpIotCbsTokenProvider,
-                    _connInfo.AmqpEndpoint,
+                    _amqpEndpoint,
                     _audience,
                     _audience,
                     s_accessRightsStringArray,
@@ -72,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
             TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-            Debug.Assert(_connInfo.TokenRefresher != null);
+            Debug.Assert(_clientConfiguration.TokenRefresher != null);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -91,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         refreshesOn = await _amqpIotCbsLink
                             .SendTokenAsync(
                                 _amqpIotCbsTokenProvider,
-                                _connInfo.AmqpEndpoint,
+                                _amqpEndpoint,
                                 _audience,
                                 _audience,
                                 s_accessRightsStringArray,

@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices
         public static void CreateFromConnectionString(
             object thisOrContextObject,
             string iotHubConnectionStringWithNoKey,
-            IotHubClientTransportSettings transportSettings,
             IotHubClientOptions options)
         {
             DebugValidateArg(thisOrContextObject);
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices
             if (IsEnabled)
             {
                 var sb = new StringBuilder();
-                sb.Append(transportSettings.ToString());
+                sb.Append(options.TransportSettings.ToString());
 
                 if (!string.IsNullOrWhiteSpace(options?.ModelId))
                 {

@@ -467,15 +467,10 @@ namespace Microsoft.Azure.Devices.Client
                     };
                 }
 
-                // TODO (abmisr) - fix when ClientOptions is made available in PipelineContext (InternalClient)
-
-                /*var context = new PipelineContext()
+                var pipelineContext = new PipelineContext
                 {
-                    ProductInfo = new ProductInfo
-                    {
-                        Extra = InternalClient.ProductInfo
-                    }
-                };*/
+                    ClientConfiguration = InternalClient.IotHubConnectionInfo
+                };
 
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
                 if (InternalClient.Certificate != null)
@@ -483,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client
                     transportSettings.ClientCertificate = InternalClient.Certificate;
                 }
 
-                using var httpTransport = new HttpTransportHandler(new PipelineContext(), InternalClient.IotHubConnectionInfo, transportSettings, httpClientHandler);
+                using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
                 MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
 
