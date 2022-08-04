@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var clientOptions1 = new IotHubClientOptions(transportSettings1);
             var pipelineContext1 = new PipelineContext
             {
-                IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
+                ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
             };
 
             var amqpTransportHandler1 = new AmqpTransportHandler(
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 var clientOptions2 = new IotHubClientOptions(transportSettings2);
                 var pipelineContext2 = new PipelineContext
                 {
-                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
                 };
 
                 var amqpTransportHandler2 = new AmqpTransportHandler(
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             var pipelineContext = new PipelineContext
             {
-                IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+                ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
             };
 
             return new AmqpTransportHandler(

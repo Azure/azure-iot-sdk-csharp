@@ -139,13 +139,13 @@ namespace Microsoft.Azure.Devices.Client
                 csBuilder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
-            var connInfo = new IotHubConnectionInfo(csBuilder, options);
-            var client = new InternalClient(connInfo, pipelineBuilder);
+            var clientConfiguration = new ClientConfiguration(csBuilder, options);
+            var client = new InternalClient(clientConfiguration, pipelineBuilder);
 
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
-                    $"HostName={connInfo.HostName};DeviceId={connInfo.DeviceId};ModuleId={connInfo.ModuleId}",
+                    $"HostName={clientConfiguration.HostName};DeviceId={clientConfiguration.DeviceId};ModuleId={clientConfiguration.ModuleId}",
                     options);
 
             return client;

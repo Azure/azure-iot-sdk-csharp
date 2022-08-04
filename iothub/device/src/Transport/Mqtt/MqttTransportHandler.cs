@@ -154,12 +154,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _completionQueue = new Queue<string>();
 
             _serverAddresses = null; // this will be resolved asynchronously in OpenAsync
-            _hostName = context.IotHubConnectionInfo.HostName;
-            _receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePatternFilter, context.IotHubConnectionInfo.DeviceId, context.IotHubConnectionInfo.ModuleId);
-            _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, context.IotHubConnectionInfo.DeviceId, context.IotHubConnectionInfo.ModuleId);
+            _hostName = context.ClientConfiguration.HostName;
+            _receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePatternFilter, context.ClientConfiguration.DeviceId, context.ClientConfiguration.ModuleId);
+            _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, context.ClientConfiguration.DeviceId, context.ClientConfiguration.ModuleId);
 
-            _deviceboundMessageFilter = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicFilter, context.IotHubConnectionInfo.DeviceId);
-            _deviceboundMessagePrefix = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicPrefix, context.IotHubConnectionInfo.DeviceId);
+            _deviceboundMessageFilter = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicFilter, context.ClientConfiguration.DeviceId);
+            _deviceboundMessagePrefix = string.Format(CultureInfo.InvariantCulture, DeviceBoundMessagesTopicPrefix, context.ClientConfiguration.DeviceId);
 
             _qosSendPacketToService = settings.PublishToServerQoS;
             _qosReceivePacketFromService = settings.ReceivingQoS;
@@ -178,11 +178,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                IotHubClientOptions options = context.IotHubConnectionInfo.ClientOptions;
+                IotHubClientOptions options = context.ClientConfiguration.ClientOptions;
                 _channelFactory = settings.Protocol switch
                 {
-                    TransportProtocol.Tcp => CreateChannelFactory(context.IotHubConnectionInfo, settings, context.IotHubConnectionInfo.ClientOptions.ProductInfo, options),
-                    TransportProtocol.WebSocket => CreateWebSocketChannelFactory(context.IotHubConnectionInfo, settings, context.IotHubConnectionInfo.ClientOptions.ProductInfo, options),
+                    TransportProtocol.Tcp => CreateChannelFactory(context.ClientConfiguration, settings, context.ClientConfiguration.ClientOptions.ProductInfo, options),
+                    TransportProtocol.WebSocket => CreateWebSocketChannelFactory(context.ClientConfiguration, settings, context.ClientConfiguration.ClientOptions.ProductInfo, options),
                     _ => throw new InvalidOperationException($"Unsupported transport setting: {settings.Protocol}"),
                 };
             }
@@ -1100,7 +1100,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IClientIdentity clientIdentity, IotHubClientMqttSettings settings, ProductInfo productInfo, IotHubClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IClientConfiguration clientConfiguration, IotHubClientMqttSettings settings, ProductInfo productInfo, IotHubClientOptions options)
         {
             return async (addresses, port) =>
             {
@@ -1116,9 +1116,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                      settings.SslProtocols,
                      settings.CertificateRevocationCheck,
                      certs,
-                     clientIdentity.HostName);
-
-                var iotHubConnectionInfo = clientIdentity as IotHubConnectionInfo;
+                     clientConfiguration.HostName);
 
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
@@ -1133,7 +1131,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             MqttEncoder.Instance,
                             new MqttDecoder(false, MaxMessageSize),
                             new LoggingHandler(LogLevel.DEBUG),
-                            _mqttIotHubAdapterFactory.Create(this, iotHubConnectionInfo, settings, productInfo, options));
+                            _mqttIotHubAdapterFactory.Create(this, clientConfiguration, settings, productInfo, options));
                     }));
 
                 foreach (IPAddress address in addresses)
@@ -1174,7 +1172,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
-            IotHubConnectionInfo connectionInfo,
+            ClientConfiguration clientConfiguration,
             IotHubClientMqttSettings settings,
             ProductInfo productInfo,
             IotHubClientOptions options)
@@ -1183,7 +1181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{connectionInfo.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{clientConfiguration.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
@@ -1240,7 +1238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
-                        _mqttIotHubAdapterFactory.Create(this, connectionInfo, settings, productInfo, options));
+                        _mqttIotHubAdapterFactory.Create(this, clientConfiguration, settings, productInfo, options));
 
                 await s_eventLoopGroup.Value.RegisterAsync(clientWebSocketChannel).ConfigureAwait(true);
 

@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class PipelineContext
     {
-        internal IotHubConnectionInfo IotHubConnectionInfo { get; set; }
+        internal ClientConfiguration ClientConfiguration { get; set; }
 
         internal ConnectionStatusChangesHandler ConnectionStatusChangesHandler { get; set; }
 

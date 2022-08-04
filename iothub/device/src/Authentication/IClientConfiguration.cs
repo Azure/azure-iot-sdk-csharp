@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Interface for client configurations and common attributes.
     /// This has been included for our own unit testing.
     /// </summary>
-    internal interface IClientIdentity
+    internal interface IClientConfiguration : IAuthorizationProvider
     {
         /// <summary>
         /// Authentication method associated with this client that uses a shared access signature token

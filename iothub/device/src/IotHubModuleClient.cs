@@ -469,7 +469,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 var pipelineContext = new PipelineContext
                 {
-                    IotHubConnectionInfo = InternalClient.IotHubConnectionInfo
+                    ClientConfiguration = InternalClient.IotHubConnectionInfo
                 };
 
                 //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate

@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 TestIotHubName);
 
             var clientOptions = new IotHubClientOptions();
-            IotHubConnectionInfo connInfo = new IotHubConnectionInfo(csBuilder, clientOptions);
+            ClientConfiguration connInfo = new ClientConfiguration(csBuilder, clientOptions);
 
             Assert.IsNotNull(connInfo.TokenRefresher);
             Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));

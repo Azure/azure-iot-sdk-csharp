@@ -15,23 +15,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly Uri _amqpEndpoint;
         private readonly AmqpIotCbsLink _amqpIotCbsLink;
-        private readonly IClientIdentity _clientIdentity;
+        private readonly IClientConfiguration _clientConfiguration;
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private Task _refreshLoop;
         private bool _disposed;
 
-        internal AmqpAuthenticationRefresher(IClientIdentity clientIdentity, AmqpIotCbsLink amqpCbsLink)
+        internal AmqpAuthenticationRefresher(IClientConfiguration clientConfiguration, AmqpIotCbsLink amqpCbsLink)
         {
             _amqpIotCbsLink = amqpCbsLink;
-            _clientIdentity = clientIdentity;
-            _audience = clientIdentity.AmqpCbsAudience;
-            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_clientIdentity);
-            _amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientIdentity.HostName, CommonConstants.DefaultAmqpSecurePort).Uri;
+            _clientConfiguration = clientConfiguration;
+            _audience = clientConfiguration.AmqpCbsAudience;
+            _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_clientConfiguration);
+            _amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientConfiguration.HostName, CommonConstants.DefaultAmqpSecurePort).Uri;
 
             if (Logging.IsEnabled)
             {
-                Logging.Associate(this, clientIdentity, nameof(clientIdentity));
+                Logging.Associate(this, clientConfiguration, nameof(clientConfiguration));
                 Logging.Associate(this, amqpCbsLink, nameof(_amqpIotCbsLink));
             }
         }
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
             TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-            Debug.Assert(_clientIdentity.TokenRefresher != null);
+            Debug.Assert(_clientConfiguration.TokenRefresher != null);
 
             while (!cancellationToken.IsCancellationRequested)
             {

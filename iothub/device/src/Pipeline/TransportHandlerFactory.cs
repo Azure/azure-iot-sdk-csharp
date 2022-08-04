@@ -12,13 +12,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public IDelegatingHandler Create(PipelineContext context)
         {
-            IotHubConnectionInfo connInfo = context.IotHubConnectionInfo;
+            ClientConfiguration clientConfiguration = context.ClientConfiguration;
             InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
             InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
             InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
-            if (connInfo.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
+            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
                 return new AmqpTransportHandler(
                     context,
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     new Func<Message, Task>(onDeviceMessageReceivedCallback));
             }
 
-            if (connInfo.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
+            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
             {
                 return new MqttTransportHandler(
                     context,
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     new Func<Message, Task>(onDeviceMessageReceivedCallback));
             }
 
-            if (connInfo.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
+            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
             {
                 return new HttpTransportHandler(
                     context,
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     isClientPrimaryTransportHandler: true);
             }
 
-            throw new InvalidOperationException($"Unsupported transport setting {connInfo.ClientOptions.TransportSettings.GetType()}");
+            throw new InvalidOperationException($"Unsupported transport setting {clientConfiguration.ClientOptions.TransportSettings.GetType()}");
         }
     }
 }

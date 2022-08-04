@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IClientIdentity testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName, poolSize);
+            IClientConfiguration testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName, poolSize);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
@@ -52,9 +52,9 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IClientIdentity CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName, uint poolSize)
+        private IClientConfiguration CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName, uint poolSize)
         {
-            Mock<IClientIdentity> clientIdentity = new Mock<IClientIdentity>();
+            Mock<IClientConfiguration> clientIdentity = new Mock<IClientConfiguration>();
 
             clientIdentity.Setup(m => m.IsPooling()).Returns(true);
             clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);

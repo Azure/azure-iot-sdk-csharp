@@ -602,7 +602,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new MqttTransportHandler(
                 new PipelineContext
                 {
-                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(DummyConnectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(DummyConnectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
                 },
                 new IotHubClientMqttSettings());
         }
@@ -637,7 +637,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             transport = new MqttTransportHandler(
                 new PipelineContext
                 {
-                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
                 },
                 new IotHubClientMqttSettings(),
                 factory);
@@ -651,7 +651,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new MqttTransportHandler(
                 new PipelineContext
                 {
-                    IotHubConnectionInfo = new IotHubConnectionInfo(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
                 },
                 new IotHubClientMqttSettings(),
                 null);

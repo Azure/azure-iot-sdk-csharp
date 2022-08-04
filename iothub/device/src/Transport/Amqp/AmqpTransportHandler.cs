@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
 
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
-                context.IotHubConnectionInfo,
+                context.ClientConfiguration,
                 onMethodCallback,
                 TwinMessageListener,
                 onModuleMessageReceivedCallback,

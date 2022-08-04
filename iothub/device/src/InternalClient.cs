@@ -64,26 +64,26 @@ namespace Microsoft.Azure.Devices.Client
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
         protected internal InternalClient(
-            IotHubConnectionInfo connectionInfo,
+            ClientConfiguration clientConfiguration,
             IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, connectionInfo.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, clientConfiguration.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            Argument.AssertNotNull(connectionInfo.ClientOptions, nameof(connectionInfo.ClientOptions));
+            Argument.AssertNotNull(clientConfiguration.ClientOptions, nameof(clientConfiguration.ClientOptions));
 
-            _clientOptions = connectionInfo.ClientOptions;
-            IotHubConnectionInfo = connectionInfo;
+            _clientOptions = clientConfiguration.ClientOptions;
+            IotHubConnectionInfo = clientConfiguration;
 
-            if (!string.IsNullOrWhiteSpace(connectionInfo.ClientOptions.ModelId)
-                && connectionInfo.ClientOptions.TransportSettings is IotHubClientHttpSettings)
+            if (!string.IsNullOrWhiteSpace(clientConfiguration.ClientOptions.ModelId)
+                && clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings)
             {
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
             var pipelineContext = new PipelineContext
             {
-                IotHubConnectionInfo = connectionInfo,
+                ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
                 ConnectionStatusChangesHandler = OnConnectionStatusChanged,
@@ -100,12 +100,12 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = innerHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, connectionInfo.ClientOptions.TransportSettings, nameof(InternalClient));
+                Logging.Associate(this, clientConfiguration.ClientOptions.TransportSettings, nameof(InternalClient));
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, connectionInfo.ClientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, clientConfiguration.ClientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, connectionInfo.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, clientConfiguration.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
         private static IDeviceClientPipelineBuilder BuildPipeline()
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionInfo IotHubConnectionInfo { get; private set; }
+        internal ClientConfiguration IotHubConnectionInfo { get; private set; }
 
         /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,

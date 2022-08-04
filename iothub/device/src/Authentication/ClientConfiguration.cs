@@ -10,9 +10,9 @@ using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class IotHubConnectionInfo : IClientIdentity, IAuthorizationProvider
+    internal class ClientConfiguration : IClientConfiguration
     {
-        public IotHubConnectionInfo(
+        public ClientConfiguration(
             IotHubConnectionStringBuilder builder,
             IotHubClientOptions iotHubClientOptions)
         {
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(IotHubConnectionInfo)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+                    Logging.Enter(this, $"{nameof(ClientConfiguration)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
 
                 Debug.Assert(
                     !string.IsNullOrWhiteSpace(SharedAccessSignature)
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(IotHubConnectionInfo)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+                    Logging.Exit(this, $"{nameof(ClientConfiguration)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
             }
         }
 
@@ -186,13 +186,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public override bool Equals(object obj)
         {
-            return obj is IotHubConnectionInfo iotHubConnectionInfo
-                && GetHashCode() == iotHubConnectionInfo.GetHashCode()
-                && Equals(DeviceId, iotHubConnectionInfo.DeviceId)
-                && Equals(HostName, iotHubConnectionInfo.HostName)
-                && Equals(ModuleId, iotHubConnectionInfo.ModuleId)
-                && Equals(ClientOptions.TransportSettings.Protocol, iotHubConnectionInfo.ClientOptions.TransportSettings.Protocol)
-                && Equals(AuthenticationModel.GetHashCode(), iotHubConnectionInfo.AuthenticationModel.GetHashCode());
+            return obj is ClientConfiguration clientConfiguration
+                && GetHashCode() == clientConfiguration.GetHashCode()
+                && Equals(DeviceId, clientConfiguration.DeviceId)
+                && Equals(HostName, clientConfiguration.HostName)
+                && Equals(ModuleId, clientConfiguration.ModuleId)
+                && Equals(ClientOptions.TransportSettings.Protocol, clientConfiguration.ClientOptions.TransportSettings.Protocol)
+                && Equals(AuthenticationModel.GetHashCode(), clientConfiguration.AuthenticationModel.GetHashCode());
         }
 
         /// <summary>
