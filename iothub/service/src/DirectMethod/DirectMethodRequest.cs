@@ -46,13 +46,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ResponseTimeoutInSeconds => ResponseTimeout <= TimeSpan.Zero
             ? null
-            : (int)ResponseTimeout.TotalSeconds;
+            : ResponseTimeout.Seconds;
 
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ConnectionTimeoutInSeconds => ConnectionTimeout <= TimeSpan.Zero
             ? null
-            : (int)ConnectionTimeout.TotalSeconds;
+            : ConnectionTimeout.Seconds;
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
