@@ -12,11 +12,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class ProvisioningServiceHttpSettings
     {
         /// <summary>
-        /// Creates an instance of ProvisioningServiceHttpSettings
-        /// </summary>
-        public ProvisioningServiceHttpSettings() { }
-
-        /// <summary>
         /// Gets or sets proxy information for the request.
         /// </summary>
         public IWebProxy Proxy { get; set; } = DefaultWebProxySettings.Instance;
