@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices
         /// This timeout may happen if the target device is slow in handling the direct method.
         /// </summary>
         /// <remarks>
-        /// This value is propagated to the service in terms of seconds, so this value does not have a level of 
+        /// This value is propagated to the service in terms of seconds, so this value does not have a level of
         /// precision below seconds. For example, setting this value to TimeSpan.FromMilliseconds(500) will result
         /// in this request having a timeout of 0 seconds.
         /// </remarks>
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
         /// when this direct method request is made.
         /// </summary>
         /// <remarks>
-        /// This value is propagated to the service in terms of seconds, so this value does not have a level of 
+        /// This value is propagated to the service in terms of seconds, so this value does not have a level of
         /// precision below seconds. For example, setting this value to TimeSpan.FromMilliseconds(500) will result
         /// in this request having a timeout of 0 seconds.
         /// </remarks>
@@ -44,11 +44,10 @@ namespace Microsoft.Azure.Devices
         public TimeSpan? ConnectionTimeout { get; set; }
 
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout?.Seconds;
-
+        internal int? ResponseTimeoutInSeconds => (int)ResponseTimeout?.TotalSeconds;
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout?.Seconds;
+        internal int? ConnectionTimeoutInSeconds => (int)ConnectionTimeout?.TotalSeconds;
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }

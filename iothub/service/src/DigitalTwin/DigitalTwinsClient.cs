@@ -350,12 +350,12 @@ namespace Microsoft.Azure.Devices
             string queryStringParameters = "";
             if (requestOptions?.ConnectTimeout != null)
             {
-                queryStringParameters += string.Format($"&connectTimeoutInSeconds={requestOptions.ConnectTimeout?.Seconds}");
+                queryStringParameters += string.Format($"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout?.TotalSeconds}");
             }
 
             if (requestOptions?.ResponseTimeout != null)
             {
-                queryStringParameters += string.Format($"&responseTimeoutInSeconds={requestOptions.ResponseTimeout?.Seconds}");
+                queryStringParameters += string.Format($"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout?.TotalSeconds}");
             }
 
             return queryStringParameters;
