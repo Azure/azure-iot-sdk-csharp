@@ -124,39 +124,18 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "jobType")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public JobType? Type
-        {
-            get
-            {
-                // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
-                // The _jobTypeInternal field is a workaround that allows us to deserialize either "type" or "jobType"
-                // as the job type for this class.
-                return _jobTypeInternal;
-            }
-            set
-            {
-                _jobTypeInternal = value ?? JobType.Unknown;
-            }
-        }
+        public JobType JobType { get; set; }
 
+        // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
+        // The us to deserialize either "type" or "jobType"
+        // as the job type for this class.
         [JsonProperty(PropertyName = "type")]
         [JsonConverter(typeof(StringEnumConverter))]
-        private JobType? Type2
+        private JobType _alternateJobType
         {
-            get
-            {
-                // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
-                // The _jobTypeInternal field is a workaround that allows us to deserialize either "type" or "jobType"
-                // as the job type for this class.
-                return _jobTypeInternal;
-            }
-            set
-            {
-                _jobTypeInternal = value ?? JobType.Unknown;
-            }
+            get => JobType;
+            set => JobType = value;
         }
-
-        private JobType _jobTypeInternal;
 
         /// <summary>
         /// System generated.  Ignored at creation.
