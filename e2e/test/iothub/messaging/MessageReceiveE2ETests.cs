@@ -125,13 +125,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
         {
-            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
+            await UnsubscribeDoesNotCauseConnectionStateEventAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Mqtt()
         {
-            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
+            await UnsubscribeDoesNotCauseConnectionStateEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
@@ -635,15 +635,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // This test ensures that the SDK does not have this bug again
         // https://github.com/Azure/azure-iot-sdk-csharp/issues/2218
-        private async Task UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
+        private async Task UnsubscribeDoesNotCauseConnectionStateEventAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
-            deviceClient.SetConnectionStateChangesHandler((status, statusChangeReason) =>
+            deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
             {
-                if (status == ConnectionState.Disconnected || status == ConnectionState.DisconnectedRetrying)
+                if (state == ConnectionState.Disconnected || state == ConnectionState.DisconnectedRetrying)
                 {
                     lostConnection = true;
                 }

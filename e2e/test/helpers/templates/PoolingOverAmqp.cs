@@ -60,9 +60,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
                     IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
 
-                    // Set the device client connection state changes handler
+                    // Set the device client connection state change handler
                     var amqpConnectionStateChange = new AmqpConnectionStateChange(logger);
-                    deviceClient.SetConnectionStateChangesHandler(amqpConnectionStateChange.ConnectionStateChangesHandler);
+                    deviceClient.SetConnectionStateChangeHandler(amqpConnectionStateChange.ConnectionStateChangeHandler);
 
                     var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
 
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         if (!ignoreConnectionState)
                         {
                             // The connection state change count should be 2: connect (open) and disabled (close)
-                            if (amqpConnectionStates[i].ConnectionStateChangesHandlerCount != 2)
+                            if (amqpConnectionStates[i].ConnectionStateChangeHandlerCount != 2)
                             {
                                 deviceConnectionStateAsExpected = false;
                             }
@@ -106,9 +106,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                                 amqpConnectionStates[i].LastConnectionState,
                                 $"The actual connection state is = {amqpConnectionStates[i].LastConnectionState}");
                             Assert.AreEqual(
-                                ConnectionStateChangesReason.ClientClose,
-                                amqpConnectionStates[i].LastConnectionStateChangesReason,
-                                $"The actual connection state change reason is = {amqpConnectionStates[i].LastConnectionStateChangesReason}");
+                                ConnectionStateChangeReason.ClientClose,
+                                amqpConnectionStates[i].LastConnectionStateChangeReason,
+                                $"The actual connection state change reason is = {amqpConnectionStates[i].LastConnectionStateChangeReason}");
                         }
                     }
                     if (deviceConnectionStateAsExpected)
@@ -147,24 +147,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             public AmqpConnectionStateChange(MsTestLogger logger)
             {
                 LastConnectionState = null;
-                LastConnectionStateChangesReason = null;
-                ConnectionStateChangesHandlerCount = 0;
+                LastConnectionStateChangeReason = null;
+                ConnectionStateChangeHandlerCount = 0;
                 _logger = logger;
             }
 
-            public void ConnectionStateChangesHandler(ConnectionState state, ConnectionStateChangesReason reason)
+            public void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
             {
-                ConnectionStateChangesHandlerCount++;
+                ConnectionStateChangeHandlerCount++;
                 LastConnectionState = state;
-                LastConnectionStateChangesReason = reason;
-                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStateChangesHandler)}: state={state} stateChangesReason={reason} count={ConnectionStateChangesHandlerCount}");
+                LastConnectionStateChangeReason = reason;
+                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStateChangeHandler)}: state={state} stateChangeReason={reason} count={ConnectionStateChangeHandlerCount}");
             }
 
-            public int ConnectionStateChangesHandlerCount { get; set; }
+            public int ConnectionStateChangeHandlerCount { get; set; }
 
             public ConnectionState? LastConnectionState { get; set; }
 
-            public ConnectionStateChangesReason? LastConnectionStateChangesReason { get; set; }
+            public ConnectionStateChangeReason? LastConnectionStateChangeReason { get; set; }
         }
     }
 }

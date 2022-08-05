@@ -3,16 +3,14 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-#pragma warning disable CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     /// <summary>
     /// Connection state supported by the client.
     /// </summary>
     public enum ConnectionState
-#pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     {
         /// <summary>
         /// The device or module is disconnected.
-        /// <para>Inspect the associated <see cref="ConnectionStateChangesReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
+        /// <para>Inspect the associated <see cref="ConnectionStateChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
         /// </summary>
         Disconnected,
 

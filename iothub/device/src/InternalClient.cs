@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
-        private volatile ConnectionStateChangesHandler _connectionStateChangesHandler;
+        private volatile ConnectionStateChangeHandler _connectionStateChangeHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
         private int _diagnosticSamplingPercentage;
 
         private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
-        private ConnectionStateChangesReason _lastConnectionStateChangesReason = ConnectionStateChangesReason.ClientClose;
+        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
                 ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
-                ConnectionStateChangesHandler = OnConnectionStateChanged,
+                ConnectionStateChangeHandler = OnConnectionStateChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
             };
@@ -153,13 +153,13 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new delegate for the connection state changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate.
         /// </summary>
-        /// <param name="stateChangesHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStateChangesHandler(ConnectionStateChangesHandler stateChangesHandler)
+        /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
+        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler)
         {
             if (Logging.IsEnabled)
-                Logging.Info(this, stateChangesHandler, nameof(SetConnectionStateChangesHandler));
+                Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
 
-            _connectionStateChangesHandler = stateChangesHandler;
+            _connectionStateChangeHandler = stateChangeHandler;
         }
 
         /// <summary>
@@ -1173,24 +1173,24 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStateChanged(ConnectionState state, ConnectionStateChangesReason reason)
+        internal void OnConnectionStateChanged(ConnectionState state, ConnectionStateChangeReason reason)
         {
             try
             {
                 if (Logging.IsEnabled)
                     Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_connectionStateChangesHandler != null
+                if (_connectionStateChangeHandler != null
                     && (_lastConnectionState != state
-                        || _lastConnectionStateChangesReason != reason))
+                        || _lastConnectionStateChangeReason != reason))
                 {
-                    _connectionStateChangesHandler(state, reason);
+                    _connectionStateChangeHandler(state, reason);
                 }
             }
             finally
             {
                 _lastConnectionState = state;
-                _lastConnectionStateChangesReason = reason;
+                _lastConnectionStateChangeReason = reason;
                 if (Logging.IsEnabled)
                     Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
             }

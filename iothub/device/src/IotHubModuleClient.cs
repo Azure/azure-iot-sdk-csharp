@@ -135,8 +135,8 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="stateChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
-        public void SetConnectionStateChangesHandler(ConnectionStateChangesHandler stateChangesHandler) =>
-            InternalClient.SetConnectionStateChangesHandler(stateChangesHandler);
+        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangesHandler) =>
+            InternalClient.SetConnectionStateChangeHandler(stateChangesHandler);
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update

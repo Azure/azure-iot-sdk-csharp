@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Connection state change reason supported by the client.
     /// </summary>
-    public enum ConnectionStateChangesReason
+    public enum ConnectionStateChangeReason
     {
         /// <summary>
         /// The client is connected, and ready to be used.

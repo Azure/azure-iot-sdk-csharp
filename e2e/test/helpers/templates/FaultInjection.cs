@@ -137,15 +137,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
             ConnectionState? lastConnectionState = null;
-            ConnectionStateChangesReason? lastConnectionStateChangesReason = null;
-            int connectionStateChangesCount = 0;
+            ConnectionStateChangeReason? lastConnectionStateChangeReason = null;
+            int connectionStateChangeCount = 0;
 
-            deviceClient.SetConnectionStateChangesHandler((state, stateChangesReason) =>
+            deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
             {
-                connectionStateChangesCount++;
+                connectionStateChangeCount++;
                 lastConnectionState = state;
-                lastConnectionStateChangesReason = stateChangesReason;
-                logger.Trace($"{nameof(FaultInjection)}.{nameof(ConnectionStateChangesHandler)}: state={state} stateChangesReason={stateChangesReason} count={connectionStateChangesCount}");
+                lastConnectionStateChangeReason = stateChangeReason;
+                logger.Trace($"{nameof(FaultInjection)}.{nameof(ConnectionStateChangeHandler)}: state={state} stateChangeReason={stateChangeReason} count={connectionStateChangeCount}");
             });
 
             var watch = new Stopwatch();
@@ -156,9 +156,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 if (transportSettings is not IotHubClientHttpSettings)
                 {
                     // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
-                    connectionStateChangesCount.Should().BeGreaterOrEqualTo(1);
+                    connectionStateChangeCount.Should().BeGreaterOrEqualTo(1);
                     lastConnectionState.Should().Be(ConnectionState.Connected);
-                    lastConnectionStateChangesReason.Should().Be(ConnectionStateChangesReason.ConnectionOk);
+                    lastConnectionStateChangeReason.Should().Be(ConnectionStateChangeReason.ConnectionOk);
                 }
 
                 if (initOperation != null)
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 logger.Trace($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
-                int countBeforeFaultInjection = connectionStateChangesCount;
+                int countBeforeFaultInjection = connectionStateChangeCount;
                 watch.Start();
                 logger.Trace($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjectionAsync(transportSettings, faultType, reason, delay, duration, deviceClient, logger).ConfigureAwait(false);
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     var sw = Stopwatch.StartNew();
                     while (sw.Elapsed < LatencyTimeBuffer)
                     {
-                        if (connectionStateChangesCount > countBeforeFaultInjection)
+                        if (connectionStateChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
@@ -240,17 +240,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise
                         // we would attempt to send the fault injection forever.)
-                        connectionStateChangesCount.Should().BeGreaterOrEqualTo(4, $"Device Id {testDevice.Id}");
+                        connectionStateChangeCount.Should().BeGreaterOrEqualTo(4, $"Device Id {testDevice.Id}");
                     }
                     else
                     {
                         // 2 is the minimum notification count: connect, disable.
                         // We will monitor the test environment real network stability and switch to >=2 if necessary to
                         // account for real network issues.
-                        connectionStateChangesCount.Should().Be(2, $"Device Id {testDevice.Id}");
+                        connectionStateChangeCount.Should().Be(2, $"Device Id {testDevice.Id}");
                     }
-                    lastConnectionState.Should().Be(ConnectionState.Disabled, $"The connection state change reason was {lastConnectionStateChangesReason}");
-                    lastConnectionStateChangesReason.Should().Be(ConnectionStateChangesReason.ClientClose);
+                    lastConnectionState.Should().Be(ConnectionState.Disabled, $"The connection state change reason was {lastConnectionStateChangeReason}");
+                    lastConnectionStateChangeReason.Should().Be(ConnectionStateChangeReason.ClientClose);
                 }
             }
             finally

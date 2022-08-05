@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(amqpTransportSettings);
 
-            // Initialize the client instances, set the connection state changes handler and open the connection.
+            // Initialize the client instances, set the connection state change handler and open the connection.
             for (int i = 0; i < devicesCount; i++)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope - the client instance is disposed during the course of the test.
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 var amqpConnectionStateChange = new AmqpConnectionStateChange(testDevices[i].Id, Logger);
-                deviceClient.SetConnectionStateChangesHandler(amqpConnectionStateChange.ConnectionStateChangesHandler);
+                deviceClient.SetConnectionStateChangeHandler(amqpConnectionStateChange.ConnectionStateChangeHandler);
                 amqpConnectionStates.Add(amqpConnectionStateChange);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 var amqpConnectionStatusChange = new AmqpConnectionStateChange(testDevices[i].Id, Logger);
-                deviceClient.SetConnectionStateChangesHandler(amqpConnectionStatusChange.ConnectionStateChangesHandler);
+                deviceClient.SetConnectionStateChangeHandler(amqpConnectionStatusChange.ConnectionStateChangeHandler);
                 amqpConnectionStates.Add(amqpConnectionStatusChange);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);

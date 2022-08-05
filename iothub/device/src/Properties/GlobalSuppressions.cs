@@ -22,7 +22,7 @@ using System.Diagnostics.CodeAnalysis;
     "CA1707:Identifiers should not contain underscores",
     Justification = "Public API cannot be changed.",
     Scope = "type",
-    Target = "~T:Microsoft.Azure.Devices.Client.ConnectionStateChangesReason")]
+    Target = "~T:Microsoft.Azure.Devices.Client.ConnectionStateChangeReason")]
 [assembly: SuppressMessage(
     "Naming",
     "CA1707:Identifiers should not contain underscores",

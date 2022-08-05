@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     /// <param name="state">The updated connection state</param>
     /// <param name="reason">The reason for the connection state change</param>
-    public delegate void ConnectionStateChangesHandler(ConnectionState state, ConnectionStateChangesReason reason);
+    public delegate void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason);
 
     /// <summary>
     /// Delegate for method call. This will be called every time we receive a method call that was registered.
