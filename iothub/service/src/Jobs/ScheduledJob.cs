@@ -27,21 +27,90 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Scheduled job start time in UTC.
         /// </summary>
+        [JsonProperty(PropertyName = "createdDateTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? CreatedTimeUtc
+        {
+            get
+            {
+                // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
+                // The _createdTimeInternal field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
+                // as the created time value for this class.
+                return _createdTimeInternal;
+            }
+            set
+            {
+                _createdTimeInternal = value;
+            }
+        }
+
+        /// <summary>
+        /// Scheduled job start time in UTC.
+        /// </summary>
         [JsonProperty(PropertyName = "createdTime", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? CreatedTimeUtc { get; internal set; }
+        private DateTime? CreatedTime
+        {
+            get
+            {
+                // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
+                // The _createdTimeInternal field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
+                // as the created time value for this class.
+                return _createdTimeInternal;
+            }
+            set
+            {
+                _createdTimeInternal = value;
+            }
+        }
+
+        private DateTime? _createdTimeInternal;
 
         /// <summary>
         /// System generated.  Ignored at creation.
         /// </summary>
-        [JsonProperty(PropertyName = "startTime", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? StartTimeUtc { get; internal set; }
 
         /// <summary>
         /// System generated.  Ignored at creation.
         /// Represents the time the job stopped processing.
         /// </summary>
+        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? EndTimeUtc
+        {
+            get
+            {
+                // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
+                // The _createdTimeInternal field is a workaround that allows us to deserialize either "endTimeUtc" or "endTime"
+                // as the created time value for this class.
+                return _endTimeInternal;
+            }
+            set
+            {
+                _endTimeInternal = value;
+            }
+        }
+
+        /// <summary>
+        /// System generated.  Ignored at creation.
+        /// Represents the time the job stopped processing.
+        /// </summary>
         [JsonProperty(PropertyName = "endTime", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndTimeUtc { get; internal set; }
+        private DateTime? EndTime
+        {
+            get
+            {
+                // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
+                // The _createdTimeInternal field is a workaround that allows us to deserialize either "endTimeUtc" or "endTime"
+                // as the created time value for this class.
+                return _endTimeInternal;
+            }
+            set
+            {
+                _endTimeInternal = value;
+            }
+        }
+
+        private DateTime? _endTimeInternal;
 
         /// <summary>
         /// Max execution time in secounds
@@ -53,9 +122,41 @@ namespace Microsoft.Azure.Devices
         /// Required.
         /// The type of job to execute.
         /// </summary>
-        [JsonProperty(PropertyName = "type", Required = Required.Always)]
+        [JsonProperty(PropertyName = "jobType")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public JobType Type { get; internal set; }
+        public JobType? Type
+        {
+            get
+            {
+                // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
+                // The _jobTypeInternal field is a workaround that allows us to deserialize either "type" or "jobType"
+                // as the job type for this class.
+                return _jobTypeInternal;
+            }
+            set
+            {
+                _jobTypeInternal = value ?? JobType.Unknown;
+            }
+        }
+
+        [JsonProperty(PropertyName = "type")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        private JobType? Type2
+        {
+            get
+            {
+                // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
+                // The _jobTypeInternal field is a workaround that allows us to deserialize either "type" or "jobType"
+                // as the job type for this class.
+                return _jobTypeInternal;
+            }
+            set
+            {
+                _jobTypeInternal = value ?? JobType.Unknown;
+            }
+        }
+
+        private JobType _jobTypeInternal;
 
         /// <summary>
         /// System generated.  Ignored at creation.

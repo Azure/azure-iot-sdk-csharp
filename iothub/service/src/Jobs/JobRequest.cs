@@ -52,26 +52,24 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "queryCondition")]
         public string QueryCondition { get; set; }
 
-
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
-        // TODO: siport : validate if we want utc on the internal propname but not on the external
         public DateTime StartTimeUtc { get; set; }
 
         /// <summary>
         /// Max execution time in seconds (TTL duration).
         /// </summary>
         [JsonIgnore]
-        public TimeSpan MaxExecutionTime { get; set; }
+        public TimeSpan? MaxExecutionTime { get; set; }
 
         [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        internal long MaxExecutionTimeInSeconds
+        internal long? MaxExecutionTimeInSeconds
         {
-            get => (long)MaxExecutionTime.TotalSeconds;
-            set => MaxExecutionTime = TimeSpan.FromSeconds(value);
+            get => MaxExecutionTime?.Seconds;
+            set => MaxExecutionTime = value != null ? TimeSpan.FromSeconds((int)value) : null;
         }
     }
 }
