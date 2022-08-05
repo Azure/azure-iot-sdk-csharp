@@ -3,16 +3,14 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-#pragma warning disable CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     /// <summary>
-    /// Connection status supported by the client.
+    /// Connection state supported by the client.
     /// </summary>
-    public enum ConnectionStatus
-#pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
+    public enum ConnectionState
     {
         /// <summary>
         /// The device or module is disconnected.
-        /// <para>Inspect the associated <see cref="ConnectionStatusChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
+        /// <para>Inspect the associated <see cref="ConnectionStateChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
         /// </summary>
         Disconnected,
 
@@ -26,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The device or module is attempting to reconnect.
         /// <para>The client is attempting to recover the connection. Do NOT close or open the client instance when it is retrying.</para>
         /// </summary>
-        Disconnected_Retrying,
+        DisconnectedRetrying,
 
         /// <summary>
         /// The device connection was closed.

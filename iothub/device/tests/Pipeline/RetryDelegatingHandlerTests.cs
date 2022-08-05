@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var ct = CancellationToken.None;
             PipelineContext contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
 
             nextHandlerMock
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             PipelineContext contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
             using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
             nextHandlerMock
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             PipelineContext contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var memoryStream = new NotSeekableStream(new byte[] { 1, 2, 3 });
             using var message = new Message(memoryStream);
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
             IEnumerable<Message> messages = new[] { message };
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             using var message = new Message(new MemoryStream(new byte[] { 1, 2, 3 }));
             nextHandlerMock
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
                 .OpenAsync(Arg.Any<CancellationToken>())
@@ -221,22 +221,22 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceNotFoundExceptionReturnsDeviceDisabledStatus()
+        public async Task DeviceNotFoundExceptionReturnsDeviceDisabledState()
         {
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new DeviceNotFoundException());
 
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
+            ConnectionStateChangeHandler stateChangeHandler = (s, r) =>
             {
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangeReason = r;
             };
 
-            contextMock.ConnectionStatusChangesHandler = statusChangeHandler;
+            contextMock.ConnectionStateChangeHandler = stateChangeHandler;
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
@@ -247,8 +247,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
 
             // assert
-            status.Should().Be(ConnectionStatus.Disconnected);
-            statusChangeReason.Should().Be(ConnectionStatusChangeReason.Device_Disabled);
+            state.Should().Be(ConnectionState.Disconnected);
+            stateChangeReason.Should().Be(ConnectionStateChangeReason.DeviceDisabled);
         }
 
         [TestMethod]
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var cts = new CancellationTokenSource(100);
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
                 .OpenAsync(cts.Token)
@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangesHandler = new ConnectionStatusChangesHandler(delegate (ConnectionStatus status, ConnectionStatusChangeReason reason) { });
+            contextMock.ConnectionStateChangeHandler = new ConnectionStateChangeHandler(delegate (ConnectionState state, ConnectionStateChangeReason reason) { });
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             var retryPolicy = new TestRetryPolicy();

@@ -39,15 +39,15 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
-        private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
+        private volatile ConnectionStateChangeHandler _connectionStateChangeHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
 
         private int _diagnosticSamplingPercentage;
 
-        private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
-        private ConnectionStatusChangeReason _lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
+        private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
+        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
                 ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
-                ConnectionStatusChangesHandler = OnConnectionStatusChanged,
+                ConnectionStateChangeHandler = OnConnectionStateChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
             };
@@ -150,16 +150,16 @@ namespace Microsoft.Azure.Devices.Client
         internal ClientConfiguration IotHubConnectionInfo { get; private set; }
 
         /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// Sets a new delegate for the connection state changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate.
         /// </summary>
-        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
+        /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
+        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler)
         {
             if (Logging.IsEnabled)
-                Logging.Info(this, statusChangesHandler, nameof(SetConnectionStatusChangesHandler));
+                Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
 
-            _connectionStatusChangesHandler = statusChangesHandler;
+            _connectionStateChangeHandler = stateChangeHandler;
         }
 
         /// <summary>
@@ -1173,26 +1173,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStatusChanged(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        internal void OnConnectionStateChanged(ConnectionState state, ConnectionStateChangeReason reason)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
+                    Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_connectionStatusChangesHandler != null
-                    && (_lastConnectionStatus != status
-                        || _lastConnectionStatusChangeReason != reason))
+                if (_connectionStateChangeHandler != null
+                    && (_lastConnectionState != state
+                        || _lastConnectionStateChangeReason != reason))
                 {
-                    _connectionStatusChangesHandler(status, reason);
+                    _connectionStateChangeHandler(state, reason);
                 }
             }
             finally
             {
-                _lastConnectionStatus = status;
-                _lastConnectionStatusChangeReason = reason;
+                _lastConnectionState = state;
+                _lastConnectionStateChangeReason = reason;
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, status, reason, nameof(OnConnectionStatusChanged));
+                    Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
             }
         }
 

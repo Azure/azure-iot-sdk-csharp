@@ -90,13 +90,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// Sets a new delegate for the connection state changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use
         /// HTTP, as that protocol is stateless.
-        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
+        /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
-        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
-            InternalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
+        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler) =>
+            InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
