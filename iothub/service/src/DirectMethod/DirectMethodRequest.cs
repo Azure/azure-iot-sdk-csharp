@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// in this request having a timeout of 0 seconds.
         /// </remarks>
         [JsonIgnore]
-        public TimeSpan ResponseTimeout { get; set; }
+        public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
         /// The timeout before the direct method request will fail if the request takes too long to reach the device.
@@ -41,34 +41,27 @@ namespace Microsoft.Azure.Devices
         /// in this request having a timeout of 0 seconds.
         /// </remarks>
         [JsonIgnore]
-        public TimeSpan ConnectionTimeout { get; set; }
+        public TimeSpan? ConnectionTimeout { get; set; }
 
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout <= TimeSpan.Zero
-            ? null
-            : ResponseTimeout.Seconds;
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout?.Seconds;
 
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout <= TimeSpan.Zero
-            ? null
-            : ConnectionTimeout.Seconds;
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout?.Seconds;
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
 
         /// <summary>
-        /// Get payload as json
+        /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
         [JsonIgnore]
         public string Payload
         {
-            get
-            {
-                return (string)JsonPayload.Value;
-            }
+            get => (string)JsonPayload.Value;
 
-            internal set
+            set
             {
                 if (value == null)
                 {

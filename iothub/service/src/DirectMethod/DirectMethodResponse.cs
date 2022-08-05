@@ -21,15 +21,12 @@ namespace Microsoft.Azure.Devices
         internal JRaw JsonPayload { get; set; }
 
         /// <summary>
-        /// The Json payload sent by the device/module. May be null or empty.
+        /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
         [JsonIgnore]
         public string Payload
         {
-            get
-            {
-                return (string)JsonPayload.Value;
-            }
+            get => (string)JsonPayload.Value;
         }
     }
 }

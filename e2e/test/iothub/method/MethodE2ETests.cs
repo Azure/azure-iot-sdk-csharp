@@ -136,8 +136,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             // setup
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var methodInvocation = new DirectMethodRequest("SetTelemetryInterval");
-            methodInvocation.SetPayloadJson("10");
+            var methodInvocation = new DirectMethodRequest()
+            {
+                MethodName = "SetTelemetryInterval",
+                Payload = "10"
+            };
 
             // act
             ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
