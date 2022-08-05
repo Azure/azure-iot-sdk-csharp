@@ -15,9 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public MqttIotHubAdapter Create(
             IMqttIotHubEventHandler mqttIotHubEventHandler,
             IClientConfiguration clientConfiguration,
-            IotHubClientMqttSettings mqttTransportSettings,
-            ProductInfo productInfo,
-            IotHubClientOptions options)
+            IotHubClientMqttSettings mqttTransportSettings)
         {
             IWillMessage willMessage = mqttTransportSettings.HasWill ? _settings.WillMessage : null;
 
@@ -29,8 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 mqttTransportSettings,
                 willMessage,
                 mqttIotHubEventHandler,
-                productInfo,
-                options);
+                clientConfiguration.ClientOptions);
         }
     }
 }

@@ -90,7 +90,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private int InboundBacklogSize => _deviceBoundOneWayProcessor.BacklogSize + _deviceBoundTwoWayProcessor.BacklogSize;
 
-        private readonly ProductInfo _productInfo;
         private readonly IotHubClientOptions _options;
 
         // default value for ushort is 0.
@@ -106,7 +105,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubClientMqttSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
-            ProductInfo productInfo,
             IotHubClientOptions options)
         {
             Contract.Requires(deviceId != null);
@@ -114,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Contract.Requires(passwordProvider != null);
             Contract.Requires(mqttTransportSettings != null);
             Contract.Requires(!mqttTransportSettings.HasWill || willMessage != null);
-            Contract.Requires(productInfo != null);
+            Contract.Requires(options.ProductInfo != null);
 
             _deviceId = deviceId;
             _moduleId = moduleId;
@@ -124,7 +122,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _willMessage = willMessage;
             _mqttIotHubEventHandler = mqttIotHubEventHandler;
             _pingRequestInterval = TimeSpan.FromSeconds(_mqttTransportSettings.KeepAliveInSeconds / 4d);
-            _productInfo = productInfo;
             _options = options;
 
             _deviceBoundOneWayProcessor = new SimpleWorkQueue<PublishPacket>(AcceptMessageAsync);
@@ -333,7 +330,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(_mqttTransportSettings.ClientCertificate != null);
                 }
 
-                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
+                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}" +
+                    $"&{DeviceClientTypeParam}={Uri.EscapeDataString(_options.ProductInfo.ToString())}";
 
                 if (!_mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
                 {
