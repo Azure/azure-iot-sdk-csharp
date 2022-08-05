@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client
                 : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
-            IotHubName = builder.IotHubName;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
 
@@ -115,8 +114,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         public AuthenticationWithTokenRefresh TokenRefresher { get; }
-
-        public string IotHubName { get; }
 
         public string DeviceId { get; }
 
