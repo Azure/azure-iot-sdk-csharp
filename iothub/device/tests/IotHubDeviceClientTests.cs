@@ -913,22 +913,22 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangesReason? stateChangesReason = null;
+            ConnectionStateChangesHandler stateChangesHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangesReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+            deviceClient.SetConnectionStateChangesHandler(stateChangesHandler);
 
-            // Connection status changes from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // Connection state changes from disconnected to connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangesReason.ConnectionOk);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, state);
+            Assert.AreEqual(ConnectionStateChangesReason.ConnectionOk, stateChangesReason);
         }
 
         [TestMethod]
@@ -936,84 +936,84 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangesReason? stateChangesReason = null;
+            ConnectionStateChangesHandler stateChangesHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangesReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            deviceClient.SetConnectionStatusChangesHandler(null);
+            deviceClient.SetConnectionStateChangesHandler(stateChangesHandler);
+            deviceClient.SetConnectionStateChangesHandler(null);
 
-            // Connection status changes from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // Connection state changes from disconnected to connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangesReason.ConnectionOk);
 
             Assert.IsFalse(handlerCalled);
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
+        public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStateChange()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangesReason? stateChangesReason = null;
+            ConnectionStateChangesHandler stateChangesHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangesReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            // current status = disabled
+            deviceClient.SetConnectionStateChangesHandler(stateChangesHandler);
+            // current state = disabled
 
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangesReason.ConnectionOk);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, state);
+            Assert.AreEqual(ConnectionStateChangesReason.ConnectionOk, stateChangesReason);
             handlerCalled = false;
 
-            // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // current state = connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangesReason.ConnectionOk);
 
             Assert.IsFalse(handlerCalled);
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
+        public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStateChange()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             var sender = new object();
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangesReason? stateChangesReason = null;
+            ConnectionStateChangesHandler stateChangesHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangesReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+            deviceClient.SetConnectionStateChangesHandler(stateChangesHandler);
 
-            // current status = disabled
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // current state = disabled
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangesReason.ConnectionOk);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, state);
+            Assert.AreEqual(ConnectionStateChangesReason.ConnectionOk, stateChangesReason);
             handlerCalled = false;
 
-            // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.No_Network);
+            // current state = connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.DisconnectedRetrying, ConnectionStateChangesReason.NoNetwork);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Disconnected_Retrying, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
+            Assert.AreEqual(ConnectionState.DisconnectedRetrying, state);
+            Assert.AreEqual(ConnectionStateChangesReason.NoNetwork, stateChangesReason);
         }
 
         [TestMethod]
