@@ -216,18 +216,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
+                    var directMethodRequest = new DirectMethodRequest()
+                    {
+                        MethodName = methodName,
+                        Payload = respJson,
+                        ResponseTimeout = TimeSpan.FromMinutes(5),
+                    };
+
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-                    DirectMethodResponse response =
-                        await serviceClient.DirectMethods
-                            .InvokeAsync(
-                                deviceName,
-                                new DirectMethodRequest(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson))
-                            .ConfigureAwait(false);
+                    DirectMethodResponse response = await serviceClient.DirectMethods
+                            .InvokeAsync(deviceName, directMethodRequest).ConfigureAwait(false);
 
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
 
                     Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
-                    string payload = response.GetPayloadAsJson();
+                    string payload = response.Payload;
                     Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
 
                     done = true;
