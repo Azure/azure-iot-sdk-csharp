@@ -28,41 +28,18 @@ namespace Microsoft.Azure.Devices
         /// Scheduled job start time in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? CreatedTimeUtc
-        {
-            get
-            {
-                // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
-                // The _createdTimeInternal field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
-                // as the created time value for this class.
-                return _createdTimeInternal;
-            }
-            set
-            {
-                _createdTimeInternal = value;
-            }
-        }
+        public DateTime? CreatedTimeUtc { get; internal set; }
 
-        /// <summary>
-        /// Scheduled job start time in UTC.
-        /// </summary>
-        [JsonProperty(PropertyName = "createdTime", NullValueHandling = NullValueHandling.Ignore)]
-        private DateTime? CreatedTime
+        // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
+        // This private field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
+        // as the created time value for this class and expose it either way as CreatedTimeUtc.
+        [JsonProperty(PropertyName = "createdTime")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        internal DateTime? _alternateCreatedTimeUtc
         {
-            get
-            {
-                // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
-                // The _createdTimeInternal field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
-                // as the created time value for this class.
-                return _createdTimeInternal;
-            }
-            set
-            {
-                _createdTimeInternal = value;
-            }
+            get => CreatedTimeUtc;
+            set => CreatedTimeUtc = value;
         }
-
-        private DateTime? _createdTimeInternal;
 
         /// <summary>
         /// System generated.  Ignored at creation.
@@ -75,48 +52,24 @@ namespace Microsoft.Azure.Devices
         /// Represents the time the job stopped processing.
         /// </summary>
         [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndTimeUtc
-        {
-            get
-            {
-                // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
-                // The _createdTimeInternal field is a workaround that allows us to deserialize either "endTimeUtc" or "endTime"
-                // as the created time value for this class.
-                return _endTimeInternal;
-            }
-            set
-            {
-                _endTimeInternal = value;
-            }
-        }
+        public DateTime? EndTimeUtc { get; internal set; }
 
-        /// <summary>
-        /// System generated.  Ignored at creation.
-        /// Represents the time the job stopped processing.
-        /// </summary>
-        [JsonProperty(PropertyName = "endTime", NullValueHandling = NullValueHandling.Ignore)]
-        private DateTime? EndTime
+        // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
+        // This private field is a workaround that allows us to deserialize either "endTime" or "endTimeUtc"
+        // as the created time value for this class and expose it either way as EndTimeUtc.
+        [JsonProperty(PropertyName = "endTime")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        internal DateTime? _alternateEndTimeUtc
         {
-            get
-            {
-                // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
-                // The _createdTimeInternal field is a workaround that allows us to deserialize either "endTimeUtc" or "endTime"
-                // as the created time value for this class.
-                return _endTimeInternal;
-            }
-            set
-            {
-                _endTimeInternal = value;
-            }
+            get => EndTimeUtc;
+            set => EndTimeUtc = value;
         }
-
-        private DateTime? _endTimeInternal;
 
         /// <summary>
         /// Max execution time in secounds
         /// </summary>
         [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public long MaxExecutionTimeInSeconds { get; set; }
+        public long MaxExecutionTimeInSeconds { get; internal set; }
 
         /// <summary>
         /// Required.
@@ -124,14 +77,14 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "jobType")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public JobType JobType { get; set; }
+        public JobType JobType { get; internal set; }
 
         // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
-        // The us to deserialize either "type" or "jobType"
-        // as the job type for this class.
+        // This private field is a workaround that allows us to deserialize either "type" or "jobType"
+        // as the created time value for this class and expose it either way as JobType.
         [JsonProperty(PropertyName = "type")]
         [JsonConverter(typeof(StringEnumConverter))]
-        private JobType _alternateJobType
+        internal JobType _alternateJobType
         {
             get => JobType;
             set => JobType = value;
@@ -149,47 +102,47 @@ namespace Microsoft.Azure.Devices
         /// The method type and parameters.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
-        public CloudToDeviceMethod CloudToDeviceMethod { get; set; }
+        public CloudToDeviceMethod CloudToDeviceMethod { get; internal set; }
 
         /// <summary>
         /// Required if jobType is updateTwin.
         /// The Update Twin tags and desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "updateTwin", NullValueHandling = NullValueHandling.Ignore)]
-        public Twin UpdateTwin { get; set; }
+        public Twin UpdateTwin { get; internal set; }
 
         /// <summary>
         /// System generated.  Ignored at creation.
         /// If status == failure, this represents a string containing the reason.
         /// </summary>
         [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
-        public string FailureReason { get; set; }
+        public string FailureReason { get; internal set; }
 
         /// <summary>
         /// System generated.  Ignored at creation.
         /// Represents a string containing a message with status about the job execution.
         /// </summary>
         [JsonProperty(PropertyName = "statusMessage", NullValueHandling = NullValueHandling.Ignore)]
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; internal set; }
 
         /// <summary>
         /// Different number of devices in the job
         /// </summary>
         [JsonProperty(PropertyName = "deviceJobStatistics", NullValueHandling = NullValueHandling.Ignore)]
-        public DeviceJobStatistics DeviceJobStatistics { get; set; }
+        public DeviceJobStatistics DeviceJobStatistics { get; internal set; }
 
         /// <summary>
         /// The deviceId related to this response.
         /// It can be null (e.g. in case of a parent orchestration).
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
-        public string DeviceId { get; set; }
+        public string DeviceId { get; internal set; }
 
         /// <summary>
         /// The jobId of the parent orchestration, if any.
         /// </summary>
         [JsonProperty(PropertyName = "parentJobId", NullValueHandling = NullValueHandling.Ignore)]
-        public string ParentJobId { get; set; }
+        public string ParentJobId { get; internal set; }
     }
 
     /// <summary>
@@ -201,30 +154,30 @@ namespace Microsoft.Azure.Devices
         /// Number of devices in the job
         /// </summary>
         [JsonProperty(PropertyName = "deviceCount")]
-        public int DeviceCount { get; set; }
+        public int DeviceCount { get; internal set; }
 
         /// <summary>
         /// The number of failed jobs
         /// </summary>
         [JsonProperty(PropertyName = "failedCount")]
-        public int FailedCount { get; set; }
+        public int FailedCount { get; internal set; }
 
         /// <summary>
         /// The number of Successed jobs
         /// </summary>
         [JsonProperty(PropertyName = "succeededCount")]
-        public int SucceededCount { get; set; }
+        public int SucceededCount { get; internal set; }
 
         /// <summary>
         /// The number of running jobs
         /// </summary>
         [JsonProperty(PropertyName = "runningCount")]
-        public int RunningCount { get; set; }
+        public int RunningCount { get; internal set; }
 
         /// <summary>
         /// The number of pending (scheduled) jobs
         /// </summary>
         [JsonProperty(PropertyName = "pendingCount")]
-        public int PendingCount { get; set; }
+        public int PendingCount { get; internal set; }
     }
 }
