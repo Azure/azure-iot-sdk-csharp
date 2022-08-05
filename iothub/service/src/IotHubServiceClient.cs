@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-        private readonly IotHubConnection _connection;
+        private readonly IotHubServiceClientOptions _options;
         private const string ApiVersion = "2021-04-12";
 
         /// <summary>
@@ -61,8 +61,7 @@ namespace Microsoft.Azure.Devices
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
-
+            _options = options;
             InitializeSubclients();
         }
 
@@ -95,7 +94,7 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
+            _options = options;
 
             InitializeSubclients();
         }
@@ -128,7 +127,7 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _connection = new IotHubConnection(_credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
+            _options = options;
 
             InitializeSubclients();
         }
@@ -186,10 +185,22 @@ namespace Microsoft.Azure.Devices
         public TwinsClient Twins { get; protected set; }
 
         /// <summary>
-        /// Subclient of <see cref="IotHubServiceClient"/> for handling cloud to device message feedback.
+        /// Subclient of <see cref="IotHubServiceClient"/> for handling cloud-to-device message feedback.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
         public MessageFeedbackProcessorClient MessageFeedbackProcessor { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for handling file upload notications.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#service-file-upload-notifications"/>.
+        public FileUploadNotificationProcessorClient FileUploadNotificationProcessor { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud to device and cloud to module messages.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
+        public MessagingClient Messaging { get; protected set; }
 
         /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
@@ -211,7 +222,9 @@ namespace Microsoft.Azure.Devices
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
 
-            MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _connection);
+            Messaging = new MessagingClient(_hostName, _credentialProvider, _options);
+            MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
+            FileUploadNotificationProcessor = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
         }
     }
 }

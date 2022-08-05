@@ -100,13 +100,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets <see cref="IQuery"/> through which job responses for specified jobType and jobStatus are retrieved page by page,
+        /// Gets IQuery through which job responses for specified jobType and jobStatus are retrieved page by page,
         /// and specify page size.
         /// </summary>
         /// <param name="jobType">The job type to query. Could be null if not querying.</param>
         /// <param name="jobStatus">The job status to query. Could be null if not querying.</param>
         /// <param name="pageSize">Number of job responses in a page.</param>
-        /// <returns>A <see cref="IQuery"/> object to get results and next pages.</returns>
+        /// <returns>A query object to get results and next pages.</returns>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible

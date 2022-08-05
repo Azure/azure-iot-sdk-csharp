@@ -62,15 +62,20 @@ namespace Microsoft.Azure.Devices
         public HttpClient HttpClient { get; set; }
 
         /// <summary>
-        /// Whether to use web sockets or not (Only used for AMQP or MQTT).
+        /// Whether to use web sockets or not.
         /// </summary>
+        /// <remarks>
+        /// Only used for AMQP or MQTT.
+        /// </remarks>
         public bool UseWebSocketOnly { get; set; }
 
         /// <summary>
         /// Service client transport settings used for AMQP/MQTT operations.
-        /// If provided, all other settings will be ignored. If not provided,
-        /// a transport settings client will be created for you based on the other provided settings.
         /// </summary>
+        /// <remarks>
+        /// If provided, all other settings will be ignored, otherwise,
+        /// a transport settings client will be created based on other provided settings.
+        /// </remarks>
         public ServiceClientTransportSettings TransportSettings { get; set; }
         
         /// <summary>
@@ -88,5 +93,13 @@ namespace Microsoft.Azure.Devices
         /// Defaults to false.
         /// </remarks>
         public bool CertificateRevocationCheck { get; set; }
+
+        /// <summary>
+        /// The configuration for setting <see cref="Message.MessageId"/> for every message sent by the service client instance.
+        /// </summary>
+        /// <remarks>
+        /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
+        /// </remarks>
+        public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
     }
 }

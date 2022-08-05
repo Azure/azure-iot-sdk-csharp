@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private async Task TestTimeout(TimeSpan? timeout)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             var sw = new Stopwatch();
             sw.Start();
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 using var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
-                await sender.SendAsync(testDevice.Id, testMessage, timeout).ConfigureAwait(false);
+                await sender.Messaging.SendAsync(testDevice.Id, testMessage, timeout).ConfigureAwait(false);
             }
             finally
             {
@@ -71,8 +71,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task ServiceClient_SendsMessage(TransportType transportType)
         {
             // arrange
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only
+            };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, transportType);
+            using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act and expect no exception
@@ -80,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, message).ConfigureAwait(false);
         }
 
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
@@ -91,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -100,8 +104,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -116,11 +120,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            var options = new ServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, options);
+            using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -129,8 +133,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -145,11 +149,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            var options = new ServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
-            using var sender = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString, options);
+            using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -158,8 +162,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();

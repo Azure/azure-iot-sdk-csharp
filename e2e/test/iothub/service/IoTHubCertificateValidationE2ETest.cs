@@ -51,11 +51,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task TestServiceClientInvalidServiceCertificate(TransportType transport)
         {
-            using var service = ServiceClient.CreateFromConnectionString(
-                TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate,
-                transport);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            {
+                UseWebSocketOnly = transport == TransportType.Amqp_WebSocket_Only
+            };
+            using var service = new IotHubServiceClient(
+                TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate, options);
             using var testMessage = new Message();
-            await service.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
+            await service.Messaging.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
         }
 
         [LoggedTestMethod]

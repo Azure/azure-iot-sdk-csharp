@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
-        [JsonProperty(PropertyName = "startTimeUtc")]
+        [JsonProperty(PropertyName = "startTime")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
         // TODO: siport : validate if we want utc on the internal propname but not on the external
         public DateTime StartTimeUtc { get; set; }

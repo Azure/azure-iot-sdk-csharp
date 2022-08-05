@@ -40,7 +40,11 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal TwinsClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
+        internal TwinsClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            HttpClient httpClient,
+            HttpRequestMessageFactory httpRequestMessageFactory)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;

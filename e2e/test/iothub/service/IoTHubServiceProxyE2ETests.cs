@@ -62,14 +62,18 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            {
+                TransportSettings = transportSettings
+            };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix).ConfigureAwait(false);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString);
-            using var serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString, TransportType.Amqp, transportSettings);
+            using var serviceClient = new IotHubServiceClient(s_connectionString, options);
             (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-            await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+            await serviceClient.Messaging.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await serviceClient.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }
 
         private static async Task RegistryManager_AddDevice(IotHubServiceClientOptions options)

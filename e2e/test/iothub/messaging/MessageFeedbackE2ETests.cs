@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -45,13 +45,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Assert.Fail("Message completion out of order not supported outside of AMQP");
             }
 
-            await serviceClient.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
 
             var messages = new List<Client.Message>(MessageCount);
             for (int i = 0; i < MessageCount; i++)
             {
                 (Message msg, string _, string _) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 msg.Dispose();
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await serviceClient.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }
     }
 }
