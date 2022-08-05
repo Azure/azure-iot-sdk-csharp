@@ -24,16 +24,15 @@ namespace Microsoft.Azure.Devices.Client
             // Frist validate that the IotHubConnectionStringBuilder is set with the expected fields.
             builder.Validate();
 
-            Audience = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
             HostName = IsUsingGateway
                 ? builder.GatewayHostName
                 : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
-            IotHubName = builder.IotHubName;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
+            Audience = CreateAmqpCbsAudience();
 
             ClientOptions = iotHubClientOptions;
 
@@ -115,8 +114,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         public AuthenticationWithTokenRefresh TokenRefresher { get; }
-
-        public string IotHubName { get; }
 
         public string DeviceId { get; }
 

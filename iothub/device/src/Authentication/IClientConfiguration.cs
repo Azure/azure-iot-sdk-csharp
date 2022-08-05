@@ -18,11 +18,6 @@ namespace Microsoft.Azure.Devices.Client
         AuthenticationWithTokenRefresh TokenRefresher { get; }
 
         /// <summary>
-        /// The IoT hub this client connects to.
-        /// </summary>
-        string IotHubName { get; }
-
-        /// <summary>
         /// The device Id associated with this client.
         /// </summary>
         string DeviceId { get; }
