@@ -12,5 +12,10 @@ namespace Microsoft.Azure.Devices
         /// The token to use for continuing the query enumeration
         /// </summary>
         public string ContinuationToken { get; set; }
+
+        /// <summary>
+        /// The page size to request for each page of query results.
+        /// </summary>
+        public int? PageSize { get; set; }
     }
 }

@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods"/>
         public DirectMethodsClient DirectMethods { get; protected set; }
-        
+
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> for executing queries using a SQL-like syntax.
         /// </summary>
@@ -172,7 +172,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
         public DigitalTwinsClient DigitalTwins { get; protected set; }
-
 
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> that handles getting, updating, and replacing device and module twins.
@@ -196,7 +195,7 @@ namespace Microsoft.Azure.Devices
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, Query);
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
