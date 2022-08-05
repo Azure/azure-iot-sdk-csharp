@@ -208,6 +208,7 @@ namespace Microsoft.Azure.Devices
         {
             if (disposing)
             {
+                Connection.Dispose();
                 _httpClientHelper.Dispose();
             }
         }
