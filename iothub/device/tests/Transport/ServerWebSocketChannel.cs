@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 await CloseAsync().ConfigureAwait(false);
             }
-            catch (Exception) //when (!ex.IsFatal())
+            catch (Exception) //when (!Fx.IsFatal(ex))
             {
                 Abort();
             }

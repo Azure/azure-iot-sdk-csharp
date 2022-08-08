@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -169,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 Abort();
             }
@@ -225,23 +224,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _isReadPending = false;
                     Pipeline.FireChannelReadComplete();
                 }
-                catch (Exception e) when (!e.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     // Since this method returns void, all exceptions must be handled here.
                     byteBuffer?.Release();
                     allocHandle?.ReadComplete();
                     _isReadPending = false;
                     Pipeline.FireChannelReadComplete();
-                    Pipeline.FireExceptionCaught(e);
+                    Pipeline.FireExceptionCaught(ex);
                     close = true;
                 }
 
-                if (close)
+                if (close && Active)
                 {
-                    if (Active)
-                    {
-                        await HandleCloseAsync().ConfigureAwait(false);
-                    }
+                    await HandleCloseAsync().ConfigureAwait(false);
                 }
             }
             finally
@@ -330,12 +326,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 _isWriteInProgress = false;
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 // Since this method returns void, all exceptions must be handled here.
 
                 _isWriteInProgress = false;
-                Pipeline.FireExceptionCaught(e);
+                Pipeline.FireExceptionCaught(ex);
                 await HandleCloseAsync().ConfigureAwait(false);
             }
             finally
@@ -405,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await CloseAsync().ConfigureAwait(false);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 Abort();
             }

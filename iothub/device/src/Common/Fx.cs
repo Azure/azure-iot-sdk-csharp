@@ -2,15 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security;
-using System.Threading;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -19,11 +15,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         // This is only used for EventLog Source therefore matching EventLog source rather than ETL source
         private const string DefaultEventSource = "Microsoft.IotHub";
-
-#if DEBUG
-        private static bool s_breakOnExceptionTypesRetrieved;
-        private static Type[] s_breakOnExceptionTypesCache;
-#endif
 
         private static ExceptionTrace s_exceptionTrace;
 
@@ -41,22 +32,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        // Do not call the parameter "message" or else FxCop thinks it should be localized.
-        [Conditional("DEBUG")]
-        public static void Assert(bool condition, string description)
-        {
-            if (!condition)
-            {
-                Assert(description);
-            }
-        }
-
-        [Conditional("DEBUG")]
-        public static void Assert(string description)
-        {
-            Debug.Assert(false, description);
-        }
-
         public static void AssertAndThrow(bool condition, string description)
         {
             if (!condition)
@@ -65,20 +40,10 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        public static void AssertAndThrowFatal(bool condition, string description)
-        {
-            Debug.Assert(condition, description);
-
-            if (!condition)
-            {
-                AssertAndThrowFatal(description);
-            }
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception AssertAndThrowFatal(string description)
         {
-            Assert(description);
+            Debug.Fail(description);
             throw Exception.AsError(new FatalException(description));
         }
 
@@ -127,45 +92,6 @@ namespace Microsoft.Azure.Devices.Client
             return false;
         }
 
-#if DEBUG
-        internal static Type[] BreakOnExceptionTypes
-        {
-            get
-            {
-                if (!s_breakOnExceptionTypesRetrieved)
-                {
-                    if (TryGetDebugSwitch(out object value))
-                    {
-                        string[] typeNames = value as string[];
-                        if (typeNames != null
-                            && typeNames.Length > 0)
-                        {
-                            var types = new List<Type>(typeNames.Length);
-                            for (int i = 0; i < typeNames.Length; i++)
-                            {
-                                types.Add(Type.GetType(typeNames[i], false));
-                            }
-                            if (types.Count != 0)
-                            {
-                                s_breakOnExceptionTypesCache = types.ToArray();
-                            }
-                        }
-                    }
-                    s_breakOnExceptionTypesRetrieved = true;
-                }
-                return s_breakOnExceptionTypesCache;
-            }
-        }
-
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Unused parameters are inside of the DEBUG compilation flag.")]
-        private static bool TryGetDebugSwitch(out object value)
-        {
-            // No registry access in UWP
-            value = null;
-            return false;
-        }
-
-#endif // DEBUG
         public static class Tag
         {
             public enum CacheAttrition

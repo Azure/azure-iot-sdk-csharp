@@ -615,7 +615,7 @@ namespace Microsoft.Azure.Devices.Client
                     callbackContextPair = _deviceDefaultMethodCallback;
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));

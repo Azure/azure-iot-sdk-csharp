@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
@@ -309,7 +310,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// </summary>
         public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponseInternal methodResponseInternal)
         {
-            Fx.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
+            Debug.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
 
             amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
 
