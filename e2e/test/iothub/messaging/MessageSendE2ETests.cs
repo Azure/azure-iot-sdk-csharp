@@ -27,8 +27,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // The size of a device to cloud message. This exceeds the the maximum message size set by the hub; 256 KB.
         private const int ExceedAllowedMessageSizeInBytes = 300 * 1024;
 
-        // The size of a device to cloud message. This overly exceeds the maximum message size set by the hub, which is 256 KB. The reason why we are testing for this case is because
-        // we noticed a different behavior between this case, and the case where the message size is less than 1 MB.
+        // The size of a device to cloud message. This overly exceeds the maximum message size set by the hub, which is 256 KB.
+        // The reason why we are testing for this case is because we noticed a different behavior between this case, and the case where
+        // the message size is less than 1 MB.
         private const int OverlyExceedAllowedMessageSizeInBytes = 3000 * 1024;
 
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
@@ -58,9 +59,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(TransportProtocol.Tcp)]
-        [DataRow(TransportProtocol.WebSocket)]
-        public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats(TransportProtocol protocol)
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats(IotHubClientTransportProtocol protocol)
         {
             var amqpTransportSettings = new IotHubClientAmqpSettings(protocol)
             {
