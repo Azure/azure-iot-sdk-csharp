@@ -327,16 +327,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 websocket.Options.ClientCertificates.Add(clientCertificate);
             }
 
-            // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
-            if (RemoteCertificateValidationCallback != null)
-            {
-                websocket.Options.RemoteCertificateValidationCallback = RemoteCertificateValidationCallback;
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(ProvisionOverWssCommonAsync)} Setting RemoteCertificateValidationCallback");
-            }
-#endif
-
             // Check if we're configured to use a proxy server
             try
             {

@@ -1211,16 +1211,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
 
-                // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
-                if (settings.RemoteCertificateValidationCallback != null)
-                {
-                    websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting RemoteCertificateValidationCallback");
-                }
-#endif
-
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
