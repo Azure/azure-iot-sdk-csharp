@@ -32,17 +32,19 @@ namespace Microsoft.Azure.Devices.Client
         private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
         private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
+        // Method callback information
+        private bool _isDeviceMethodEnabled;
+        private volatile Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> _deviceDefaultMethodCallback;
+        private readonly Dictionary<string, Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>> _deviceMethods = new();
+
+
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
 
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
-        // Stores methods supported by the client device and their associated delegate.
 
-        private bool _isDeviceMethodEnabled;
-        private readonly Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods = new();
 
-        private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
@@ -58,8 +60,6 @@ namespace Microsoft.Azure.Devices.Client
 
         // Callback to call whenever the twin's desired state is updated by the service.
         internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
-
-        internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
         internal delegate Task OnDeviceMessageReceivedDelegate(Message message);
 
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
         /// of cancellation.</param>
         public async Task SetMethodHandlerAsync(
             string methodName,
-            MethodCallback methodHandler,
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (methodHandler != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                    _deviceMethods[methodName] = new Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
         public async Task SetMethodDefaultHandlerAsync(
-            MethodCallback methodHandler,
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
 
-                    _deviceDefaultMethodCallback = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                    _deviceDefaultMethodCallback = new Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
@@ -604,7 +604,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            Tuple<MethodCallback, object> callbackContextPair = null;
+            Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> callbackContextPair = null;
             MethodResponseInternal methodResponseInternal = null;
             byte[] requestData = methodRequestInternal.GetBytes();
 
@@ -654,8 +654,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    MethodResponse rv = await callbackContextPair
-                        .Item1(new MethodRequest(methodRequestInternal.Name, requestData), callbackContextPair.Item2)
+                    Func<MethodRequest, object, Task<MethodResponse>> userSuppliedCallback = callbackContextPair.Item1;
+                    object userSuppliedContext = callbackContextPair.Item2;
+
+                    MethodResponse rv = await userSuppliedCallback
+                        .Invoke(new MethodRequest(methodRequestInternal.Name, requestData), userSuppliedContext)
                         .ConfigureAwait(false);
 
                     methodResponseInternal = rv.Result == null

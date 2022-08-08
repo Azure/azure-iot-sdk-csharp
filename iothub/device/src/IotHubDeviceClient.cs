@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public Task SetMethodHandlerAsync(
             string methodName,
-            MethodCallback methodHandler,
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default) =>
             InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
@@ -147,7 +147,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="TaskCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default) =>
+        public Task SetMethodDefaultHandlerAsync(
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default) =>
             InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
         /// <summary>

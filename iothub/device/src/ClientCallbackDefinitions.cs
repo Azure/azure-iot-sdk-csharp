@@ -7,17 +7,6 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Delegate for method call. This will be called every time we receive a method call that was registered.
-    /// </summary>
-    /// <remarks>
-    /// This can be set for both <see cref="IotHubDeviceClient"/> and <see cref="IotHubModuleClient"/>.
-    /// </remarks>
-    /// <param name="methodRequest">Class with details about method.</param>
-    /// <param name="userContext">Context object passed in when the callback was registered.</param>
-    /// <returns>MethodResponse</returns>
-    public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
-
-    /// <summary>
     /// Delegate for desired property update callbacks. This will be called every time we receive a patch from the service.
     /// </summary>
     /// <remarks>

@@ -538,7 +538,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -584,7 +584,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -630,7 +630,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName2 = string.Empty;
             string actualMethodBody2 = string.Empty;
             object actualMethodUserContext2 = null;
-            MethodCallback methodCallback2 = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback2 = (methodRequest, userContext) =>
             {
                 actualMethodName2 = methodRequest.Name;
                 actualMethodBody2 = methodRequest.DataAsJson;
@@ -689,7 +689,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -714,7 +714,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName2 = string.Empty;
             string actualMethodBody2 = string.Empty;
             object actualMethodUserContext2 = null;
-            MethodCallback methodCallback2 = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback2 = (methodRequest, userContext) =>
             {
                 actualMethodName2 = methodRequest.Name;
                 actualMethodBody2 = methodRequest.DataAsJson;
@@ -748,7 +748,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -790,7 +790,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -849,7 +849,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
