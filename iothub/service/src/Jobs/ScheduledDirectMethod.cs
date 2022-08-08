@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
         /// Method call parameters.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod", Required = Required.Always)]
-        public CloudToDeviceMethod CloudToDeviceMethod { get; set; }
+        public DirectMethodRequest DirectMethodRequest { get; set; }
 
         /// <summary>
         /// Date time in UTC to start the job.
