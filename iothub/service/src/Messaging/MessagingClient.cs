@@ -37,13 +37,14 @@ namespace Microsoft.Azure.Devices
     public class MessagingClient : IDisposable
     {
         private readonly string _hostName;
-        private readonly string _sendingPath;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly IotHubConnection _connection;
         private readonly IotHubServiceClientOptions _clientOptions;
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
         private readonly TimeSpan _openTimeout;
         private readonly TimeSpan _operationTimeout;
+
+        private const string _sendingPath = "/messages/deviceBound";
 
 
         private int _sendingDeliveryTag;
@@ -67,7 +68,7 @@ namespace Microsoft.Azure.Devices
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, _connection.CloseLink);
-            _sendingPath = "/messages/deviceBound";
+            
         }
 
         /// <summary>
@@ -124,26 +125,15 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Disposing MessagingClient", nameof(Dispose));
+
+            _faultTolerantSendingLink.Dispose();
+            _connection.Dispose();
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, $"Disposing MessagingClient", nameof(Dispose));
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose the MessagingClient instance.
-        /// </summary>
-        public virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Disposing MessagingClient", nameof(Dispose));
-
-                _faultTolerantSendingLink.Dispose();
-                _connection.Dispose();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Disposing MessagingClient", nameof(Dispose));
-            }
         }
 
         /// <summary>

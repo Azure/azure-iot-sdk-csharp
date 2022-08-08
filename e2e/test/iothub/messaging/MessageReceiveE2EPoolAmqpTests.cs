@@ -160,46 +160,44 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize the service client
-            using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
-                {
-                    (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
+                (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
 
-                    await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
-                    testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
+                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+                testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
-                    await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                }
-
-                async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
-                {
-                    Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
-
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                    await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-                }
-
-                async Task CleanupOperationAsync()
-                {
-                    await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
-                    serviceClient.Messaging.Dispose();
-                }
-
-                await PoolingOverAmqp
-                    .TestPoolAmqpAsync(
-                        DevicePrefix,
-                        transportSettings,
-                        poolSize,
-                        devicesCount,
-                        InitOperationAsync,
-                        TestOperationAsync,
-                        CleanupOperationAsync,
-                        authScope,
-                        true,
-                        Logger)
-                    .ConfigureAwait(false);
+                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
+
+            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            {
+                Logger.Trace($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
+            }
+
+            async Task CleanupOperationAsync()
+            {
+                await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
+                serviceClient.Messaging.Dispose();
+            }
+
+            await PoolingOverAmqp
+                .TestPoolAmqpAsync(
+                    DevicePrefix,
+                    transportSettings,
+                    poolSize,
+                    devicesCount,
+                    InitOperationAsync,
+                    TestOperationAsync,
+                    CleanupOperationAsync,
+                    authScope,
+                    true,
+                    Logger)
+                .ConfigureAwait(false);
         }
     }
 }
