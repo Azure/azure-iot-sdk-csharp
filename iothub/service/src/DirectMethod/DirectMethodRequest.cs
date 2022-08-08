@@ -44,10 +44,10 @@ namespace Microsoft.Azure.Devices
         public TimeSpan? ConnectionTimeout { get; set; }
 
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => (int)ResponseTimeout?.TotalSeconds;
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout != null ? (int)ResponseTimeout?.TotalSeconds : null;
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => (int)ConnectionTimeout?.TotalSeconds;
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout != null ? (int)ConnectionTimeout?.TotalSeconds : null;
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
