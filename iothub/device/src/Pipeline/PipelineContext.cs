@@ -18,6 +18,6 @@ namespace Microsoft.Azure.Devices.Client
 
         internal InternalClient.OnModuleEventMessageReceivedDelegate ModuleEventCallback { get; set; }
 
-        internal InternalClient.OnDeviceMessageReceivedDelegate DeviceEventCallback { get; set; }
+        internal Func<Message, Task> DeviceEventCallback { get; set; }
     }
 }

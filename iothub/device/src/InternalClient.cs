@@ -42,26 +42,20 @@ namespace Microsoft.Azure.Devices.Client
         private object _twinPatchCallbackContext;
         internal Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
 
+        // Cloud-to-device message callback information
+        private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
+
+
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
 
         private volatile Tuple<MessageHandler, object> _defaultEventCallback;
 
-
-
-
-
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
 
         private int _diagnosticSamplingPercentage;
-
-
-        private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
-
-
-        internal delegate Task OnDeviceMessageReceivedDelegate(Message message);
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
@@ -758,7 +752,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
         public async Task SetReceiveMessageHandlerAsync(
-            ReceiveMessageCallback messageHandler,
+            Func<Message, object, Task> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -780,7 +774,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<ReceiveMessageCallback, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -861,7 +855,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
+                Func<Message, object, Task> callback = _deviceReceiveMessageCallback?.Item1;
                 object callbackContext = _deviceReceiveMessageCallback?.Item2;
 
                 if (callback != null)

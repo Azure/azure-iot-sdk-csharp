@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Func<MethodRequestInternal, Task> onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
             InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
-            InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
+            Func<Message, Task> onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     onMethodCallback,
                     onDesiredStatePatchReceived,
                     new Func<string, Message, Task>(onModuleEventReceivedCallback),
-                    new Func<Message, Task>(onDeviceMessageReceivedCallback));
+                    onDeviceMessageReceivedCallback);
             }
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     onMethodCallback,
                     onDesiredStatePatchReceived,
                     new Func<string, Message, Task>(onModuleEventReceivedCallback),
-                    new Func<Message, Task>(onDeviceMessageReceivedCallback));
+                    onDeviceMessageReceivedCallback);
             }
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)

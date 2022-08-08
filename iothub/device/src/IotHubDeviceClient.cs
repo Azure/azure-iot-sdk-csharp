@@ -264,10 +264,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// </summary>
         public Task SetReceiveMessageHandlerAsync(
-            ReceiveMessageCallback messageHandler,
+            Func<Message, object, Task> messageHandler,
             object userContext,
-            CancellationToken cancellationToken = default) =>
-            InternalClient.SetReceiveMessageHandlerAsync(messageHandler, userContext, cancellationToken);
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetReceiveMessageHandlerAsync(messageHandler, userContext, cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the device queue.
