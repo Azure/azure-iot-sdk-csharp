@@ -70,12 +70,6 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         IotHubClientOptions ClientOptions { get; }
 
-        // TODO (abmisr): Consolidate with Audience
-        /// <summary>
-        /// Client authentication audience.
-        /// </summary>
-        string AmqpCbsAudience { get; }
-
         /// <summary>
         /// Whether or not the device is part of a connection pooling.
         /// </summary>

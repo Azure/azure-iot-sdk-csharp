@@ -3,9 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -25,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _amqpIotCbsLink = amqpCbsLink;
             _clientConfiguration = clientConfiguration;
-            _audience = clientConfiguration.AmqpCbsAudience;
+            _audience = CreateAmqpCbsAudience(_clientConfiguration);
             _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_clientConfiguration);
             _amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientConfiguration.HostName, CommonConstants.DefaultAmqpSecurePort).Uri;
 
@@ -156,6 +158,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
                 }
+            }
+        }
+
+        private string CreateAmqpCbsAudience(IClientConfiguration clientConfiguration)
+        {
+            // If the shared access key name is null then this is an individual SAS authenticated client.
+            // SAS tokens granted to an individual SAS authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
+            if (clientConfiguration.SharedAccessKeyName.IsNullOrWhiteSpace())
+            {
+                string clientAudience = $"{clientConfiguration.HostName}/devices/{WebUtility.UrlEncode(clientConfiguration.DeviceId)}";
+                if (!clientConfiguration.ModuleId.IsNullOrWhiteSpace())
+                {
+                    clientAudience += $"/modules/{WebUtility.UrlEncode(clientConfiguration.ModuleId)}";
+                }
+
+                return clientAudience;
+            }
+            else
+            {
+                // If the shared access key name is not null then this is a group SAS authenticated client.
+                // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
+                return clientConfiguration.HostName;
             }
         }
     }
