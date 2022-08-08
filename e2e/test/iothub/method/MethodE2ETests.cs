@@ -338,7 +338,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 MethodName = methodName,
                 ResponseTimeout = methodTimeout,
-                Payload = respJson,
+                Payload = reqJson,
             };
 
             DirectMethodResponse response = await serviceClient.DirectMethods
