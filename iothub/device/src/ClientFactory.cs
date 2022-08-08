@@ -44,22 +44,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>InternalClient</returns>
         internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
-            if (hostName == null)
-            {
-                throw new ArgumentNullException(nameof(hostName));
-            }
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
 
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationMethod));
-            }
-
-            if (options == default)
-            {
-                options = new();
-            }
-
-            var csBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options.GatewayHostName);
+            var csBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options?.GatewayHostName);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(csBuilder.Certificate, ref options);

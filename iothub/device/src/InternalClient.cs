@@ -232,8 +232,9 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
 
-            cancellationToken.ThrowIfCancellationRequested();
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
