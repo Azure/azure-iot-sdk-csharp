@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
-            Action act = () => IotHubDeviceClient.Create(hostName, authMethod, new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)));
+            Action act = () => IotHubDeviceClient.Create(hostName, authMethod, new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)));
             act.Should().Throw<ArgumentException>();
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.Tcp));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings(TransportProtocol.Tcp));
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsHostNameAuthMethodTransportType_Works()
         {
             string hostName = "acme.azure-devices.net";
-            var transportSettings = new IotHubClientAmqpSettings(TransportProtocol.WebSocket);
+            var transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
             var options = new IotHubClientOptions(transportSettings);
 
             // TODO (abmisr): IotHubClientOptions shouldn't be required in both
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string hostName = "acme.azure-devices.net";
             string gatewayHostName = "gateway.acme.azure-devices.net";
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
             {
                 GatewayHostName = gatewayHostName,
             };
@@ -196,14 +196,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsGatewayAuthMethodTransport_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
             ClientConfiguration connInfo = new ClientConfiguration(s_csBuilder, options);
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", connInfo);
 
             using var deviceClient = IotHubDeviceClient.Create(
                 gatewayHostname,
                 authMethod,
-                new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)));
+                new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)));
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsGatewayAuthMethodTransportArray_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
             ClientConfiguration connInfo = new ClientConfiguration(s_csBuilder, options);
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", connInfo);
 
@@ -1448,7 +1448,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(TransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [TestMethod]
@@ -1460,7 +1460,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)

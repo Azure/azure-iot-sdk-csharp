@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public IotHubClientHttpSettings()
         {
-            Protocol = TransportProtocol.WebSocket;
+            Protocol = IotHubClientTransportProtocol.WebSocket;
             DefaultReceiveTimeout = TimeSpan.FromMinutes(1);
         }
     }

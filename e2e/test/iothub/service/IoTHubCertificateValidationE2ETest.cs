@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new IotHubClientAmqpSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new IotHubClientMqttSettings(TransportProtocol.WebSocket))).ConfigureAwait(false);
+                () => TestDeviceClientInvalidServiceCertificate(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }

@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
                     && certificate.ChainCertificates != null
                     && (options.TransportSettings is not IotHubClientAmqpSettings
                     && options.TransportSettings is not IotHubClientMqttSettings
-                    || options.TransportSettings.Protocol != TransportProtocol.Tcp))
+                    || options.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp))
                 {
                     throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
                 }
@@ -100,11 +100,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            InternalClient internalClient = CreateInternal(
-                null,
-                csBuilder,
-                options);
-
+            InternalClient internalClient = CreateInternal(null, csBuilder, options);
             internalClient.Certificate = csBuilder.Certificate;
 
             return internalClient;

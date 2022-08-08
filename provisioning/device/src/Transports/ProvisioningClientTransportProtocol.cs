@@ -1,9 +1,9 @@
-﻿namespace Microsoft.Azure.Devices.Client
+﻿namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The protocol over which a transport (i.e., MQTT, AMQP) communicates
+    /// The protocol over which a transport (i.e., MQTT, AMQP) communicates.
     /// </summary>
-    public enum TransportProtocol
+    public enum ProvisioningClientTransportProtocol
     {
         /// <summary>
         /// Communicate over TCP using the default port of the transport.
