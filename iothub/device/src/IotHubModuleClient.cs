@@ -196,8 +196,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
-        public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isAnEdgeModule, cancellationToken);
+        public Task SetInputMessageHandlerAsync(
+            string inputName,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isAnEdgeModule, cancellationToken);
 
         /// <summary>
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
@@ -209,8 +213,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
-        public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isAnEdgeModule, cancellationToken);
+        public Task SetMessageHandlerAsync(
+            Func<Message, object, Task<MessageResponse>> messageHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isAnEdgeModule, cancellationToken);
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.

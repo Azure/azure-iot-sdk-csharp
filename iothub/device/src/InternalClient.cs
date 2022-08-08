@@ -45,19 +45,15 @@ namespace Microsoft.Azure.Devices.Client
         // Cloud-to-device message callback information
         private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
 
+        // Cloud-to-module message callback information
+        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
+        private volatile Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>> _receiveEventEndpoints;
 
-
-        // Stores message input names supported by the client module and their associated delegate.
-        private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
-
-        private volatile Tuple<MessageHandler, object> _defaultEventCallback;
+        // Diagnostic information
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
-
         private int _diagnosticSamplingPercentage;
-
-        internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
         protected internal InternalClient(
             ClientConfiguration clientConfiguration,
@@ -965,7 +961,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(
             string inputName,
-            MessageHandler messageHandler,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             bool isAnEdgeModule,
             CancellationToken cancellationToken = default)
@@ -987,10 +983,10 @@ namespace Microsoft.Azure.Devices.Client
 
                     if (_receiveEventEndpoints == null)
                     {
-                        _receiveEventEndpoints = new Dictionary<string, Tuple<MessageHandler, object>>();
+                        _receiveEventEndpoints = new Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>>();
                     }
 
-                    _receiveEventEndpoints[inputName] = new Tuple<MessageHandler, object>(messageHandler, userContext);
+                    _receiveEventEndpoints[inputName] = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -1028,7 +1024,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(
-            MessageHandler messageHandler,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             bool isAnEdgeModule,
             CancellationToken cancellationToken = default)
@@ -1044,7 +1040,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (messageHandler != null)
                 {
                     await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = new Tuple<MessageHandler, object>(messageHandler, userContext);
+                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -1078,7 +1074,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Tuple<MessageHandler, object> callback = null;
+                Tuple<Func<Message, object, Task<MessageResponse>>, object> callback = null;
                 await _moduleReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
                 try
                 {
@@ -1097,7 +1093,12 @@ namespace Microsoft.Azure.Devices.Client
                 MessageResponse response = MessageResponse.Completed;
                 if (callback?.Item1 != null)
                 {
-                    response = await callback.Item1.Invoke(message, callback.Item2).ConfigureAwait(false);
+                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = callback.Item1;
+                    object userContext = callback.Item2;
+
+                    response = await userSuppliedCallback
+                        .Invoke(message, userContext)
+                        .ConfigureAwait(false);
                 }
 
                 if (Logging.IsEnabled)

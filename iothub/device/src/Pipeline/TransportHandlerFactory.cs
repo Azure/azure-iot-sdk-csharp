@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ClientConfiguration clientConfiguration = context.ClientConfiguration;
             Func<MethodRequestInternal, Task> onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
-            InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
+            Func<string, Message, Task> onModuleEventReceivedCallback = context.ModuleEventCallback;
             Func<Message, Task> onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     iotHubClientAmqpSettings,
                     onMethodCallback,
                     onDesiredStatePatchReceived,
-                    new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                    onModuleEventReceivedCallback,
                     onDeviceMessageReceivedCallback);
             }
 
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     iotHubClientMqttSettings,
                     onMethodCallback,
                     onDesiredStatePatchReceived,
-                    new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                    onModuleEventReceivedCallback,
                     onDeviceMessageReceivedCallback);
             }
 
