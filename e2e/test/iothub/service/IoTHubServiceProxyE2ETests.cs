@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private const int MaxIterationWait = 30;
         private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
             var transportSettings = new ServiceClientTransportSettings();
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await SendSingleMessageService(transportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
             var httpTransportSettings = new HttpTransportSettings();
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await RegistryManager_AddDevice(httpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             var httpTransportSettings = new HttpTransportSettings();

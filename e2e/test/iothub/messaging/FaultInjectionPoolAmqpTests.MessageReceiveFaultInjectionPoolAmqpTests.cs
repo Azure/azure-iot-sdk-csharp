@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_TcpConnectionLossReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_TcpConnectionLossReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_TcpConnectionLossReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_TcpConnectionLossReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpConnectionLossReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpConnectionLossReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IotHubSak_AmqpConnectionLossReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpConnectionLossReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpSessionLossReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpSessionLossReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpSessionLossReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpSessionLossReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpC2DLinkDropReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpC2DLinkDropReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_GracefulShutdownReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_GracefulShutdownReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_GracefulShutdownReceiveRecovery_SingleConnection_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_GracefulShutdownReceiveRecovery_SingleConnection_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_TcpConnectionLossReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -345,7 +345,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_TcpConnectionLossReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_TcpConnectionLossReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_TcpConnectionLossReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpConnectionLossReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -399,7 +399,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpConnectionLossReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -412,7 +412,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IotHubSak_AmqpConnectionLossReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpConnectionLossReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpSessionLossReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -455,7 +455,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpSessionLossReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -469,7 +469,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpSessionLossReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -484,7 +484,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpSessionLossReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveRecovery_MultipleConnections_Amqp()
         {
@@ -512,7 +512,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -525,7 +525,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpC2DLinkDropReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -539,7 +539,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpC2DLinkDropReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -553,7 +553,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_GracefulShutdownReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -566,7 +566,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_GracefulShutdownReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -579,7 +579,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_GracefulShutdownReceiveRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -593,7 +593,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_GracefulShutdownReceiveRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageRecoveryPoolOverAmqpAsync(
@@ -607,7 +607,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -620,7 +620,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -633,7 +633,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -647,7 +647,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -661,7 +661,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -674,7 +674,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IotHubSak_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -701,7 +701,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -716,7 +716,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -730,7 +730,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -744,7 +744,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -759,7 +759,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -773,7 +773,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
@@ -787,7 +787,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AmqpC2DLinkDropReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -800,7 +800,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpC2DLinkDropReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -814,7 +814,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AmqpC2DLinkDropReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -828,7 +828,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -841,7 +841,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -854,7 +854,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(
@@ -868,7 +868,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
             await ReceiveMessageUsingCallbackRecoveryPoolOverAmqpAsync(

@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
 #if !NET451
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Renewed_Success()
         {
             // arrange
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Success()
         {
             // arrange
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Renewed_Success()
         {
             // arrange

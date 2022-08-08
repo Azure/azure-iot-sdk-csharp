@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_SingleConnection_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_SingleConnection_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_SingleConnection_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_SingleConnection_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_SingleConnection_Amqp()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_SingleConnection_AmqpWs()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_SingleConnection_Amqp()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_SingleConnection_AmqpWs()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_Amqp()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_AmqpWs()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_Amqp()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_AmqpWs()
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
