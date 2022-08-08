@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
             int connectionStateChangeCount = 0;
-            ConnectionStateChangeHandler connectionStateChangeHandler = (ConnectionState state, ConnectionStateChangeReason reason) =>
+            Action<ConnectionState, ConnectionStateChangeReason> connectionStateChangeHandler = (ConnectionState state, ConnectionStateChangeReason reason) =>
             {
                 Interlocked.Increment(ref connectionStateChangeCount);
             };

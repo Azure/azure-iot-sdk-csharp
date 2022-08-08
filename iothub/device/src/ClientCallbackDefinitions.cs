@@ -7,16 +7,6 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Delegate for connection state changed.
-    /// </summary>
-    /// <remarks>
-    /// This can be set for both <see cref="IotHubDeviceClient"/> and <see cref="IotHubModuleClient"/>.
-    /// </remarks>
-    /// <param name="state">The updated connection state</param>
-    /// <param name="reason">The reason for the connection state change</param>
-    public delegate void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason);
-
-    /// <summary>
     /// Delegate for method call. This will be called every time we receive a method call that was registered.
     /// </summary>
     /// <remarks>

@@ -27,6 +27,11 @@ namespace Microsoft.Azure.Devices.Client
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly IotHubClientOptions _clientOptions;
 
+        // Connection state change information
+        private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
+        private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
+        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
+
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
 
@@ -39,15 +44,12 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
-        private volatile ConnectionStateChangeHandler _connectionStateChangeHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
 
         private int _diagnosticSamplingPercentage;
 
-        private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
-        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
@@ -154,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate.
         /// </summary>
         /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler)
+        public void SetConnectionStateChangeHandler(Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler)
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
@@ -1181,11 +1183,10 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_connectionStateChangeHandler != null
-                    && (_lastConnectionState != state
-                        || _lastConnectionStateChangeReason != reason))
+                if (_lastConnectionState != state
+                    || _lastConnectionStateChangeReason != reason)
                 {
-                    _connectionStateChangeHandler(state, reason);
+                    _connectionStateChangeHandler?.Invoke(state, reason);
                 }
             }
             finally

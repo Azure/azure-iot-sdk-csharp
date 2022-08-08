@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionState? state = null;
             ConnectionStateChangeReason? stateChangeReason = null;
             int deviceDisabledReceivedCount = 0;
-            ConnectionStateChangeHandler stateChangeHandler = (s, r) =>
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 if (r == ConnectionStateChangeReason.DeviceDisabled)
                 {

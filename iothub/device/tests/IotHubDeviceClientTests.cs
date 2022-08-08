@@ -915,7 +915,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool handlerCalled = false;
             ConnectionState? state = null;
             ConnectionStateChangeReason? stateChangeReason = null;
-            ConnectionStateChangeHandler stateChangeHandler = (s, r) =>
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
                 state = s;
@@ -938,7 +938,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool handlerCalled = false;
             ConnectionState? state = null;
             ConnectionStateChangeReason? stateChangeReason = null;
-            ConnectionStateChangeHandler stateChangeHandler = (s, r) =>
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
                 state = s;
@@ -960,7 +960,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool handlerCalled = false;
             ConnectionState? state = null;
             ConnectionStateChangeReason? stateChangeReason = null;
-            ConnectionStateChangeHandler stateChangeHandler = (s, r) =>
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
                 state = s;
@@ -992,7 +992,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             bool handlerCalled = false;
             ConnectionState? state = null;
             ConnectionStateChangeReason? stateChangeReason = null;
-            ConnectionStateChangeHandler stateChangeHandler = (s, r) =>
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
                 state = s;
