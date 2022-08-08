@@ -31,430 +31,430 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly TimeSpan s_twentySeconds = TimeSpan.FromSeconds(20);
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_Amqp()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_AmqpWs()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_Mqtt()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_MqttWs()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessage_Http()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessage_Amqp()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessage_AmqpWs()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessage_Mqtt()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessage_MqttWs()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessage_Http()
         {
             await ReceiveSingleMessageAsync(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Amqp()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_AmqpWs()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Mqtt()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageCancelled_Mqtt()
         {
             await Mqtt_ReceiveSingleMessageWithCancelledAsync(TestDeviceType.Sasl).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_MqttWs()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Http()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessageWithCancellationToken_Amqp()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessageWithCancellationToken_AmqpWs()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessageWithCancellationToken_Mqtt()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessageWithCancellationToken_MqttWs()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveSingleMessageWithCancellationToken_Http()
         {
             await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveMessageOperationTimeout_Amqp()
         {
             await ReceiveMessageInOperationTimeoutAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveMessageOperationTimeout_AmqpWs()
         {
             await ReceiveMessageInOperationTimeoutAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveMessageOperationTimeout_Mqtt()
         {
             await ReceiveMessageInOperationTimeoutAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveMessageOperationTimeout_MqttWs()
         {
             await ReceiveMessageInOperationTimeoutAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(NotSupportedException))]
         public async Task DeviceReceiveMessageUsingCallback_Http()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallback_Mqtt()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallback_MqttWs()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallback_Mqtt()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallback_MqttWs()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Mqtt()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_MqttWs()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_Mqtt()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_MqttWs()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallback_Amqp()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallback_AmqpWs()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallback_Amqp()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallback_AmqpWs()
         {
             await ReceiveSingleMessageUsingCallbackAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_AmqpWs()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_AmqpWs()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackUpdateHandler_Mqtt()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackUpdateHandler_MqttWs()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackUpdateHandler_Mqtt()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackUpdateHandler_MqttWs()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackUpdateHandler_Amqp()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceiveMessageUsingCallbackUpdateHandler_AmqpWs()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackUpdateHandler_Amqp()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceiveMessageUsingCallbackUpdateHandler_AmqpWs()
         {
             await ReceiveMessageUsingCallbackUpdateHandlerAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceivePendingMessageUsingCallback_Mqtt()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceivePendingMessageUsingCallback_MqttWs()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceivePendingMessageUsingCallback_Amqp()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceReceivePendingMessageUsingCallback_AmqpWs()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceivePendingMessageUsingCallback_Mqtt()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceivePendingMessageUsingCallback_MqttWs()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceivePendingMessageUsingCallback_Amqp()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceReceivePendingMessageUsingCallback_AmqpWs()
         {
             await ReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
         {
             var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only) { CleanSession = true } };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_MqttWs()
         {
             var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only) { CleanSession = true } };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
         {
             var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only) };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceDoesNotReceivePendingMessageUsingCallback_AmqpWs()
         {
             var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only) };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.Sasl, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_Mqtt()
         {
             var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only) { CleanSession = true } };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_MqttWs()
         {
             var settings = new ITransportSettings[] { new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only) { CleanSession = true } };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_Amqp()
         {
             var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only) };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceDoesNotReceivePendingMessageUsingCallback_AmqpWs()
         {
             var settings = new ITransportSettings[] { new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only) };
             await DoNotReceiveMessagesSentBeforeSubscriptionAsync(TestDeviceType.X509, settings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
         {
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_AmqpWs()
         {
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Mqtt()
         {
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_MqttWs()
         {
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);

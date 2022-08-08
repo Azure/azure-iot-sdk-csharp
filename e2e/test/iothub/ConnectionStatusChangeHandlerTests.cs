@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
         private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
@@ -26,14 +26,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestCategory("LongRunning")]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(310000)] // This test always takes a little over 5 minutes for some reason. Needs investigation.
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 Client.TransportType.Amqp_WebSocket_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(310000)] // This test always takes a little over 5 minutes for some reason. Needs investigation.
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only, async (r, d) => await r.RemoveDeviceAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
-        // [LoggedTestMethod]
+        // [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
-        // [LoggedTestMethod]
+        // [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await this.ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(

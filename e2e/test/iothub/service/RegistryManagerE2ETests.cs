@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     {
         private readonly string _idPrefix = $"{nameof(RegistryManagerE2ETests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
         public async Task RegistryManager_BadProxy_ThrowsException()
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             _ = await registryManager.GetDeviceAsync("device-that-does-not-exist").ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddAndRemoveDeviceWithScope()
         {
             // arrange
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddDeviceWithTwinWithDeviceCapabilities()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddDevices2Async_Works()
         {
             // arrange
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_UpdateDevices2Async_Works()
         {
             // arrange
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_UpdateTwins2Async_Works()
         {
             // arrange
@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_RemoveDevices2Async_Works()
         {
             // arrange
@@ -312,7 +312,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.AddDeviceAsync(device).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_ConfigurationOperations_Work()
         {
             // arrange
@@ -394,7 +394,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Query_Works()
         {
             // arrange
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
             const int moduleCount = 2;
@@ -472,7 +472,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         /// Test basic lifecycle of a module.
         /// This test includes CRUD operations only.
         /// </summary>
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_IdentityLifecycle()
         {
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
@@ -520,7 +520,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         /// <summary>
         /// Test basic operations of a module's twin.
         /// </summary>
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_DeviceTwinLifecycle()
         {
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);

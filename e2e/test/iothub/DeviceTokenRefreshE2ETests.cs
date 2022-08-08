@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task DeviceClient_Not_Exist_AMQP()
         {
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task DeviceClient_Bad_Credentials_AMQP()
         {
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TokenRefreshTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
@@ -59,14 +59,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TokenRefreshTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Amqp).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TokenRefreshTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt, IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // The easiest way to test that sas tokens expire with custom expiration time via the CreateFromConnectionString flow is
         // by initializing a DeviceClient instance over Mqtt (since sas token expiration over Mqtt is accompanied by a disconnect).
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TokenRefreshTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_CreateFromConnectionString_TokenIsRefreshed_Mqtt()
         {
