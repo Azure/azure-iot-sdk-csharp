@@ -10,7 +10,7 @@
         /// </summary>
         /// <remarks>
         /// For MQTT, this port is 8883.
-        /// For AMQP, this is 5671.
+        /// For AMQP, this port is 5671.
         /// </remarks>
         Tcp,
 
