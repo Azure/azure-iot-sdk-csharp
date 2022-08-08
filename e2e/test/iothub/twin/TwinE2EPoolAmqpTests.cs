@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount)
                 .ConfigureAwait(false);
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     authScope: ConnectionStringAuthScope.IoTHub)
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync)
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.SingleConnection_PoolSize,
                     PoolingOverAmqp.SingleConnection_DevicesCount,
                     TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync,
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     authScope: ConnectionStringAuthScope.IoTHub)
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync)
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync,

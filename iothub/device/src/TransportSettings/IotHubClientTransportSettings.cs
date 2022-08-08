@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The configured transport protocol.
         /// </summary>
-        public TransportProtocol Protocol { get; protected set; }
+        public IotHubClientTransportProtocol Protocol { get; protected set; }
 
         /// <summary>
         /// The client certificate to use for authenticating.

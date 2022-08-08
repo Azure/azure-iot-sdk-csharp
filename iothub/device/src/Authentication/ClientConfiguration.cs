@@ -16,10 +16,7 @@ namespace Microsoft.Azure.Devices.Client
             IotHubConnectionStringBuilder builder,
             IotHubClientOptions iotHubClientOptions)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            Argument.AssertNotNull(builder, nameof(builder));
 
             // Frist validate that the IotHubConnectionStringBuilder is set with the expected fields.
             builder.Validate();

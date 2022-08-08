@@ -32,10 +32,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
-        public IotHubClientMqttSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
+        public IotHubClientMqttSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            if (Protocol == TransportProtocol.WebSocket)
+            if (Protocol == IotHubClientTransportProtocol.WebSocket)
             {
                 Proxy = DefaultWebProxySettings.Instance;
             }

@@ -36,13 +36,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Flaky")]
         public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            return TestSecurityMessageAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageModuleAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            return TestSecurityMessageModuleAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -60,13 +60,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessageAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket));
+            return TestSecurityMessageAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket));
+            return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

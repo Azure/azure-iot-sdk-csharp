@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Represents the AMQP protocol implementation for the Provisioning Transport Handler.
+    /// Represents the AMQP protocol implementation for the provisioning transport handler.
     /// </summary>
     public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
@@ -28,39 +28,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
-        /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
+        /// <param name="transportProtocol">The protocol over which the AMQP transport communicates (i.e., TCP or web socket).</param>
         public ProvisioningTransportHandlerAmqp(
-            TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
+            ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
         {
-            FallbackType = transportFallbackType;
-            bool useWebSocket = FallbackType == TransportFallbackType.WebSocketOnly;
+            TransportProtocol = transportProtocol;
+            bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
             Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
             Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
-        /// The fallback type. This allows direct or WebSocket connections.
+        /// The protocol over which the AMQP transport communicates (i.e., TCP or web socket).
         /// </summary>
-        public TransportFallbackType FallbackType { get; private set; }
-
-        /// <summary>
-        /// Registers a device described by the message.
-        /// </summary>
-        /// <param name="message">The provisioning message.</param>
-        /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
-        /// <returns>The registration result.</returns>
-        public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterRequest message,
-            TimeSpan timeout)
-        {
-            if (TimeSpan.Zero.Equals(timeout))
-            {
-                throw new OperationCanceledException();
-            }
-
-            using var cts = new CancellationTokenSource(timeout);
-            return await RegisterAsync(message, cts.Token).ConfigureAwait(false);
-        }
+        public ProvisioningClientTransportProtocol TransportProtocol { get; private set; }
 
         /// <summary>
         /// Registers a device described by the message. Because the AMQP library does not accept cancellation tokens, the provided cancellation token
@@ -76,10 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
 
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
+            Argument.AssertNotNull(message, nameof(message));
 
             // We need to create a LinkedTokenSource to include both the default timeout and the cancellation token
             // AMQP library started supporting CancellationToken starting from version 2.5.5
@@ -117,7 +95,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 if (Logging.IsEnabled)
                     Logging.Associate(authStrategy, this);
 
-                bool useWebSocket = FallbackType == TransportFallbackType.WebSocketOnly;
+                bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
 
                 var builder = new UriBuilder
                 {
@@ -148,7 +126,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     ? new DeviceRegistration(new JRaw(message.Payload))
                     : null;
 
-                RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);
+                RegistrationOperationStatus operation = await RegisterDeviceAsync(
+                        connection,
+                        correlationId,
+                        deviceRegistration,
+                        bundleCancellationToken)
+                    .ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
                 int attempts = 0;
@@ -161,17 +144,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     bundleCancellationToken.ThrowIfCancellationRequested();
 
                     await Task.Delay(
-                        operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
-                        bundleCancellationToken).ConfigureAwait(false);
+                            operation.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval),
+                            bundleCancellationToken)
+                        .ConfigureAwait(false);
 
                     try
                     {
                         operation = await OperationStatusLookupAsync(
-                            connection,
-                            operationId,
-                            correlationId,
-                            bundleCancellationToken)
-                        .ConfigureAwait(false);
+                                connection,
+                                operationId,
+                                correlationId,
+                                bundleCancellationToken)
+                            .ConfigureAwait(false);
                     }
                     catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp amqp && e.IsTransient)
                     {
@@ -190,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 return operation.RegistrationState;
             }
-            catch (Exception ex) when (!(ex is ProvisioningTransportException))
+            catch (Exception ex) when (ex is not ProvisioningTransportException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}", nameof(RegisterAsync));
@@ -254,6 +238,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
                         cancellationToken)
                     .ConfigureAwait(false);
+
                 ValidateOutcome(outcome);
 
                 AmqpMessage amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
@@ -282,8 +267,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             using var amqpMessage = AmqpMessage.Create(new AmqpValue { Value = DeviceOperations.GetOperationStatus });
 
             amqpMessage.Properties.CorrelationId = correlationId;
-            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
-                DeviceOperations.GetOperationStatus;
+            amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] = DeviceOperations.GetOperationStatus;
             amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationId] = operationId;
 
             Outcome outcome = await client.AmqpSession.SendingLink
@@ -302,7 +286,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
 
             using var streamReader = new StreamReader(amqpResponse.BodyStream);
-
             string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
             RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
             status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
@@ -317,6 +300,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 try
                 {
                     ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
+                    // status code has an extra 3 trailing digits as a sub-code, so turn this into a standard 3 digit status code
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     if (isTransient)
@@ -336,7 +320,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                         Logging.Error(
                             this,
                             $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
-                            $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
+                                $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
                             nameof(RegisterAsync));
 
                     throw new ProvisioningTransportException(

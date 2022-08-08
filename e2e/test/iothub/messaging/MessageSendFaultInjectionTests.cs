@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_Tcp,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpConn,
                     "",
                     FaultInjection.DefaultFaultDelay)
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpSess,
                     "",
                     FaultInjection.DefaultFaultDelay)
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_AmqpD2C,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay)
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await SendMessageRecoveryAsync(
                         TestDeviceType.Sasl,
-                        new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                         FaultInjection.FaultType_Throttle,
                         FaultInjection.FaultCloseReason_Boom,
                         FaultInjection.DefaultFaultDelay,
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_QuotaExceeded,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_Auth,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownAmqp,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjection.FaultType_GracefulShutdownMqtt,
                     FaultInjection.FaultCloseReason_Bye,
                     FaultInjection.DefaultFaultDelay)

@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_MqttWs()
         {
-            await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
-            await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

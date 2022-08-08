@@ -72,12 +72,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             switch (_amqpTransportSettings.Protocol)
             {
-                case TransportProtocol.Tcp:
+                case IotHubClientTransportProtocol.Tcp:
                     var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
                     transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                     break;
 
-                case TransportProtocol.WebSocket:
+                case IotHubClientTransportProtocol.WebSocket:
                     transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
                         .ConfigureAwait(false);
                     break;

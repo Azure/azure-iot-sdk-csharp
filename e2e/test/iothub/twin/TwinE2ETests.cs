@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket))
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket))
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyArrayAndGetsItBackSingleDeviceAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
         }
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     Guid.NewGuid().ToString())
                 .ConfigureAwait(false);
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     s_listOfPropertyValues)
                 .ConfigureAwait(false);
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     SetTwinPropertyUpdateCallbackHandlerAsync,
                     s_listOfPropertyValues)
                 .ConfigureAwait(false);
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket))
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_MqttWs()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket))
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesItAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket))
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollectionAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
         {
             await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket))
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
@@ -338,15 +338,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
         {
             await Twin_ClientHandlesRejectionInvalidPropertyNameAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
                 .ConfigureAwait(false);
         }
 
         [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [DataRow(TransportProtocol.Tcp)]
-        [DataRow(TransportProtocol.WebSocket)]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
         [TestCategory("LongRunning")]
-        public async Task Twin_ClientSetsReportedPropertyWithoutDesiredPropertyCallback(TransportProtocol transportProtocol)
+        public async Task Twin_ClientSetsReportedPropertyWithoutDesiredPropertyCallback(IotHubClientTransportProtocol transportProtocol)
         {
             // arrange
 

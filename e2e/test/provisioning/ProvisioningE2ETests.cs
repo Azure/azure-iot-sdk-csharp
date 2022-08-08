@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.Tpm,
                     EnrollmentType.Individual,
                     false)
@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     false)
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Group,
                     false)
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWsWithProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     true,
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWsWithNullProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     true)
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWsWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     true,
@@ -317,7 +317,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWsWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     true,
@@ -340,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     false)
@@ -362,7 +362,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Group,
                     false)
@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -406,7 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -418,7 +418,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWsWithProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     true,
@@ -431,7 +431,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWsWithNullProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     true)
@@ -444,7 +444,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWsWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     true,
@@ -457,7 +457,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWsWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     true,
@@ -557,7 +557,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
             await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -580,7 +580,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
             await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -603,7 +603,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
             await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Individual,
                     false)
@@ -625,7 +625,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
         {
             await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.SymmetricKey,
                     EnrollmentType.Group,
                     false)
@@ -681,7 +681,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     "")
@@ -703,7 +703,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_X509_GrouplEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Group,
                     "")
@@ -761,7 +761,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_Tpm_InvalidIdScope_Register_Fail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.Tpm,
                     null,
                     "")
@@ -783,7 +783,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual,
                     "")
@@ -805,7 +805,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Group,
                     "")
@@ -829,7 +829,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(
-                    new IotHubClientMqttSettings(TransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual)
                 .ConfigureAwait(false);
@@ -861,7 +861,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(
-                    new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual)
                 .ConfigureAwait(false);
@@ -1281,16 +1281,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             if (transportSettings is IotHubClientAmqpSettings)
             {
-                return transportSettings.Protocol == TransportProtocol.Tcp
-                    ? new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly)
-                    : new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly);
+                return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
+                    ? new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.Tcp)
+                    : new ProvisioningTransportHandlerAmqp(ProvisioningClientTransportProtocol.WebSocket);
             }
 
             if (transportSettings is IotHubClientMqttSettings)
             {
-                return transportSettings.Protocol == TransportProtocol.Tcp
-                    ? new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly)
-                    : new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly);
+                return transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
+                    ? new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.Tcp)
+                    : new ProvisioningTransportHandlerMqtt(ProvisioningClientTransportProtocol.WebSocket);
             }
 
             if (transportSettings is IotHubClientHttpSettings)

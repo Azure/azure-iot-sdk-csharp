@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Security;
 
 namespace Microsoft.Azure.Devices.Client
@@ -33,10 +32,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Initializes a new instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
-        public IotHubClientAmqpSettings(TransportProtocol transportProtocol = TransportProtocol.Tcp)
+        public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            if (Protocol == TransportProtocol.WebSocket)
+            if (Protocol == IotHubClientTransportProtocol.WebSocket)
             {
                 Proxy = DefaultWebProxySettings.Instance;
             }
