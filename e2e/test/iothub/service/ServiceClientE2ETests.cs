@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string DevicePrefix = $"{nameof(ServiceClientE2ETests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(TimeoutException))]
         [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await FastTimeout().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_NoTimeoutPassed()
         {
             await DefaultTimeout().ConfigureAwait(false);
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportType.Amqp)]
         [DataRow(TransportType.Amqp_WebSocket_Only)]
         public async Task ServiceClient_SendsMessage(TransportType transportType)
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultNotSet_SendEventDoesNotSetMessageId()
         {
             // arrange
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultSetToNull_SendEventDoesNotSetMessageId()
         {
             // arrange
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
         // (the amqp types are private members of the class, and cannot be set from any public/ internal API).
         // For this reason the following test is tested in the E2E flow, even though this is a unit test scenario.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task MessageIdDefaultSetToGuid_SendEventSetMessageIdIfNotSet()
         {
             // arrange

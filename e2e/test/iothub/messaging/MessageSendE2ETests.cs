@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Amqp(TransportProtocol protocol)
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Mqtt(TransportProtocol protocol)
@@ -51,13 +51,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceSendSingleMessage_Http()
         {
             await SendSingleMessage(TestDeviceType.Sasl, new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats(TransportProtocol protocol)
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, amqpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, httpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_Http_WithCustomProxy()
         {
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Assert.AreNotEqual(proxy.Counter, 0);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_AmqpWs_WithProxy()
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, amqpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
         {
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, mqttTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
         {
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessageModule(amqpTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessageModule(mqttTransportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
         public async Task X509_DeviceSendSingleMessage_Amqp(TransportProtocol protocol)
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.X509, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
@@ -160,13 +160,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.X509, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceSendSingleMessage_Http()
         {
             await SendSingleMessage(TestDeviceType.X509, new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendBatchMessages(TestDeviceType.X509, new IotHubClientAmqpSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
@@ -184,13 +184,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendBatchMessages(TestDeviceType.X509, new IotHubClientMqttSettings(protocol)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_DeviceSendBatchMessages_Http()
         {
             await SendBatchMessages(TestDeviceType.X509, new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await Message_DeviceSendSingleLargeMessageAsync(testDeviceType, transportSettings);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(MessageTooLargeException))]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
         // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
         // and throwing a MessageTooLargeException, if relevant.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
         [ExpectedException(typeof(InvalidOperationException))]
@@ -272,14 +272,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageOverAllowedSize_Http()
         {
             await SendSingleMessage(TestDeviceType.Sasl, new IotHubClientHttpSettings(), ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(MessageTooLargeException))]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
         // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
         // and throwing a MessageTooLargeException, if relevant.
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(InvalidOperationException))]
         [DataRow(TransportProtocol.Tcp)]
         [DataRow(TransportProtocol.WebSocket)]
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(MessageTooLargeException))]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_Http()
         {

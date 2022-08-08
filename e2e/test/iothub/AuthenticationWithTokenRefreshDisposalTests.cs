@@ -23,61 +23,61 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static readonly TimeSpan MaxWaitTime = TimeSpan.FromSeconds(10);
         private readonly string _devicePrefix = $"{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Amqp()
         {
             await ReuseAuthenticationMethod_SingleDevice(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_AmqpWs()
         {
             await ReuseAuthenticationMethod_SingleDevice(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Mqtt()
         {
             await ReuseAuthenticationMethod_SingleDevice(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_MqttWs()
         {
             await ReuseAuthenticationMethod_SingleDevice(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Http()
         {
             await ReuseAuthenticationMethod_SingleDevice(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_Amqp()
         {
             await ReuseAuthenticationMethod_MuxedDevices(new IotHubClientAmqpSettings(), 2).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_AmqpWs()
         {
             await ReuseAuthenticationMethod_MuxedDevices(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), 2).ConfigureAwait(false); ;
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
         {
             await AuthenticationMethodDisposesTokenRefresher(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Amqp()
         {
             await AuthenticationMethodDisposesTokenRefresher(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_AmqpWs()
         {
             await AuthenticationMethodDisposesTokenRefresher(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
@@ -88,13 +88,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         // This is not an issue when the communication is over websockets (where we use the sdk's websocket implementation).
         // This test has been ignored until we root-cause the issue on DotNetty's TCP stack.
         [Ignore]
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Mqtt()
         {
             await AuthenticationMethodDisposesTokenRefresher(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_MqttWs()
         {
             await AuthenticationMethodDisposesTokenRefresher(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
