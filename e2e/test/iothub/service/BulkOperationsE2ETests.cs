@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(BulkOperationsE2ETests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Device_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2DevicePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();

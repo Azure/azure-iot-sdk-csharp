@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
         {
             var transportSettings = new ServiceClientTransportSettings
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await SendSingleMessageService(transportSettings).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_AddAndRemoveDevice_WithProxy()
         {
             var options = new IotHubServiceClientOptions
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await IoTHubServiceProxyE2ETests.RegistryManager_AddDevice(options).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             var httpTransportSettings = new HttpTransportSettings
