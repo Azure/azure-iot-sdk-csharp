@@ -37,6 +37,11 @@ namespace Microsoft.Azure.Devices.Client
         private volatile Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> _deviceDefaultMethodCallback;
         private readonly Dictionary<string, Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>> _deviceMethods = new();
 
+        // Twin property update request callback information
+        private bool _twinPatchSubscribedWithService;
+        private object _twinPatchCallbackContext;
+        internal Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
+
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -55,11 +60,6 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
-        private bool _twinPatchSubscribedWithService;
-        private object _twinPatchCallbackContext;
-
-        // Callback to call whenever the twin's desired state is updated by the service.
-        internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
 
         internal delegate Task OnDeviceMessageReceivedDelegate(Message message);
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
-                DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
+                DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStateChangeHandler = OnConnectionStateChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            DesiredPropertyUpdateCallback callback,
+            Func<TwinCollection, object, Task> callback,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalledAsync));
         }
 
-        internal void OnReportedStatePatchReceived(TwinCollection patch)
+        internal void OnDesiredStatePatchReceived(TwinCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {
@@ -695,9 +695,9 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (Logging.IsEnabled)
-                Logging.Info(this, patch.ToJson(), nameof(OnReportedStatePatchReceived));
+                Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
 
-            _desiredPropertyUpdateCallback(patch, _twinPatchCallbackContext);
+            _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
         }
 
         private async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken = default)

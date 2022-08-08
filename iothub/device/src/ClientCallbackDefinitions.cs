@@ -7,16 +7,6 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Delegate for desired property update callbacks. This will be called every time we receive a patch from the service.
-    /// </summary>
-    /// <remarks>
-    /// This can be set for both <see cref="IotHubDeviceClient"/> and <see cref="IotHubModuleClient"/>.
-    /// </remarks>
-    /// <param name="desiredProperties">Properties that were contained in the update that was received from the service</param>
-    /// <param name="userContext">Context object passed in when the callback was registered</param>
-    public delegate Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
-
-    /// <summary>
     /// Delegate that gets called when a message is received on a <see cref="IotHubDeviceClient"/>.
     /// </summary>
     /// <remarks>

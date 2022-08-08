@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = IotHubDeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
+            Func<TwinCollection, object, Task> myCallback = (p, c) => TaskHelpers.CompletedTask;
             var context = new object();
 
             // act
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = IotHubDeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
+            Func<TwinCollection, object, Task> myCallback = (p, c) => TaskHelpers.CompletedTask;
             var context = new object();
 
             // act
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = Substitute.For<IDelegatingHandler>();
             var client = IotHubDeviceClient.CreateFromConnectionString(fakeConnectionString);
             client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
+            Func<TwinCollection, object, Task> myCallback = (p, c) => TaskHelpers.CompletedTask;
 
             // act
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             int callCount = 0;
             TwinCollection receivedPatch = null;
-            DesiredPropertyUpdateCallback myCallback = (p, c) =>
+            Func<TwinCollection, object, Task> myCallback = (p, c) =>
             {
                 callCount++;
                 receivedPatch = p;
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // act
-            client.InternalClient.OnReportedStatePatchReceived(myPatch);
+            client.InternalClient.OnDesiredStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);
