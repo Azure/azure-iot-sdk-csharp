@@ -128,22 +128,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _sendingAmqpLink);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _sendingAmqpLink);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
-                else
+
+                if (iotEx is AmqpIotResourceException)
                 {
-                    if (ex is AmqpIotResourceException)
-                    {
-                        _sendingAmqpLink.SafeClose();
-                        throw new IotHubCommunicationException(ex.Message, ex);
-                    }
-                    throw ex;
+                    _sendingAmqpLink.SafeClose();
+                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
                 }
+
+                throw iotEx;
             }
             finally
             {

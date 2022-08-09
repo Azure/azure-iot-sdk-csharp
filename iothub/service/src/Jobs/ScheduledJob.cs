@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices
         /// The method type and parameters.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
-        public CloudToDeviceMethod CloudToDeviceMethod { get; internal set; }
+        public CloudToDeviceMethod CloudToDeviceMethod { get; set; }
 
         /// <summary>
         /// Required if jobType is updateTwin.

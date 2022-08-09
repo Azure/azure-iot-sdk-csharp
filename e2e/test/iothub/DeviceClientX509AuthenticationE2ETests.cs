@@ -10,6 +10,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
+
 using DeviceTransportType = Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -29,57 +30,57 @@ namespace Microsoft.Azure.Devices.E2ETests
             _hostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpWs()
         {
-            await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException__MqttWs()
         {
-            await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_AmqpTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTwiceTest(new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_AmqpWs()
         {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTwiceTest(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_MqttTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTwiceTest(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice__MqttWs()
         {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(new IotHubClientMqttSettings(TransportProtocol.WebSocket)).ConfigureAwait(false);
+            await X509InvalidDeviceIdOpenAsyncTwiceTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_Httt_Tcp()
         {
             IotHubClientTransportSettings transportSetting
@@ -87,35 +88,35 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
-            IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol.Tcp);
+            IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck__MqttWs()
         {
-            IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol.WebSocket);
+            IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpTcp()
         {
-            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol.Tcp);
+            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
-            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol.WebSocket);
+            IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
             await SendMessageTest(transportSetting).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_MqttTcp()
         {
             // arrange
@@ -142,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ValidateCertsAreInstalled(chainCerts);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_AmqpTcp()
         {
             // arrange
@@ -204,12 +205,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             return new IotHubClientHttpSettings { CertificateRevocationCheck = true };
         }
 
-        private static IotHubClientTransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
+        private static IotHubClientTransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
         {
             return new IotHubClientMqttSettings { CertificateRevocationCheck = true };
         }
 
-        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(TransportProtocol transportProtocol)
+        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
         {
             return new IotHubClientAmqpSettings { CertificateRevocationCheck = true };
         }
@@ -271,7 +272,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (s_chainCertificateWithPrivateKey is IDisposable disposableChainedCertificate)
             {
                 disposableChainedCertificate?.Dispose();
-
             }
             s_chainCertificateWithPrivateKey = null;
         }

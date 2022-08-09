@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         public static void Fork(this Task thisTask)
         {
-            Fx.Assert(thisTask != null, "task is required!");
+            Debug.Assert(thisTask != null, "task is required!");
         }
 
         public static IAsyncResult ToAsyncResult(this Task task, AsyncCallback callback, object state)

@@ -180,8 +180,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 _channelFactory = settings.Protocol switch
                 {
-                    TransportProtocol.Tcp => CreateChannelFactory(context.ClientConfiguration, settings),
-                    TransportProtocol.WebSocket => CreateWebSocketChannelFactory(context.ClientConfiguration, settings),
+                    IotHubClientTransportProtocol.Tcp => CreateChannelFactory(context.ClientConfiguration, settings),
+                    IotHubClientTransportProtocol.WebSocket => CreateWebSocketChannelFactory(context.ClientConfiguration, settings),
                     _ => throw new InvalidOperationException($"Unsupported transport setting: {settings.Protocol}"),
                 };
             }
@@ -660,7 +660,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex.ToString(), nameof(OnError));
@@ -925,7 +925,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     _channel = await _channelFactory(_serverAddresses, ProtocolGatewayPort).ConfigureAwait(true);
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     OnError(ex);
                     throw;
@@ -1211,16 +1211,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
 
-                // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
-                if (settings.RemoteCertificateValidationCallback != null)
-                {
-                    websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting RemoteCertificateValidationCallback");
-                }
-#endif
-
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
@@ -1263,7 +1253,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
             }
         }

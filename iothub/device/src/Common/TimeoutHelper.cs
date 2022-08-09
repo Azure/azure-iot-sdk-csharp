@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public TimeoutHelper(TimeSpan timeout, bool startTimeout)
         {
-            Fx.Assert(timeout >= TimeSpan.Zero, "timeout must be non-negative");
+            Debug.Assert(timeout >= TimeSpan.Zero, "timeout must be non-negative");
 
             _originalTimeout = timeout;
             _deadline = DateTime.MaxValue;
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void SetDeadline()
         {
-            Fx.Assert(!_isDeadlineSet, "TimeoutHelper deadline set twice.");
+            Debug.Assert(!_isDeadlineSet, "TimeoutHelper deadline set twice.");
             _deadline = DateTime.UtcNow + _originalTimeout;
 
 #if NOTIMEOUT

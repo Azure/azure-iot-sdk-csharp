@@ -4,6 +4,7 @@
 using System.Threading;
 using System.Security;
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -82,17 +83,17 @@ namespace Microsoft.Azure.Devices.Client
             Safe = "The scheduled overlapped is only used internally, and flows security.")]
         private IoThreadScheduler(int capacity, int capacityLowPri)
         {
-            Fx.Assert(capacity > 0, "Capacity must be positive.");
-            Fx.Assert(capacity <= 0x8000, "Capacity cannot exceed 32k.");
+            Debug.Assert(capacity > 0, "Capacity must be positive.");
+            Debug.Assert(capacity <= 0x8000, "Capacity cannot exceed 32k.");
 
-            Fx.Assert(capacityLowPri > 0, "Low-priority capacity must be positive.");
-            Fx.Assert(capacityLowPri <= 0x8000, "Low-priority capacity cannot exceed 32k.");
+            Debug.Assert(capacityLowPri > 0, "Low-priority capacity must be positive.");
+            Debug.Assert(capacityLowPri <= 0x8000, "Low-priority capacity cannot exceed 32k.");
 
             _slots = new Slot[capacity];
-            Fx.Assert((_slots.Length & SlotMask) == 0, "Capacity must be a power of two.");
+            Debug.Assert((_slots.Length & SlotMask) == 0, "Capacity must be a power of two.");
 
             _slotsLowPri = new Slot[capacityLowPri];
-            Fx.Assert((_slotsLowPri.Length & SlotMaskLowPri) == 0, "Low-priority capacity must be a power of two.");
+            Debug.Assert((_slotsLowPri.Length & SlotMaskLowPri) == 0, "Low-priority capacity must be a power of two.");
 
             overlapped = new ScheduledOverlapped();
         }
@@ -153,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client
             if (wasIdle)
             {
                 slot = Interlocked.Add(ref _headTail, Bits.HiOne);
-                Fx.Assert(Bits.Count(slot) != 0, "IOTS went idle when it shouldn't have.");
+                Debug.Assert(Bits.Count(slot) != 0, "IOTS went idle when it shouldn't have.");
             }
 
             // Check if we wrapped *around* to idle.
@@ -284,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // The headTail value could technically be zero if the constructor was aborted early. The
                 // constructor wasn't aborted early if the slot array got created.
-                Fx.Assert(Bits.Count(_headTail) == -1, "IOTS finalized while not idle.");
+                Debug.Assert(Bits.Count(_headTail) == -1, "IOTS finalized while not idle.");
 
                 for (int i = 0; i < _slots.Length; i++)
                 {
@@ -294,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_slotsLowPri != null)
             {
-                Fx.Assert(Bits.CountNoIdle(_headTailLowPri) == 0, "IOTS finalized with low-priority items queued.");
+                Debug.Assert(Bits.CountNoIdle(_headTailLowPri) == 0, "IOTS finalized with low-priority items queued.");
 
                 for (int i = 0; i < _slotsLowPri.Length; i++)
                 {
@@ -361,15 +362,15 @@ namespace Microsoft.Azure.Devices.Client
                     return false;
                 }
 
-                Fx.Assert(_heldCallback == null, "Slot already has a work item.");
-                Fx.Assert((gateSnapshot & Bits.HiBits) == 0, "Slot already marked.");
+                Debug.Assert(_heldCallback == null, "Slot already has a work item.");
+                Debug.Assert((gateSnapshot & Bits.HiBits) == 0, "Slot already marked.");
 
                 _heldState = state;
                 _heldCallback = callback;
 
                 // Set the special bit to show that the slot is filled.
                 gateSnapshot = Interlocked.Add(ref _gate, Bits.LoHiBit);
-                Fx.Assert((gateSnapshot & Bits.HiBits) == Bits.LoHiBit, "Slot already empty.");
+                Debug.Assert((gateSnapshot & Bits.HiBits) == Bits.LoHiBit, "Slot already empty.");
 
                 if ((gateSnapshot & Bits.HiCountMask) == 0)
                 {
@@ -449,9 +450,9 @@ namespace Microsoft.Azure.Devices.Client
 
             public void DebugVerifyEmpty()
             {
-                Fx.Assert(_gate == 0, "Finalized with unfinished slot.");
-                Fx.Assert(_heldCallback == null, "Finalized with leaked callback.");
-                Fx.Assert(_heldState == null, "Finalized with leaked state.");
+                Debug.Assert(_gate == 0, "Finalized with unfinished slot.");
+                Debug.Assert(_heldCallback == null, "Finalized with leaked callback.");
+                Debug.Assert(_heldState == null, "Finalized with leaked state.");
             }
 
 #endif
@@ -476,8 +477,8 @@ namespace Microsoft.Azure.Devices.Client
 
             public void Post(IoThreadScheduler iots)
             {
-                Fx.Assert(_scheduler == null, "Post called on an overlapped that is already posted.");
-                Fx.Assert(iots != null, "Post called with a null scheduler.");
+                Debug.Assert(_scheduler == null, "Post called on an overlapped that is already posted.");
+                Debug.Assert(iots != null, "Post called with a null scheduler.");
 
                 _scheduler = iots;
             }

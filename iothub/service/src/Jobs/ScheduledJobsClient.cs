@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.RequireNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
                 Argument.RequireNotNullOrEmpty(scheduledDirectMethod.QueryCondition, nameof(scheduledDirectMethod.QueryCondition));
-                Argument.RequireNotNull(scheduledDirectMethod.CloudToDeviceMethod, nameof(scheduledDirectMethod.CloudToDeviceMethod));
+                Argument.RequireNotNull(scheduledDirectMethod.DirectMethodRequest, nameof(scheduledDirectMethod.DirectMethodRequest));
                 Argument.RequireNotNull(scheduledDirectMethod.StartTimeUtc, nameof(scheduledDirectMethod.StartTimeUtc));
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices
                 {
                     JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleDeviceMethod,
-                    CloudToDeviceMethod = scheduledDirectMethod.CloudToDeviceMethod,
+                    DirectMethodRequest = scheduledDirectMethod.DirectMethodRequest,
                     QueryCondition = scheduledDirectMethod.QueryCondition,
                     StartTimeUtc = scheduledDirectMethod.StartTimeUtc,
                     MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime

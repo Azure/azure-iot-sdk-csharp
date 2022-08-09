@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)
         {
-            return ExecuteWithErrorHandlingAsync<bool>(async () =>
+            return ExecuteWithErrorHandlingAsync(async () =>
             {
                 await asyncOperation().ConfigureAwait(false);
                 return false;
@@ -185,24 +185,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     return await asyncOperation().ConfigureAwait(false);
                 }
-                catch (Exception exception) when (!exception.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Exception caught: {exception}");
+                        Logging.Error(this, $"Exception caught: {ex}");
 
-                    if (IsSecurityExceptionChain(exception))
+                    if (IsSecurityExceptionChain(ex))
                     {
-                        Exception innerException = (exception is IotHubException) ? exception.InnerException : exception;
+                        Exception innerException = (ex is IotHubException) ? ex.InnerException : ex;
                         throw new AuthenticationException("TLS authentication error.", innerException);
                     }
                     // For historic reasons, part of the Error handling is done within the transport handlers.
-                    else if (exception is IotHubCommunicationException)
+                    else if (ex is IotHubCommunicationException)
                     {
                         throw;
                     }
-                    else if (IsNetworkExceptionChain(exception))
+                    else if (IsNetworkExceptionChain(ex))
                     {
-                        throw new IotHubCommunicationException("Transient network error occurred, please retry.", exception);
+                        throw new IotHubCommunicationException("Transient network error occurred, please retry.", ex);
                     }
                     else
                     {

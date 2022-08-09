@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -29,7 +27,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// The transport settings to use (i.e., <see cref="ProvisioningTransportHandlerAmqp"/>, <see cref="ProvisioningTransportHandlerMqtt"/>, or <see cref="ProvisioningTransportHandlerHttp"/>).
+        /// The transport settings to use (i.e., <see cref="ProvisioningTransportHandlerAmqp"/>, <see cref="ProvisioningTransportHandlerMqtt"/>,
+        /// or <see cref="ProvisioningTransportHandlerHttp"/>).
         /// </summary>
         public ProvisioningTransportHandler ProvisioningTransportHandler { get; }
     }

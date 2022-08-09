@@ -75,22 +75,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 }
                 return message;
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _receivingAmqpLink);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _receivingAmqpLink);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
-                else
+
+                if (iotEx is AmqpIotResourceException)
                 {
-                    if (ex is AmqpIotResourceException)
-                    {
-                        _receivingAmqpLink.SafeClose();
-                        throw new IotHubCommunicationException(ex.Message, ex);
-                    }
-                    throw ex;
+                    _receivingAmqpLink.SafeClose();
+                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
                 }
+
+                throw iotEx;
             }
             finally
             {

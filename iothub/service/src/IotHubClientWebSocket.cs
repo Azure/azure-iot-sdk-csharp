@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -929,8 +930,8 @@ namespace Microsoft.Azure.Devices
 
         public static int IndexOfAsciiChar(byte[] array, int offset, int count, char asciiChar)
         {
-            Fx.Assert(asciiChar <= byte.MaxValue, "asciiChar isn't valid ASCII!");
-            Fx.Assert(offset + count <= array.Length, "offset + count > array.Length!");
+            Debug.Assert(asciiChar <= byte.MaxValue, "asciiChar isn't valid ASCII!");
+            Debug.Assert(offset + count <= array.Length, "offset + count > array.Length!");
 
             for (int i = offset; i < offset + count; i++)
             {
@@ -948,9 +949,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public static int IndexOfAsciiChars(byte[] array, int offset, int count, char asciiChar1, char asciiChar2)
         {
-            Fx.Assert(asciiChar1 <= byte.MaxValue, "asciiChar1 isn't valid ASCII!");
-            Fx.Assert(asciiChar2 <= byte.MaxValue, "asciiChar2 isn't valid ASCII!");
-            Fx.Assert(offset + count <= array.Length, "offset + count > array.Length!");
+            Debug.Assert(asciiChar1 <= byte.MaxValue, "asciiChar1 isn't valid ASCII!");
+            Debug.Assert(asciiChar2 <= byte.MaxValue, "asciiChar2 isn't valid ASCII!");
+            Debug.Assert(offset + count <= array.Length, "offset + count > array.Length!");
 
             for (int i = offset; i < offset + count - 1; i++)
             {
