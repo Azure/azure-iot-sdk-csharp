@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingEndpointExceptionTest()
         {
             string connectionString = "SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingDeviceIdExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringIotHubScopeSharedAccessSignatureCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringIotHubScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialType=SharedAccessKey;DeviceId=device1";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -73,15 +73,15 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeNotAllowedSharedAccessKeyNameExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDeviceScopeSharedAccessSignatureCredentialTypeInvalidSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=INVALID;DeviceId=device1";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             string connectionString = "TODO: IoT hub connection string to connect to";
             try
             {
-                var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+                var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
             }
             catch (FormatException fe)
             {
@@ -103,23 +103,21 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringDeviceScopeImplicitSharedAccessSignatureCredentialTypeInvalidSharedAccessSignatureExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessSignature=INVALID;DeviceId=device1";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void DeviceClientConnectionStringEmptyConnectionStringExceptionTest()
-        {
-            string connectionString = "";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void DeviceClientConnectionStringNullConnectionStringExceptionTest()
         {
-            string connectionString = null;
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringEmptyConnectionStringExceptionTest()
+        {
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString("");
         }
 
         [TestMethod]
@@ -127,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringSASKeyX509CertExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;X509=true;DeviceId=device;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -135,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringSasSignatureX509ExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;X509=true;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
@@ -143,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void DeviceClientConnectionStringX509CertFalseTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;X509Cert=false;DeviceId=device";
-            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
         }
     }
 }

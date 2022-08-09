@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -54,6 +55,8 @@ namespace Microsoft.Azure.Devices
 
         private readonly string _webSocketRole;
         private readonly string _requestPath;
+        private readonly IotHubServiceClientOptions _options;
+
         private string _webSocketKey;
         private string _host;
 
@@ -65,16 +68,17 @@ namespace Microsoft.Azure.Devices
             public const string SecWebSocketVersion = "Sec-WebSocket-Version";
         }
 
-        public IotHubClientWebSocket(string webSocketRole)
-            : this(webSocketRole, WebSocketConstants.UriSuffix)
+        public IotHubClientWebSocket(string webSocketRole, IotHubServiceClientOptions options)
+            : this(webSocketRole, WebSocketConstants.UriSuffix, options)
         {
         }
 
-        public IotHubClientWebSocket(string webSocketRole, string requestPath)
+        public IotHubClientWebSocket(string webSocketRole, string requestPath, IotHubServiceClientOptions options)
         {
             State = WebSocketState.Initial;
             _webSocketRole = webSocketRole;
             _requestPath = requestPath;
+            _options = options;
         }
 
         public enum WebSocketMessageType
@@ -144,7 +148,7 @@ namespace Microsoft.Azure.Devices
                         .AuthenticateAsClientAsync(
                             host,
                             x509CertificateCollection,
-                            TlsVersions.Instance.Preferred,
+                            _options.SslProtocols,
                             checkCertificateRevocation: false)
                         .ConfigureAwait(false);
                     WebSocketStream = sslStream;
@@ -926,8 +930,8 @@ namespace Microsoft.Azure.Devices
 
         public static int IndexOfAsciiChar(byte[] array, int offset, int count, char asciiChar)
         {
-            Fx.Assert(asciiChar <= byte.MaxValue, "asciiChar isn't valid ASCII!");
-            Fx.Assert(offset + count <= array.Length, "offset + count > array.Length!");
+            Debug.Assert(asciiChar <= byte.MaxValue, "asciiChar isn't valid ASCII!");
+            Debug.Assert(offset + count <= array.Length, "offset + count > array.Length!");
 
             for (int i = offset; i < offset + count; i++)
             {
@@ -945,9 +949,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public static int IndexOfAsciiChars(byte[] array, int offset, int count, char asciiChar1, char asciiChar2)
         {
-            Fx.Assert(asciiChar1 <= byte.MaxValue, "asciiChar1 isn't valid ASCII!");
-            Fx.Assert(asciiChar2 <= byte.MaxValue, "asciiChar2 isn't valid ASCII!");
-            Fx.Assert(offset + count <= array.Length, "offset + count > array.Length!");
+            Debug.Assert(asciiChar1 <= byte.MaxValue, "asciiChar1 isn't valid ASCII!");
+            Debug.Assert(asciiChar2 <= byte.MaxValue, "asciiChar2 isn't valid ASCII!");
+            Debug.Assert(offset + count <= array.Length, "offset + count > array.Length!");
 
             for (int i = offset; i < offset + count - 1; i++)
             {

@@ -52,17 +52,17 @@ namespace Microsoft.Azure.Devices
         Task<QueryResponse<DeviceJob>> GetNextAsDeviceJobAsync(QueryOptions options);
 
         /// <summary>
-        /// Retrieves the next paged result as <see cref="JobResponse"/> objects
+        /// Retrieves the next paged result as <see cref="ScheduledJob"/> objects
         /// </summary>
-        /// <returns>List of <see cref="JobResponse"/> objects</returns>
-        Task<IEnumerable<JobResponse>> GetNextAsJobResponseAsync();
+        /// <returns>List of <see cref="ScheduledJob"/> objects</returns>
+        Task<IEnumerable<ScheduledJob>> GetNextAsScheduledJobAsync();
 
         /// <summary>
-        /// Retrieves the next paged result as <see cref="JobResponse"/> objects
+        /// Retrieves the next paged result as <see cref="ScheduledJob"/> objects
         /// </summary>
         /// <param name="options">Query options</param>
         /// <returns>An enumerable <see cref="QueryResponse{T}"/> object</returns>
-        Task<QueryResponse<JobResponse>> GetNextAsJobResponseAsync(QueryOptions options);
+        Task<QueryResponse<ScheduledJob>> GetNextAsScheduledJobAsync(QueryOptions options);
 
         /// <summary>
         /// Retrieves the next paged result as JSON strings

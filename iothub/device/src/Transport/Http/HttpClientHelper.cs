@@ -37,18 +37,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-            X509Certificate2 clientCert,
             HttpClientHandler httpClientHandler,
             ProductInfo productInfo,
-            IWebProxy proxy,
+            IotHubClientHttpSettings iotHubClientHttpSettings,
             bool isClientPrimaryTransportHandler = false)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+            _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
+            _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
+
+            X509Certificate2 clientCert = iotHubClientHttpSettings.ClientCertificate;
+            IWebProxy proxy = iotHubClientHttpSettings.Proxy;
 
             if (clientCert != null)
             {
@@ -462,7 +464,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 throw;
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 throw new IotHubException(ex.Message, ex);
             }
@@ -515,11 +517,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // corresponding transport layers (MQTT/ AMQP), the diposal should be delegated to them and it should not be disposed here.
                 // The only scenario where the TokenRefresher should be disposed here is when the client has been initialized using HTTP.
                 if (_isClientPrimaryTransportHandler
-                    && _authenticationHeaderProvider is IotHubConnectionString iotHubConnectionString
-                    && iotHubConnectionString.TokenRefresher != null
-                    && iotHubConnectionString.TokenRefresher.DisposalWithClient)
+                    && _authenticationHeaderProvider is ClientConfiguration clientConfiguration
+                    && clientConfiguration.TokenRefresher != null
+                    && clientConfiguration.TokenRefresher.DisposalWithClient)
                 {
-                    iotHubConnectionString.TokenRefresher.Dispose();
+                    clientConfiguration.TokenRefresher.Dispose();
                 }
 
                 _isDisposed = true;

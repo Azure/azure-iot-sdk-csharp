@@ -247,6 +247,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -284,6 +285,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -382,6 +384,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = null;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -419,6 +422,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -433,9 +437,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123");
             var badTwin = new Twin("/badTwin");
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
         }
 
@@ -445,9 +456,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin("234");
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
         }
 
@@ -457,9 +475,15 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123") { ETag = "234" };
             Twin badTwin = null;
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
         }
 
@@ -467,9 +491,8 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwinsAsyncWithNullTwinListTest()
         {
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>()).ConfigureAwait(false);
+            var serviceClient = new IotHubServiceClient(validMockConnectionString);
+            await serviceClient.Twins.UpdateAsync(new List<Twin>()).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when Null twin list was used.");
         }
 
@@ -479,9 +502,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin = new Twin("123") { ETag = "234" };
             var badTwin = new Twin();
-            var restOpMock = new Mock<IHttpClientHelper>();
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
+
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin, badTwin }).ConfigureAwait(false);
             Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
         }
 
@@ -490,18 +520,17 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin1 = new Twin("123");
             var goodTwin2 = new Twin("234");
-            var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp
-                .PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(
-                    It.IsAny<Uri>(),
-                    It.IsAny<IEnumerable<ExportImportDevice>>(),
-                    It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
-                    It.IsAny<IDictionary<string, string>>(),
-                    It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -510,18 +539,16 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var badTwin1 = new Twin("123");
             var badTwin2 = new Twin("234");
-            var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp
-                .PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(
-                It.IsAny<Uri>(),
-                It.IsAny<IEnumerable<ExportImportDevice>>(),
-                It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
-                It.IsAny<IDictionary<string, string>>(),
-                It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -529,18 +556,17 @@ namespace Microsoft.Azure.Devices.Tests
         {
             var goodTwin1 = new Twin("123") { ETag = "234" };
             var goodTwin2 = new Twin("234") { ETag = "123" };
-            var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp
-                .PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(
-                It.IsAny<Uri>(),
-                It.IsAny<IEnumerable<ExportImportDevice>>(),
-                It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
-                It.IsAny<IDictionary<string, string>>(),
-                It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Task<BulkRegistryOperationResult>)null);
+            var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
+            mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
+            var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
+            var mockHttpResponse = new HttpResponseMessage();
+            mockHttpResponse.StatusCode = HttpStatusCode.OK;
+            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            var mockHttpClient = new Mock<HttpClient>();
+            mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.UpdateTwinsAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
+            var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         [TestMethod]

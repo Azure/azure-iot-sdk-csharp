@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
@@ -17,89 +17,83 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(BulkOperationsE2ETests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Device_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
-            Twin twin = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
             Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
-
-            await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2DevicePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             var twin = new Twin();
             twin.DeviceId = testDevice.Id;
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
+            Twin twinUpd = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
             Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
-
-            await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
-            Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            Twin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.AreEqual(twin.ModuleId, twinUpd.ModuleId, "Module ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
             Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
-
-            await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -107,25 +101,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
 
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             var twin = new Twin();
             twin.DeviceId = testModule.DeviceId;
             twin.ModuleId = testModule.Id;
             twin.Tags = new TwinCollection();
             twin.Tags[tagName] = tagValue;
 
-            BulkRegistryOperationResult result = await registryManager.UpdateTwinsAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
+            BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
             Assert.IsTrue(result.IsSuccessful, $"UpdateTwins2Async error:\n{ResultErrorsToString(result)}");
 
-            Twin twinUpd = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            Twin twinUpd = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             Assert.AreEqual(twin.DeviceId, twinUpd.DeviceId, "Device ID changed");
             Assert.AreEqual(twin.ModuleId, twinUpd.ModuleId, "Module ID changed");
             Assert.IsNotNull(twinUpd.Tags, "Twin.Tags is null");
             Assert.IsTrue(twinUpd.Tags.Contains(tagName), "Twin doesn't contain the tag");
             Assert.AreEqual((string)twin.Tags[tagName], (string)twinUpd.Tags[tagName], "Tag value changed");
-
-            await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
         private string ResultErrorsToString(BulkRegistryOperationResult result)

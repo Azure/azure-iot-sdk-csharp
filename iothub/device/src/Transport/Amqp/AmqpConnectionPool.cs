@@ -12,8 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpConnectionPool : IAmqpUnitManager
     {
         private AmqpConnectionHolder[] _amqpSasIndividualPool;
-        private readonly IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
-        private readonly object _lock = new object();
+        private readonly Dictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new();
+        private readonly object _lock = new();
 
         protected virtual IDictionary<string, AmqpConnectionHolder[]> GetAmqpSasGroupedPoolDictionary()
         {
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IDeviceIdentity deviceIdentity,
+            IClientConfiguration clientConfiguration,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
@@ -29,22 +29,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, deviceIdentity, nameof(CreateAmqpUnit));
+                Logging.Enter(this, clientConfiguration, nameof(CreateAmqpUnit));
 
-            if (deviceIdentity.IsPooling())
+            if (clientConfiguration.IsPooling())
             {
                 AmqpConnectionHolder amqpConnectionHolder;
                 lock (_lock)
                 {
-                    AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity);
-                    amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
+                    AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(clientConfiguration);
+                    amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, clientConfiguration);
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
+                    Logging.Exit(this, clientConfiguration, nameof(CreateAmqpUnit));
 
                 return amqpConnectionHolder.CreateAmqpUnit(
-                    deviceIdentity,
+                    clientConfiguration,
                     onMethodCallback,
                     twinMessageListener,
                     onModuleMessageReceivedCallback,
@@ -54,11 +54,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, deviceIdentity, nameof(CreateAmqpUnit));
+                    Logging.Exit(this, clientConfiguration, nameof(CreateAmqpUnit));
 
-                return new AmqpConnectionHolder(deviceIdentity)
+                return new AmqpConnectionHolder(clientConfiguration)
                     .CreateAmqpUnit(
-                        deviceIdentity,
+                        clientConfiguration,
                         onMethodCallback,
                         twinMessageListener,
                         onModuleMessageReceivedCallback,
@@ -72,21 +72,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, amqpUnit, nameof(RemoveAmqpUnit));
 
-            IDeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
-            if (deviceIdentity.IsPooling())
+            IClientConfiguration clientConfiguration = amqpUnit.GetClientConfiguration();
+            if (clientConfiguration.IsPooling())
             {
                 AmqpConnectionHolder amqpConnectionHolder;
                 lock (_lock)
                 {
-                    AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity);
-                    amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
+                    AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(clientConfiguration);
+                    amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, clientConfiguration);
 
                     amqpConnectionHolder.RemoveAmqpUnit(amqpUnit);
 
                     // If the connection holder does not have any more units, the entry needs to be nullified.
                     if (amqpConnectionHolder.IsEmpty())
                     {
-                        int index = GetDeviceIdentityIndex(deviceIdentity, amqpConnectionHolders.Length);
+                        int index = GetClientConfigurationIndex(clientConfiguration, amqpConnectionHolders.Length);
                         amqpConnectionHolders[index] = null;
                         amqpConnectionHolder?.Dispose();
                     }
@@ -97,54 +97,58 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Exit(this, amqpUnit, nameof(RemoveAmqpUnit));
         }
 
-        private AmqpConnectionHolder[] ResolveConnectionGroup(IDeviceIdentity deviceIdentity)
+        private AmqpConnectionHolder[] ResolveConnectionGroup(IClientConfiguration clientConfiguration)
         {
-            if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
+            var amqpSettings = clientConfiguration.ClientOptions.TransportSettings as IotHubClientAmqpSettings;
+            if (amqpSettings.ConnectionPoolSettings == null)
+            {
+                amqpSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings();
+            }
+
+            if (clientConfiguration.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
                 if (_amqpSasIndividualPool == null)
                 {
-                    _amqpSasIndividualPool = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
+                    _amqpSasIndividualPool = new AmqpConnectionHolder[amqpSettings.ConnectionPoolSettings.MaxPoolSize];
                 }
 
                 return _amqpSasIndividualPool;
             }
-            else
-            {
-                string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
-                GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
-                if (amqpConnectionHolders == null)
-                {
-                    amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
-                    GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
-                }
 
-                return amqpConnectionHolders;
+            string scope = clientConfiguration.SharedAccessKeyName;
+            GetAmqpSasGroupedPoolDictionary().TryGetValue(scope, out AmqpConnectionHolder[] amqpConnectionHolders);
+            if (amqpConnectionHolders == null)
+            {
+                amqpConnectionHolders = new AmqpConnectionHolder[amqpSettings.ConnectionPoolSettings.MaxPoolSize];
+                GetAmqpSasGroupedPoolDictionary().Add(scope, amqpConnectionHolders);
             }
+
+            return amqpConnectionHolders;
         }
 
-        private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IDeviceIdentity deviceIdentity)
+        private AmqpConnectionHolder ResolveConnectionByHashing(AmqpConnectionHolder[] pool, IClientConfiguration clientConfiguration)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, deviceIdentity, nameof(ResolveConnectionByHashing));
+                Logging.Enter(this, clientConfiguration, nameof(ResolveConnectionByHashing));
 
-            int index = GetDeviceIdentityIndex(deviceIdentity, pool.Length);
+            int index = GetClientConfigurationIndex(clientConfiguration, pool.Length);
 
             if (pool[index] == null)
             {
-                pool[index] = new AmqpConnectionHolder(deviceIdentity);
+                pool[index] = new AmqpConnectionHolder(clientConfiguration);
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, deviceIdentity, nameof(ResolveConnectionByHashing));
+                Logging.Exit(this, clientConfiguration, nameof(ResolveConnectionByHashing));
 
             return pool[index];
         }
 
-        private static int GetDeviceIdentityIndex(IDeviceIdentity deviceIdentity, int poolLength)
+        private static int GetClientConfigurationIndex(IClientConfiguration clientConfiguration, int poolLength)
         {
-            return deviceIdentity == null
-                ? throw new ArgumentNullException(nameof(deviceIdentity))
-                : Math.Abs(deviceIdentity.GetHashCode()) % poolLength;
+            return clientConfiguration == null
+                ? throw new ArgumentNullException(nameof(clientConfiguration))
+                : Math.Abs(clientConfiguration.GetHashCode()) % poolLength;
         }
     }
 }

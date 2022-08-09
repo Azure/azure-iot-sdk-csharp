@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal static Query CreateEnrollmentGroupQuery(
             ServiceConnectionString provisioningConnectionString,
             QuerySpecification querySpecification,
-            HttpTransportSettings httpTransportSettings,
+            ProvisioningServiceHttpSettings httpTransportSettings,
             CancellationToken cancellationToken,
             string enrollmentGroupId,
             int pageSize = 0)

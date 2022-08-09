@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// Test class containing all tests to be run for plug and play.
@@ -33,20 +33,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a device.
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
-            var options = new ClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
-                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = TestModelId,
             };
-            using var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
 
             // Get device twin.
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            Twin twin = await registryManager.GetTwinAsync(testDevice.Device.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
@@ -63,23 +61,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a device.
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
-            var options = new ClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
-                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = TestModelId,
             };
             string hostName = HostNameHelper.GetHostName(TestConfiguration.IoTHub.ConnectionString);
             X509Certificate2 authCertificate = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
             using var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, authCertificate);
-            using var deviceClient = DeviceClient.Create(hostName, auth, options);
+            using var deviceClient = IotHubDeviceClient.Create(hostName, auth, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Act
 
             // Get device twin.
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            Twin twin = await registryManager.GetTwinAsync(testDevice.Device.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testDevice.Device.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the device was created as plug and play");
@@ -102,20 +98,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // Create a module.
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the module plug and play.
-            var options = new ClientOptions
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
-                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = TestModelId,
             };
-            using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Act
 
             // Get module twin.
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            Twin twin = await registryManager.GetTwinAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
+            Twin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
 
             // Assert
             twin.ModelId.Should().Be(TestModelId, "because the module was created as plug and play");

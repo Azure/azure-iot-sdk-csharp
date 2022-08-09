@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Http2
@@ -44,11 +46,21 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <param name="expectedHttpStatusCode">The HTTP status code that indicates that the operation was a success and no exception should be thrown.</param>
         /// <param name="responseMessage">The HTTP response that contains the actual status code as well as the payload that contains error details if an error occurred.</param>
-        internal static async Task ValidateHttpResponseStatus(HttpStatusCode expectedHttpStatusCode, HttpResponseMessage responseMessage)
+        internal static async Task ValidateHttpResponseStatusAsync(HttpStatusCode expectedHttpStatusCode, HttpResponseMessage responseMessage)
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
-                throw await ExceptionHandlingHelper.GetDefaultErrorMapping()[responseMessage.StatusCode].Invoke(responseMessage);
+                IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping =
+                    ExceptionHandlingHelper.GetDefaultErrorMapping();
+                if (defaultErrorMapping.TryGetValue(responseMessage.StatusCode, out Func<HttpResponseMessage, Task<Exception>> mappedException))
+                {
+                    throw await mappedException.Invoke(responseMessage);
+                }
+
+                // Default case for when the mapping of this error code to an exception does not exist yet
+                ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
+                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
+                throw new IotHubException(errorCode, errorMessage);
             }
         }
 
@@ -59,7 +71,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// <param name="response">The HTTP response containing the payload to deserialize.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The deserialized object.</returns>
-        internal static async Task<T> DeserializeResponse<T>(HttpResponseMessage response, CancellationToken cancellationToken)
+        internal static async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             string str = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(str);
@@ -70,7 +82,7 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <param name="requestMessage">The request to add the If-Match header to.</param>
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
-        public static void InsertEtag(HttpRequestMessage requestMessage, string eTag)
+        public static void InsertETag(HttpRequestMessage requestMessage, string eTag)
         {
             if (string.IsNullOrWhiteSpace(eTag))
             {

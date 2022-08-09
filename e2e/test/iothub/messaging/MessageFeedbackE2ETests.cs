@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    // TODO MQTT OrderedTwoPhaseWorkQueue disallow message feedback to be called mix order, enable this test once it's fixed
     public class MessageFeedbackE2eTests : E2EMsTestBase
     {
         private const int MessageCount = 3;
@@ -25,23 +24,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_CompleteMixOrder_Amqp()
         {
             // AMQP allows completing messages in any order received. Let's test that.
-            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, Logger).ConfigureAwait(false);
+            await CompleteMessageMixOrder(TestDeviceType.Sasl, new IotHubClientAmqpSettings(), Logger).ConfigureAwait(false);
         }
 
-        private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport, MsTestLogger logger)
+        private static async Task CompleteMessageMixOrder(TestDeviceType type, IotHubClientTransportSettings transportSettings, MsTestLogger logger)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(new ClientOptions { TransportType = transport });
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            if (transport == Client.TransportType.Mqtt_Tcp_Only
-                || transport == Client.TransportType.Mqtt_WebSocket_Only)
+            if (transportSettings is IotHubClientMqttSettings)
             {
                 Assert.Fail("Message completion out of order not supported outside of AMQP");
             }

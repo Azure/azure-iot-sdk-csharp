@@ -13,11 +13,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// The final node in the handler chain, running operations on the HTTP transport.
+    /// </summary>
     internal sealed class HttpTransportHandler : TransportHandler
     {
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
@@ -60,25 +62,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal HttpTransportHandler(
             PipelineContext context,
-            IotHubConnectionString iotHubConnectionString,
-            Http1TransportSettings transportSettings,
+            IotHubClientHttpSettings transportSettings,
             HttpClientHandler httpClientHandler = null,
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
-            ProductInfo productInfo = context.ProductInfo;
-            _deviceId = iotHubConnectionString.DeviceId;
-            _moduleId = iotHubConnectionString.ModuleId;
+            ProductInfo productInfo = context.ClientConfiguration.ClientOptions.ProductInfo;
+            _deviceId = context.ClientConfiguration.DeviceId;
+            _moduleId = context.ClientConfiguration.ModuleId;
+            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.ClientConfiguration.HostName).Uri;
             _httpClientHelper = new HttpClientHelper(
-                iotHubConnectionString.HttpsEndpoint,
-                iotHubConnectionString,
+                httpsEndpoint,
+                context.ClientConfiguration,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 null,
-                transportSettings.ClientCertificate,
                 httpClientHandler,
                 productInfo,
-                transportSettings.Proxy,
+                transportSettings,
                 isClientPrimaryTransportHandler);
         }
 

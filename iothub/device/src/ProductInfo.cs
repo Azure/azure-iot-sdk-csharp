@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                version = typeof(IotHubDeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
                 string runtime = RuntimeInformation.FrameworkDescription.Trim();
                 string operatingSystem = RuntimeInformation.OSDescription.Trim();
                 string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
                     infoParts = string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)));
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 // no-op
             }

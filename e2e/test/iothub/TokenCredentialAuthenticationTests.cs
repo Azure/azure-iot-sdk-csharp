@@ -8,12 +8,11 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices;
 using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
+using ClientOptions = Microsoft.Azure.Devices.Client.IotHubClientOptions;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using Azure active directory succeeds in all the clients.
@@ -25,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     {
         private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -45,13 +44,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
-            using var jobClient = JobClient.Create(
-                TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential());
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.GetIotHubHostName(), TestConfiguration.IoTHub.GetClientSecretCredential());
 
             string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
             string jobDeviceId = "JobsSample_Device";
@@ -61,13 +58,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             try
             {
                 // act
-                JobResponse createJobResponse = await jobClient
+                ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate
+                {
+                    Twin = twin,
+                    QueryCondition = query,
+                    StartTimeUtc = DateTime.UtcNow
+                };
+                ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
+                {
+                    JobId = jobId,
+                    MaxExecutionTime = TimeSpan.FromMinutes(2)
+                };
+                ScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
-                        jobId,
-                        query,
-                        twin,
-                        DateTime.UtcNow,
-                        (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                        twinUpdate,
+                        twinUpdateOptions)
                     .ConfigureAwait(false);
             }
             catch (ThrottlingException)
@@ -76,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -84,25 +89,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string thermostatModelId = "dtmi:com:example:TemperatureController;1";
 
             // Create a device client instance initializing it with the "Thermostat" model.
-            var options = new ClientOptions
+            var options = new ClientOptions(new IotHubClientMqttSettings())
             {
-                TransportType = Client.TransportType.Mqtt_Tcp_Only,
                 ModelId = thermostatModelId,
             };
-            using DeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            using var digitalTwinClient = DigitalTwinClient.Create(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
 
             // act
-            HttpOperationResponse<ThermostatTwin, DigitalTwinGetHeaders> response = await digitalTwinClient
-                .GetDigitalTwinAsync<ThermostatTwin>(testDevice.Id)
+            DigitalTwinGetResponse<ThermostatTwin> response = await serviceClient.DigitalTwins
+                .GetAsync<ThermostatTwin>(testDevice.Id)
                 .ConfigureAwait(false);
-            ThermostatTwin twin = response.Body;
+
+            ThermostatTwin twin = response.DigitalTwin;
 
             // assert
             twin.Metadata.ModelId.Should().Be(thermostatModelId);
@@ -111,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
             // arrange

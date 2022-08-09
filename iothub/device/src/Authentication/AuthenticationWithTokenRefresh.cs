@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly int _timeBufferPercentage;
 
         private int _bufferSeconds;
-        private SemaphoreSlim _lock = new SemaphoreSlim(1);
+        private SemaphoreSlim _lock = new(1);
         private string _token;
         private bool _isDisposed;
 

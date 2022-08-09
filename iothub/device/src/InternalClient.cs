@@ -24,10 +24,8 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
-        private readonly ProductInfo _productInfo = new();
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
-        private readonly ITransportSettings[] _transportSettings;
-        private readonly ClientOptions _clientOptions;
+        private readonly IotHubClientOptions _clientOptions;
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -41,15 +39,15 @@ namespace Microsoft.Azure.Devices.Client
 
         private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
 
-        private volatile ConnectionStatusChangesHandler _connectionStatusChangesHandler;
+        private volatile ConnectionStateChangeHandler _connectionStateChangeHandler;
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
 
         private int _diagnosticSamplingPercentage;
 
-        private ConnectionStatus _lastConnectionStatus = ConnectionStatus.Disconnected;
-        private ConnectionStatusChangeReason _lastConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close;
+        private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
+        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
         private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
 
@@ -65,32 +63,35 @@ namespace Microsoft.Azure.Devices.Client
 
         internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
 
-        public InternalClient(
-            IotHubConnectionString iotHubConnectionString,
-            ITransportSettings[] transportSettings,
-            IDeviceClientPipelineBuilder pipelineBuilder,
-            ClientOptions options)
+        protected internal InternalClient(
+            ClientConfiguration clientConfiguration,
+            IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, clientConfiguration.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            _transportSettings = transportSettings;
-            _clientOptions = options;
-            IotHubConnectionString = iotHubConnectionString;
+            Argument.AssertNotNull(clientConfiguration.ClientOptions, nameof(clientConfiguration.ClientOptions));
+
+            _clientOptions = clientConfiguration.ClientOptions;
+            IotHubConnectionInfo = clientConfiguration;
+
+            if (!string.IsNullOrWhiteSpace(clientConfiguration.ClientOptions.ModelId)
+                && clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings)
+            {
+                throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
+            }
 
             var pipelineContext = new PipelineContext
             {
-                TransportSettingsArray = transportSettings,
-                IotHubConnectionString = iotHubConnectionString,
+                ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
-                ConnectionStatusChangesHandler = OnConnectionStatusChanged,
+                ConnectionStateChangeHandler = OnConnectionStateChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
-                ProductInfo = _productInfo,
-                ClientOptions = options,
             };
 
+            pipelineBuilder ??= BuildPipeline();
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             if (Logging.IsEnabled)
@@ -99,12 +100,23 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = innerHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, transportSettings, nameof(InternalClient));
+                Logging.Associate(this, clientConfiguration.ClientOptions.TransportSettings, nameof(InternalClient));
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, IotHubConnectionString, options.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, clientConfiguration.ClientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, clientConfiguration.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+        }
+
+        private static IDeviceClientPipelineBuilder BuildPipeline()
+        {
+            var transporthandlerFactory = new TransportHandlerFactory();
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
+
+            return pipelineBuilder;
         }
 
         /// <summary>
@@ -120,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(DiagnosticSamplingPercentage),
-                        DiagnosticSamplingPercentage,
+                        value,
                         "The range of diagnostic sampling percentage should between [0,100].");
                 }
 
@@ -131,35 +143,23 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT hub.
-        /// </summary>
-        public string ProductInfo
-        {
-            // We store InternalClient.ProductInfo as a string property of an object (rather than directly as a string)
-            // so that updates will propagate down to the transport layer throughout the lifetime of the InternalClient
-            // object instance.
-            get => _productInfo.Extra;
-            set => _productInfo.Extra = value;
-        }
-
         internal X509Certificate2 Certificate { get; set; }
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal IotHubConnectionString IotHubConnectionString { get; private set; }
+        internal ClientConfiguration IotHubConnectionInfo { get; private set; }
 
         /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// Sets a new delegate for the connection state changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate.
         /// </summary>
-        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
+        /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
+        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler)
         {
             if (Logging.IsEnabled)
-                Logging.Info(this, statusChangesHandler, nameof(SetConnectionStatusChangesHandler));
+                Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
 
-            _connectionStatusChangesHandler = statusChangesHandler;
+            _connectionStateChangeHandler = stateChangeHandler;
         }
 
         /// <summary>
@@ -173,7 +173,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken = default)
+        public async Task SetDesiredPropertyUpdateCallbackAsync(
+            DesiredPropertyUpdateCallback callback,
+            object userContext,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
@@ -220,13 +223,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
-        public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default)
+        public async Task SetMethodHandlerAsync(
+            string methodName,
+            MethodCallback methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
 
-            cancellationToken.ThrowIfCancellationRequested();
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -267,7 +275,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
-        public async Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default)
+        public async Task SetMethodDefaultHandlerAsync(
+            MethodCallback methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
@@ -308,7 +319,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets the retry policy used in the operation retries.
         /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        /// <param name="retryPolicy">
+        /// The retry policy. The default is <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100),
+        /// TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c>
+        /// </param>
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             RetryDelegatingHandler retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
@@ -601,7 +615,7 @@ namespace Microsoft.Azure.Devices.Client
                     callbackContextPair = _deviceDefaultMethodCallback;
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
@@ -941,7 +955,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(
@@ -1005,7 +1019,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="ModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="Edge.EdgeModuleClientFactory"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(
@@ -1133,7 +1147,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void ValidateModuleTransportHandler(string apiName)
         {
-            if (string.IsNullOrEmpty(IotHubConnectionString.ModuleId))
+            if (string.IsNullOrEmpty(IotHubConnectionInfo.ModuleId))
             {
                 throw new InvalidOperationException("{0} is available for Modules only.".FormatInvariant(apiName));
             }
@@ -1154,26 +1168,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStatusChanged(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        internal void OnConnectionStateChanged(ConnectionState state, ConnectionStateChangeReason reason)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
+                    Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_connectionStatusChangesHandler != null
-                    && (_lastConnectionStatus != status
-                        || _lastConnectionStatusChangeReason != reason))
+                if (_connectionStateChangeHandler != null
+                    && (_lastConnectionState != state
+                        || _lastConnectionStateChangeReason != reason))
                 {
-                    _connectionStatusChangesHandler(status, reason);
+                    _connectionStateChangeHandler(state, reason);
                 }
             }
             finally
             {
-                _lastConnectionStatus = status;
-                _lastConnectionStatusChangeReason = reason;
+                _lastConnectionState = state;
+                _lastConnectionStateChangeReason = reason;
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, status, reason, nameof(OnConnectionStatusChanged));
+                    Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
             }
         }
 
@@ -1199,18 +1213,13 @@ namespace Microsoft.Azure.Devices.Client
 
         internal bool IsE2eDiagnosticSupportedProtocol()
         {
-            foreach (ITransportSettings transportSetting in _transportSettings)
+            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings
+                || _clientOptions.TransportSettings is IotHubClientMqttSettings)
             {
-                TransportType transportType = transportSetting.GetTransportType();
-                if (!(transportType == TransportType.Amqp_WebSocket_Only
-                    || transportType == TransportType.Amqp_Tcp_Only
-                    || transportType == TransportType.Mqtt_WebSocket_Only
-                    || transportType == TransportType.Mqtt_Tcp_Only))
-                {
-                    throw new NotSupportedException($"{transportType} protocol doesn't support E2E diagnostic.");
-                }
+                return true;
             }
-            return true;
+
+            throw new NotSupportedException($"The {_clientOptions.TransportSettings.GetType().Name} transport doesn't support E2E diagnostic.");
         }
     }
 }

@@ -20,26 +20,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
-            Client.TransportType transport,
+            IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
             Func<Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
-            bool ignoreConnectionStatus,
+            bool ignoreConnectionState,
             MsTestLogger logger)
         {
-            var transportSettings = new ITransportSettings[]
+            transportSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings
             {
-                new AmqpTransportSettings(transport)
-                {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings
-                    {
-                        MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true,
-                    }
-                }
+                MaxPoolSize = unchecked((uint)poolSize),
+                Pooling = true,
             };
 
             int totalRuns = 0;
@@ -48,9 +42,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             bool reRunTest = false;
 
             var testDevices = new List<TestDevice>(devicesCount);
-            var deviceClients = new List<DeviceClient>(devicesCount);
+            var deviceClients = new List<IotHubDeviceClient>(devicesCount);
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
-            var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>(devicesCount);
+            var amqpConnectionStates = new List<AmqpConnectionStateChange>(devicesCount);
             var operations = new List<Task>(devicesCount);
 
             do
@@ -64,18 +58,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     // Initialize the test device client instances
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
-                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
+                    IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
 
-                    // Set the device client connection status change handler
-                    var amqpConnectionStatusChange = new AmqpConnectionStatusChange(logger);
-                    deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
+                    // Set the device client connection state change handler
+                    var amqpConnectionStateChange = new AmqpConnectionStateChange(logger);
+                    deviceClient.SetConnectionStateChangeHandler(amqpConnectionStateChange.ConnectionStateChangeHandler);
 
                     var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
 
                     testDevices.Add(testDevice);
                     deviceClients.Add(deviceClient);
                     testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);
-                    amqpConnectionStatuses.Add(amqpConnectionStatusChange);
+                    amqpConnectionStates.Add(amqpConnectionStateChange);
 
                     if (initOperation != null)
                     {
@@ -92,32 +86,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     await Task.WhenAll(operations).ConfigureAwait(false);
                     operations.Clear();
 
-                    // Close the device client instances and verify the connection status change checks
-                    bool deviceConnectionStatusAsExpected = true;
+                    // Close the device client instances and verify the connection state change checks
+                    bool deviceConnectionStateAsExpected = true;
                     for (int i = 0; i < devicesCount; i++)
                     {
                         await deviceClients[i].CloseAsync().ConfigureAwait(false);
 
-                        if (!ignoreConnectionStatus)
+                        if (!ignoreConnectionState)
                         {
-                            // The connection status change count should be 2: connect (open) and disabled (close)
-                            if (amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount != 2)
+                            // The connection state change count should be 2: connect (open) and disabled (close)
+                            if (amqpConnectionStates[i].ConnectionStateChangeHandlerCount != 2)
                             {
-                                deviceConnectionStatusAsExpected = false;
+                                deviceConnectionStateAsExpected = false;
                             }
 
-                            // The connection status should be "Disabled", with connection status change reason "Client_close"
+                            // The connection state should be "Disabled", with connection state change reason "ClientClose"
                             Assert.AreEqual(
-                                ConnectionStatus.Disabled,
-                                amqpConnectionStatuses[i].LastConnectionStatus,
-                                $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
+                                ConnectionState.Disabled,
+                                amqpConnectionStates[i].LastConnectionState,
+                                $"The actual connection state is = {amqpConnectionStates[i].LastConnectionState}");
                             Assert.AreEqual(
-                                ConnectionStatusChangeReason.Client_Close,
-                                amqpConnectionStatuses[i].LastConnectionStatusChangeReason,
-                                $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                                ConnectionStateChangeReason.ClientClose,
+                                amqpConnectionStates[i].LastConnectionStateChangeReason,
+                                $"The actual connection state change reason is = {amqpConnectionStates[i].LastConnectionStateChangeReason}");
                         }
                     }
-                    if (deviceConnectionStatusAsExpected)
+                    if (deviceConnectionStateAsExpected)
                     {
                         successfulRuns++;
                     }
@@ -139,38 +133,38 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     // Clean up the local lists
                     testDevices.Clear();
                     deviceClients.Clear();
-                    amqpConnectionStatuses.Clear();
+                    amqpConnectionStates.Clear();
                 }
             } while (reRunTest && totalRuns < MaxTestRunCount);
 
             Assert.IsFalse(reRunTest, $"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
         }
 
-        private class AmqpConnectionStatusChange
+        private class AmqpConnectionStateChange
         {
             private readonly MsTestLogger _logger;
 
-            public AmqpConnectionStatusChange(MsTestLogger logger)
+            public AmqpConnectionStateChange(MsTestLogger logger)
             {
-                LastConnectionStatus = null;
-                LastConnectionStatusChangeReason = null;
-                ConnectionStatusChangesHandlerCount = 0;
+                LastConnectionState = null;
+                LastConnectionStateChangeReason = null;
+                ConnectionStateChangeHandlerCount = 0;
                 _logger = logger;
             }
 
-            public void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+            public void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
             {
-                ConnectionStatusChangesHandlerCount++;
-                LastConnectionStatus = status;
-                LastConnectionStatusChangeReason = reason;
-                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={ConnectionStatusChangesHandlerCount}");
+                ConnectionStateChangeHandlerCount++;
+                LastConnectionState = state;
+                LastConnectionStateChangeReason = reason;
+                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStateChangeHandler)}: state={state} stateChangeReason={reason} count={ConnectionStateChangeHandlerCount}");
             }
 
-            public int ConnectionStatusChangesHandlerCount { get; set; }
+            public int ConnectionStateChangeHandlerCount { get; set; }
 
-            public ConnectionStatus? LastConnectionStatus { get; set; }
+            public ConnectionState? LastConnectionState { get; set; }
 
-            public ConnectionStatusChangeReason? LastConnectionStatusChangeReason { get; set; }
+            public ConnectionStateChangeReason? LastConnectionStateChangeReason { get; set; }
         }
     }
 }

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -60,26 +59,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 await amqpSession.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotSession(amqpSession);
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception e) when (!Fx.IsFatal(e))
             {
                 Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _amqpConnection);
                 if (ReferenceEquals(e, ex))
                 {
                     throw;
                 }
-                else
+
+                if (ex is AmqpIotResourceException)
                 {
-                    if (ex is AmqpIotResourceException)
-                    {
-                        _amqpConnection.SafeClose();
-                        throw new IotHubCommunicationException(ex.Message, ex);
-                    }
-                    throw ex;
+                    _amqpConnection.SafeClose();
+                    throw new IotHubCommunicationException(ex.Message, ex);
                 }
+
+                throw ex;
             }
         }
 
-        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken)
+        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IClientConfiguration clientConfiguration, CancellationToken cancellationToken)
         {
             if (_amqpConnection.IsClosing())
             {
@@ -88,21 +86,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, _amqpIotCbsLink);
+                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(clientConfiguration, _amqpIotCbsLink);
                 await amqpAuthenticator.InitLoopAsync(cancellationToken).ConfigureAwait(false);
                 return amqpAuthenticator;
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _amqpConnection);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _amqpConnection);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
-                else
-                {
-                    throw ex;
-                }
+
+                throw iotEx;
             }
         }
 

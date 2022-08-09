@@ -20,14 +20,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
         private readonly AmqpSettings _amqpSettings;
-        private readonly AmqpTransportSettings _amqpTransportSettings;
+        private readonly IotHubClientAmqpSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIotTransport(
             AmqpSettings amqpSettings,
-            AmqpTransportSettings amqpTransportSettings,
+            IotHubClientAmqpSettings amqpTransportSettings,
             string hostName,
             bool disableServerCertificateValidation)
         {
@@ -42,15 +42,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Port = AmqpConstants.DefaultSecurePort,
             };
 
-            SslProtocols protocols = TlsVersions.Instance.Preferred;
-
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = hostName,
                 Certificate = null,
                 CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback
                     ?? OnRemoteCertificateValidation,
-                Protocols = protocols,
+                Protocols = amqpTransportSettings.SslProtocols,
             };
 
             if (_amqpTransportSettings.ClientCertificate != null)
@@ -72,16 +70,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             TransportBase transport;
 
-            switch (_amqpTransportSettings.GetTransportType())
+            switch (_amqpTransportSettings.Protocol)
             {
-                case TransportType.Amqp_WebSocket_Only:
-                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    break;
-
-                case TransportType.Amqp_Tcp_Only:
+                case IotHubClientTransportProtocol.Tcp:
                     var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
                     transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                    break;
+
+                case IotHubClientTransportProtocol.WebSocket:
+                    transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
+                        .ConfigureAwait(false);
                     break;
 
                 default:
@@ -160,15 +158,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     websocket.Options.ClientCertificates.Add(_amqpTransportSettings.ClientCertificate);
                 }
 
-                // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
-                if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
-                {
-                    websocket.Options.RemoteCertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
-                }
-#endif
                 await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
                 return websocket;

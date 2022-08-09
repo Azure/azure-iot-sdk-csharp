@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// E2E test class for all registry operations including device/module CRUD.
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     {
         private readonly string _idPrefix = $"{nameof(RegistryE2ETests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(HttpRequestException))]
         public async Task DevicesClient_BadProxy_ThrowsException()
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             _ = await serviceClient.Devices.GetAsync("device-that-does-not-exist").ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddAndRemoveDeviceWithScope()
         {
             // arrange
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddDeviceWithTwinWithDeviceCapabilities()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddDevices2Async_Works()
         {
             // arrange
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_UpdateDevices2Async_Works()
         {
             // arrange
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_UpdateTwins2Async_Works()
         {
             // arrange
@@ -230,14 +230,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             var device1 = new Device(_idPrefix + Guid.NewGuid());
             var device2 = new Device(_idPrefix + Guid.NewGuid());
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
 
             try
             {
                 await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
-                Twin twin1 = await registryManager.GetTwinAsync(device1.Id).ConfigureAwait(false);
+                Twin twin1 = await serviceClient.Twins.GetAsync(device1.Id).ConfigureAwait(false);
                 await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
-                Twin twin2 = await registryManager.GetTwinAsync(device2.Id).ConfigureAwait(false);
+                Twin twin2 = await serviceClient.Twins.GetAsync(device2.Id).ConfigureAwait(false);
 
                 // act
 
@@ -247,17 +246,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 twin1.Properties.Desired[expectedProperty] = expectedPropertyValue;
                 twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
 
-                BulkRegistryOperationResult result = await registryManager
-                    .UpdateTwinsAsync(new[] { twin1, twin2 })
+                BulkRegistryOperationResult result = await serviceClient.Twins
+                    .UpdateAsync(new[] { twin1, twin2 })
                     .ConfigureAwait(false);
 
                 // assert
 
                 result.IsSuccessful.Should().BeTrue();
 
-                var actualTwin1 = await registryManager.GetTwinAsync(device1.Id).ConfigureAwait(false);
+                var actualTwin1 = await serviceClient.Twins.GetAsync(device1.Id).ConfigureAwait(false);
                 ((string)actualTwin1.Properties.Desired[expectedProperty]).Should().Be(expectedPropertyValue);
-                var actualTwin2 = await registryManager.GetTwinAsync(device2.Id).ConfigureAwait(false);
+                var actualTwin2 = await serviceClient.Twins.GetAsync(device2.Id).ConfigureAwait(false);
                 ((string)(actualTwin2.Properties.Desired[expectedProperty])).Should().Be(expectedPropertyValue);
             }
             finally
@@ -274,7 +273,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_RemoveDevices2Async_Works()
         {
             // arrange
@@ -332,7 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
@@ -346,75 +345,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
-        public async Task RegistryManager_ConfigurationOperations_Work()
-        {
-            // arrange
-
-            bool configCreated = false;
-            string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
-            using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-
-            try
-            {
-                var expected = new Configuration(configurationId)
-                {
-                    Priority = 2,
-                    Labels = { { "labelName", "labelValue" } },
-                    TargetCondition = "*",
-                    Content = new ConfigurationContent
-                    {
-                        DeviceContent = { { "properties.desired.x", 4L } },
-                    },
-                    Metrics = new ConfigurationMetrics
-                    {
-                        Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 4" } }
-                    },
-                };
-
-                // act and assert
-
-                Configuration addResult = await client.AddConfigurationAsync(expected).ConfigureAwait(false);
-                configCreated = true;
-                addResult.Id.Should().Be(configurationId);
-                addResult.Priority.Should().Be(expected.Priority);
-                addResult.TargetCondition.Should().Be(expected.TargetCondition);
-                addResult.Content.DeviceContent.First().Should().Be(expected.Content.DeviceContent.First());
-                addResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
-                addResult.ETag.Should().NotBeNullOrEmpty();
-
-                Configuration getResult = await client.GetConfigurationAsync(configurationId).ConfigureAwait(false);
-                getResult.Id.Should().Be(configurationId);
-                getResult.Priority.Should().Be(expected.Priority);
-                getResult.TargetCondition.Should().Be(expected.TargetCondition);
-                getResult.Content.DeviceContent.First().Should().Be(expected.Content.DeviceContent.First());
-                getResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
-                getResult.ETag.Should().Be(addResult.ETag);
-
-                IEnumerable<Configuration> listResult = await client.GetConfigurationsAsync(100).ConfigureAwait(false);
-                listResult.Should().Contain(x => x.Id == configurationId);
-
-                expected.Priority++;
-                expected.ETag = getResult.ETag;
-                Configuration updateResult = await client.UpdateConfigurationAsync(expected).ConfigureAwait(false);
-                updateResult.Id.Should().Be(configurationId);
-                updateResult.Priority.Should().Be(expected.Priority);
-                updateResult.TargetCondition.Should().Be(expected.TargetCondition);
-                updateResult.Content.DeviceContent.First().Should().Be(expected.Content.DeviceContent.First());
-                updateResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
-                updateResult.ETag.Should().NotBeNullOrEmpty().And.Should().NotBe(getResult.ETag, "The ETag should have changed after update");
-            }
-            finally
-            {
-                if (configCreated)
-                {
-                    // If this fails, we shall let it throw an exception and fail the test
-                    await client.RemoveConfigurationAsync(configurationId).ConfigureAwait(false);
-                }
-            }
-        }
-
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Query_Works()
         {
             // arrange
@@ -431,7 +362,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             // act
 
             string queryText = $"select * from devices where deviceId = '{deviceId}'";
-            IQuery query = registryManager.CreateQuery(queryText);
+            IQuery query = serviceClient.Query.CreateAsync(queryText);
             IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
 
             // assert
@@ -441,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
             const int moduleCount = 2;
@@ -494,7 +425,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         /// Test basic lifecycle of a module.
         /// This test includes CRUD operations only.
         /// </summary>
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_IdentityLifecycle()
         {
             string testDeviceId = $"IdentityLifecycleDevice{Guid.NewGuid()}";
@@ -541,7 +472,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         /// <summary>
         /// Test basic operations of a module's twin.
         /// </summary>
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_DeviceTwinLifecycle()
         {
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
@@ -551,7 +482,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             try
             {
                 // Get the module twin
-                Twin moduleTwin = await client.GetTwinAsync(module.DeviceId, module.Id).ConfigureAwait(false);
+                Twin moduleTwin = await serviceClient.Twins.GetAsync(module.DeviceId, module.Id).ConfigureAwait(false);
 
                 moduleTwin.ModuleId.Should().BeEquivalentTo(module.Id, "ModuleId on the Twin should match that of the module identity.");
 
@@ -560,7 +491,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 string propValue = "userA";
                 moduleTwin.Properties.Desired[propName] = propValue;
 
-                Twin updatedModuleTwin = await client.UpdateTwinAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
+                Twin updatedModuleTwin = await serviceClient.Twins.UpdateAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
 
                 Assert.IsNotNull(updatedModuleTwin.Properties.Desired[propName]);
                 Assert.AreEqual(propValue, (string)updatedModuleTwin.Properties.Desired[propName]);
@@ -572,6 +503,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             {
                 await CleanupAsync(serviceClient, module.DeviceId).ConfigureAwait(false);
             }
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task DevicesClient_GetStatistics()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+
+            // No great way to test the accuracy of these statistics, but making the request successfully should
+            // be enough to indicate that this API works as intended
+            ServiceStatistics serviceStatistics = await serviceClient.Devices.GetServiceStatisticsAsync().ConfigureAwait(false);
+            serviceStatistics.ConnectedDeviceCount.Should().BeGreaterOrEqualTo(0);
+
+            // No great way to test the accuracy of these statistics, but making the request successfully should
+            // be enough to indicate that this API works as intended
+            RegistryStatistics registryStatistics = await serviceClient.Devices.GetRegistryStatisticsAsync().ConfigureAwait(false);
+            registryStatistics.DisabledDeviceCount.Should().BeGreaterOrEqualTo(0);
+            registryStatistics.EnabledDeviceCount.Should().BeGreaterOrEqualTo(0);
+            registryStatistics.TotalDeviceCount.Should().BeGreaterOrEqualTo(0);
         }
 
         private static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)

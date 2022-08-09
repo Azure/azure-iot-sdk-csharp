@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client.Edge
@@ -15,15 +14,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
     internal class CustomCertificateValidator : ICertificateValidator
     {
         private readonly IEnumerable<X509Certificate2> _certs;
-        private readonly ITransportSettings[] _transportSettings;
+        private readonly IotHubClientTransportSettings _transportSettings;
 
-        private CustomCertificateValidator(IList<X509Certificate2> certs, ITransportSettings[] transportSettings)
+        private CustomCertificateValidator(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
             _certs = certs;
             _transportSettings = transportSettings;
         }
 
-        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, ITransportSettings[] transportSettings)
+        public static CustomCertificateValidator Create(IList<X509Certificate2> certs, IotHubClientTransportSettings transportSettings)
         {
             var instance = new CustomCertificateValidator(certs, transportSettings);
             instance.SetupCertificateValidation();
@@ -42,43 +41,27 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             Debug.WriteLine("CustomCertificateValidator.SetupCertificateValidation()");
 
-            foreach (ITransportSettings transportSetting in _transportSettings)
+            if (_transportSettings is IotHubClientAmqpSettings amqpTransportSettings)
             {
-                switch (transportSetting.GetTransportType())
+                if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
                 {
-                    case TransportType.Amqp_WebSocket_Only:
-                    case TransportType.Amqp_Tcp_Only:
-                        if (transportSetting is AmqpTransportSettings amqpTransportSettings)
-                        {
-                            if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
-                            {
-                                amqpTransportSettings.RemoteCertificateValidationCallback =
-                                    (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                            }
-                        }
-                        break;
-
-                    case TransportType.Http1:
-                        // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
-                        // So set the callback in HttpClientHandler for InvokeMethodAsync
-                        break;
-
-                    case TransportType.Mqtt_WebSocket_Only:
-                    case TransportType.Mqtt_Tcp_Only:
-                        if (transportSetting is MqttTransportSettings mqttTransportSettings)
-                        {
-                            if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
-                            {
-                                mqttTransportSettings.RemoteCertificateValidationCallback =
-                                    (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                            }
-                        }
-                        break;
-
-                    default:
-                        throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportSetting.GetTransportType()));
+                    amqpTransportSettings.RemoteCertificateValidationCallback =
+                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
                 }
             }
+            else if (_transportSettings is IotHubClientMqttSettings mqttTransportSettings)
+            {
+                if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
+                {
+                    mqttTransportSettings.RemoteCertificateValidationCallback =
+                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
+                }
+            }
+
+            // TODO: Tim/Abhipsa, what does this mean?
+
+            // InvokeMethodAsync is over HTTP even when transportSettings set a different protocol
+            // So set the callback in HttpClientHandler for InvokeMethodAsync
         }
 
         private static bool ValidateCertificate(X509Certificate2 trustedCertificate, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

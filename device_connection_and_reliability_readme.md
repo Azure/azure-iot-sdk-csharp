@@ -26,9 +26,9 @@ Samples:
 
 When using SAS tokens, authentication can be done by:
 
-- Providing the shared access key of the IoT hub and letting the SDK create the SAS tokens by using one of the `CreateFromConnectionString` methods on the [DeviceClient](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceclient).
+- Providing the shared access key of the IoT hub and letting the SDK create the SAS tokens by using one of the `CreateFromConnectionString` methods on the [IotHubDeviceClient](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceclient).
 
-    If you choose this option, the SDK will create the SAS tokens and renew them before expiry. The default values for time-to-live and renewal buffer can be changed using the `ClientOptions` properties.
+    If you choose this option, the SDK will create the SAS tokens and renew them before expiry. The default values for time-to-live and renewal buffer can be changed using the `IotHubClientOptions` properties.
 
   - [SasTokenTimeToLive](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.clientoptions.sastokentimetolive): The suggested time-to-live value for tokens generated for SAS authenticated clients. Default value is 60 minutes.
   - [SasTokenRenewalBuffer](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.clientoptions.sastokenrenewalbuffer): The time buffer before expiry when the token should be renewed, expressed as a percentage of the time-to-live. Acceptable values lie between 0 and 100. Default value is 15%.  
@@ -41,7 +41,7 @@ When using SAS tokens, authentication can be done by:
   
 - Providing your own SAS token using [DeviceAuthenticationWithTokenRefresh](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithtokenrefresh)
 
-    If you choose to use `DeviceAuthenticationWithTokenRefresh` to provide your own implementation of token generation, you can provide the time-to-live and time buffer before expiry through the `DeviceAuthenticationWithTokenRefresh` constructor. The `ClientOptions` only apply to other `IAunthenticationMethod` implementations.
+    If you choose to use `DeviceAuthenticationWithTokenRefresh` to provide your own implementation of token generation, you can provide the time-to-live and time buffer before expiry through the `DeviceAuthenticationWithTokenRefresh` constructor. The `IotHubClientOptions` only apply to other `IAunthenticationMethod` implementations.
 
 When using x509 certificates, [DeviceAuthenticationWithX509Certificate](https://docs.microsoft.com/dotnet/api/microsoft.azure.devices.client.deviceauthenticationwithx509certificate) can be used. The client authentication will be valid until the certificate is valid. Any renewal will have to be done manually and the client needs to be recreated.
 
@@ -70,7 +70,7 @@ HTTP is a stateless protocol and will work whenever there is network connectivit
 
 ### Timeout controls
 
-There are different timeout values that can be configured for the `DeviceClient`/`ModuleClient` based on the protocol. These values are configuarable through the following transport settings that are passed while creating the client. Once the client is created, the settings cannot be changed. The client will need to be recreated with new settings to make changes.
+There are different timeout values that can be configured for the `IotHubDeviceClient`/`IotHubModuleClient` based on the protocol. These values are configuarable through the following transport settings that are passed while creating the client. Once the client is created, the settings cannot be changed. The client will need to be recreated with new settings to make changes.
 
 AMQP timeout settings:
 

@@ -13,7 +13,7 @@ using Microsoft.Azure.Devices;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
-        [Timeout(120000)] // the number of jobs that can be run at a time are limited anyway
+        [Timeout(LongRunningTestTimeoutMilliseconds)] // the number of jobs that can be run at a time are limited anyway
         [DoNotParallelize]
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
@@ -57,7 +57,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             string devicesFileName = $"{idPrefix}-devices-{StorageContainer.GetRandomSuffix(4)}.txt";
             string configsFileName = $"{idPrefix}-configs-{StorageContainer.GetRandomSuffix(4)}.txt";
 
-            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             try
@@ -135,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                     try
                     {
                         device = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
-                        config = await registryManager.GetConfigurationAsync(configId).ConfigureAwait(false);
+                        config = await serviceClient.Configurations.GetAsync(configId).ConfigureAwait(false);
                         break;
                     }
                     catch (Exception ex)
@@ -157,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 try
                 {
                     await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-                    await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
+                    await serviceClient.Configurations.DeleteAsync(configId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

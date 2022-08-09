@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     public class TestDeviceCallbackHandler : IDisposable
     {
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _deviceClient;
         private readonly TestDevice _testDevice;
         private readonly MsTestLogger _logger;
 
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
         private Message _expectedMessageSentByService;
 
-        public TestDeviceCallbackHandler(DeviceClient deviceClient, TestDevice testDevice, MsTestLogger logger)
+        public TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, TestDevice testDevice, MsTestLogger logger)
         {
             _deviceClient = deviceClient;
             _testDevice = testDevice;

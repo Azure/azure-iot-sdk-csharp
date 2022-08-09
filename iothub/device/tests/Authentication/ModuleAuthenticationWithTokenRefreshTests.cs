@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     {
         private const string TestDeviceId = "TestDeviceID";
         private const string TestModuleId = "TestModuleID";
-        private const string TestIoTHubName = "contoso.azure-devices.net";
+        private const string TestIotHubName = "contoso.azure-devices.net";
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private static string TestSharedAccessKey;
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ModuleAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId, TestModuleId);
-            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, refresher);
+            var csBuilder = new IotHubConnectionStringBuilder(refresher, TestIotHubName);
 
             refresher.Populate(csBuilder);
 
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(null, csBuilder.SharedAccessKey);
             Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
 
-            string token = await refresher.GetTokenAsync(TestIoTHubName);
+            string token = await refresher.GetTokenAsync(TestIotHubName);
 
             refresher.Populate(csBuilder);
 
@@ -83,22 +83,24 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName,
-                new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey));
+            var csBuilder = new IotHubConnectionStringBuilder(
+                new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey),
+                TestIotHubName);
 
-            IotHubConnectionString cs = csBuilder.ToIotHubConnectionString();
+            var clientOptions = new IotHubClientOptions();
+            ClientConfiguration connInfo = new ClientConfiguration(csBuilder, clientOptions);
 
-            Assert.IsNotNull(cs.TokenRefresher);
-            Assert.IsInstanceOfType(cs.TokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
+            Assert.IsNotNull(connInfo.TokenRefresher);
+            Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
 
-            var auth = (IAuthorizationProvider)cs;
-            var cbsAuth = new AmqpIotCbsTokenProvider(cs);
+            var auth = (IAuthorizationProvider)connInfo;
+            var cbsAuth = new AmqpIotCbsTokenProvider(connInfo);
 
             string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
-            CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIoTHubName), "testAppliesTo", null).ConfigureAwait(false);
+            CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIotHubName), "testAppliesTo", null).ConfigureAwait(false);
 
-            Assert.IsNull(cs.SharedAccessSignature);
-            Assert.AreEqual(TestDeviceId, cs.DeviceId);
+            Assert.IsNull(connInfo.SharedAccessSignature);
+            Assert.AreEqual(TestDeviceId, connInfo.DeviceId);
 
             Assert.IsNotNull(token1);
             Assert.IsNotNull(token2);

@@ -12,11 +12,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     public static class FaultInjectionPoolingOverAmqp
-
     {
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
-            Client.TransportType transport,
+            IotHubClientTransportSettings TransportSettings,
             string proxyAddress,
             int poolSize,
             int devicesCount,
@@ -24,49 +23,46 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             TimeSpan delayInSec,
             TimeSpan durationInSec,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
-            Func<DeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
-            Func<List<DeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> initOperation,
+            Func<IotHubDeviceClient, TestDevice, TestDeviceCallbackHandler, Task> testOperation,
+            Func<List<IotHubDeviceClient>, List<TestDeviceCallbackHandler>, Task> cleanupOperation,
             ConnectionStringAuthScope authScope,
             MsTestLogger logger)
         {
-            var transportSettings = new ITransportSettings[]
+            var transportSettings  = new IotHubClientAmqpSettings(TransportSettings.Protocol)
             {
-                new AmqpTransportSettings(transport)
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings()
                 {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
-                    {
-                        MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true,
-                    },
-                    Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                }
+                    MaxPoolSize = unchecked((uint)poolSize),
+                    Pooling = true,
+                },
+                Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
             };
 
             var testDevices = new List<TestDevice>();
-            var deviceClients = new List<DeviceClient>();
+            var deviceClients = new List<IotHubDeviceClient>();
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>();
-            var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
+            var amqpConnectionStates = new List<AmqpConnectionStateChange>();
             var operations = new List<Task>();
 
             // Arrange
             // Initialize the test device client instances
-            // Set the device client connection status change handler
+            // Set the device client connection state change handler
             logger.Trace($">>> {nameof(FaultInjectionPoolingOverAmqp)} Initializing Device Clients for multiplexing test.");
             for (int i = 0; i < devicesCount; i++)
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, $"{devicePrefix}_{i}_").ConfigureAwait(false);
-                DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
+                IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope);
 
-                var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevice.Id, logger);
-                deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
+                var amqpConnectionStatesChange = new AmqpConnectionStateChange(testDevice.Id, logger);
+                deviceClient.SetConnectionStateChangeHandler(amqpConnectionStatesChange.ConnectionStateChangeHandler);
 
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice, logger);
 
                 testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);
                 testDeviceCallbackHandlers.Add(testDeviceCallbackHandler);
-                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
+                amqpConnectionStates.Add(amqpConnectionStatesChange);
 
                 operations.Add(initOperation(deviceClient, testDevice, testDeviceCallbackHandler));
             }
@@ -89,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 await Task.WhenAll(operations).ConfigureAwait(false);
                 operations.Clear();
 
-                int countBeforeFaultInjection = amqpConnectionStatuses[0].ConnectionStatusChangeCount;
+                int countBeforeFaultInjection = amqpConnectionStates[0].ConnectionStateChangeCount;
                 // Inject the fault into device 0
                 watch.Start();
 
@@ -110,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     var sw = Stopwatch.StartNew();
                     while (sw.Elapsed < FaultInjection.LatencyTimeBuffer)
                     {
-                        if (amqpConnectionStatuses[0].ConnectionStatusChangeCount > countBeforeFaultInjection)
+                        if (amqpConnectionStates[0].ConnectionStateChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
@@ -134,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         notRecovered = false;
                         for (j = 0; j < devicesCount; j++)
                         {
-                            if (amqpConnectionStatuses[j].LastConnectionStatus != ConnectionStatus.Connected)
+                            if (amqpConnectionStates[j].LastConnectionState != ConnectionState.Connected)
                             {
                                 await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                                 notRecovered = true;
@@ -181,25 +177,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 operations.Clear();
 
                 // Verify the connection status change checks.
-                // For all of the devices - last connection status should be "Disabled", with reason "Client_close"
+                // For all of the devices - last connection state should be "Disabled", with reason "ClientClose"
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    // For the faulted device [device 0] - verify the connection status change count.
+                    // For the faulted device [device 0] - verify the connection state change count.
                     if (i == 0)
                     {
                         if (FaultInjection.FaultShouldDisconnect(faultType))
                         {
                             // 4 is the minimum notification count: connect, fault, reconnect, disable.
-                            Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangeCount >= 4, $"The expected connection status change count for {testDevices[i].Id} should equals or greater than 4 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
+                            Assert.IsTrue(amqpConnectionStates[i].ConnectionStateChangeCount >= 4, $"The expected connection state change count for {testDevices[i].Id} should equals or greater than 4 but was {amqpConnectionStates[i].ConnectionStateChangeCount}");
                         }
                         else
                         {
                             // 2 is the minimum notification count: connect, disable.
-                            Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangeCount >= 2, $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
+                            Assert.IsTrue(amqpConnectionStates[i].ConnectionStateChangeCount >= 2, $"The expected connection state change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStates[i].ConnectionStateChangeCount}");
                         }
                     }
-                    Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Disabled} but was {amqpConnectionStatuses[i].LastConnectionStatus}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Client_Close} but was {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
+                    Assert.AreEqual(ConnectionState.Disabled, amqpConnectionStates[i].LastConnectionState, $"The expected connection state should be {ConnectionState.Disabled} but was {amqpConnectionStates[i].LastConnectionState}");
+                    Assert.AreEqual(ConnectionStateChangeReason.ClientClose, amqpConnectionStates[i].LastConnectionStateChangeReason, $"The expected connection state change reason should be {ConnectionStateChangeReason.ClientClose} but was {amqpConnectionStates[i].LastConnectionStateChangeReason}");
                 }
             }
             finally

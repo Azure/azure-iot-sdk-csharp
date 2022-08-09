@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
         private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
-        private readonly AmqpTransportSettings _amqpTransportSettings;
+        private readonly IotHubClientAmqpSettings _amqpTransportSettings;
         private readonly string _hostName;
 
         private AmqpIotTransport _amqpIotTransport;
 
-        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
+        internal AmqpIotConnector(IotHubClientAmqpSettings amqpTransportSettings, string hostName)
         {
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 return amqpIotConnection;
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 transportBase?.Close();
                 _amqpIotTransport?.Dispose();

@@ -16,6 +16,13 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     /// <remarks>
     /// This client is <see cref="IDisposable"/> but users are not responsible for disposing subclients within this client.
+    /// <para>
+    /// This client creates a lifetime long instance of <see cref="HttpClient"/> that is tied to the URI of the
+    /// IoT hub specified and configured with any proxy settings provided.
+    /// For that reason, the instances are not static and an application using this client
+    /// should create and save it for all use. Repeated creation may cause
+    /// <see href="https://docs.microsoft.com/azure/architecture/antipatterns/improper-instantiation/">socket exhaustion</see>.
+    /// </para>
     /// </remarks>
     public class IotHubServiceClient : IDisposable
     {
@@ -135,6 +142,46 @@ namespace Microsoft.Azure.Devices
         public ModulesClient Modules { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles configurations
+        /// getting/adding/setting/deleting configurations.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
+        public ConfigurationsClient Configurations { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> to directly invoke direct methods on devices and modules in IoT hub.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods"/>
+        public DirectMethodsClient DirectMethods { get; protected set; }
+        
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for executing queries using a SQL-like syntax.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
+        public QueryClient Query { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for scheduled jobs management.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-jobs"/>
+        public ScheduledJobsClient ScheduledJobs { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles all digital twin operations including
+        /// getting a digital twin, updating a digital twin, and invoking commands on a digital twin.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
+        public DigitalTwinsClient DigitalTwins { get; protected set; }
+
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> that handles getting, updating, and replacing device and module twins.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-twin-getstarted"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-csharp-csharp-module-twin-getstarted"/>
+        public TwinsClient Twins { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -147,6 +194,12 @@ namespace Microsoft.Azure.Devices
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Query = new QueryClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Configurations = new ConfigurationsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            ScheduledJobs = new ScheduledJobsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
         }
     }
 }

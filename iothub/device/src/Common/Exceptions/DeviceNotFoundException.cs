@@ -8,8 +8,8 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     /// <summary>
-    /// The exception is thrown when the device is disabled and will be used to set the status to device disabled in the
-    /// connection status handler. This exception also corresponds to the following error codes on operation responses:
+    /// The exception is thrown when the device is disabled and will be used to set the state to device disabled in the
+    /// connection state handler. This exception also corresponds to the following error codes on operation responses:
     /// <list>
     /// <item>AmqpErrorCode.NotFound</item>
     /// <item>HttpStatusCode.NotFound</item>

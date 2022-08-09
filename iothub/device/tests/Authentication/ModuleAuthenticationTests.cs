@@ -17,10 +17,10 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
 
 
         [TestMethod]
-        public void DeviceClient_ModuleAuthenticationWithRegistrySymmetricKey_Test()
+        public void IotHubDeviceClient_ModuleAuthenticationWithRegistrySymmetricKey_Test()
         {
             //Arrange
-            var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(fakeConnectionString);
+            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder(fakeConnectionString);
 
             Assert.IsNotNull(iotHubConnectionStringBuilder.HostName);
             Assert.IsNotNull(iotHubConnectionStringBuilder.DeviceId);
@@ -39,14 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             Assert.IsNull(iotHubConnectionStringBuilder.SharedAccessSignature);
             Assert.AreEqual("dGVzdFN0cmluZzM=", iotHubConnectionStringBuilder.SharedAccessKey);
             Assert.AreEqual("Device1", iotHubConnectionStringBuilder.DeviceId);
-            Assert.AreEqual("Module1", iotHubConnectionStringBuilder.ModuleId);            
+            Assert.AreEqual("Module1", iotHubConnectionStringBuilder.ModuleId);
         }
 
         [TestMethod]
-        public void DeviceClient_ModuleAuthenticationWithToken_Test()
+        public void IotHubDeviceClient_ModuleAuthenticationWithToken_Test()
         {
             //Arrange
-            var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(fakeToken);
+            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder(fakeToken);
 
             Assert.IsNotNull(iotHubConnectionStringBuilder.HostName);
             Assert.IsNotNull(iotHubConnectionStringBuilder.DeviceId);

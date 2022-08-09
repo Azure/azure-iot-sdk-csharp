@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices
 
         private readonly bool _useWebSocketOnly;
         private readonly ServiceClientTransportSettings _transportSettings;
+        private readonly IotHubServiceClientOptions _options;
 
         // Disposables
         private FaultTolerantAmqpObject<AmqpSession> _faultTolerantSession;
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices
         private ClientWebSocketTransport _clientWebSocketTransport;
         private IOThreadTimerSlim _refreshTokenTimer;
 
-        public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
+        public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings, IotHubServiceClientOptions options)
         {
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this);
 
@@ -44,6 +45,7 @@ namespace Microsoft.Azure.Devices
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(CreateSessionAsync, CloseConnection);
             _useWebSocketOnly = useWebSocketOnly;
             _transportSettings = transportSettings;
+            _options = options;
         }
 
         internal IotHubConnection(Func<TimeSpan, Task<AmqpSession>> onCreate, Action<AmqpSession> onClose)
@@ -318,7 +320,7 @@ namespace Microsoft.Azure.Devices
                     await SendCbsTokenAsync(cbsLink, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     return amqpSession;
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(this, ex, nameof(CreateSessionAsync));
@@ -400,14 +402,14 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, TimeSpan timeout)
+        private async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, TimeSpan timeout)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(webSocketUri, timeout, nameof(CreateLegacyClientWebSocketAsync));
 
             try
             {
-                var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
+                var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10, _options);
                 await websocket
                     .ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, timeout)
                     .ConfigureAwait(false);
