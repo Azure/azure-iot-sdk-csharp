@@ -13,20 +13,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public IDelegatingHandler Create(PipelineContext context)
         {
             ClientConfiguration clientConfiguration = context.ClientConfiguration;
-            InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
+            Func<MethodRequestInternal, Task> onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
-            InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
-            InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
+            Func<string, Message, Task> onModuleEventReceivedCallback = context.ModuleEventCallback;
+            Func<Message, Task> onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
                 return new AmqpTransportHandler(
                     context,
                     iotHubClientAmqpSettings,
-                    new Func<MethodRequestInternal, Task>(onMethodCallback),
+                    onMethodCallback,
                     onDesiredStatePatchReceived,
-                    new Func<string, Message, Task>(onModuleEventReceivedCallback),
-                    new Func<Message, Task>(onDeviceMessageReceivedCallback));
+                    onModuleEventReceivedCallback,
+                    onDeviceMessageReceivedCallback);
             }
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
@@ -34,10 +34,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return new MqttTransportHandler(
                     context,
                     iotHubClientMqttSettings,
-                    new Func<MethodRequestInternal, Task>(onMethodCallback),
+                    onMethodCallback,
                     onDesiredStatePatchReceived,
-                    new Func<string, Message, Task>(onModuleEventReceivedCallback),
-                    new Func<Message, Task>(onDeviceMessageReceivedCallback));
+                    onModuleEventReceivedCallback,
+                    onDeviceMessageReceivedCallback);
             }
 
             if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)

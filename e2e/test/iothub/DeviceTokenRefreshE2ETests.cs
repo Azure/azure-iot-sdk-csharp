@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.SetConnectionStateChangeHandler((ConnectionState status, ConnectionStateChangeReason reason) =>
             {
-                Logger.Trace($"{nameof(ConnectionStateChangeHandler)}: {status}; {reason}");
+                Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                 if (status == ConnectionState.DisconnectedRetrying || status == ConnectionState.Disconnected)
                 {
                     deviceDisconnected.Release();
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 deviceClient.SetConnectionStateChangeHandler((ConnectionState status, ConnectionStateChangeReason reason) =>
                 {
-                    Logger.Trace($"{nameof(ConnectionStateChangeHandler)}: {status}; {reason}");
+                    Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                     if (status == ConnectionState.DisconnectedRetrying || status == ConnectionState.Disconnected)
                     {
                         deviceDisconnected.Release();

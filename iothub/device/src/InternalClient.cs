@@ -27,41 +27,33 @@ namespace Microsoft.Azure.Devices.Client
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly IotHubClientOptions _clientOptions;
 
-        // Stores message input names supported by the client module and their associated delegate.
-        private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
-
-        private volatile Tuple<MessageHandler, object> _defaultEventCallback;
-
-        // Stores methods supported by the client device and their associated delegate.
-
-        private bool _isDeviceMethodEnabled;
-        private readonly Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods = new();
-
-        private volatile Tuple<MethodCallback, object> _deviceDefaultMethodCallback;
-
-        private volatile ConnectionStateChangeHandler _connectionStateChangeHandler;
-
-        // Count of messages sent by the device/ module. This is used for sending diagnostic information.
-        private int _currentMessageCount;
-
-        private int _diagnosticSamplingPercentage;
-
+        // Connection state change information
+        private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
         private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
         private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
-        private volatile Tuple<ReceiveMessageCallback, object> _deviceReceiveMessageCallback;
+        // Method callback information
+        private bool _isDeviceMethodEnabled;
+        private volatile Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> _deviceDefaultMethodCallback;
+        private readonly Dictionary<string, Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>> _deviceMethods = new();
 
+        // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
         private object _twinPatchCallbackContext;
+        internal Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
 
-        // Callback to call whenever the twin's desired state is updated by the service.
-        internal DesiredPropertyUpdateCallback _desiredPropertyUpdateCallback;
+        // Cloud-to-device message callback information
+        private volatile Tuple<Func<Message, object, Task>, object> _deviceReceiveMessageCallback;
 
-        internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
+        // Cloud-to-module message callback information
+        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
+        private volatile Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>> _receiveEventEndpoints;
 
-        internal delegate Task OnDeviceMessageReceivedDelegate(Message message);
+        // Diagnostic information
 
-        internal delegate Task OnModuleEventMessageReceivedDelegate(string input, Message message);
+        // Count of messages sent by the device/ module. This is used for sending diagnostic information.
+        private int _currentMessageCount;
+        private int _diagnosticSamplingPercentage;
 
         protected internal InternalClient(
             ClientConfiguration clientConfiguration,
@@ -85,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
-                DesiredPropertyUpdateCallback = OnReportedStatePatchReceived,
+                DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStateChangeHandler = OnConnectionStateChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
@@ -154,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate.
         /// </summary>
         /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler)
+        public void SetConnectionStateChangeHandler(Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler)
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
@@ -174,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            DesiredPropertyUpdateCallback callback,
+            Func<TwinCollection, object, Task> callback,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -225,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client
         /// of cancellation.</param>
         public async Task SetMethodHandlerAsync(
             string methodName,
-            MethodCallback methodHandler,
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -243,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (methodHandler != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                    _deviceMethods[methodName] = new Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
@@ -276,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
         public async Task SetMethodDefaultHandlerAsync(
-            MethodCallback methodHandler,
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -293,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
 
-                    _deviceDefaultMethodCallback = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                    _deviceDefaultMethodCallback = new Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
@@ -602,7 +594,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            Tuple<MethodCallback, object> callbackContextPair = null;
+            Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> callbackContextPair = null;
             MethodResponseInternal methodResponseInternal = null;
             byte[] requestData = methodRequestInternal.GetBytes();
 
@@ -652,8 +644,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    MethodResponse rv = await callbackContextPair
-                        .Item1(new MethodRequest(methodRequestInternal.Name, requestData), callbackContextPair.Item2)
+                    Func<MethodRequest, object, Task<MethodResponse>> userSuppliedCallback = callbackContextPair.Item1;
+                    object userSuppliedContext = callbackContextPair.Item2;
+
+                    MethodResponse rv = await userSuppliedCallback
+                        .Invoke(new MethodRequest(methodRequestInternal.Name, requestData), userSuppliedContext)
                         .ConfigureAwait(false);
 
                     methodResponseInternal = rv.Result == null
@@ -682,7 +677,7 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalledAsync));
         }
 
-        internal void OnReportedStatePatchReceived(TwinCollection patch)
+        internal void OnDesiredStatePatchReceived(TwinCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {
@@ -690,9 +685,9 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             if (Logging.IsEnabled)
-                Logging.Info(this, patch.ToJson(), nameof(OnReportedStatePatchReceived));
+                Logging.Info(this, patch.ToJson(), nameof(OnDesiredStatePatchReceived));
 
-            _desiredPropertyUpdateCallback(patch, _twinPatchCallbackContext);
+            _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
         }
 
         private async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken = default)
@@ -753,7 +748,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
         public async Task SetReceiveMessageHandlerAsync(
-            ReceiveMessageCallback messageHandler,
+            Func<Message, object, Task> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -775,7 +770,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // If this is the first time the delegate is being registered, then the telemetry downlink will be enabled.
                     await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceReceiveMessageCallback = new Tuple<ReceiveMessageCallback, object>(messageHandler, userContext);
+                    _deviceReceiveMessageCallback = new Tuple<Func<Message, object, Task>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -856,7 +851,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                ReceiveMessageCallback callback = _deviceReceiveMessageCallback?.Item1;
+                Func<Message, object, Task> callback = _deviceReceiveMessageCallback?.Item1;
                 object callbackContext = _deviceReceiveMessageCallback?.Item2;
 
                 if (callback != null)
@@ -966,7 +961,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(
             string inputName,
-            MessageHandler messageHandler,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             bool isAnEdgeModule,
             CancellationToken cancellationToken = default)
@@ -988,10 +983,10 @@ namespace Microsoft.Azure.Devices.Client
 
                     if (_receiveEventEndpoints == null)
                     {
-                        _receiveEventEndpoints = new Dictionary<string, Tuple<MessageHandler, object>>();
+                        _receiveEventEndpoints = new Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>>();
                     }
 
-                    _receiveEventEndpoints[inputName] = new Tuple<MessageHandler, object>(messageHandler, userContext);
+                    _receiveEventEndpoints[inputName] = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -1029,7 +1024,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(
-            MessageHandler messageHandler,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             bool isAnEdgeModule,
             CancellationToken cancellationToken = default)
@@ -1045,7 +1040,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (messageHandler != null)
                 {
                     await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = new Tuple<MessageHandler, object>(messageHandler, userContext);
+                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
                 }
                 else
                 {
@@ -1079,7 +1074,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Tuple<MessageHandler, object> callback = null;
+                Tuple<Func<Message, object, Task<MessageResponse>>, object> callback = null;
                 await _moduleReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
                 try
                 {
@@ -1098,7 +1093,12 @@ namespace Microsoft.Azure.Devices.Client
                 MessageResponse response = MessageResponse.Completed;
                 if (callback?.Item1 != null)
                 {
-                    response = await callback.Item1.Invoke(message, callback.Item2).ConfigureAwait(false);
+                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = callback.Item1;
+                    object userContext = callback.Item2;
+
+                    response = await userSuppliedCallback
+                        .Invoke(message, userContext)
+                        .ConfigureAwait(false);
                 }
 
                 if (Logging.IsEnabled)
@@ -1181,11 +1181,10 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_connectionStateChangeHandler != null
-                    && (_lastConnectionState != state
-                        || _lastConnectionStateChangeReason != reason))
+                if (_lastConnectionState != state
+                    || _lastConnectionStateChangeReason != reason)
                 {
-                    _connectionStateChangeHandler(state, reason);
+                    _connectionStateChangeHandler?.Invoke(state, reason);
                 }
             }
             finally
