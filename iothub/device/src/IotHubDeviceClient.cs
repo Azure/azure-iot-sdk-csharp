@@ -375,41 +375,6 @@ namespace Microsoft.Azure.Devices.Client
             GC.SuppressFinalize(this);
         }
 
-#if NETSTANDARD2_1_OR_GREATER
-        // IAsyncDisposable is available in .NET Standard 2.1 and above
-
-        /// <summary>
-        /// Disposes the client in an asynchronous way. See <see cref="IAsyncDisposable"/> for more information.
-        /// </summary>
-        /// <remarks>
-        /// Includes a call to <see cref="CloseAsync(CancellationToken)"/>.
-        /// </remarks>
-        /// <example>
-        /// <c>
-        /// await using var client = DeviceClient.CreateFromConnectionString(...);
-        /// </c>
-        /// or
-        /// <c>
-        /// var client = DeviceClient.CreateFromConnectionString(...);
-        /// try
-        /// {
-        ///     // do work
-        /// }
-        /// finally
-        /// {
-        ///     await client.DisposeAsync();
-        /// }
-        /// </c>
-        /// </example>
-        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
-        public async ValueTask DisposeAsync()
-        {
-            await CloseAsync().ConfigureAwait(false);
-            Dispose();
-        }
-
-#endif
-
         /// <summary>
         /// Releases the unmanaged resources used by the DeviceClient and allows for any derived class to override and
         /// provide custom implementation.

@@ -158,15 +158,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     websocket.Options.ClientCertificates.Add(_amqpTransportSettings.ClientCertificate);
                 }
 
-                // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
-                if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
-                {
-                    websocket.Options.RemoteCertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
-                }
-#endif
                 await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
                 return websocket;
