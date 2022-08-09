@@ -11,9 +11,13 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents the template class for the results of an IQuery request
+    /// An iterable set of queried items.
     /// </summary>
-    /// <typeparam name="T">The result type</typeparam>
+    /// <typeparam name="T">
+    /// The type of the queried items. For instance, when using a query such as "SELECT * FROM devices",
+    /// this type should be type <see cref="Twin"/>. When using a query such as "SELECT * FROM devices.jobs",
+    /// this type should be type <see cref="ScheduledJob"/>.
+    /// </typeparam>
     public class QueryResponse<T>
     {
         private readonly QueryClient _client;

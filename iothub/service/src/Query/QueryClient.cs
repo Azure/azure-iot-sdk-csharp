@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </c>
         /// </example>
-        public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = null, CancellationToken cancellationToken = default)
+        public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating query", nameof(CreateAsync));
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
         /// </c>
         /// </example>
 
-        public virtual async Task<QueryResponse<ScheduledJob>> CreateAsync(JobType? jobType = null, JobStatus? jobStatus = null, QueryOptions options = null, CancellationToken cancellationToken = default)
+        public virtual async Task<QueryResponse<ScheduledJob>> CreateAsync(JobType? jobType = null, JobStatus? jobStatus = null, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
