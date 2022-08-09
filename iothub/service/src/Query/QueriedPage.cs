@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains the result of a twin, scheduled job or raw query
+    /// Contains the result of a twin, scheduled job or raw query.
     /// </summary>
     internal class QueriedPage<T>
     {

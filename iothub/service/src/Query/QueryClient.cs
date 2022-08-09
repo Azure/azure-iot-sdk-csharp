@@ -75,6 +75,26 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
+        /// while (await queriedTwins.MoveNextAsync())
+        /// {
+        ///     Twin queriedTwin = queriedTwins.Current;
+        ///     Console.WriteLine(queriedTwin);
+        /// }
+        /// </c>
+        /// </example>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
+        /// while (await queriedJobs.MoveNextAsync())
+        /// {
+        ///     ScheduledJob queriedJob = queriedJobs.Current;
+        ///     Console.WriteLine(queriedJob);
+        /// }
+        /// </c>
+        /// </example>
         public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = null, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -100,7 +120,7 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                QueriedPage<T> page = new QueriedPage<T>(response, responsePayload);
+                var page = new QueriedPage<T>(response, responsePayload);
                 return new QueryResponse<T>(this, query, page.Items, page.ContinuationToken, options?.PageSize);
             }
             catch (Exception ex)
@@ -134,6 +154,17 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync();
+        /// while (await queriedJobs.MoveNextAsync())
+        /// {
+        ///     ScheduledJob queriedJob = queriedJobs.Current;
+        ///     Console.WriteLine(queriedJob);
+        /// }
+        /// </c>
+        /// </example>
+
         public virtual async Task<QueryResponse<ScheduledJob>> CreateAsync(JobType? jobType = null, JobStatus? jobStatus = null, QueryOptions options = null, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

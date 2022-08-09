@@ -45,14 +45,54 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the ContinuationToken to use for continuing the enumeration
+        /// Gets the ContinuationToken to use for continuing the enumeration.
         /// </summary>
+        /// <remarks>
+        /// This library will handle this value for you automatically when fetching the next
+        /// pages of results. This value is exposed only for more unusual cases where users
+        /// choose to continue a previously interrupted query from a different machine, for example.
+        /// </remarks>
         public string ContinuationToken { get; internal set; }
 
         /// <summary>
         /// The current page of queried items.
         /// </summary>
+        /// <remarks>
+        /// While you can iterate over the queried page of items using this, there is no logic
+        /// built into it that allows you to fetch the next page of results automatically. Because
+        /// of that, most users are better off following the sample code that iterates item by item
+        /// rather than page by page.
+        /// </remarks>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
+        /// while (await queriedTwins.MoveNextAsync())
+        /// {
+        ///     Twin queriedTwin = queriedTwins.Current;
+        ///     Console.WriteLine(queriedTwin);
+        /// }
+        /// </c>
+        /// </example>
         public IEnumerable<T> CurrentPage { get; internal set; }
+
+        /// <summary>
+        /// Get the current item in the current page of the query results. Can be called multiple times without advancing the query.
+        /// </summary>
+        /// <remarks>
+        /// Like with a more typical implementation of IEnumerator, this value is null until the first
+        /// <see cref="MoveNextAsync(QueryOptions, CancellationToken)"/> call is made.
+        /// </remarks>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
+        /// while (await queriedTwins.MoveNextAsync()) // no item is skipped by calling this first
+        /// {
+        ///     Twin queriedTwin = queriedTwins.Current;
+        ///     Console.WriteLine(queriedTwin);
+        /// }
+        /// </c>
+        /// </example>
+        public T Current { get; private set; }
 
         /// <summary>
         /// Advances to the next element of the query results.
@@ -73,9 +113,10 @@ namespace Microsoft.Azure.Devices
         /// <see cref="Current"/>.
         ///
         /// This function is async because it may make a service request to fetch the next page of results if the current page
-        /// of results has been advanced through already.
+        /// of results has been advanced through already. Note that this function will return True even if it is at the end
+        /// of a particular page of items as long as there is at least one more page to be fetched.
         /// </remarks>
-        public async Task<bool> MoveNextAsync(QueryOptions queryOptions = null, CancellationToken cancellationToken = default)
+        public async Task<bool> MoveNextAsync(QueryOptions queryOptions = default, CancellationToken cancellationToken = default)
         {
             if (_items.MoveNext())
             {
@@ -93,7 +134,7 @@ namespace Microsoft.Azure.Devices
 
             // User's can pass in a continuation token themselves, but the default behavior
             // is to use the continuation token saved by this class when it last retrieved a page.
-            var queryOptionsClone = new QueryOptions()
+            var queryOptionsClone = new QueryOptions
             {
                 ContinuationToken = queryOptions?.ContinuationToken ?? ContinuationToken,
                 PageSize = queryOptions?.PageSize ?? _defaultPageSize,
@@ -118,14 +159,5 @@ namespace Microsoft.Azure.Devices
 
             return true;
         }
-
-        /// <summary>
-        /// Get the current query result. Can be called multiple times without advancing the query.
-        /// </summary>
-        /// <remarks>
-        /// Like with a more typical implementation of IEnumerator, this value is null until the first
-        /// <see cref="MoveNextAsync(QueryOptions, CancellationToken)"/> call is made.
-        /// </remarks>
-        public T Current { get; private set; }
     }
 }

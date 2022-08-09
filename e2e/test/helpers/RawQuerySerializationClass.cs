@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.E2ETests.helpers
+namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     /// <summary>
     /// This class exists to be a serialization type for a test involving raw queries.

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +22,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     {
         private readonly string _idPrefix = $"{nameof(QueryClientE2ETests)}_";
 
-        private readonly TimeSpan _timeout = TimeSpan.FromMinutes(1);
+        // There is some latency between when a twin/job is created and when it can be queried. This
+        // timeout is for how long to wait for this latency before failing the test.
+        private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(1);
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_Works()
@@ -66,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             using TestDevice testDevice3 = await TestDevice.GetTestDeviceAsync(Logger, _idPrefix);
 
             string queryText = $"select * from devices where deviceId = '{testDevice1.Id}' OR deviceId = '{testDevice2.Id}' OR deviceId = '{testDevice3.Id}'";
-            QueryOptions firstPageOptions = new QueryOptions()
+            QueryOptions firstPageOptions = new QueryOptions
             {
                 PageSize = 1
             };
@@ -86,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             // consume the first page of results so the next MoveNextAsync gets a new page
             (await queryResponse.MoveNextAsync()).Should().BeTrue();
 
-            QueryOptions secondPageOptions = new QueryOptions()
+            QueryOptions secondPageOptions = new QueryOptions
             {
                 PageSize = 2
             };
@@ -180,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         {
             // There is some latency between the creation of the test devices and when they are query-able,
             // so keep executing the query until both devices are returned in the results or until a timeout.
-            using var cancellationTokenSource = new CancellationTokenSource(_timeout);
+            using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
             QueryResponse<Twin> queryResponse = await queryClient.CreateAsync<Twin>(query);
             while (queryResponse.CurrentPage.Count() < expectedCount)
@@ -195,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         {
             // There is some latency between the creation of the test devices and when they are query-able,
             // so keep executing the query until both devices are returned in the results or until a timeout.
-            using var cancellationTokenSource = new CancellationTokenSource(_timeout);
+            using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
             QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync<ScheduledJob>(query);
             while (queryResponse.CurrentPage.Count() < expectedCount)
@@ -210,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         {
             // There is some latency between the creation of the test devices and when they are query-able,
             // so keep executing the query until both devices are returned in the results or until a timeout.
-            using var cancellationTokenSource = new CancellationTokenSource(_timeout);
+            using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
             QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync(type, status);
             while (queryResponse.CurrentPage.Count() < expectedCount)
