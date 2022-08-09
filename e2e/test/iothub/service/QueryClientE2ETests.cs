@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             // tests in this suite are written to work even if the queried job isn't the one they created.
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
-            queriedJob.Type.Should().NotBeNull();
+            queriedJob.JobType.Should().NotBeNull();
             queriedJob.StartTimeUtc.Should().NotBeNull();
             queriedJob.EndTimeUtc.Should().NotBeNull();
             queriedJob.CreatedTimeUtc.Should().NotBeNull();
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             // tests in this suite are written to work even if the queried job isn't the one they created.
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
-            queriedJob.Type.Should().NotBeNull();
+            queriedJob.JobType.Should().NotBeNull();
             queriedJob.EndTimeUtc.Should().NotBeNull();
             queriedJob.CreatedTimeUtc.Should().NotBeNull();
             queriedJob.Status.Should().NotBeNull();
