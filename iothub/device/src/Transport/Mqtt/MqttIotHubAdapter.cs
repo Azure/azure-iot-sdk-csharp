@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 throw new InvalidOperationException($"Unexpected data type: '{data.GetType().Name}'");
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Received a non-fatal exception while writing data to the MQTT transport layer, will shut down: {ex}", nameof(WriteAsync));
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _lastChannelActivityTime = DateTime.UtcNow;
                 ScheduleKeepConnectionAliveAsync(context);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"A non-fatal exception occurred while opening the MQTT connection, will shut down: {ex}", nameof(ConnectAsync));
@@ -402,7 +402,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await context.Channel.EventLoop.ScheduleAsync(s_pingServerCallback, context, _pingRequestInterval).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"A non-fatal exception occurred while sending the keep-alive ping, will shut down: {ex}", nameof(ScheduleKeepConnectionAliveAsync));
@@ -425,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .ScheduleAsync(s_checkConnAckTimeoutCallback, context, _mqttTransportSettings.ConnectArrivalTimeout)
                     .ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"A non-fatal exception occurred while ensuring that CONNECT was successful, will shut down: {ex}", nameof(ScheduleCheckConnectTimeoutAsync));
@@ -493,7 +493,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 self.ScheduleKeepConnectionAliveAsync(context);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(context, $"A non-fatal exception occurred while sending a ping request, will shut down: {ex}", nameof(ConnectAsync));
@@ -733,7 +733,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         break;
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(context, $"Received a non-fatal exception while processing a received packet of type {packet.PacketType}, will shut down: {ex}", nameof(ProcessMessageAsync));
@@ -768,7 +768,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 message.MqttTopicName = publish.TopicName;
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(context, $"Received a non-fatal exception while processing a received PUBLISH packet, will shut down: {ex}", nameof(AcceptMessageAsync));
@@ -980,7 +980,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await context.CloseAsync().ConfigureAwait(true);
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     //ignored
                     if (Logging.IsEnabled)
@@ -1009,7 +1009,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 CloseIotHubConnectionAsync();
                 await context.CloseAsync().ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 //ignored
                 if (Logging.IsEnabled)
@@ -1052,10 +1052,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _deviceBoundOneWayProcessor.Completion,
                     _deviceBoundTwoWayProcessor.Completion).ConfigureAwait(true);
             }
-            catch (Exception completeEx) when (!completeEx.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Complete exception: {completeEx}", nameof(CloseIotHubConnectionAsync));
+                    Logging.Error(this, $"Complete exception: {ex}", nameof(CloseIotHubConnectionAsync));
             }
             finally
             {
@@ -1067,11 +1067,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _serviceBoundTwoWayProcessor.Abort();
                     _deviceBoundTwoWayProcessor.Abort();
                 }
-                catch (Exception abortEx) when (!abortEx.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     // ignored on closing
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Abort exception: {abortEx}", nameof(CloseIotHubConnectionAsync));
+                        Logging.Error(this, $"Abort exception: {ex}", nameof(CloseIotHubConnectionAsync));
                 }
 
                 if (Logging.IsEnabled)

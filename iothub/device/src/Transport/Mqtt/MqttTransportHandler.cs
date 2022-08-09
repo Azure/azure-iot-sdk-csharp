@@ -660,7 +660,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex.ToString(), nameof(OnError));
@@ -925,7 +925,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     _channel = await _channelFactory(_serverAddresses, ProtocolGatewayPort).ConfigureAwait(true);
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     OnError(ex);
                     throw;
@@ -1253,7 +1253,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
             }
         }

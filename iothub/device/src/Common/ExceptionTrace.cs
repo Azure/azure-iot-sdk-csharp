@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -19,32 +17,32 @@ namespace Microsoft.Azure.Devices.Client
 
         public Exception AsError(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Error);
+            return TraceException(exception, TraceEventType.Error);
         }
 
         public Exception AsInformation(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Information);
+            return TraceException(exception, TraceEventType.Information);
         }
 
         public Exception AsWarning(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Warning);
+            return TraceException(exception, TraceEventType.Warning);
         }
 
         public Exception AsVerbose(Exception exception)
         {
-            return TraceException<Exception>(exception, TraceEventType.Verbose);
+            return TraceException(exception, TraceEventType.Verbose);
         }
 
         public ArgumentException Argument(string paramName, string message)
         {
-            return TraceException<ArgumentException>(new ArgumentException(message, paramName), TraceEventType.Error);
+            return TraceException(new ArgumentException(message, paramName), TraceEventType.Error);
         }
 
         public ArgumentNullException ArgumentNull(string paramName)
         {
-            return TraceException<ArgumentNullException>(new ArgumentNullException(paramName), TraceEventType.Error);
+            return TraceException(new ArgumentNullException(paramName), TraceEventType.Error);
         }
 
         public ArgumentOutOfRangeException ArgumentOutOfRange(string paramName, object actualValue, string message)
@@ -60,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
         public ObjectDisposedException ObjectDisposed(string message)
         {
             // pass in null, not disposedObject.GetType().FullName as per the above guideline
-            return TraceException<ObjectDisposedException>(new ObjectDisposedException(null, message), TraceEventType.Error);
+            return TraceException(new ObjectDisposedException(null, message), TraceEventType.Error);
         }
 
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",

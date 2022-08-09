@@ -685,7 +685,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         await OpenInternalAsync(withRetry, cancellationToken).ConfigureAwait(false);
                     }
-                    catch (Exception ex) when (!ex.IsFatal())
+                    catch (Exception ex) when (!Fx.IsFatal(ex))
                     {
                         HandleConnectionStateExceptions(ex, true);
                         throw;
@@ -731,7 +731,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 await base.OpenAsync(cancellationToken).ConfigureAwait(false);
                                 _onConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
                             }
-                            catch (Exception ex) when (!ex.IsFatal())
+                            catch (Exception ex) when (!Fx.IsFatal(ex))
                             {
                                 HandleConnectionStateExceptions(ex);
                                 throw;
@@ -755,7 +755,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
                     _onConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     HandleConnectionStateExceptions(ex);
                     throw;

@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     amqpIotConnection = _amqpIotConnection;
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 amqpAuthenticationRefresher?.StopLoop();
                 amqpIotConnection?.SafeClose();

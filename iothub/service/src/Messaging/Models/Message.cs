@@ -15,13 +15,12 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
-    public sealed class Message : IDisposable, IReadOnlyIndicator
+    public sealed class Message : IDisposable
     {
         private volatile Stream _bodyStream;
         private bool _disposed;
         private StreamDisposalResponsibility _streamDisposalResponsibility;
         private int _getBodyCalled;
-        private long _sizeInBytesCalled;
 
         private const long StreamCannotSeek = -1;
         private long _originalStreamPosition = StreamCannotSeek;
@@ -31,8 +30,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public Message()
         {
-            Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
-            SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
+            Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SystemProperties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             InitializeWithStream(Stream.Null, StreamDisposalResponsibility.Sdk);
         }
 
@@ -268,8 +267,6 @@ namespace Microsoft.Azure.Devices
         /// Gets the dictionary of system properties which are managed internally.
         /// </summary>
         internal IDictionary<string, object> SystemProperties { get; private set; }
-
-        bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
 
         internal Stream BodyStream => _bodyStream;
 

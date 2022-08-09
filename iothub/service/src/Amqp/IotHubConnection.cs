@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices
                     await SendCbsTokenAsync(cbsLink, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     return amqpSession;
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(this, ex, nameof(CreateSessionAsync));

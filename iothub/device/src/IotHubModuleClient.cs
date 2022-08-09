@@ -331,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
-            methodRequest.ThrowIfNull(nameof(methodRequest));
+            Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
         }
 
@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
-            methodRequest.ThrowIfNull(nameof(methodRequest));
+            Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
         }
 

@@ -464,7 +464,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 throw;
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 throw new IotHubException(ex.Message, ex);
             }
