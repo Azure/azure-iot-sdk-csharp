@@ -33,8 +33,7 @@ namespace Microsoft.Azure.Devices
         // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
         // This private field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
         // as the created time value for this class and expose it either way as CreatedTimeUtc.
-        [JsonProperty(PropertyName = "createdTime")]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty(PropertyName = "createdTime", NullValueHandling = NullValueHandling.Ignore))]
         internal DateTime? _alternateCreatedTimeUtc
         {
             get => CreatedTimeUtc;
@@ -58,7 +57,6 @@ namespace Microsoft.Azure.Devices
         // This private field is a workaround that allows us to deserialize either "endTime" or "endTimeUtc"
         // as the created time value for this class and expose it either way as EndTimeUtc.
         [JsonProperty(PropertyName = "endTime")]
-        [JsonConverter(typeof(StringEnumConverter))]
         internal DateTime? _alternateEndTimeUtc
         {
             get => EndTimeUtc;
@@ -75,14 +73,14 @@ namespace Microsoft.Azure.Devices
         /// Required.
         /// The type of job to execute.
         /// </summary>
-        [JsonProperty(PropertyName = "jobType")]
+        [JsonProperty(PropertyName = "jobType", NullValueHandling = NullValueHandling.Ignore))]
         [JsonConverter(typeof(StringEnumConverter))]
         public JobType JobType { get; internal set; }
 
         // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
         // This private field is a workaround that allows us to deserialize either "type" or "jobType"
         // as the created time value for this class and expose it either way as JobType.
-        [JsonProperty(PropertyName = "type")]
+        [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore))]
         [JsonConverter(typeof(StringEnumConverter))]
         internal JobType _alternateJobType
         {
