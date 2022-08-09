@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -98,6 +101,17 @@ namespace Microsoft.Azure.Devices
         /// Advances to the next element of the query results.
         /// </summary>
         /// <returns>True if there was a next item in the query results. False if there were no more items.</returns>
+        /// <exception cref="IotHubException">
+        /// If this method made a request to IoT hub to get the next page of items but IoT hub responded to
+        /// the request with a non-successful status code. For example, if the provided request was throttled,
+        /// <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible error cases,
+        /// see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If this method made a request to IoT hub to get the next page of items but the HTTP request fails due to
+        /// an underlying issue such as network connectivity, DNS failure, or server certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <example>
         /// <c>
         /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
@@ -118,6 +132,8 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         public async Task<bool> MoveNextAsync(QueryOptions queryOptions = default, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (_items.MoveNext())
             {
                 // Current page of results still had an item to return to the user.
@@ -140,7 +156,6 @@ namespace Microsoft.Azure.Devices
                 PageSize = queryOptions?.PageSize ?? _defaultPageSize,
             };
 
-            //TODO document thrown exceptions
             if (!string.IsNullOrEmpty(_originalQuery))
             {
                 QueryResponse<T> response = await _client.CreateAsync<T>(_originalQuery, queryOptionsClone, cancellationToken);
