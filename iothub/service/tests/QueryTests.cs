@@ -127,53 +127,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResultCastContentToJobResponseTest()
-        {
-            // simulate json serialize/deserialize
-            IEnumerable<ScheduledJob> jobs = new List<ScheduledJob>()
-            {
-                new ScheduledJob()
-                {
-                    DeviceId = "123456",
-                    JobId = "789",
-                    Type = JobType.ScheduleUpdateTwin,
-                    Status = JobStatus.Completed,
-                    StartTimeUtc = DateTime.MinValue,
-                    EndTimeUtc = DateTime.MinValue
-                }
-            };
-
-            var serverQueryResult = new QueryResult()
-            {
-                Type = QueryResultType.JobResponse,
-                Items = jobs
-            };
-
-            // serialize
-            var jsonQueryResult = JsonConvert.SerializeObject(serverQueryResult);
-            Assert.AreEqual("{\"type\":\"jobResponse\",\"items\":[{\"jobId\":\"789\",\"startTime\":\"0001-01-01T00:00:00\",\"endTime\":\"0001-01-01T00:00:00\",\"type\":\"scheduleUpdateTwin\",\"status\":\"completed\",\"deviceId\":\"123456\"}],\"continuationToken\":null}", jsonQueryResult);
-
-            // deserialize
-            var clientQueryResult = JsonConvert.DeserializeObject<QueryResult>(jsonQueryResult);
-
-            // test
-            IQuery q = new Query((t) => Task.FromResult<QueryResult>(clientQueryResult));
-
-            // validate
-            Assert.IsTrue(q.HasMoreResults);
-            IEnumerable<ScheduledJob> content = q.GetNextAsScheduledJobAsync().Result;
-
-            Assert.AreEqual(1, content.Count());
-            Assert.IsInstanceOfType(content.ElementAt(0), typeof(ScheduledJob));
-            Assert.AreEqual("123456", content.ElementAt(0).DeviceId);
-            Assert.AreEqual("789", content.ElementAt(0).JobId);
-            Assert.AreEqual(JobType.ScheduleUpdateTwin, content.ElementAt(0).Type);
-            Assert.AreEqual(JobStatus.Completed, content.ElementAt(0).Status);
-            Assert.AreEqual(DateTime.MinValue, content.ElementAt(0).StartTimeUtc);
-            Assert.AreEqual(DateTime.MinValue, content.ElementAt(0).EndTimeUtc);
-        }
-
-        [TestMethod]
         public void QueryResultCastContentToJsonTest()
         {
             // simulate json serialize/deserialize
