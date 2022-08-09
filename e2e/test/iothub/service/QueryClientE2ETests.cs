@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 {
     /// <summary>
-    /// E2E test class for all registry operations including device/module CRUD.
+    /// E2E test class for all Query client operations.
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
