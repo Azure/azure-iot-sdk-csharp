@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ProductInfo productInfo = context.ClientConfiguration.ClientOptions.ProductInfo;
             _deviceId = context.ClientConfiguration.DeviceId;
             _moduleId = context.ClientConfiguration.ModuleId;
-            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.ClientConfiguration.HostName).Uri;
+            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.ClientConfiguration.GatewayHostName).Uri;
             _httpClientHelper = new HttpClientHelper(
                 httpsEndpoint,
                 context.ClientConfiguration,

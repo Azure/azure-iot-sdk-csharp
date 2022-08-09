@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _clientConfiguration = clientConfiguration;
             _audience = CreateAmqpCbsAudience(_clientConfiguration);
             _amqpIotCbsTokenProvider = new AmqpIotCbsTokenProvider(_clientConfiguration);
-            _amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientConfiguration.HostName, CommonConstants.DefaultAmqpSecurePort).Uri;
+            _amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientConfiguration.GatewayHostName, CommonConstants.DefaultAmqpSecurePort).Uri;
 
             if (Logging.IsEnabled)
             {
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             // SAS tokens granted to an individual SAS authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
             if (clientConfiguration.SharedAccessKeyName.IsNullOrWhiteSpace())
             {
-                string clientAudience = $"{clientConfiguration.HostName}/devices/{WebUtility.UrlEncode(clientConfiguration.DeviceId)}";
+                string clientAudience = $"{clientConfiguration.GatewayHostName}/devices/{WebUtility.UrlEncode(clientConfiguration.DeviceId)}";
                 if (!clientConfiguration.ModuleId.IsNullOrWhiteSpace())
                 {
                     clientAudience += $"/modules/{WebUtility.UrlEncode(clientConfiguration.ModuleId)}";
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 // If the shared access key name is not null then this is a group SAS authenticated client.
                 // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
-                return clientConfiguration.HostName;
+                return clientConfiguration.GatewayHostName;
             }
         }
     }

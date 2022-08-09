@@ -21,9 +21,9 @@ namespace Microsoft.Azure.Devices.Client
             // Frist validate that the IotHubConnectionStringBuilder is set with the expected fields.
             builder.Validate();
 
-            Audience = builder.HostName;
+            IotHubHostName = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
-            HostName = IsUsingGateway
+            GatewayHostName = IsUsingGateway
                 ? builder.GatewayHostName
                 : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
@@ -115,9 +115,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public string ModuleId { get; }
 
-        public string HostName { get; }
+        public string GatewayHostName { get; }
 
-        public string Audience { get; }
+        public string IotHubHostName { get; }
 
         public string SharedAccessKeyName { get; }
 
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 return TokenRefresher == null
                     ? null
-                    : await TokenRefresher.GetTokenAsync(Audience);
+                    : await TokenRefresher.GetTokenAsync(IotHubHostName);
             }
             finally
             {
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client
             return obj is ClientConfiguration clientConfiguration
                 && GetHashCode() == clientConfiguration.GetHashCode()
                 && Equals(DeviceId, clientConfiguration.DeviceId)
-                && Equals(HostName, clientConfiguration.HostName)
+                && Equals(GatewayHostName, clientConfiguration.GatewayHostName)
                 && Equals(ModuleId, clientConfiguration.ModuleId)
                 && Equals(ClientOptions.TransportSettings.Protocol, clientConfiguration.ClientOptions.TransportSettings.Protocol)
                 && Equals(AuthenticationModel.GetHashCode(), clientConfiguration.AuthenticationModel.GetHashCode());
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client
         public override int GetHashCode()
         {
             int hashCode = UpdateHashCode(620602339, DeviceId);
-            hashCode = UpdateHashCode(hashCode, HostName);
+            hashCode = UpdateHashCode(hashCode, GatewayHostName);
             hashCode = UpdateHashCode(hashCode, ModuleId);
             hashCode = UpdateHashCode(hashCode, ClientOptions.TransportSettings.Protocol);
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);

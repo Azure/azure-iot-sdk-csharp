@@ -357,7 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             Uri amqpEndpoint = new UriBuilder(
                 CommonConstants.AmqpsScheme,
-                clientConfiguration.HostName,
+                clientConfiguration.GatewayHostName,
                 CommonConstants.DefaultAmqpSecurePort)
                 {
                     Path = path,

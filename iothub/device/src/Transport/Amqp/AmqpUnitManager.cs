@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(clientConfiguration.HostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(clientConfiguration.GatewayHostName);
             return amqpConnectionPool.CreateAmqpUnit(
                 clientConfiguration,
                 onMethodCallback,
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(amqpUnit.GetClientConfiguration().HostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(amqpUnit.GetClientConfiguration().GatewayHostName);
             amqpConnectionPool.RemoveAmqpUnit(amqpUnit);
             amqpUnit.Dispose();
         }

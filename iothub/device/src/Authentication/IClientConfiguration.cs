@@ -31,14 +31,12 @@ namespace Microsoft.Azure.Devices.Client
         /// The host service that this client connects to.
         /// This can either be the IoT hub name or a gateway service name.
         /// </summary>
-        string HostName { get; }
+        string GatewayHostName { get; }
 
-        // TODO (abmisr): Consolidate with AmqpCbsAudience
         /// <summary>
-        /// This currently points to the hostname.
-        /// This needs to store the formatted audience (hostname/devices/deviceId)
+        /// The fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
-        string Audience { get; }
+        string IotHubHostName { get; }
 
         /// <summary>
         /// The shared access key name used to connect the device to the IoT hub service.

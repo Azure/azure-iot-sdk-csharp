@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
             else
             {
                 builder.KeyName = _clientConfiguration.SharedAccessKeyName;
-                builder.Target = _clientConfiguration.Audience;
+                builder.Target = _clientConfiguration.IotHubHostName;
             }
 
             return Task.FromResult(builder.ToSignature());
