@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         internal long? MaxExecutionTimeInSeconds
         {
-            get => (long)MaxExecutionTime?.TotalSeconds;
+            get => MaxExecutionTime != null ? (long)MaxExecutionTime?.TotalSeconds : null;
             set => MaxExecutionTime = value != null ? TimeSpan.FromSeconds((int)value) : null;
         }
     }
