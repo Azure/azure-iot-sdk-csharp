@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -18,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// </returns>
         public bool IsTransient(Exception ex)
         {
-            return !ex.IsFatal();
+            return !Fx.IsFatal(ex);
         }
     }
 }

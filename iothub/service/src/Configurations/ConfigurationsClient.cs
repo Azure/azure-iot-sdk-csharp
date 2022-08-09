@@ -370,6 +370,10 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <remarks>
+        /// While there is no service API for getting all the configuration content for a particular Edge device, this data can be retrieved
+        /// by calling <see cref="TwinsClient.GetAsync(string, string, CancellationToken)"/> with your Edge's device Id and "$edgeAgent" as the module Id.
+        /// </remarks>
         public virtual async Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             // This can't throw something like ArgumentException because that would be worse than
             // throwing the fatal exception that was requested.
-            Fx.Assert(innerException == null || !Fx.IsFatal(innerException), "FatalException can't be used to wrap fatal exceptions.");
+            Debug.Assert(innerException == null || !Fx.IsFatal(innerException), "FatalException can't be used to wrap fatal exceptions.");
         }
 
         protected FatalException(SerializationInfo info, StreamingContext context)

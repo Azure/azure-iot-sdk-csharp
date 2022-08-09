@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns>The DPS payload to provision a device as plug and play.</returns>
         public static string CreateDpsPayload(string modelId)
         {
-            modelId.ThrowIfNullOrWhiteSpace(nameof(modelId));
+            Argument.AssertNotNullOrWhiteSpace(modelId, nameof(modelId));
             return $"{{\"modelId\":\"{modelId}\"}}";
         }
     }

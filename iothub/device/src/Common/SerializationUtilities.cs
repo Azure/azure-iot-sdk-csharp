@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
 
     internal static class SerializationUtilities
     {
-        private static readonly Dictionary<Type, PropertyValueType> s_typeToIntMap = new Dictionary<Type, PropertyValueType>
+        private static readonly Dictionary<Type, PropertyValueType> s_typeToIntMap = new()
         {
             { typeof(byte), PropertyValueType.Byte },
             { typeof(sbyte), PropertyValueType.SByte },

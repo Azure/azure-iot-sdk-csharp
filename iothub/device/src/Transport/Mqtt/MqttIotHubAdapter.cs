@@ -90,7 +90,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private int InboundBacklogSize => _deviceBoundOneWayProcessor.BacklogSize + _deviceBoundTwoWayProcessor.BacklogSize;
 
-        private readonly ProductInfo _productInfo;
         private readonly IotHubClientOptions _options;
 
         // default value for ushort is 0.
@@ -106,7 +105,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubClientMqttSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
-            ProductInfo productInfo,
             IotHubClientOptions options)
         {
             Contract.Requires(deviceId != null);
@@ -114,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Contract.Requires(passwordProvider != null);
             Contract.Requires(mqttTransportSettings != null);
             Contract.Requires(!mqttTransportSettings.HasWill || willMessage != null);
-            Contract.Requires(productInfo != null);
+            Contract.Requires(options.ProductInfo != null);
 
             _deviceId = deviceId;
             _moduleId = moduleId;
@@ -124,7 +122,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _willMessage = willMessage;
             _mqttIotHubEventHandler = mqttIotHubEventHandler;
             _pingRequestInterval = TimeSpan.FromSeconds(_mqttTransportSettings.KeepAliveInSeconds / 4d);
-            _productInfo = productInfo;
             _options = options;
 
             _deviceBoundOneWayProcessor = new SimpleWorkQueue<PublishPacket>(AcceptMessageAsync);
@@ -200,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 throw new InvalidOperationException($"Unexpected data type: '{data.GetType().Name}'");
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Received a non-fatal exception while writing data to the MQTT transport layer, will shut down: {ex}", nameof(WriteAsync));
@@ -333,7 +330,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(_mqttTransportSettings.ClientCertificate != null);
                 }
 
-                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
+                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}" +
+                    $"&{DeviceClientTypeParam}={Uri.EscapeDataString(_options.ProductInfo.ToString())}";
 
                 if (!_mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
                 {
@@ -381,7 +379,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _lastChannelActivityTime = DateTime.UtcNow;
                 ScheduleKeepConnectionAliveAsync(context);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"A non-fatal exception occurred while opening the MQTT connection, will shut down: {ex}", nameof(ConnectAsync));
@@ -404,7 +402,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await context.Channel.EventLoop.ScheduleAsync(s_pingServerCallback, context, _pingRequestInterval).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"A non-fatal exception occurred while sending the keep-alive ping, will shut down: {ex}", nameof(ScheduleKeepConnectionAliveAsync));
@@ -427,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .ScheduleAsync(s_checkConnAckTimeoutCallback, context, _mqttTransportSettings.ConnectArrivalTimeout)
                     .ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"A non-fatal exception occurred while ensuring that CONNECT was successful, will shut down: {ex}", nameof(ScheduleCheckConnectTimeoutAsync));
@@ -495,7 +493,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 self.ScheduleKeepConnectionAliveAsync(context);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(context, $"A non-fatal exception occurred while sending a ping request, will shut down: {ex}", nameof(ConnectAsync));
@@ -735,7 +733,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         break;
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(context, $"Received a non-fatal exception while processing a received packet of type {packet.PacketType}, will shut down: {ex}", nameof(ProcessMessageAsync));
@@ -770,7 +768,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 message.MqttTopicName = publish.TopicName;
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(context, $"Received a non-fatal exception while processing a received PUBLISH packet, will shut down: {ex}", nameof(AcceptMessageAsync));
@@ -982,7 +980,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await context.CloseAsync().ConfigureAwait(true);
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     //ignored
                     if (Logging.IsEnabled)
@@ -1011,7 +1009,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 CloseIotHubConnectionAsync();
                 await context.CloseAsync().ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 //ignored
                 if (Logging.IsEnabled)
@@ -1054,10 +1052,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _deviceBoundOneWayProcessor.Completion,
                     _deviceBoundTwoWayProcessor.Completion).ConfigureAwait(true);
             }
-            catch (Exception completeEx) when (!completeEx.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Complete exception: {completeEx}", nameof(CloseIotHubConnectionAsync));
+                    Logging.Error(this, $"Complete exception: {ex}", nameof(CloseIotHubConnectionAsync));
             }
             finally
             {
@@ -1069,11 +1067,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _serviceBoundTwoWayProcessor.Abort();
                     _deviceBoundTwoWayProcessor.Abort();
                 }
-                catch (Exception abortEx) when (!abortEx.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     // ignored on closing
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Abort exception: {abortEx}", nameof(CloseIotHubConnectionAsync));
+                        Logging.Error(this, $"Abort exception: {ex}", nameof(CloseIotHubConnectionAsync));
                 }
 
                 if (Logging.IsEnabled)

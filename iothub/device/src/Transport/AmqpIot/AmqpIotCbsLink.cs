@@ -37,16 +37,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     .SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (AmqpException e) when (!e.IsFatal())
+            catch (AmqpException ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
                 else
                 {
-                    throw ex;
+                    throw iotEx;
                 }
             }
             finally

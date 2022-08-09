@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
-            Action act = () => IotHubDeviceClient.Create(hostName, authMethod, new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)));
+            Action act = () => IotHubDeviceClient.Create(hostName, authMethod, new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)));
             act.Should().Throw<ArgumentException>();
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.Tcp));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
             var certs = new X509Certificate2Collection();
             var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings(TransportProtocol.Tcp));
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp));
 
             // act
             using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsHostNameAuthMethodTransportType_Works()
         {
             string hostName = "acme.azure-devices.net";
-            var transportSettings = new IotHubClientAmqpSettings(TransportProtocol.WebSocket);
+            var transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket);
             var options = new IotHubClientOptions(transportSettings);
 
             // TODO (abmisr): IotHubClientOptions shouldn't be required in both
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             string hostName = "acme.azure-devices.net";
             string gatewayHostName = "gateway.acme.azure-devices.net";
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket))
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket))
             {
                 GatewayHostName = gatewayHostName,
             };
@@ -196,14 +196,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsGatewayAuthMethodTransport_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
             ClientConfiguration connInfo = new ClientConfiguration(s_csBuilder, options);
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", connInfo);
 
             using var deviceClient = IotHubDeviceClient.Create(
                 gatewayHostname,
                 authMethod,
-                new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket)));
+                new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)));
         }
 
         // This is for the scenario where an IoT Edge device is defined as the downstream device's transparent gateway.
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_ParamsGatewayAuthMethodTransportArray_Works()
         {
             string gatewayHostname = "myGatewayDevice";
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
             ClientConfiguration connInfo = new ClientConfiguration(s_csBuilder, options);
             var authMethod = new DeviceAuthenticationWithSakRefresh("device1", connInfo);
 
@@ -538,7 +538,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -584,7 +584,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -630,7 +630,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName2 = string.Empty;
             string actualMethodBody2 = string.Empty;
             object actualMethodUserContext2 = null;
-            MethodCallback methodCallback2 = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback2 = (methodRequest, userContext) =>
             {
                 actualMethodName2 = methodRequest.Name;
                 actualMethodBody2 = methodRequest.DataAsJson;
@@ -689,7 +689,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -714,7 +714,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName2 = string.Empty;
             string actualMethodBody2 = string.Empty;
             object actualMethodUserContext2 = null;
-            MethodCallback methodCallback2 = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback2 = (methodRequest, userContext) =>
             {
                 actualMethodName2 = methodRequest.Name;
                 actualMethodBody2 = methodRequest.DataAsJson;
@@ -748,7 +748,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -790,7 +790,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -849,7 +849,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string actualMethodName = string.Empty;
             string actualMethodBody = string.Empty;
             object actualMethodUserContext = null;
-            MethodCallback methodCallback = (methodRequest, userContext) =>
+            Func<MethodRequest, object, Task<MethodResponse>> methodCallback = (methodRequest, userContext) =>
             {
                 actualMethodName = methodRequest.Name;
                 actualMethodBody = methodRequest.DataAsJson;
@@ -909,26 +909,26 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionOpenedInvokeHandlerForStatusChange()
+        public void DeviceClientOnConnectionOpenedInvokeHandlerForStateChange()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangeReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+            deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
-            // Connection status changes from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // Connection state change from disconnected to connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, state);
+            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, stateChangeReason);
         }
 
         [TestMethod]
@@ -936,84 +936,84 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangeReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            deviceClient.SetConnectionStatusChangesHandler(null);
+            deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
+            deviceClient.SetConnectionStateChangeHandler(null);
 
-            // Connection status changes from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // Connection state change from disconnected to connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
 
             Assert.IsFalse(handlerCalled);
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
+        public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStateChange()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangeReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            // current status = disabled
+            deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
+            // current state = disabled
 
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, state);
+            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, stateChangeReason);
             handlerCalled = false;
 
-            // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // current state = connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
 
             Assert.IsFalse(handlerCalled);
         }
 
         [TestMethod]
-        public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
+        public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStateChange()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
             var sender = new object();
             bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
                 handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
+                state = s;
+                stateChangeReason = r;
             };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+            deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
-            // current status = disabled
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            // current state = disabled
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, state);
+            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, stateChangeReason);
             handlerCalled = false;
 
-            // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.No_Network);
+            // current state = connected
+            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.DisconnectedRetrying, ConnectionStateChangeReason.NoNetwork);
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Disconnected_Retrying, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
+            Assert.AreEqual(ConnectionState.DisconnectedRetrying, state);
+            Assert.AreEqual(ConnectionStateChangeReason.NoNetwork, stateChangeReason);
         }
 
         [TestMethod]
@@ -1448,7 +1448,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_InitWithMqttWsTransportAndModelId_DoesNotThrow()
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(TransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         [TestMethod]
@@ -1460,7 +1460,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_InitWithAmqpWsTransportAndModelId_DoesNotThrow()
         {
-            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(TransportProtocol.WebSocket));
+            IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
         private void IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(IotHubClientTransportSettings transportSettings)

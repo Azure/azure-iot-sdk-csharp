@@ -16,22 +16,18 @@ namespace Microsoft.Azure.Devices.Client
             IotHubConnectionStringBuilder builder,
             IotHubClientOptions iotHubClientOptions)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            Argument.AssertNotNull(builder, nameof(builder));
 
             // Frist validate that the IotHubConnectionStringBuilder is set with the expected fields.
             builder.Validate();
 
-            Audience = builder.HostName;
+            IotHubHostName = builder.HostName;
             IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
-            HostName = IsUsingGateway
+            GatewayHostName = IsUsingGateway
                 ? builder.GatewayHostName
                 : builder.HostName;
             SharedAccessKeyName = builder.SharedAccessKeyName;
             SharedAccessKey = builder.SharedAccessKey;
-            IotHubName = builder.IotHubName;
             DeviceId = builder.DeviceId;
             ModuleId = builder.ModuleId;
 
@@ -103,7 +99,6 @@ namespace Microsoft.Azure.Devices.Client
 
             if (ClientOptions.TransportSettings.ClientCertificate == null)
             {
-                AmqpCbsAudience = CreateAmqpCbsAudience();
                 AuthenticationModel = SharedAccessKeyName == null
                     ? AuthenticationModel.SasIndividual
                     : AuthenticationModel.SasGrouped;
@@ -116,15 +111,13 @@ namespace Microsoft.Azure.Devices.Client
 
         public AuthenticationWithTokenRefresh TokenRefresher { get; }
 
-        public string IotHubName { get; }
-
         public string DeviceId { get; }
 
         public string ModuleId { get; }
 
-        public string HostName { get; }
+        public string GatewayHostName { get; }
 
-        public string Audience { get; }
+        public string IotHubHostName { get; }
 
         public string SharedAccessKeyName { get; }
 
@@ -137,9 +130,6 @@ namespace Microsoft.Azure.Devices.Client
         public AuthenticationModel AuthenticationModel { get; }
 
         public IotHubClientOptions ClientOptions { get; }
-
-        // TODO (abmisr): Consolidate with Audience
-        public string AmqpCbsAudience { get; }
 
         public bool IsPooling()
         {
@@ -167,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 return TokenRefresher == null
                     ? null
-                    : await TokenRefresher.GetTokenAsync(Audience);
+                    : await TokenRefresher.GetTokenAsync(IotHubHostName);
             }
             finally
             {
@@ -189,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client
             return obj is ClientConfiguration clientConfiguration
                 && GetHashCode() == clientConfiguration.GetHashCode()
                 && Equals(DeviceId, clientConfiguration.DeviceId)
-                && Equals(HostName, clientConfiguration.HostName)
+                && Equals(GatewayHostName, clientConfiguration.GatewayHostName)
                 && Equals(ModuleId, clientConfiguration.ModuleId)
                 && Equals(ClientOptions.TransportSettings.Protocol, clientConfiguration.ClientOptions.TransportSettings.Protocol)
                 && Equals(AuthenticationModel.GetHashCode(), clientConfiguration.AuthenticationModel.GetHashCode());
@@ -207,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client
         public override int GetHashCode()
         {
             int hashCode = UpdateHashCode(620602339, DeviceId);
-            hashCode = UpdateHashCode(hashCode, HostName);
+            hashCode = UpdateHashCode(hashCode, GatewayHostName);
             hashCode = UpdateHashCode(hashCode, ModuleId);
             hashCode = UpdateHashCode(hashCode, ClientOptions.TransportSettings.Protocol);
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
@@ -219,28 +209,6 @@ namespace Microsoft.Azure.Devices.Client
             return field == null
                 ? hashCode
                 : hashCode * -1521134295 + field.GetHashCode();
-        }
-
-        private string CreateAmqpCbsAudience()
-        {
-            // If the shared access key name is null then this is an individual SAS authenticated client.
-            // SAS tokens granted to an individual SAS authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
-            if (SharedAccessKeyName.IsNullOrWhiteSpace())
-            {
-                string clientAudience = $"{HostName}/devices/{WebUtility.UrlEncode(DeviceId)}";
-                if (!ModuleId.IsNullOrWhiteSpace())
-                {
-                    clientAudience += $"/modules/{WebUtility.UrlEncode(ModuleId)}";
-                }
-
-                return clientAudience;
-            }
-            else
-            {
-                // If the shared access key name is not null then this is a group SAS authenticated client.
-                // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
-                return HostName;
-            }
         }
     }
 }

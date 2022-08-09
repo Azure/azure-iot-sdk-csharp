@@ -10,7 +10,6 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -249,29 +248,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 await sendingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotSendingLink(sendingLink);
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, amqpSession);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, amqpSession);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
-                else
+
+                if (iotEx is AmqpIotResourceException)
                 {
-                    if (ex is AmqpIotResourceException)
-                    {
-                        amqpSession.SafeClose();
-                        throw new IotHubCommunicationException(ex.Message, ex);
-                    }
-                    throw ex;
+                    amqpSession.SafeClose();
+                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
                 }
+
+                throw iotEx;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(typeof(AmqpIotSession), clientConfiguration, nameof(OpenSendingAmqpLinkAsync));
-                }
             }
         }
 
@@ -324,22 +320,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 await receivingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return new AmqpIotReceivingLink(receivingLink);
             }
-            catch (Exception e) when (!e.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, amqpSession);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, amqpSession);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
-                else
+
+                if (iotEx is AmqpIotResourceException)
                 {
-                    if (ex is AmqpIotResourceException)
-                    {
-                        amqpSession.SafeClose();
-                        throw new IotHubCommunicationException(ex.Message, ex);
-                    }
-                    throw ex;
+                    amqpSession.SafeClose();
+                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
                 }
+
+                throw iotEx;
             }
             finally
             {
@@ -360,10 +355,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     moduleTemplate,
                     WebUtility.UrlEncode(clientConfiguration.DeviceId), WebUtility.UrlEncode(clientConfiguration.ModuleId));
 
-            Uri amqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, clientConfiguration.HostName, CommonConstants.DefaultAmqpSecurePort)
-            {
-                Path = path,
-            }.Uri;
+            Uri amqpEndpoint = new UriBuilder(
+                CommonConstants.AmqpsScheme,
+                clientConfiguration.GatewayHostName,
+                CommonConstants.DefaultAmqpSecurePort)
+                {
+                    Path = path,
+                }.Uri;
 
             return amqpEndpoint.AbsoluteUri;
         }

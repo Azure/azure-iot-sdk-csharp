@@ -43,9 +43,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             JobStatus.Unknown,
         };
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        [Timeout(120000)]
         [DoNotParallelize] // the number of jobs that can be run at a time are limited anyway
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]

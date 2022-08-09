@@ -44,22 +44,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>InternalClient</returns>
         internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
-            if (hostName == null)
-            {
-                throw new ArgumentNullException(nameof(hostName));
-            }
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
 
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationMethod));
-            }
-
-            if (options == default)
-            {
-                options = new();
-            }
-
-            var csBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options.GatewayHostName);
+            var csBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options?.GatewayHostName);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(csBuilder.Certificate, ref options);
@@ -78,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client
                     && certificate.ChainCertificates != null
                     && (options.TransportSettings is not IotHubClientAmqpSettings
                     && options.TransportSettings is not IotHubClientMqttSettings
-                    || options.TransportSettings.Protocol != TransportProtocol.Tcp))
+                    || options.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp))
                 {
                     throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
                 }
@@ -100,11 +88,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            InternalClient internalClient = CreateInternal(
-                null,
-                csBuilder,
-                options);
-
+            InternalClient internalClient = CreateInternal(null, csBuilder, options);
             internalClient.Certificate = csBuilder.Certificate;
 
             return internalClient;
@@ -145,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
-                    $"HostName={clientConfiguration.HostName};DeviceId={clientConfiguration.DeviceId};ModuleId={clientConfiguration.ModuleId}",
+                    $"HostName={clientConfiguration.GatewayHostName};DeviceId={clientConfiguration.DeviceId};ModuleId={clientConfiguration.ModuleId}",
                     options);
 
             return client;

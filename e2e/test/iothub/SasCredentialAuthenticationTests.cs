@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(SasCredentialAuthenticationTests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Renewed_Success()
         {
             // arrange
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Success()
         {
             // arrange
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Renewed_Success()
         {
             // arrange

@@ -12,35 +12,35 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class ConnectionStatusChangeHandlerTests : E2EMsTestBase
+    public class ConnectionStateChangeHandlerTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
-        private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
+        private readonly string DevicePrefix = $"{nameof(ConnectionStateChangeHandlerTests)}_Device";
+        private readonly string ModulePrefix = $"{nameof(ConnectionStateChangeHandlerTests)}";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
+        public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionState_DeviceDisabled_AmqpTcp()
         {
-            await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new IotHubClientAmqpSettings(TransportProtocol.Tcp),
+            await IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base(
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp),
                 async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [TestCategory("LongRunning")]
-        [LoggedTestMethod]
-        public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionState_DeviceDisabled_AmqpWs()
         {
-            await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+            await IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base(
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
+        public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionState_DeviceDisabled_AmqpTcp()
         {
-            await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new IotHubClientAmqpSettings(TransportProtocol.Tcp),
+            await IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base(
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp),
                 async (r, d) =>
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
@@ -49,12 +49,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
+        public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionState_DeviceDisabled_AmqpWs()
         {
-            await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                new IotHubClientAmqpSettings(TransportProtocol.WebSocket),
+            await IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base(
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 async (r, d) =>
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
@@ -63,29 +63,29 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionState_DeviceDisabled_AmqpTcp()
         {
-            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportProtocol.Tcp, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+            await ModuleClient_Gives_ConnectionState_DeviceDisabled_Base(
+                IotHubClientTransportProtocol.Tcp, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionState_DeviceDisabled_AmqpWs()
         {
-            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportProtocol.WebSocket, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
+            await ModuleClient_Gives_ConnectionState_DeviceDisabled_Base(
+                IotHubClientTransportProtocol.WebSocket, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
-        // [LoggedTestMethod]
-        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
+        // [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionState_DeviceDisabled_AmqpTcp()
         {
-            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportProtocol.Tcp, async (r, d) =>
+            await ModuleClient_Gives_ConnectionState_DeviceDisabled_Base(
+                IotHubClientTransportProtocol.Tcp, async (r, d) =>
                 {
                     Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
                     device.Status = DeviceStatus.Disabled;
@@ -95,11 +95,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // IoT hub currently is somehow allowing new AMQP connections (encapsulated in a ModuleClient) even when the
         // device is disabled. This needs to be investigated and fixed. Once that's done, this test can be re-enabled.
-        // [LoggedTestMethod]
-        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
+        // [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ModuleClient_DeviceDisabled_Gives_ConnectionState_DeviceDisabled_AmqpWs()
         {
-            await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-                TransportProtocol.WebSocket, async (r, d) =>
+            await ModuleClient_Gives_ConnectionState_DeviceDisabled_Base(
+                IotHubClientTransportProtocol.WebSocket, async (r, d) =>
             {
                 Device device = await r.Devices.GetAsync(d).ConfigureAwait(false);
                 device.Status = DeviceStatus.Disabled;
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }).ConfigureAwait(false);
         }
 
-        private async Task IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+        private async Task IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base(
             IotHubClientTransportSettings transportSettings,
             Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
@@ -117,41 +117,41 @@ namespace Microsoft.Azure.Devices.E2ETests
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string deviceId = config.DeviceID;
 
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
             int deviceDisabledReceivedCount = 0;
 
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(deviceConnectionString, options);
-            void statusChangeHandler(ConnectionStatus s, ConnectionStatusChangeReason r)
+            void stateChangeHandler(ConnectionState s, ConnectionStateChangeReason r)
             {
-                if (r == ConnectionStatusChangeReason.Device_Disabled)
+                if (r == ConnectionStateChangeReason.DeviceDisabled)
                 {
-                    status = s;
-                    statusChangeReason = r;
+                    state = s;
+                    stateChangeReason = r;
                     deviceDisabledReceivedCount++;
                 }
             }
 
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(IotHubDeviceClient)} with device Id={testDevice.Id}");
+            deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
+            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base)}: Created {nameof(IotHubDeviceClient)} with device Id={testDevice.Id}");
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
             // Receiving the module twin should succeed right now.
-            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
+            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base)}: DeviceClient GetTwinAsync.");
             Client.Twin twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
-            // Delete/disable the device in IoT hub. This should trigger the ConnectionStatusChangesHandler.
+            // Delete/disable the device in IoT hub. This should trigger the ConnectionStateChangeHandler.
             using (var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString))
             {
                 await registryManagerOperation(serviceClient, deviceId).ConfigureAwait(false);
             }
 
-            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
+            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
-            // Artificial sleep waiting for the connection status change handler to get triggered.
+            // Artificial sleep waiting for the connection state change handler to get triggered.
             int sleepCount = 50;
             for (int i = 0; i < sleepCount; i++)
             {
@@ -162,42 +162,42 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
-            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Asserting connection status change.");
+            Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base)}: Asserting connection state change.");
 
             Assert.AreEqual(1, deviceDisabledReceivedCount);
-            Assert.AreEqual(ConnectionStatus.Disconnected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Device_Disabled, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Disconnected, state);
+            Assert.AreEqual(ConnectionStateChangeReason.DeviceDisabled, stateChangeReason);
         }
 
-        private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
-            TransportProtocol protocol,
+        private async Task ModuleClient_Gives_ConnectionState_DeviceDisabled_Base(
+            IotHubClientTransportProtocol protocol,
             Func<IotHubServiceClient, string, Task> registryManagerOperation)
         {
             var transportSettings = new IotHubClientAmqpSettings(protocol);
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix, Logger).ConfigureAwait(false);
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
+            ConnectionState? state = null;
+            ConnectionStateChangeReason? stateChangeReason = null;
             int deviceDisabledReceivedCount = 0;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
             {
-                if (r == ConnectionStatusChangeReason.Device_Disabled)
+                if (r == ConnectionStateChangeReason.DeviceDisabled)
                 {
-                    status = s;
-                    statusChangeReason = r;
+                    state = s;
+                    stateChangeReason = r;
                     deviceDisabledReceivedCount++;
                 }
             };
             var options = new IotHubClientOptions(transportSettings);
 
             using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
-            moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Created {nameof(IotHubModuleClient)} with moduleId={testModule.Id}");
+            moduleClient.SetConnectionStateChangeHandler(stateChangeHandler);
+            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionState_DeviceDisabled_Base)}: Created {nameof(IotHubModuleClient)} with moduleId={testModule.Id}");
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Receiving the module twin should succeed right now.
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
+            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionState_DeviceDisabled_Base)}: ModuleClient GetTwinAsync.");
             Client.Twin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
@@ -207,9 +207,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await registryManagerOperation(serviceClient, testModule.DeviceId).ConfigureAwait(false);
             }
 
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
+            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionState_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
-            // Artificial sleep waiting for the connection status change handler to get triggered.
+            // Artificial sleep waiting for the connection state change handler to get triggered.
             int sleepCount = 50;
             for (int i = 0; i < sleepCount; i++)
             {
@@ -220,11 +220,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
-            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Asserting connection status change.");
+            Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionState_DeviceDisabled_Base)}: Asserting connection state change.");
 
             Assert.AreEqual(1, deviceDisabledReceivedCount);
-            Assert.AreEqual(ConnectionStatus.Disconnected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Device_Disabled, statusChangeReason);
+            Assert.AreEqual(ConnectionState.Disconnected, state);
+            Assert.AreEqual(ConnectionStateChangeReason.DeviceDisabled, stateChangeReason);
         }
     }
 }

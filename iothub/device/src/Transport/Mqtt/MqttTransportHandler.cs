@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _completionQueue = new Queue<string>();
 
             _serverAddresses = null; // this will be resolved asynchronously in OpenAsync
-            _hostName = context.ClientConfiguration.HostName;
+            _hostName = context.ClientConfiguration.GatewayHostName;
             _receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePatternFilter, context.ClientConfiguration.DeviceId, context.ClientConfiguration.ModuleId);
             _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, context.ClientConfiguration.DeviceId, context.ClientConfiguration.ModuleId);
 
@@ -178,11 +178,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             else
             {
-                IotHubClientOptions options = context.ClientConfiguration.ClientOptions;
                 _channelFactory = settings.Protocol switch
                 {
-                    TransportProtocol.Tcp => CreateChannelFactory(context.ClientConfiguration, settings, context.ClientConfiguration.ClientOptions.ProductInfo, options),
-                    TransportProtocol.WebSocket => CreateWebSocketChannelFactory(context.ClientConfiguration, settings, context.ClientConfiguration.ClientOptions.ProductInfo, options),
+                    IotHubClientTransportProtocol.Tcp => CreateChannelFactory(context.ClientConfiguration, settings),
+                    IotHubClientTransportProtocol.WebSocket => CreateWebSocketChannelFactory(context.ClientConfiguration, settings),
                     _ => throw new InvalidOperationException($"Unsupported transport setting: {settings.Protocol}"),
                 };
             }
@@ -661,7 +660,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex.ToString(), nameof(OnError));
@@ -926,7 +925,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     _channel = await _channelFactory(_serverAddresses, ProtocolGatewayPort).ConfigureAwait(true);
                 }
-                catch (Exception ex) when (!ex.IsFatal())
+                catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
                     OnError(ex);
                     throw;
@@ -1100,7 +1099,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IClientConfiguration clientConfiguration, IotHubClientMqttSettings settings, ProductInfo productInfo, IotHubClientOptions options)
+        private Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IClientConfiguration clientConfiguration, IotHubClientMqttSettings settings)
         {
             return async (addresses, port) =>
             {
@@ -1116,7 +1115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                      settings.SslProtocols,
                      settings.CertificateRevocationCheck,
                      certs,
-                     clientConfiguration.HostName);
+                     clientConfiguration.GatewayHostName);
 
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
@@ -1131,7 +1130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             MqttEncoder.Instance,
                             new MqttDecoder(false, MaxMessageSize),
                             new LoggingHandler(LogLevel.DEBUG),
-                            _mqttIotHubAdapterFactory.Create(this, clientConfiguration, settings, productInfo, options));
+                            _mqttIotHubAdapterFactory.Create(this, clientConfiguration, settings));
                     }));
 
                 foreach (IPAddress address in addresses)
@@ -1173,15 +1172,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(
             ClientConfiguration clientConfiguration,
-            IotHubClientMqttSettings settings,
-            ProductInfo productInfo,
-            IotHubClientOptions options)
+            IotHubClientMqttSettings settings)
         {
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{clientConfiguration.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{clientConfiguration.GatewayHostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
@@ -1214,16 +1211,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
 
-                // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
-#if NETSTANDARD2_1_OR_GREATER
-                if (settings.RemoteCertificateValidationCallback != null)
-                {
-                    websocket.Options.RemoteCertificateValidationCallback = settings.RemoteCertificateValidationCallback;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting RemoteCertificateValidationCallback");
-                }
-#endif
-
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
                 await websocket.ConnectAsync(websocketUri, cts.Token).ConfigureAwait(false);
 
@@ -1238,7 +1225,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
-                        _mqttIotHubAdapterFactory.Create(this, clientConfiguration, settings, productInfo, options));
+                        _mqttIotHubAdapterFactory.Create(this, clientConfiguration, settings));
 
                 await s_eventLoopGroup.Value.RegisterAsync(clientWebSocketChannel).ConfigureAwait(true);
 
@@ -1266,7 +1253,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
             }
         }

@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
                     infoParts = string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)));
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 // no-op
             }

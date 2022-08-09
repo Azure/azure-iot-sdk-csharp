@@ -348,14 +348,14 @@ namespace Microsoft.Azure.Devices
         private static string BuildCommandRequestQueryStringParameters(InvokeDigitalTwinCommandOptions requestOptions)
         {
             string queryStringParameters = "";
-            if (requestOptions?.ConnectTimeoutInSeconds != null)
+            if (requestOptions?.ConnectTimeout != null)
             {
-                queryStringParameters += string.Format($"&connectTimeoutInSeconds={requestOptions.ConnectTimeoutInSeconds}");
+                queryStringParameters += string.Format($"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout?.TotalSeconds}");
             }
 
-            if (requestOptions?.ResponseTimeoutInSeconds != null)
+            if (requestOptions?.ResponseTimeout != null)
             {
-                queryStringParameters += string.Format($"&responseTimeoutInSeconds={requestOptions.ResponseTimeoutInSeconds}");
+                queryStringParameters += string.Format($"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout?.TotalSeconds}");
             }
 
             return queryStringParameters;

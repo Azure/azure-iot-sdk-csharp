@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void AmqpTransportSettings_DefaultPropertyValues()
         {
             // arrange
-            const TransportProtocol expectedProtocol = TransportProtocol.Tcp;
+            const IotHubClientTransportProtocol expectedProtocol = IotHubClientTransportProtocol.Tcp;
             const uint expectedPrefetchCount = 50;
 
             // act
@@ -31,9 +31,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [DataRow(TransportProtocol.Tcp)]
-        [DataRow(TransportProtocol.WebSocket)]
-        public void AmqpTransportSettings_RespectsCtorParameter(TransportProtocol protocol)
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public void AmqpTransportSettings_RespectsCtorParameter(IotHubClientTransportProtocol protocol)
         {
             // act
             var transportSetting = new IotHubClientAmqpSettings(protocol);
@@ -49,13 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             var transportSetting = new IotHubClientMqttSettings();
 
             // assert
-            transportSetting.Protocol.Should().Be(TransportProtocol.Tcp);
+            transportSetting.Protocol.Should().Be(IotHubClientTransportProtocol.Tcp);
         }
 
         [TestMethod]
-        [DataRow(TransportProtocol.Tcp)]
-        [DataRow(TransportProtocol.WebSocket)]
-        public void MqttTransportSettings_RespectsCtorParameter(TransportProtocol protocol)
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public void MqttTransportSettings_RespectsCtorParameter(IotHubClientTransportProtocol protocol)
         {
             // act
             var transportSetting = new IotHubClientMqttSettings(protocol);

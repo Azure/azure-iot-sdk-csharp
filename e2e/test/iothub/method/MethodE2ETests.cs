@@ -28,79 +28,79 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_MqttTcp()
         {
             await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_MqttWs()
         {
-            await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_AmqpTcp()
         {
             await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
-            await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
+            await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
             var serviceClientTransportSettings = new ServiceClientTransportSettings
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
             var serviceClientTransportSettings = new ServiceClientTransportSettings
@@ -131,13 +131,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
             // setup
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
-            methodInvocation.SetPayloadJson("10");
+            var methodInvocation = new DirectMethodRequest()
+            {
+                MethodName = "SetTelemetryInterval",
+                Payload = "10"
+            };
 
             // act
             ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
@@ -154,69 +157,72 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             Assert.AreEqual(ErrorCode.DeviceNotFound, actualErrorCode);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpTcp()
         {
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(TransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownModuleThrows()
         {
             // setup
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "ModuleNotFoundTest").ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval");
-            methodInvocation.SetPayloadJson("10");
+            var directMethodRequest = new DirectMethodRequest()
+            {
+                MethodName = "SetTelemetryInterval",
+                Payload = "10"
+            };
 
             // act
             ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", methodInvocation).ConfigureAwait(false);
+                await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", directMethodRequest).ConfigureAwait(false);
             }
             catch (DeviceNotFoundException ex)
             {
@@ -228,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             serviceClient.Dispose();
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithNullPayload_DoesNotThrow()
         {
             // arrange
@@ -256,11 +262,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .ConfigureAwait(false);
 
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-                CloudToDeviceMethod c2dMethod = new CloudToDeviceMethod(commandName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).SetPayloadJson(null);
+                var directMethodRequest = new DirectMethodRequest()
+                {
+                    MethodName = commandName,
+                    ConnectionTimeout = TimeSpan.FromMinutes(1),
+                    ResponseTimeout = TimeSpan.FromMinutes(1),
+                };
 
                 // act
 
-                CloudToDeviceMethodResult result = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
+                DirectMethodResponse response = await serviceClient.DirectMethods
+                    .InvokeAsync(testDevice.Id, directMethodRequest).ConfigureAwait(false);
 
                 // assert
 
@@ -291,11 +303,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
             try
             {
-                CloudToDeviceMethodResult response = await serviceClient.DirectMethods
-                    .InvokeAsync(
-                        deviceId,
-                        new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(null))
-                    .ConfigureAwait(false);
+                var directMethodRequest = new DirectMethodRequest()
+                {
+                    MethodName = methodName,
+                    ResponseTimeout = methodTimeout
+                };
+
+                DirectMethodResponse response = await serviceClient.DirectMethods
+                    .InvokeAsync(deviceId, directMethodRequest).ConfigureAwait(false);
             }
             catch (DeviceNotFoundException)
             {
@@ -318,14 +333,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubServiceClient serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
-                await serviceClient.DirectMethods.InvokeAsync(
-                    deviceId,
-                    new CloudToDeviceMethod(methodName, methodTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
+
+            var directMethodRequest = new DirectMethodRequest()
+            {
+                MethodName = methodName,
+                ResponseTimeout = methodTimeout,
+                Payload = reqJson,
+            };
+
+            DirectMethodResponse response = await serviceClient.DirectMethods
+                .InvokeAsync(deviceId, directMethodRequest).ConfigureAwait(false);
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
-            string payload = response.GetPayloadAsJson();
+            string payload = response.Payload;
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
             serviceClient.Dispose();
@@ -345,16 +366,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
 
+            var directMethodRequest = new DirectMethodRequest()
+            {
+                MethodName = methodName,
+                ResponseTimeout = methodTimeout,
+                Payload = reqJson
+            };
+
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response =
+            DirectMethodResponse response =
                 await serviceClient.DirectMethods.InvokeAsync(
                     deviceId,
                     moduleId,
-                    new CloudToDeviceMethod(methodName, responseTimeout).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                    directMethodRequest).ConfigureAwait(false);
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status, $"The expected response status should be 200 but was {response.Status}");
-            string payload = response.GetPayloadAsJson();
+            string payload = response.Payload;
             Assert.AreEqual(respJson, payload, $"The expected response payload should be {respJson} but was {payload}");
 
             serviceClient.Dispose();
