@@ -26,12 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly string s_devicePrefix = $"{nameof(DeviceClientX509AuthenticationE2ETests)}_";
         private static X509Certificate2 s_selfSignedCertificateWithPrivateKey = TestConfiguration.IoTHub.GetCertificateWithPrivateKey();
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IoTHub.GetChainDeviceCertificateWithPrivateKey();
-        private readonly string _hostName;
-
-        public DeviceClientX509AuthenticationE2ETests()
-        {
-            _hostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
-        }
+        private readonly string _hostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp_Tcp()
@@ -56,31 +51,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Mqtt_WebSocket()
         {
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp_TCP()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Amqp_WebSocket()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_Tcp()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Twice_Mqtt_WebSocket()
-        {
-            await X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -242,35 +212,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (IotHubCommunicationException ex) when (ex.InnerException is TaskCanceledException)
             {
                 Assert.Fail("Call to OpenAsync timed out.");
-            }
-
-            // Check TCP connection to verify there is no connection leak
-            // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
-            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-        }
-
-        private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(DeviceTransportType transportType)
-        {
-            string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
-            using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = DeviceClient.Create(_hostName, auth, transportType);
-
-            for (int i = 0; i < 2; i++)
-            {
-                try
-                {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                    await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-                    Assert.Fail("Should throw UnauthorizedException but didn't.");
-                }
-                catch (UnauthorizedException)
-                {
-                    // It should always throw UnauthorizedException
-                }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is TaskCanceledException)
-                {
-                    Assert.Fail("Call to OpenAsync timed out.");
-                }
             }
 
             // Check TCP connection to verify there is no connection leak
