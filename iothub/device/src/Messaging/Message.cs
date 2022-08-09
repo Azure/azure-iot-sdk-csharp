@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -30,8 +29,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public Message()
         {
-            Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
-            SystemProperties = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
+            Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SystemProperties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             InitializeWithStream(Stream.Null, StreamDisposalResponsibility.Sdk);
         }
 
