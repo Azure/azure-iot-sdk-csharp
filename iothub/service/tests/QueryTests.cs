@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 {
                     DeviceId = "123456",
                     JobId = "789",
-                    Type = JobType.ScheduleUpdateTwin,
+                    JobType = JobType.ScheduleUpdateTwin,
                     Status = JobStatus.Completed,
                     StartTimeUtc = DateTime.MinValue,
                     EndTimeUtc = DateTime.MinValue
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsInstanceOfType(content.ElementAt(0), typeof(ScheduledJob));
             Assert.AreEqual("123456", content.ElementAt(0).DeviceId);
             Assert.AreEqual("789", content.ElementAt(0).JobId);
-            Assert.AreEqual(JobType.ScheduleUpdateTwin, content.ElementAt(0).Type);
+            Assert.AreEqual(JobType.ScheduleUpdateTwin, content.ElementAt(0).JobType);
             Assert.AreEqual(JobStatus.Completed, content.ElementAt(0).Status);
             Assert.AreEqual(DateTime.MinValue, content.ElementAt(0).StartTimeUtc);
             Assert.AreEqual(DateTime.MinValue, content.ElementAt(0).EndTimeUtc);
