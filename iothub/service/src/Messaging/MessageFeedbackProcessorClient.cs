@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,6 +16,22 @@ namespace Microsoft.Azure.Devices
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly IotHubConnection _connection;
+
+        /// <summary>
+        /// The callback to be executed each time message feedback is received from the service.
+        /// </summary>
+        /// <remarks>
+        /// May not be null.
+        /// </remarks>
+        public Func<FeedbackBatch, DeliveryAcknowledgement> _messageFeedbackProcessor;
+
+        /// <summary>
+        /// The callback to be executed when the connection is lost.
+        /// </summary>
+        /// <remarks>
+        /// May not be null.
+        /// </remarks>
+        public Action<Exception> _errorProcessor;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -44,7 +63,6 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening FeedbackReceiver", nameof(OpenAsync));
-
             try
             {
                 await FeedbackReceiver.OpenAsync().ConfigureAwait(false);
@@ -59,6 +77,40 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Opening FeedbackReceiver", nameof(OpenAsync));
+            }
+        }
+
+        /// <summary>
+        /// Receive cloud-to-device message feedback.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public async Task ReceiveAsync(CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(ReceiveAsync));
+            try
+            {
+                FeedbackBatch batch = await FeedbackReceiver.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                if (batch != null && _messageFeedbackProcessor != null)
+                {
+                    _messageFeedbackProcessor.Invoke(batch);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ReceiveAsync)} threw an exception: {ex}", nameof(ReceiveAsync));
+                if (ex is IotHubException)
+                {
+                    _errorProcessor?.Invoke(ex);
+                }
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(ReceiveAsync));
             }
         }
 
@@ -91,25 +143,14 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Disposing FeedbackReceiver", nameof(Dispose));
+
+            FeedbackReceiver.Dispose();
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, $"Disposing FeedbackReceiver", nameof(Dispose));
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose the FeedbackReceiver instance.
-        /// </summary>
-        public virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Disposing FeedbackReceiver", nameof(Dispose));
-
-                FeedbackReceiver.Dispose();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Disposing FeedbackReceiver", nameof(Dispose));
-            }
         }
     }
 }

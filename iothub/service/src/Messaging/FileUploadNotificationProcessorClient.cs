@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -14,6 +16,22 @@ namespace Microsoft.Azure.Devices
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly IotHubConnection _connection;
+
+        /// <summary>
+        /// The callback to be executed each time file upload notification is received from the service.
+        /// </summary>
+        /// <remarks>
+        /// May not be null.
+        /// </remarks>
+        public Func<FileNotification, DeliveryAcknowledgement> _fileNotificationProcessor;
+
+        /// <summary>
+        /// The callback to be executed when the connection is lost.
+        /// </summary>
+        /// <remarks>
+        /// May not be null.
+        /// </remarks>
+        public Action<Exception> _errorProcessor;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -64,6 +82,40 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Receive file upload notification.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public async Task ReceiveAsync(CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(ReceiveAsync));
+            try
+            {
+                FileNotification notification = await FileNotificationReceiver.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                if (notification != null && _fileNotificationProcessor != null)
+                {
+                    _fileNotificationProcessor.Invoke(notification);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ReceiveAsync)} threw an exception: {ex}", nameof(ReceiveAsync));
+                if (ex is IotHubException)
+                {
+                    _errorProcessor?.Invoke(ex);
+                }
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(ReceiveAsync));
+            }
+        }
+
+        /// <summary>
         /// Close the AmqpFileNotificationReceiver instance.
         /// </summary>
         public virtual async Task CloseAsync()
@@ -92,25 +144,14 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Disposing AmqpFileNotificationReceiver", nameof(Dispose));
+
+            FileNotificationReceiver.Dispose();
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, $"Disposing AmqpFileNotificationReceiver", nameof(Dispose));
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose the AmqpFileNotificationReceiver instance.
-        /// </summary>
-        public virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"Disposing AmqpFileNotificationReceiver", nameof(Dispose));
-
-                FileNotificationReceiver.Dispose();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Disposing AmqpFileNotificationReceiver", nameof(Dispose));
-            }
         }
     }
 }

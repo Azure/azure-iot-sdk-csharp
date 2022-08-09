@@ -45,9 +45,15 @@ namespace Microsoft.Azure.Devices
         private readonly TimeSpan _operationTimeout;
 
         private const string _sendingPath = "/messages/deviceBound";
-
-
         private int _sendingDeliveryTag;
+
+        /// <summary>
+        /// The callback to be executed when the connection is lost.
+        /// </summary>
+        /// <remarks>
+        /// May not be null.
+        /// </remarks>
+        public Action<Exception> _errorProcessor;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -191,6 +197,10 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                if (ex is IotHubException)
+                {
+                    _errorProcessor?.Invoke(ex);
+                }
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
@@ -260,6 +270,10 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                if (ex is IotHubException)
+                {
+                    _errorProcessor?.Invoke(ex);
+                }
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
