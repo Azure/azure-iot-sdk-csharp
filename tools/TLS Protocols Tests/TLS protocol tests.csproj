@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netcoreapp2.1;net451</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.1;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFrameworks>
     <RootNamespace>TlsProtocolTests</RootNamespace>
     <AssemblyName>TlsProtocolTests</AssemblyName>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>

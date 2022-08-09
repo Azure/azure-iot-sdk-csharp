@@ -93,8 +93,6 @@ jobs:
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 5.0:
-          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.30:
@@ -264,8 +262,6 @@ jobs:
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 5.0:
-          FRAMEWORK: net5.0
         .Net Core 3.1:
           FRAMEWORK: netcoreapp3.1
         .Net Core 2.1.30:

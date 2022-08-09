@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Azure.Devices.Shared.Tests</RootNamespace>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.30;net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;net5.0;netcoreapp3.1;netcoreapp2.1.30</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;netcoreapp3.1;netcoreapp2.1.30;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;netcoreapp3.1;netcoreapp2.1.30</TargetFrameworks>
     <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
-    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net5.0' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.30'">False</IsTestProject>
+    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.30'">False</IsTestProject>
 
     <LangVersion>9.0</LangVersion>
     <IsPackable>false</IsPackable>
