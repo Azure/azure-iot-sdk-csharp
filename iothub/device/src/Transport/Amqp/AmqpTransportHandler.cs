@@ -174,24 +174,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(ReceiveMessageAsync));
 
-            Message message;
-            while (true)
+            try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                using var ctb = new CancellationTokenBundle(_transportSettings.DefaultReceiveTimeout, cancellationToken);
-                message = await _amqpUnit.ReceiveMessageAsync(ctb.Token).ConfigureAwait(false);
-
-                if (message != null)
-                {
-                    break;
-                }
+                return await _amqpUnit.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, cancellationToken, cancellationToken, nameof(ReceiveMessageAsync));
-
-            return message;
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(ReceiveMessageAsync));
+            }
         }
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
