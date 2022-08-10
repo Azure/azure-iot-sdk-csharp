@@ -747,7 +747,7 @@ namespace Microsoft.Azure.Devices
 
                 using var msg = new HttpRequestMessage(httpMethod, requestUri);
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
-                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), GetClientVersion());
+                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
 
                 if (modifyRequestMessageAsync != null)
                 {
@@ -885,14 +885,6 @@ namespace Microsoft.Azure.Devices
             ServicePointHelpers.SetLimits(httpMessageHandler, baseUri, connectionLeaseTimeoutMilliseconds);
 
             return httpMessageHandler;
-        }
-
-        private static string GetClientVersion()
-        {
-            var a = Assembly.GetExecutingAssembly();
-            var attribute = (AssemblyInformationalVersionAttribute)a
-                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
-            return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
     }
 }

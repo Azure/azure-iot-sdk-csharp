@@ -4,8 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Http2
 {
@@ -50,7 +48,7 @@ namespace Microsoft.Azure.Devices.Http2
             message.RequestUri = new Uri(_baseUri, relativeUri.ToString() + _apiVersionQueryString + (string.IsNullOrWhiteSpace(queryStringParameters) ? "" : queryStringParameters));
             message.Headers.Add(HttpRequestHeader.Accept.ToString(), ApplicationJson);
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), authorizationProvider.GetAuthorizationHeader());
-            message.Headers.Add(HttpRequestHeader.UserAgent.ToString(), GetClientVersion());
+            message.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
 
             if (payload != null)
             {
@@ -74,14 +72,6 @@ namespace Microsoft.Azure.Devices.Http2
             }
 
             return message;
-        }
-
-        private static string GetClientVersion()
-        {
-            var a = Assembly.GetExecutingAssembly();
-            var attribute = (AssemblyInformationalVersionAttribute)a
-                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
-            return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
     }
 }

@@ -44,8 +44,8 @@ namespace Microsoft.Azure.Devices.Client
             Justification = "Cannot change property types on public classes.")]
         public byte[] Result
         {
-            private set => _result = value;
             get => _result;
+            private set => _result = value;
         }
 
         /// <summary>

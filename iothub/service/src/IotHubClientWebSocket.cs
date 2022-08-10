@@ -986,10 +986,7 @@ namespace Microsoft.Azure.Devices
 
         private static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
+            Argument.RequireNotNull(buffer, nameof(buffer));
 
             if (offset < 0 || offset > buffer.Length || size <= 0)
             {
