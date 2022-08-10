@@ -63,9 +63,6 @@
     <Compile Include="$(Common)\HttpContentExtensions.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
-    <Compile Include="$(Common)\StreamExtensions.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
     <Compile Include="$(Common)\TaskCompletionSource.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
