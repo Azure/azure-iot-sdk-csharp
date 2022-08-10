@@ -62,6 +62,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Client.UnitTests", "provisioning\device\tests\Microsoft.Azure.Devices.Provisioning.Client.UnitTests.csproj", "{8797C176-398A-4347-B8E9-38FAF5746EC4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{4C9BAEB7-5506-4840-A67D-704CFF714A33}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceReconnectionSample", "iothub\device\samples\DeviceReconnectionSample\DeviceReconnectionSample.csproj", "{EB2ADB57-87D4-4AF2-A8F8-4FB48AD56E9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +115,10 @@ Global
 		{8797C176-398A-4347-B8E9-38FAF5746EC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8797C176-398A-4347-B8E9-38FAF5746EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8797C176-398A-4347-B8E9-38FAF5746EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB2ADB57-87D4-4AF2-A8F8-4FB48AD56E9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB2ADB57-87D4-4AF2-A8F8-4FB48AD56E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB2ADB57-87D4-4AF2-A8F8-4FB48AD56E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB2ADB57-87D4-4AF2-A8F8-4FB48AD56E9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,6 +142,8 @@ Global
 		{275DEE86-1EEA-47C4-A9C5-797DF20EC8A7} = {3AA089A9-A035-439E-BAF6-C3975A334379}
 		{8E25CDE3-992D-4942-8C38-51A0D8E8EB70} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
 		{8797C176-398A-4347-B8E9-38FAF5746EC4} = {F94CC11B-7FA5-4CF0-9103-2B89BE631AB0}
+		{4C9BAEB7-5506-4840-A67D-704CFF714A33} = {A48437BA-3C5B-431E-9B2F-96C850E9E1A5}
+		{EB2ADB57-87D4-4AF2-A8F8-4FB48AD56E9D} = {4C9BAEB7-5506-4840-A67D-704CFF714A33}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
