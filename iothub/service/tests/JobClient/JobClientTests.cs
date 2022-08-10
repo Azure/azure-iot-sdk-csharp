@@ -40,7 +40,8 @@ namespace Microsoft.Azure.Devices.Api.Test
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             httpClientHelperMock = new Mock<IHttpClientHelper>();
-            jobClient = new ScheduledJobsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
+            Mock<QueryClient> queryClientMock = new Mock<QueryClient>();
+            jobClient = new ScheduledJobsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory, queryClientMock.Object);
         }
 
         private void NoExtraJobParamTestSetup(JobType jobType, CancellationToken cancellationToken)

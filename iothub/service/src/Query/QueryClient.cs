@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -22,6 +23,7 @@ namespace Microsoft.Azure.Devices
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string PageSizeHeader = "x-ms-max-item-count";
         private const string DevicesQueryUriFormat = "/devices/query";
+        private const string JobsQueryFormat = "/jobs/v2/query";
 
         private string _hostName;
         private IotHubConnectionProperties _credentialProvider;
@@ -35,7 +37,11 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        internal QueryClient(string hostName, IotHubConnectionProperties credentialProvider, HttpClient httpClient, HttpRequestMessageFactory httpRequestMessageFactory)
+        internal QueryClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            HttpClient httpClient,
+            HttpRequestMessageFactory httpRequestMessageFactory)
         {
             _credentialProvider = credentialProvider;
             _hostName = hostName;
@@ -44,14 +50,20 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Retrieves a handle through which a result for a given query can be fetched.
+        /// Execute a query on your IoT hub and get an iterable set of the queried items. The kind of iterable items returned
+        /// by this query will depend on the query provided.
         /// </summary>
-        /// <param name="sqlQueryString">The SQL query.</param>
-        /// <param name="pageSize">The maximum number of items per page.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>A handle used to fetch results for a SQL query.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="sqlQueryString"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="sqlQueryString"/> is empty or whitespace.</exception>
+        /// <param name="query">The query. See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language">this document</see> for more details on how to build this query.</param>
+        /// <param name="options">The optional parameters to execute the query with.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <typeparam name="T">
+        /// The type to deserialize the set of items into. For example, when running a query like "SELECT * FROM devices",
+        /// this type should be <see cref="Twin"/>. When running a query like "SELECT * FROM devices.jobs", this type should be
+        /// <see cref="ScheduledJob"/>.
+        /// </typeparam>
+        /// <returns>An iterable set of the queried items.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="query"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="query"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -61,18 +73,55 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual IQuery CreateAsync(string sqlQueryString, int? pageSize = null, CancellationToken cancellationToken = default)
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;Twin&gt; queriedTwins = await iotHubServiceClient.Query.CreateAsync&lt;Twin&gt;("SELECT * FROM devices");
+        /// while (await queriedTwins.MoveNextAsync())
+        /// {
+        ///     Twin queriedTwin = queriedTwins.Current;
+        ///     Console.WriteLine(queriedTwin);
+        /// }
+        /// </c>
+        /// </example>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync&lt;ScheduledJob&gt;("SELECT * FROM devices.jobs");
+        /// while (await queriedJobs.MoveNextAsync())
+        /// {
+        ///     ScheduledJob queriedJob = queriedJobs.Current;
+        ///     Console.WriteLine(queriedJob);
+        /// }
+        /// </c>
+        /// </example>
+        public virtual async Task<QueryResponse<T>> CreateAsync<T>(string query, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating query", nameof(CreateAsync));
             try
             {
-                return new Query(async (token) => await ExecuteAsync(
-                    sqlQueryString,
-                    pageSize,
-                    token,
-                    cancellationToken).ConfigureAwait(false));
+                Argument.RequireNotNullOrEmpty(query, nameof(query));
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = query });
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+                if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
+                {
+                    request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
+                }
+
+                if (options?.PageSize != null)
+                {
+                    request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
+                }
+
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var page = new QueriedPage<T>(response, responsePayload);
+                return new QueryResponse<T>(this, query, page.Items, page.ContinuationToken, options?.PageSize);
             }
             catch (Exception ex)
             {
@@ -87,27 +136,74 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task<QueryResult> ExecuteAsync(string sqlQueryString, int? pageSize, string continuationToken, CancellationToken cancellationToken)
+        /// <summary>
+        /// Query all jobs or query jobs by type and/or status.
+        /// </summary>
+        /// <param name="jobType">The type of the jobs to return in the query. If null, jobs of all types will be returned</param>
+        /// <param name="jobStatus">The status of the jobs to return in the query. If null, jobs of all states will be returned</param>
+        /// <param name="options">The optional parameters to run the query with.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>An iterable set of the queried jobs.</returns>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        /// <example>
+        /// <c>
+        /// QueryResponse&lt;ScheduledJob&gt; queriedJobs = await iotHubServiceClient.Query.CreateAsync();
+        /// while (await queriedJobs.MoveNextAsync())
+        /// {
+        ///     ScheduledJob queriedJob = queriedJobs.Current;
+        ///     Console.WriteLine(queriedJob);
+        /// }
+        /// </c>
+        /// </example>
+
+        public virtual async Task<QueryResponse<ScheduledJob>> CreateAsync(JobType? jobType = null, JobStatus? jobStatus = null, QueryOptions options = default, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(sqlQueryString, nameof(sqlQueryString));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
 
-            var customHeaders = new Dictionary<string, string>();
-            MediaTypeHeaderValue contentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-            if (!string.IsNullOrWhiteSpace(continuationToken))
+            try
             {
-                customHeaders.Add(ContinuationTokenHeader, continuationToken);
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            if (pageSize != null)
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, new Uri(JobsQueryFormat, UriKind.Relative), _credentialProvider, null, BuildQueryJobUri(jobType, jobStatus));
+
+                var customHeaders = new Dictionary<string, string>();
+                if (!string.IsNullOrWhiteSpace(options?.ContinuationToken))
+                {
+                    request.Headers.Add(ContinuationTokenHeader, options?.ContinuationToken);
+                }
+
+                if (options?.PageSize != null)
+                {
+                    request.Headers.Add(PageSizeHeader, options.PageSize.ToString());
+                }
+
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                QueriedPage<ScheduledJob> page = new QueriedPage<ScheduledJob>(response, responsePayload);
+                return new QueryResponse<ScheduledJob>(this, jobType, jobStatus, page.Items, page.ContinuationToken, options?.PageSize);
+            }
+            catch (Exception ex)
             {
-                customHeaders.Add(PageSizeHeader, pageSize.ToString());
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                throw;
             }
-
-            using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, QueryDevicesRequestUri(), _credentialProvider, new QuerySpecification { Sql = sqlQueryString });
-            AddCustomHeaders(request, customHeaders, contentType);
-            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-            return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{options?.PageSize}]", nameof(CreateAsync));
+            }
         }
 
         private static Uri QueryDevicesRequestUri()
@@ -115,16 +211,21 @@ namespace Microsoft.Azure.Devices
             return new Uri(DevicesQueryUriFormat, UriKind.Relative);
         }
 
-        private static void AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders, MediaTypeHeaderValue contentType)
+        private static string BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
         {
-            if (customHeaders != null)
+            var stringBuilder = new StringBuilder();
+
+            if (jobType != null)
             {
-                foreach (KeyValuePair<string, string> header in customHeaders)
-                {
-                    requestMessage.Headers.Add(header.Key, header.Value);
-                }
+                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
             }
-            requestMessage.Content.Headers.ContentType = contentType;
+
+            if (jobStatus != null)
+            {
+                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
+            }
+
+            return stringBuilder.ToString();
         }
     }
 }
