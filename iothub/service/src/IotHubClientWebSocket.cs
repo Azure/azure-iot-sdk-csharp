@@ -566,7 +566,7 @@ namespace Microsoft.Azure.Devices
 
         private static void MaskWebSocketData(byte[] buffer, int offset, int size)
         {
-            Utils.ValidateBufferBounds(buffer, offset, size);
+            Argument.ValidateBufferBounds(buffer, offset, size);
 
             for (int i = 0; i < size; i++)
             {

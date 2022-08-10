@@ -29,16 +29,19 @@ namespace Microsoft.Azure.Devices.Client
 
         // Connection state change information
         private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
+
         private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
         private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
+
         private volatile Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> _deviceDefaultMethodCallback;
         private readonly Dictionary<string, Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>> _deviceMethods = new();
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
+
         private object _twinPatchCallbackContext;
         internal Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
 
@@ -47,12 +50,14 @@ namespace Microsoft.Azure.Devices.Client
 
         // Cloud-to-module message callback information
         private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
+
         private volatile Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>> _receiveEventEndpoints;
 
         // Diagnostic information
 
         // Count of messages sent by the device/ module. This is used for sending diagnostic information.
         private int _currentMessageCount;
+
         private int _diagnosticSamplingPercentage;
 
         protected internal InternalClient(
@@ -601,7 +606,6 @@ namespace Microsoft.Azure.Devices.Client
             await _methodsSemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
-                Utils.ValidateDataIsEmptyOrJson(requestData);
                 if (!_deviceMethods.TryGetValue(methodRequestInternal.Name, out callbackContextPair))
                 {
                     callbackContextPair = _deviceDefaultMethodCallback;
