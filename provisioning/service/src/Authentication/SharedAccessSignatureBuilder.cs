@@ -24,12 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         public string Key
         {
             get => _key;
-
-            set
-            {
-                StringValidationHelper.EnsureBase64String(value, "Key");
-                _key = value;
-            }
+            set => _key = value;
         }
 
         public string Target { get; set; }
