@@ -159,24 +159,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task OnC2dMessageReceivedAsync(Message message, object context)
         {
-            try
-            {
-                string messageData = Encoding.ASCII.GetString(message.GetBytes());
-                var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
+            string messageData = Encoding.ASCII.GetString(message.Payload);
+            var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
 
-                foreach (var prop in message.Properties)
-                {
-                    formattedMessage.AppendLine($"\n\tProperty: key={prop.Key}, value={prop.Value}");
-                }
-                Console.WriteLine(formattedMessage.ToString());
-
-                await s_deviceClient.CompleteMessageAsync(message);
-                Console.WriteLine($"Completed message [{messageData}].");
-            }
-            finally
+            foreach (var prop in message.Properties)
             {
-                message.Dispose();
+                formattedMessage.AppendLine($"\n\tProperty: key={prop.Key}, value={prop.Value}");
             }
+            Console.WriteLine(formattedMessage.ToString());
+
+            await s_deviceClient.CompleteMessageAsync(message);
+            Console.WriteLine($"Completed message [{messageData}].");
         }
 
         // It is not generally a good practice to have async void methods, however, DeviceClient.SetConnectionStatusChangesHandler() event handler signature
@@ -330,7 +323,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     Console.WriteLine($"Device sending telemetry message {++messageCount} to IoT hub.");
 
-                    using Message message = PrepareTelemetryMessage(messageCount);
+                    Message message = PrepareTelemetryMessage(messageCount);
                     await RetryOperationHelper.RetryTransientExceptionsAsync(
                         operationName: $"SendTelemetryMessage_{messageCount}",
                         asyncOperation: async () => await s_deviceClient.SendEventAsync(message),

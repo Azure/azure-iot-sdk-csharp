@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
                 await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
             }
             catch

@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(null, 0), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // arrange
             var responseBytes = Encoding.UTF8.GetBytes(fakeMethodResponseBody);
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-            var response = new MethodResponseInternal(responseBytes, fakeResponseId, statusSuccess);
+            var response = new MethodResponseInternal(fakeResponseId, statusSuccess, responseBytes);
             MessageMatcher matches = (msg) =>
             {
                 return StringComparer.InvariantCulture.Equals(msg.MqttTopicName, $"$iothub/methods/res/{statusSuccess}/?$rid={fakeResponseId}");
@@ -437,11 +437,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Returns(msg =>
                 {
                     var request = msg.Arg<Message>();
-                    StreamReader reader = new StreamReader(request.GetBodyStream(), System.Text.Encoding.UTF8);
-                    receivedBody = reader.ReadToEnd();
-
-                    var response = new Message();
-                    response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusSuccess);
+                    var response = new Message
+                    {
+                        MqttTopicName = GetResponseTopic(request.MqttTopicName, statusSuccess),
+                    };
                     transport.OnMessageReceived(response);
 
                     return TaskHelpers.CompletedTask;

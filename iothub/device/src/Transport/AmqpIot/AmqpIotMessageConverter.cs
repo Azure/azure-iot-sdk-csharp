@@ -9,7 +9,6 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
@@ -37,12 +36,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         public static Message AmqpMessageToMessage(AmqpMessage amqpMessage)
         {
-            if (amqpMessage == null)
-            {
-                throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
-            }
-            Stream stream = amqpMessage.BodyStream;
-            var message = new Message(stream, StreamDisposalResponsibility.Sdk);
+            Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
+
+            using var ms = new MemoryStream();
+            amqpMessage.BodyStream.CopyTo(ms);
+            amqpMessage.Dispose();
+
+            //ArraySegment<byte>[] arrSeg = amqpMessage.GetPayload();
+            //var bytes = new byte[arrSeg.Length];
+            //Buffer.BlockCopy(arrSeg, 0, bytes, 0, bytes.Length);
+
+            var message = new Message(ms.ToArray());
             UpdateMessageHeaderAndProperties(amqpMessage, message);
             return message;
         }
@@ -53,10 +57,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 throw Fx.Exception.ArgumentNull(nameof(Message));
             }
-            message.ThrowIfDisposed();
 
-            AmqpMessage amqpMessage = message.HasBodyStream()
-                ? AmqpMessage.Create(message.GetBodyStream(), false)
+            AmqpMessage amqpMessage = message.HasPayload
+                ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
                 : AmqpMessage.Create();
 
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
@@ -145,9 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 {
                     if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject))
                     {
-                        string stringObject = netObject as string;
-
-                        if (stringObject != null)
+                        if (netObject is string stringObject)
                         {
                             switch (pair.Key.ToString())
                             {
@@ -200,10 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 amqpMessage.Properties.UserId = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data.UserId));
             }
 
-            if (amqpMessage.ApplicationProperties == null)
-            {
-                amqpMessage.ApplicationProperties = new ApplicationProperties();
-            }
+            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out object propertyValue))
             {
@@ -270,11 +268,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal)
         {
-            methodResponseInternal.ThrowIfDisposed();
-
-            AmqpMessage amqpMessage = methodResponseInternal.BodyStream == null
+            AmqpMessage amqpMessage = methodResponseInternal.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(methodResponseInternal.BodyStream, false);
+                : AmqpMessage.Create(new MemoryStream(methodResponseInternal.Payload), true);
 
             PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponseInternal);
             return amqpMessage;
@@ -302,7 +298,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName);
 
-            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream);
+            using var ms = new MemoryStream();
+            amqpMessage.BodyStream.CopyTo(ms);
+            amqpMessage.Dispose();
+            return new MethodRequestInternal(methodName, methodRequestId, ms.ToArray());
         }
 
         /// <summary>
@@ -314,10 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
 
-            if (amqpMessage.ApplicationProperties == null)
-            {
-                amqpMessage.ApplicationProperties = new ApplicationProperties();
-            }
+            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
             amqpMessage.ApplicationProperties.Map[Status] = methodResponseInternal.Status;
         }
@@ -358,9 +354,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         netObject = amqpSymbol.Value;
                     }
-                    else if (amqpObject is ArraySegment<byte>)
+                    else if (amqpObject is ArraySegment<byte> binValue)
                     {
-                        var binValue = (ArraySegment<byte>)amqpObject;
                         if (binValue.Count == binValue.Array.Length)
                         {
                             netObject = binValue.Array;
