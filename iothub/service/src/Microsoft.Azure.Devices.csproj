@@ -60,12 +60,6 @@
     <Compile Include="$(Common)\service\FxCop.cs">
       <Link>Common\FxCop.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\IotHubConnectionString.cs">
-      <Link>Authentication\IotHubConnectionString.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\TaskHelpers.cs">
-      <Link>Common\TaskHelpers.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
     <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Http\HttpContentExtensions.cs" />
   </ItemGroup>
