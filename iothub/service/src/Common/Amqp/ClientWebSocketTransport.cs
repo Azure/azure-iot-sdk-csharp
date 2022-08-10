@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices
             Fx.AssertAndThrow(args.Buffer != null, "must have buffer to read");
             Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
 
-            Utils.ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
+            Argument.ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
             args.Exception = null; // null out any exceptions
 
             Task<int> taskResult = ReadImplAsync(args);

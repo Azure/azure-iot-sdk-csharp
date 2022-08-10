@@ -15,21 +15,5 @@ namespace Microsoft.Azure.Devices
                 .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
             return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
-
-        public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
-        {
-            Argument.RequireNotNull(buffer, nameof(buffer));
-
-            if (offset < 0 || offset > buffer.Length || size <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset));
-            }
-
-            int remainingBufferSpace = buffer.Length - offset;
-            if (size > remainingBufferSpace)
-            {
-                throw new ArgumentOutOfRangeException(nameof(size));
-            }
-        }
     }
 }

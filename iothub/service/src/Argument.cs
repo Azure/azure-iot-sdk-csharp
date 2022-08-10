@@ -83,5 +83,21 @@ namespace Microsoft.Azure.Devices
 
             RequireNotNullOrEmpty(argument.ToString(), argumentName);
         }
+
+        internal static void ValidateBufferBounds(byte[] buffer, int offset, int size)
+        {
+            RequireNotNull(buffer, nameof(buffer));
+
+            if (offset < 0 || offset > buffer.Length || size <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+
+            int remainingBufferSpace = buffer.Length - offset;
+            if (size > remainingBufferSpace)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+        }
     }
 }
