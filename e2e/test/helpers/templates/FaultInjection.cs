@@ -136,19 +136,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
-            ConnectionState? lastConnectionState = null;
-            ConnectionStateChangeReason? lastConnectionStateChangeReason = null;
             int connectionStateChangeCount = 0;
 
             deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
             {
                 connectionStateChangeCount++;
-                lastConnectionState = state;
-                lastConnectionStateChangeReason = stateChangeReason;
                 logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: state={state} stateChangeReason={stateChangeReason} count={connectionStateChangeCount}");
             });
 
             var watch = new Stopwatch();
+            var lastConnectionState = deviceClient.LastConnectionState;
+            var lastConnectionStateChangeReason = deviceClient.LastConnectionStateChangeReason;
 
             try
             {

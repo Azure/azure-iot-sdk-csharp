@@ -110,6 +110,22 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
         /// <summary>
+        /// Last connection state.
+        /// </summary>
+        public ConnectionState LastConnectionState
+        {
+            get => InternalClient._lastConnectionState;
+        }
+
+        /// <summary>
+        /// Last connection state change reason.
+        /// </summary>
+        public ConnectionStateChangeReason LastConnectionStateChangeReason
+        {
+            get => InternalClient._lastConnectionStateChangeReason;
+        }
+
+        /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>

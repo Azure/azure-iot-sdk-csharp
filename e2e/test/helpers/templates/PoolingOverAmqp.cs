@@ -103,12 +103,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             // The connection state should be "Disabled", with connection state change reason "ClientClose"
                             Assert.AreEqual(
                                 ConnectionState.Disabled,
-                                amqpConnectionStates[i].LastConnectionState,
-                                $"The actual connection state is = {amqpConnectionStates[i].LastConnectionState}");
+                                deviceClients[i].LastConnectionState,
+                                $"The actual connection state is = {deviceClients[i].LastConnectionState}");
                             Assert.AreEqual(
                                 ConnectionStateChangeReason.ClientClose,
-                                amqpConnectionStates[i].LastConnectionStateChangeReason,
-                                $"The actual connection state change reason is = {amqpConnectionStates[i].LastConnectionStateChangeReason}");
+                                deviceClients[i].LastConnectionStateChangeReason,
+                                $"The actual connection state change reason is = {deviceClients[i].LastConnectionStateChangeReason}");
                         }
                     }
                     if (deviceConnectionStateAsExpected)
@@ -146,8 +146,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             public AmqpConnectionStateChange(MsTestLogger logger)
             {
-                LastConnectionState = null;
-                LastConnectionStateChangeReason = null;
                 ConnectionStateChangeHandlerCount = 0;
                 _logger = logger;
             }
@@ -155,16 +153,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             public void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
             {
                 ConnectionStateChangeHandlerCount++;
-                LastConnectionState = state;
-                LastConnectionStateChangeReason = reason;
                 _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStateChangeHandler)}: state={state} stateChangeReason={reason} count={ConnectionStateChangeHandlerCount}");
             }
 
             public int ConnectionStateChangeHandlerCount { get; set; }
-
-            public ConnectionState? LastConnectionState { get; set; }
-
-            public ConnectionStateChangeReason? LastConnectionStateChangeReason { get; set; }
         }
     }
 }

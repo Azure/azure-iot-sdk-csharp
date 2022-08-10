@@ -29,8 +29,8 @@ namespace Microsoft.Azure.Devices.Client
 
         // Connection state change information
         private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
-        private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
-        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
+        internal ConnectionState _lastConnectionState { get; private set; } = ConnectionState.Disconnected;
+        internal ConnectionStateChangeReason _lastConnectionStateChangeReason { get; private set; } = ConnectionStateChangeReason.ClientClose;
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
