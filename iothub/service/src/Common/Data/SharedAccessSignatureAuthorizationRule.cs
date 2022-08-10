@@ -24,12 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Data
         public string PrimaryKey
         {
             get => _primaryKey;
-
-            set
-            {
-                StringValidationHelper.EnsureNullOrBase64String(value, "PrimaryKey");
-                _primaryKey = value;
-            }
+            set => _primaryKey = value;
         }
 
         /// <summary>
@@ -39,12 +34,7 @@ namespace Microsoft.Azure.Devices.Common.Data
         public string SecondaryKey
         {
             get => _secondaryKey;
-
-            set
-            {
-                StringValidationHelper.EnsureNullOrBase64String(value, "SecondaryKey");
-                _secondaryKey = value;
-            }
+            set => _secondaryKey = value;
         }
 
         /// <summary>

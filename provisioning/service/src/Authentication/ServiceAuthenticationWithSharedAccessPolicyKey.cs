@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {
     /// <summary>
-    /// Authentication method that uses a shared access policy key. 
+    /// Authentication method that uses a shared access policy key.
     /// </summary>
     internal sealed class ServiceAuthenticationWithSharedAccessPolicyKey : IAuthenticationMethod
     {
@@ -65,11 +65,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentNullException(nameof(key));
-            }
-
-            if (!StringValidationHelper.IsBase64String(key))
-            {
-                throw new ArgumentException("Key must be Base64 encoded");
             }
 
             _key = key;
