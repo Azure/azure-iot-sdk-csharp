@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
 
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
-                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
+                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), GetClientVersion());
                 if (customHeaders != null)
                 {
                     foreach (KeyValuePair<string, string> header in customHeaders)
@@ -221,6 +222,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     _httpClientHandler = null;
                 }
             }
+        }
+
+        private static string GetClientVersion()
+        {
+            var a = Assembly.GetExecutingAssembly();
+            var attribute = (AssemblyInformationalVersionAttribute)a
+                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
+            return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
     }
 }

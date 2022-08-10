@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
@@ -746,7 +747,7 @@ namespace Microsoft.Azure.Devices
 
                 using var msg = new HttpRequestMessage(httpMethod, requestUri);
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
-                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
+                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), GetClientVersion());
 
                 if (modifyRequestMessageAsync != null)
                 {
@@ -884,6 +885,14 @@ namespace Microsoft.Azure.Devices
             ServicePointHelpers.SetLimits(httpMessageHandler, baseUri, connectionLeaseTimeoutMilliseconds);
 
             return httpMessageHandler;
+        }
+
+        private static string GetClientVersion()
+        {
+            var a = Assembly.GetExecutingAssembly();
+            var attribute = (AssemblyInformationalVersionAttribute)a
+                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
+            return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
     }
 }

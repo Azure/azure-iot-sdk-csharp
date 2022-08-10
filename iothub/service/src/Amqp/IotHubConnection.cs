@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -461,7 +462,7 @@ namespace Microsoft.Azure.Devices
 
         private static AmqpLinkSettings SetLinkSettingsCommonProperties(AmqpLinkSettings linkSettings, TimeSpan timeSpan)
         {
-            string clientVersion = Utils.GetClientVersion();
+            string clientVersion = GetClientVersion();
             linkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeSpan.TotalMilliseconds);
             linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, clientVersion);
 
@@ -609,6 +610,14 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, expiresAtUtc, nameof(ScheduleTokenRefresh));
             }
+        }
+
+        private static string GetClientVersion()
+        {
+            var a = Assembly.GetExecutingAssembly();
+            var attribute = (AssemblyInformationalVersionAttribute)a
+                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
+            return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
     }
 }

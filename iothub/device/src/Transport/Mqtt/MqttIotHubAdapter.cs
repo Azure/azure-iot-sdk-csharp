@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -1292,7 +1294,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             if (property.Key == MessageSystemPropertyNames.Ack)
             {
-                return Utils.ConvertDeliveryAckTypeFromString(property.Value);
+                return ConvertDeliveryAckTypeFromString(property.Value);
             }
             return property.Value;
         }
@@ -1379,7 +1381,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     systemProperties[propertyName] = ConvertFromSystemProperties(property.Value);
                 }
             }
-            string properties = UrlEncodedDictionarySerializer.Serialize(Utils.MergeDictionaries(new IDictionary<string, string>[] { systemProperties, message.Properties }));
+            string properties = UrlEncodedDictionarySerializer.Serialize(MergeDictionaries(new IDictionary<string, string>[] { systemProperties, message.Properties }));
 
             string msg = properties.Length != 0
                 ? topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties
@@ -1393,6 +1395,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             return msg;
+        }
+
+        private static IReadOnlyDictionary<TKey, TValue> MergeDictionaries<TKey, TValue>(IDictionary<TKey, TValue>[] dictionaries)
+        {
+            // No item in the array should be null.
+            if (dictionaries == null || dictionaries.Any(item => item == null))
+            {
+                throw new ArgumentNullException(nameof(dictionaries), "Provided dictionaries should not be null");
+            }
+
+            var result = dictionaries.SelectMany(dict => dict)
+                .ToLookup(pair => pair.Key, pair => pair.Value)
+                .ToDictionary(group => group.Key, group => group.First());
+
+            return new ReadOnlyDictionary<TKey, TValue>(result);
+        }
+
+        private static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
+        {
+            return value switch
+            {
+                "none" => DeliveryAcknowledgement.None,
+                "negative" => DeliveryAcknowledgement.NegativeOnly,
+                "positive" => DeliveryAcknowledgement.PositiveOnly,
+                "full" => DeliveryAcknowledgement.Full,
+                _ => throw new NotSupportedException($"Unknown value: '{value}'"),
+            };
         }
 
         #endregion helper methods

@@ -44,12 +44,7 @@ namespace Microsoft.Azure.Devices.Client
             Justification = "Cannot change property types on public classes.")]
         public byte[] Result
         {
-            private set
-            {
-                Utils.ValidateDataIsEmptyOrJson(value);
-
-                _result = value;
-            }
+            private set => _result = value;
             get => _result;
         }
 

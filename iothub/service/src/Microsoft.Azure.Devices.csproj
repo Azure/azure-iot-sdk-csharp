@@ -54,9 +54,6 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\AssertionFailedException.cs">
-      <Link>Common\Exceptions\AssertionFailedException.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\service\AuthenticationMethodFactory.cs">
       <Link>Authentication\AuthenticationMethodFactory.cs</Link>
     </Compile>
@@ -75,29 +72,14 @@
     <Compile Include="$(Common)\service\FatalException.cs">
       <Link>Common\Exceptions\FatalException.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\Fx.cs">
-      <Link>Common\Fx.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\service\FxCop.cs">
       <Link>Common\FxCop.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\HttpClientHelper.cs">
-      <Link>Http\HttpClientHelper.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\IAuthorizationHeaderProvider.cs">
       <Link>Authentication\IAuthorizationHeaderProvider.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\IHttpClientHelper.cs">
-      <Link>Http\IHttpClientHelper.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\service\IotHubConnectionString.cs">
       <Link>Authentication\IotHubConnectionString.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\PutOperationType.cs">
-      <Link>Utilities\PutOperationType.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\QuerySpecification.cs">
-      <Link>Query\QuerySpecification.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\StringValidationHelper.cs">
       <Link>Common\StringValidationHelper.cs</Link>
@@ -105,11 +87,7 @@
     <Compile Include="$(Common)\service\TaskHelpers.cs">
       <Link>Common\TaskHelpers.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\Utils.cs">
-      <Link>Common\Utils.cs</Link>
-    </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
-    <Compile Include="$(Common)\HttpMessageHelper.cs" Link="Http\HttpMessageHelper.cs" />
     <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Http\HttpContentExtensions.cs" />
   </ItemGroup>
 

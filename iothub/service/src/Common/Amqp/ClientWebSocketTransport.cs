@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices
             Fx.AssertAndThrow(args.Buffer != null, "must have buffer to read");
             Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
 
-            Utils.ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
+            ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
             args.Exception = null; // null out any exceptions
 
             Task<int> taskResult = ReadImplAsync(args);
@@ -327,6 +327,25 @@ namespace Microsoft.Azure.Devices
             }
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);
+        }
+
+        private static void ValidateBufferBounds(byte[] buffer, int offset, int size)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (offset < 0 || offset > buffer.Length || size <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+
+            int remainingBufferSpace = buffer.Length - offset;
+            if (size > remainingBufferSpace)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
         }
     }
 }
