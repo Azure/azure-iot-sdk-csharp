@@ -166,9 +166,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
-        /// <returns>The received message or null if there was no message until cancellation token has expired</returns>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <returns>The received message.</returns>
         public Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken = default) => InternalClient.ReceiveMessageAsync(cancellationToken);
 
         /// <summary>

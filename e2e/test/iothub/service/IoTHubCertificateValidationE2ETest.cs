@@ -20,9 +20,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
             using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
-            IQuery query = sc.Query.CreateAsync("select * from devices");
             IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
-                () => query.GetNextAsTwinAsync()).ConfigureAwait(false);
+                () => sc.Query.CreateAsync<Twin>("select * from devices")).ConfigureAwait(false);
 
 #if NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));

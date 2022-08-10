@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Http2
 {
