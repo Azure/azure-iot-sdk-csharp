@@ -566,7 +566,7 @@ namespace Microsoft.Azure.Devices
 
         private static void MaskWebSocketData(byte[] buffer, int offset, int size)
         {
-            ValidateBufferBounds(buffer, offset, size);
+            Utils.ValidateBufferBounds(buffer, offset, size);
 
             for (int i = 0; i < size; i++)
             {
@@ -982,22 +982,6 @@ namespace Microsoft.Azure.Devices
         private static async Task WriteToStreamAsync(Stream stream, byte[] buffer, int offset, int size)
         {
             await stream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
-        }
-
-        private static void ValidateBufferBounds(byte[] buffer, int offset, int size)
-        {
-            Argument.RequireNotNull(buffer, nameof(buffer));
-
-            if (offset < 0 || offset > buffer.Length || size <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset));
-            }
-
-            int remainingBufferSpace = buffer.Length - offset;
-            if (size > remainingBufferSpace)
-            {
-                throw new ArgumentOutOfRangeException(nameof(size));
-            }
         }
     }
 }
