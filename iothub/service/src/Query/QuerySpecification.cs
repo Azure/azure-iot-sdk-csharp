@@ -5,9 +5,6 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
-    /// <summary>
-    ///     A Json query request
-    /// </summary>
     internal class QuerySpecification
     {
         [JsonProperty(PropertyName = "query", Required = Required.Always)]

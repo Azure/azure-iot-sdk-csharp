@@ -358,26 +358,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
-        {
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-            bool isMethodHandlerCalled = false;
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
-            }, "custom data").ConfigureAwait(false);
-
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")));
-
-            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 400), Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.IsFalse(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -395,26 +375,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
-        public async Task IotHubDeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
-        {
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
-            bool isMethodHandlerCalled = false;
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
-            }, "custom data").ConfigureAwait(false);
-
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
-
-            await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
-            Assert.IsTrue(isMethodHandlerCalled);
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 500), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
