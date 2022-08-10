@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 // For MQTT, FaultInjection will terminate the connection prior to a PUBACK
                 // which leads to an infinite loop trying to resend the FaultInjection message, which will eventually throw an OperationCanceledException.
                 // We will suppress this exception.
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}.{nameof(ActivateFaultInjectionAsync)} over MQTT (suppress): {ex}");
+                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}.{nameof(ActivateFaultInjectionAsync)} over MQTT (suppressed): {ex}");
             }
             finally
             {
