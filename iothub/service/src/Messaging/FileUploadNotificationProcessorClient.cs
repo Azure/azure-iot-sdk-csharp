@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -67,42 +71,14 @@ namespace Microsoft.Azure.Devices
             try
             {
                 await FileNotificationReceiver.OpenAsync().ConfigureAwait(false);
+                ReceivingAmqpLink receivingLink = await FileNotificationReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                receivingLink.RegisterMessageListener(OnNotificationMessageReceivedAsync);
             }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Opening AmqpFileNotificationReceiver", nameof(OpenAsync));
-            }
-        }
-
-        /// <summary>
-        /// Receive file upload notification.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public async Task ReceiveAsync(CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(ReceiveAsync));
-            try
-            {
-                FileNotification notification = await FileNotificationReceiver.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                if (notification != null && _fileNotificationProcessor != null)
-                {
-                    _fileNotificationProcessor.Invoke(notification);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ReceiveAsync)} threw an exception: {ex}", nameof(ReceiveAsync));
-                if (ex is IotHubException)
+                if (ex is IotHubException || ex is IOException)
                 {
                     _errorProcessor?.Invoke(ex);
                 }
@@ -111,7 +87,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(ReceiveAsync));
+                    Logging.Exit(this, $"Opening AmqpFileNotificationReceiver", nameof(OpenAsync));
             }
         }
 
@@ -132,6 +108,10 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(CloseAsync)} threw an exception: {ex}", nameof(CloseAsync));
+                if (ex is IotHubException || ex is IOException)
+                {
+                    _errorProcessor?.Invoke(ex);
+                }
                 throw;
             }
             finally
@@ -152,6 +132,43 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Exit(this, $"Disposing AmqpFileNotificationReceiver", nameof(Dispose));
             GC.SuppressFinalize(this);
+        }
+
+        private async void OnNotificationMessageReceivedAsync(AmqpMessage amqpMessage)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, amqpMessage, nameof(OnNotificationMessageReceivedAsync));
+
+            try
+            {
+                if (amqpMessage != null && _fileNotificationProcessor != null)
+                {
+                    using (amqpMessage)
+                    {
+                        AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.FileNotificationContentType);
+
+                        FileNotification fileNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileNotification>(amqpMessage).ConfigureAwait(false);
+                        fileNotification.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+
+                        _fileNotificationProcessor.Invoke(fileNotification);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception: {ex}", nameof(OnNotificationMessageReceivedAsync));
+                if (ex is IotHubException || ex is IOException)
+                {
+                    _errorProcessor?.Invoke(ex);
+                }
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, amqpMessage, nameof(OnNotificationMessageReceivedAsync));
+            }
         }
     }
 }

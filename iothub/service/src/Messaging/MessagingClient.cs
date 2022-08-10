@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
+using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
 {
@@ -40,11 +43,14 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly IotHubConnection _connection;
         private readonly IotHubServiceClientOptions _clientOptions;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
         private readonly TimeSpan _openTimeout;
         private readonly TimeSpan _operationTimeout;
 
         private const string _sendingPath = "/messages/deviceBound";
+        private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
         private int _sendingDeliveryTag;
 
         /// <summary>
@@ -65,10 +71,14 @@ namespace Microsoft.Azure.Devices
         internal MessagingClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
+            HttpClient httpClient, 
+            HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
+            _httpClient = httpClient;
+            _httpRequestMessageFactory = httpRequestMessageFactory;
             _clientOptions = options;
             _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options.TransportSettings, options);
             _openTimeout = IotHubConnection.DefaultOpenTimeout;
@@ -197,7 +207,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                if (ex is IotHubException)
+                if (ex is IotHubException || ex is IOException)
                 {
                     _errorProcessor?.Invoke(ex);
                 }
@@ -270,7 +280,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                if (ex is IotHubException)
+                if (ex is IotHubException || ex is IOException)
                 {
                     _errorProcessor?.Invoke(ex);
                 }
@@ -281,6 +291,60 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
             }
+        }
+
+        /// <summary>
+        /// Removes all cloud-to-device messages from a device's queue.
+        /// </summary>
+        /// <remarks>
+        /// This call is made over HTTP. Call to <see cref="OpenAsync"/> or <see cref="CloseAsync"/> does not affect this method.
+        /// </remarks>
+        /// <param name="deviceId">The device identifier for the target device.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>The <see cref="PurgeMessageQueueResult"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public virtual async Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
+
+            try
+            {
+                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetPurgeMessageQueueAsyncUri(deviceId), _credentialProvider);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<PurgeMessageQueueResult>(response, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
+            }
+        }
+
+        private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
+        {
+            return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)

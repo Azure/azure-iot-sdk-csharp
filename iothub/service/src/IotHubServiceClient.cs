@@ -221,8 +221,8 @@ namespace Microsoft.Azure.Devices
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-
-            Messaging = new MessagingClient(_hostName, _credentialProvider, _options);
+            Messaging = new MessagingClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _options);
+            
             MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
             FileUploadNotificationProcessor = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
         }

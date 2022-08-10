@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices
 {
     internal sealed class AmqpFileNotificationReceiver : FileNotificationReceiver<FileNotification>, IDisposable
     {
-        private readonly FaultTolerantAmqpObject<ReceivingAmqpLink> _faultTolerantReceivingLink;
         private readonly string _receivingPath;
 
         public AmqpFileNotificationReceiver(IotHubConnection iotHubConnection)
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.Devices
             OpenTimeout = IotHubConnection.DefaultOpenTimeout;
             OperationTimeout = IotHubConnection.DefaultOperationTimeout;
             _receivingPath = AmqpClientHelper.GetReceivingPath(EndpointKind.FileNotification);
-            _faultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
+            FaultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
         }
 
         public TimeSpan OpenTimeout { get; }
@@ -30,13 +29,15 @@ namespace Microsoft.Azure.Devices
 
         public IotHubConnection Connection { get; }
 
+        public FaultTolerantAmqpObject<ReceivingAmqpLink> FaultTolerantReceivingLink { get; }
+
         public Task OpenAsync()
         {
             Logging.Enter(this, nameof(OpenAsync));
 
             try
             {
-                return _faultTolerantReceivingLink.GetReceivingLinkAsync();
+                return FaultTolerantReceivingLink.GetReceivingLinkAsync();
             }
             finally
             {
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return _faultTolerantReceivingLink.CloseAsync();
+                return FaultTolerantReceivingLink.CloseAsync();
             }
             finally
             {
@@ -66,7 +67,7 @@ namespace Microsoft.Azure.Devices
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                ReceivingAmqpLink receivingLink = await FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
 
                 Logging.Info(this, $"Message received is [{amqpMessage}]", nameof(ReceiveAsync));
@@ -120,7 +121,7 @@ namespace Microsoft.Azure.Devices
         public override Task CompleteAsync(FileNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
+                FaultTolerantReceivingLink,
                 fileNotification.LockToken,
                 AmqpConstants.AcceptedOutcome,
                 false,
@@ -130,7 +131,7 @@ namespace Microsoft.Azure.Devices
         public override Task AbandonAsync(FileNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
+                FaultTolerantReceivingLink,
                 fileNotification.LockToken,
                 AmqpConstants.ReleasedOutcome,
                 false,
@@ -140,7 +141,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public void Dispose()
         {
-            _faultTolerantReceivingLink.Dispose();
+            FaultTolerantReceivingLink.Dispose();
         }
     }
 }

@@ -31,8 +31,6 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class ServiceClient : IDisposable
     {
-        private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
-
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         private readonly IHttpClientHelper _httpClientHelper;
@@ -250,43 +248,6 @@ namespace Microsoft.Azure.Devices
                 transportSettings,
                 options,
                 options2);
-        }
-
-        /// <summary>
-        /// Removes all cloud-to-device messages from a device's queue. This call is made over HTTP.
-        /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public virtual Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
-
-            try
-            {
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-                {
-                    { HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new DeviceNotFoundException(deviceId)) }
-                };
-
-                return _httpClientHelper.DeleteAsync<PurgeMessageQueueResult>(GetPurgeMessageQueueAsyncUri(deviceId), errorMappingOverrides, null, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
-            }
-        }
-
-        private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
-        {
-            return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
     }
 }
