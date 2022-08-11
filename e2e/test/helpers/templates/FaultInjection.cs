@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
         public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(5); // Time in seconds after service initiates the fault.
         public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
-        public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(10); // Buffer time waiting fault occurs or connection recover
+        public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(20); // Buffer time waiting fault occurs or connection recover
 
         public static readonly TimeSpan WaitForDisconnectDuration = TimeSpan.FromTicks(DefaultFaultDelay.Ticks * 3);
         public static readonly TimeSpan WaitForReconnectDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks * 2);
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             try
             {
-                using var cts = new CancellationTokenSource(delay);
+                using var cts = new CancellationTokenSource(LatencyTimeBuffer);
                 using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
@@ -91,17 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.SendEventAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex)
-            {
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
-
-                // For quota injection, the fault is only seen for the original HTTP request.
-                if (transportSettings is IotHubClientHttpSettings)
-                {
-                    throw;
-                }
-            }
-            catch (TimeoutException ex)
+            catch (Exception ex) when (ex is IotHubCommunicationException || ex is TimeoutException)
             {
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
