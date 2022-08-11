@@ -142,8 +142,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             });
 
             var watch = new Stopwatch();
-            var lastConnectionState = deviceClient.LastConnectionState;
-            var lastConnectionStateChangeReason = deviceClient.LastConnectionStateChangeReason;
+            var lastConnectionState = deviceClient.ConnectionInfo.State;
+            var lastConnectionStateChangeReason = deviceClient.ConnectionInfo.ChangeReason;
 
             try
             {

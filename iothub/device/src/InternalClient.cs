@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Connection state change information
         private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
-        internal LastConnectionState _lastConnectionState { get; }
+        internal ConnectionInfo _connectionInfo { get; private set; } = new ConnectionInfo();
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
@@ -1184,17 +1184,16 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_lastConnectionState.State != state
-                    || _lastConnectionState.ChangeReason != reason)
+                if (_connectionInfo.State != state
+                    || _connectionInfo.ChangeReason != reason)
                 {
                     _connectionStateChangeHandler?.Invoke(state, reason);
                 }
             }
             finally
             {
-                _lastConnectionState.State = state;
-                _lastConnectionState.ChangeReason = reason;
-                _lastConnectionState.ChangedDateTimeUtc = DateTime.UtcNow;
+                _connectionInfo = new ConnectionInfo(state, reason, DateTime.UtcNow);
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
             }

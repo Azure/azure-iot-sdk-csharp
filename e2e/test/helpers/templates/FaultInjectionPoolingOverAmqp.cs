@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         notRecovered = false;
                         for (j = 0; j < devicesCount; j++)
                         {
-                            if (deviceClients[j].LastConnectionState != ConnectionState.Connected)
+                            if (deviceClients[j].ConnectionInfo.State != ConnectionState.Connected)
                             {
                                 await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                                 notRecovered = true;
@@ -194,8 +194,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             Assert.IsTrue(amqpConnectionStates[i].ConnectionStateChangeCount >= 2, $"The expected connection state change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStates[i].ConnectionStateChangeCount}");
                         }
                     }
-                    Assert.AreEqual(ConnectionState.Disabled, deviceClients[i].LastConnectionState, $"The expected connection state should be {ConnectionState.Disabled} but was {deviceClients[i].LastConnectionState}");
-                    Assert.AreEqual(ConnectionStateChangeReason.ClientClose, deviceClients[i].LastConnectionStateChangeReason, $"The expected connection state change reason should be {ConnectionStateChangeReason.ClientClose} but was {deviceClients[i].LastConnectionStateChangeReason}");
+                    Assert.AreEqual(ConnectionState.Disabled, deviceClients[i].ConnectionInfo.State, $"The expected connection state should be {ConnectionState.Disabled} but was {deviceClients[i].ConnectionInfo.State}");
+                    Assert.AreEqual(ConnectionStateChangeReason.ClientClose, deviceClients[i].ConnectionInfo.ChangeReason, $"The expected connection state change reason should be {ConnectionStateChangeReason.ClientClose} but was {deviceClients[i].ConnectionInfo.ChangeReason}");
                 }
             }
             finally

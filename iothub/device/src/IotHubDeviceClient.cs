@@ -110,19 +110,9 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
         /// <summary>
-        /// Last connection state.
+        /// The latest connection information since the last state change.
         /// </summary>
-        public ConnectionState LastConnectionState => InternalClient._lastConnectionState.State;
-
-        /// <summary>
-        /// Last connection state change reason.
-        /// </summary>
-        public ConnectionStateChangeReason LastConnectionStateChangeReason => InternalClient._lastConnectionState.ChangeReason;
-
-        /// <summary>
-        /// Timestamp in UTC when the last connection state was changed.
-        /// </summary>
-        public DateTime LastChangedDateTimeUtc => InternalClient._lastConnectionState.ChangedDateTimeUtc;
+        public ConnectionInfo ConnectionInfo => InternalClient._connectionInfo;
 
         /// <summary>
         /// Explicitly open the DeviceClient instance.

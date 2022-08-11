@@ -101,12 +101,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             // The connection state should be "Disabled", with connection state change reason "ClientClose"
                             Assert.AreEqual(
                                 ConnectionState.Disabled,
-                                deviceClients[i].LastConnectionState,
-                                $"The actual connection state is = {deviceClients[i].LastConnectionState}");
+                                deviceClients[i].ConnectionInfo.State,
+                                $"The actual connection state is = {deviceClients[i].ConnectionInfo.State}");
                             Assert.AreEqual(
                                 ConnectionStateChangeReason.ClientClose,
-                                deviceClients[i].LastConnectionStateChangeReason,
-                                $"The actual connection state change reason is = {deviceClients[i].LastConnectionStateChangeReason}");
+                                deviceClients[i].ConnectionInfo.ChangeReason,
+                                $"The actual connection state change reason is = {deviceClients[i].ConnectionInfo.ChangeReason}");
                         }
                     }
                     if (deviceConnectionStateAsExpected)

@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClients[0].CloseAsync().ConfigureAwait(false);
             deviceClients[0].Dispose();
 
-            deviceClients[0].LastConnectionState.Should().Be(ConnectionState.Disabled);
+            deviceClients[0].ConnectionInfo.State.Should().Be(ConnectionState.Disabled);
 
             Logger.Trace($"{nameof(ReuseAuthenticationMethod_MuxedDevices)}: Confirming the rest of the multiplexed devices are online and operational.");
 
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 notRecovered = false;
                 for (int i = 1; i < devicesCount; i++)
                 {
-                    if (deviceClients[i].LastConnectionState != ConnectionState.Connected)
+                    if (deviceClients[i].ConnectionInfo.State != ConnectionState.Connected)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                         notRecovered = true;
@@ -270,13 +270,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Also dispose the authentication methods created.
             for (int i = 0; i < devicesCount; i++)
             {
-                deviceClients[i].LastConnectionState.Should().Be(ConnectionState.Connected);
+                deviceClients[i].ConnectionInfo.State.Should().Be(ConnectionState.Connected);
 
                 await deviceClients[i].CloseAsync();
                 deviceClients[i].Dispose();
                 authenticationMethods[i].Dispose();
 
-                deviceClients[i].LastConnectionState.Should().Be(ConnectionState.Disabled);
+                deviceClients[i].ConnectionInfo.State.Should().Be(ConnectionState.Disabled);
             }
         }
 

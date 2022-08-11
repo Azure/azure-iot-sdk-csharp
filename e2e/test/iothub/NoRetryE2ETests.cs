@@ -67,8 +67,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             sw.Reset();
 
-            var lastConnectionState = deviceClient.LastConnectionState;
-            var lastConnectionStateChangeReason = deviceClient.LastConnectionStateChangeReason;
+            var lastConnectionState = deviceClient.ConnectionInfo.State;
+            var lastConnectionStateChangeReason = deviceClient.ConnectionInfo.ChangeReason;
 
             lastConnectionState.Should().Be(ConnectionState.Disconnected, $"Expected device to be {ConnectionState.Disconnected} but was {lastConnectionState}.");
             lastConnectionStateChangeReason.Should().Be(ConnectionStateChangeReason.RetryExpired, $"Expected device to be {ConnectionStateChangeReason.RetryExpired} but was {lastConnectionStateChangeReason}.");
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             sw.Reset();
 
-            var lastConnectionStateDevice1 = deviceClient1.LastConnectionState;
+            var lastConnectionStateDevice1 = deviceClient1.ConnectionInfo.State;
             lastConnectionStateDevice1.Should().Be(ConnectionState.Disconnected, $"Excpected device 1 to be {ConnectionState.Disconnected} but was {lastConnectionStateDevice1}.");
             connectionStateChangeDevice1.Should().NotContainKey(ConnectionState.DisconnectedRetrying, $"Shouldn't get {ConnectionState.DisconnectedRetrying} state change.");
             int connected = connectionStateChangeDevice1[ConnectionState.Connected];
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int disconnected = connectionStateChangeDevice1[ConnectionState.Disconnected];
             disconnected.Should().Be(1, $"Should get {ConnectionState.Disconnected} once but got it {disconnected} times.");
 
-            var lastConnectionStateDevice2 = deviceClient2.LastConnectionState;
+            var lastConnectionStateDevice2 = deviceClient2.ConnectionInfo.State;
             lastConnectionStateDevice2.Should().Be(ConnectionState.Connected, $"Expected device 2 to be {ConnectionState.Connected} but was {lastConnectionStateDevice2}.");
         }
     }
