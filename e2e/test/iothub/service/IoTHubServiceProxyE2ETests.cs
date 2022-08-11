@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static readonly string s_devicePrefix = $"{nameof(IoTHubServiceProxyE2ETests)}_";
         private static readonly string s_connectionString = TestConfiguration.IoTHub.ConnectionString;
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
-        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan s_waitDuration = TimeSpan.FromMinutes(3);
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
