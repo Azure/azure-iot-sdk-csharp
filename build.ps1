@@ -292,11 +292,12 @@ try
         $testCategory += "TestCategory=Unit"
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
+        $testCategory += "|"
+        $testCategory += "TestCategory=FaultInjectionBVT"
         $testCategory += ")"
 
         # test categories to exclude
         $testCategory += "&TestCategory!=LongRunning"
-        $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
 
         if ($skipIotHubTests)
