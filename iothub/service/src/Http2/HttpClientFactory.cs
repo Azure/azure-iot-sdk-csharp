@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Http2
 
             if (options.Proxy != DefaultWebProxySettings.Instance)
             {
-                httpMessageHandler.UseProxy = true;
+                httpMessageHandler.UseProxy = options.Proxy != null;
                 httpMessageHandler.Proxy = options.Proxy;
             }
 
