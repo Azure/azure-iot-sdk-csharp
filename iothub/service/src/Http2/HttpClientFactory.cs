@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Http2
             httpMessageHandler.SslProtocols = options.SslProtocols;
             httpMessageHandler.CheckCertificateRevocationList = options.CertificateRevocationCheck;
 
-            if (options.Proxy != null)
+            if (options.Proxy != DefaultWebProxySettings.Instance)
             {
                 httpMessageHandler.UseProxy = true;
                 httpMessageHandler.Proxy = options.Proxy;
