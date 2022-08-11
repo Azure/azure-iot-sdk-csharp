@@ -40,14 +40,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             using var ms = new MemoryStream();
             amqpMessage.BodyStream.CopyTo(ms);
-            amqpMessage.Dispose();
-
-            //ArraySegment<byte>[] arrSeg = amqpMessage.GetPayload();
-            //var bytes = new byte[arrSeg.Length];
-            //Buffer.BlockCopy(arrSeg, 0, bytes, 0, bytes.Length);
 
             var message = new Message(ms.ToArray());
             UpdateMessageHeaderAndProperties(amqpMessage, message);
+            amqpMessage.Dispose();
+
             return message;
         }
 

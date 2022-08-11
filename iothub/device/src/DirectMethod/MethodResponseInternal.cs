@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         internal string RequestId { get; }
 
         /// <summary>
-        /// contains the response of the device client application method handler.
+        /// Contains the response of the device client application method handler.
         /// </summary>
         internal int Status { get; }
 

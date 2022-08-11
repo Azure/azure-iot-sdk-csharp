@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Indicates if the message has a payload.
         /// </summary>
         /// <returns>True, if there is a payload.</returns>
-        public bool HasPayload => Payload != null;
+        public bool HasPayload => _payload != null;
 
         /// <summary>
         /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
