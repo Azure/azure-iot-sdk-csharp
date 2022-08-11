@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             try
             {
-                using var cts = new CancellationTokenSource(delay);
+                using var cts = new CancellationTokenSource(LatencyTimeBuffer);
                 using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
@@ -91,17 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.SendEventAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex)
-            {
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
-
-                // For quota injection, the fault is only seen for the original HTTP request.
-                if (transportSettings is IotHubClientHttpSettings)
-                {
-                    throw;
-                }
-            }
-            catch (TimeoutException ex)
+            catch (Exception ex) when (ex is IotHubCommunicationException || ex is TimeoutException)
             {
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
