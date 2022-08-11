@@ -54,16 +54,10 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
-    <Compile Include="$(Common)\StreamDisposalResponsibility.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
     <Compile Include="$(Common)\HttpContentExtensions.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
-    <Compile Include="$(Common)\TaskCompletionSource.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
   </ItemGroup>
