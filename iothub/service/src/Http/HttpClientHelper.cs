@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-            string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
+            string str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = JsonConvert.DeserializeObject<T>(str);
 
             // Etag in the header is considered authoritative

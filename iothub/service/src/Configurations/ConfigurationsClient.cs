@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Configuration>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Configuration>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, ConfigurationsRequestUriFormat.FormatInvariant(maxCount));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<IEnumerable<Configuration>>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<IEnumerable<Configuration>>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices
                 HttpMessageHelper2.InsertETag(request, configuration.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Configuration>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

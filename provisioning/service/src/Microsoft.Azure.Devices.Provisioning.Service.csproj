@@ -47,7 +47,6 @@
 
   <ItemGroup>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Utilities\HttpContentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
