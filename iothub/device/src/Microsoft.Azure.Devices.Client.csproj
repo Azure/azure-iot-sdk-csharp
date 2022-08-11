@@ -60,6 +60,9 @@
     <Compile Include="$(Common)\DefaultWebProxySettings.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
+    <Compile Include="$(Common)\TaskCompletionSource.cs">
+      <LinkBase>Common</LinkBase>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
