@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Device>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Device>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Device>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Device>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Device>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Device>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<IEnumerable<Module>>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<IEnumerable<Module>>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -944,7 +944,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<JobProperties>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<JobProperties>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -986,7 +986,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<IEnumerable<JobProperties>>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<IEnumerable<JobProperties>>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1074,7 +1074,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDeviceStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<RegistryStatistics>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<RegistryStatistics>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1116,7 +1116,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetServiceStatisticsUri(), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<ServiceStatistics>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<ServiceStatistics>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1241,7 +1241,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<BulkRegistryOperationResult>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<BulkRegistryOperationResult>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1263,7 +1263,7 @@ namespace Microsoft.Azure.Devices
             using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetCreateJobsUri(), _credentialProvider, jobProperties);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-            return await HttpMessageHelper2.DeserializeResponseAsync<JobProperties>(response, cancellationToken).ConfigureAwait(false);
+            return await HttpMessageHelper2.DeserializeResponseAsync<JobProperties>(response).ConfigureAwait(false);
         }
     }
 }

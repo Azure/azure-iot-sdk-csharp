@@ -61,7 +61,6 @@
       <Link>Common\FxCop.cs</Link>
     </Compile>
     <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Http\HttpContentExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

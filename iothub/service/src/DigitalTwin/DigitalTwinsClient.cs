@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                T digitalTwin = await HttpMessageHelper2.DeserializeResponseAsync<T>(response, cancellationToken).ConfigureAwait(false);
+                T digitalTwin = await HttpMessageHelper2.DeserializeResponseAsync<T>(response).ConfigureAwait(false);
                 string etag = response.Headers.GetValues("ETag").FirstOrDefault();
                 return new DigitalTwinGetResponse<T>(digitalTwin, etag);
             }
