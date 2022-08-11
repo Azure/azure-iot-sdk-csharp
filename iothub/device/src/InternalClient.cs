@@ -29,8 +29,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Connection state change information
         private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
-        internal ConnectionState _lastConnectionState { get; private set; } = ConnectionState.Disconnected;
-        internal ConnectionStateChangeReason _lastConnectionStateChangeReason { get; private set; } = ConnectionStateChangeReason.ClientClose;
+        internal LastConnectionState _lastConnectionState { get; }
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
@@ -1185,16 +1184,17 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_lastConnectionState != state
-                    || _lastConnectionStateChangeReason != reason)
+                if (_lastConnectionState.State != state
+                    || _lastConnectionState.ChangeReason != reason)
                 {
                     _connectionStateChangeHandler?.Invoke(state, reason);
                 }
             }
             finally
             {
-                _lastConnectionState = state;
-                _lastConnectionStateChangeReason = reason;
+                _lastConnectionState.State = state;
+                _lastConnectionState.ChangeReason = reason;
+                _lastConnectionState.ChangedDateTimeUtc = DateTime.UtcNow;
                 if (Logging.IsEnabled)
                     Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
             }

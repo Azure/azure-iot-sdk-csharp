@@ -141,18 +141,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Last connection state.
         /// </summary>
-        public ConnectionState LastConnectionState
-        {
-            get => InternalClient._lastConnectionState;
-        }
+        public ConnectionState LastConnectionState => InternalClient._lastConnectionState.State;
 
         /// <summary>
         /// Last connection state change reason.
         /// </summary>
-        public ConnectionStateChangeReason LastConnectionStateChangeReason
-        {
-            get => InternalClient._lastConnectionStateChangeReason;
-        }
+        public ConnectionStateChangeReason LastConnectionStateChangeReason => InternalClient._lastConnectionState.ChangeReason;
+
+        /// <summary>
+        /// Timestamp in UTC when the last connection state was changed.
+        /// </summary>
+        public DateTime LastChangedDateTimeUtc => InternalClient._lastConnectionState.ChangedDateTimeUtc;
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
