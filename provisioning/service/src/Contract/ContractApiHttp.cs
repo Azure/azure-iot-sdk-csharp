@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             };
 
             IWebProxy webProxy = httpSettings.Proxy;
-            if (webProxy != DefaultWebProxySettings.Instance)
+            if (webProxy != null)
             {
                 _httpClientHandler.UseProxy = webProxy != null;
                 _httpClientHandler.Proxy = webProxy;

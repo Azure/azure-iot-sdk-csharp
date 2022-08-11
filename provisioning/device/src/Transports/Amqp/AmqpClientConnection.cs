@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             //Check if we're configured to use a proxy server
             try
             {
-                if (webProxy != DefaultWebProxySettings.Instance)
+                if (webProxy != null)
                 {
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;

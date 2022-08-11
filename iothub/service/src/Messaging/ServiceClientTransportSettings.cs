@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public ServiceClientTransportSettings()
         {
-            AmqpProxy = DefaultWebProxySettings.Instance;
-            HttpProxy = DefaultWebProxySettings.Instance;
+            AmqpProxy = null;
+            HttpProxy = null;
         }
 
         /// <summary>

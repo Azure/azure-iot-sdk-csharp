@@ -54,9 +54,6 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>

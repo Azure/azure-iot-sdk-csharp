@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public IotHubServiceClientOptions()
         {
-            Proxy = DefaultWebProxySettings.Instance;
+            Proxy = null;
         }
 
         /// <summary>

@@ -876,9 +876,9 @@ namespace Microsoft.Azure.Devices
             httpMessageHandler.SslProtocols = options.SslProtocols;
             httpMessageHandler.CheckCertificateRevocationList = options.CertificateRevocationCheck;
 
-            if (webProxy != DefaultWebProxySettings.Instance)
+            if (webProxy != null)
             {
-                httpMessageHandler.UseProxy = webProxy != null;
+                httpMessageHandler.UseProxy = true;
                 httpMessageHandler.Proxy = webProxy;
             }
 
