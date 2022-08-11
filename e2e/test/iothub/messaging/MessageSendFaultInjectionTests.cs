@@ -13,7 +13,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
     public partial class MessageSendFaultInjectionTests : E2EMsTestBase
@@ -21,8 +20,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
@@ -61,8 +62,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
             await SendMessageRecoveryAsync(
@@ -374,8 +377,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
@@ -399,8 +404,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
             await SendMessageRecoveryAsync(

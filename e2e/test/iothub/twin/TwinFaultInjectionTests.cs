@@ -13,13 +13,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
     public class TwinFaultInjectionTests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(TwinFaultInjectionTests)}_";
 
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
@@ -43,8 +44,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -66,8 +69,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -89,8 +94,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
