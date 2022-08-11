@@ -58,9 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _usingX509ClientCert = true;
             }
 
-            if (proxy != null)
+            if (proxy != DefaultWebProxySettings.Instance)
             {
-                _httpClientHandler.UseProxy = true;
+                _httpClientHandler.UseProxy = proxy != null;
                 _httpClientHandler.Proxy = proxy;
             }
 

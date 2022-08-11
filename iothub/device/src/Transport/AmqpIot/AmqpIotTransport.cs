@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 try
                 {
-                    if (webProxy != null)
+                    if (webProxy != DefaultWebProxySettings.Instance)
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;

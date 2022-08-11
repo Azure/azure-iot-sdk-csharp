@@ -373,7 +373,7 @@ namespace Microsoft.Azure.Devices
 
                 try
                 {
-                    if (webProxy != null)
+                    if (webProxy != DefaultWebProxySettings.Instance)
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;

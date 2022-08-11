@@ -1324,7 +1324,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private bool IsProxyConfigured()
         {
-            return _webProxy != null;
+            return _webProxy != null
+                && _webProxy != DefaultWebProxySettings.Instance;
         }
     }
 }

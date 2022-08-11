@@ -35,7 +35,11 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            Proxy = null;
+            if (Protocol == IotHubClientTransportProtocol.WebSocket)
+            {
+                Proxy = DefaultWebProxySettings.Instance;
+            }
+
             DefaultReceiveTimeout = DefaultOperationTimeout;
         }
 

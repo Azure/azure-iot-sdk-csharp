@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             TransportProtocol = transportProtocol;
             Port = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket ? WsPort : MqttTcpPort;
-            Proxy = null;
+            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Check if we're configured to use a proxy server
             try
             {
-                if (Proxy != null)
+                if (Proxy != DefaultWebProxySettings.Instance)
                 {
                     // Configure proxy server
                     websocket.Options.Proxy = Proxy;
