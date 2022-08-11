@@ -292,8 +292,6 @@ try
         $testCategory += "TestCategory=Unit"
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
         $testCategory += ")"
 
         # test categories to exclude

@@ -175,6 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Message_TcpConnectionLossReceiveWithCallbackRecovery_Mqtt()
         {
             await
@@ -201,6 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Message_GracefulShutdownReceiveWithCallbackRecovery_Mqtt()
         {
             await
@@ -227,6 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Message_TcpConnectionLossReceiveWithCallbackRecovery_Amqp()
         {
             await
@@ -330,6 +333,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Message_GracefulShutdownReceiveWithCallbackRecovery_Amqp()
         {
             await

@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -50,6 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(new IotHubClientAmqpSettings(),
@@ -71,6 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
@@ -180,6 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("FaultInjectionBVT")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
