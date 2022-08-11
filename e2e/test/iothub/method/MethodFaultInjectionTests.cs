@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     var directMethodRequest = new DirectMethodRequest()
                     {
                         MethodName = methodName,
-                        Payload = respJson,
+                        Payload = reqJson,
                         ResponseTimeout = TimeSpan.FromMinutes(5),
                     };
 

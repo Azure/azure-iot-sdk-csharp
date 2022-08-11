@@ -69,11 +69,10 @@ namespace Microsoft.Azure.Devices.Http2
         /// </summary>
         /// <typeparam name="T">The type of object to deserialize the response payload into.</typeparam>
         /// <param name="response">The HTTP response containing the payload to deserialize.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The deserialized object.</returns>
-        internal static async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
+        internal static async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response)
         {
-            string str = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(str);
         }
 

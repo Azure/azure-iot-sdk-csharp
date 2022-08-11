@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<DirectMethodResponse>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

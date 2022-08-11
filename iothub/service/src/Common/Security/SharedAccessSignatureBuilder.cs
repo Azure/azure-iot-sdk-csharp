@@ -36,12 +36,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         public string Key
         {
             get => _key;
-
-            set
-            {
-                StringValidationHelper.EnsureBase64String(value, "Key");
-                _key = value;
-            }
+            set => _key = value;
         }
 
         /// <summary>

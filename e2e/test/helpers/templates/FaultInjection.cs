@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             try
             {
-                using var cts = new CancellationTokenSource(delay);
+                using var cts = new CancellationTokenSource(LatencyTimeBuffer);
                 using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.SendEventAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex)
+            catch (Exception ex) when (ex is IotHubCommunicationException || ex is TimeoutException)
             {
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
@@ -101,15 +101,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     throw;
                 }
             }
-            catch (TimeoutException ex)
+            catch (OperationCanceledException ex) when (transportSettings is IotHubClientMqttSettings)
             {
-                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
-
-                // For quota injection, the fault is only seen for the original HTTP request.
-                if (transportSettings is IotHubClientHttpSettings)
-                {
-                    throw;
-                }
+                // For MQTT, FaultInjection will terminate the connection prior to a PUBACK
+                // which leads to an infinite loop trying to resend the FaultInjection message, which will eventually throw an OperationCanceledException.
+                // We will suppress this exception.
+                logger.Trace($"{nameof(ActivateFaultInjectionAsync)}.{nameof(ActivateFaultInjectionAsync)} over MQTT (suppressed): {ex}");
             }
             finally
             {
