@@ -28,6 +28,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Timestamp in UTC when the last connection state was changed.
         /// </summary>
-        public DateTime ChangedDateTimeUtc { get; set; }
+        public DateTime ChangedDateTimeUtc { get; set; } = DateTime.UtcNow;
     }
 }
