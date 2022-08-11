@@ -11,6 +11,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class Message
     {
+        private readonly byte[] _payload;
+
         /// <summary>
         /// Default instantiation with no telemetry payload.
         /// </summary>
@@ -23,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="payload">A byte array to send as a payload.</param>
         public Message(byte[] payload)
         {
-            Payload = payload;
+            _payload = payload;
         }
 
         /// <summary>
@@ -215,7 +217,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The message payload.
         /// </summary>
-        public byte[] Payload { get; }
+        // DotNetty won't allow a null payload. After replacing with MqttNet, consider removing this.
+        public byte[] Payload => _payload ?? Array.Empty<byte>();
 
         /// <summary>
         /// Indicates if the message has a payload.

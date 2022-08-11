@@ -239,8 +239,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // arrange
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, "NullMethodPayloadTest").ConfigureAwait(false);
-            // TODO: switch this to MQTT after the change to MqttNet
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
 
             try
             {
