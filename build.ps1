@@ -293,6 +293,8 @@ try
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
         $testCategory += "|"
+        $testCategory += "TestCategory=InvalidServiceCertificate"
+        $testCategory += "|"
         $testCategory += "TestCategory=FaultInjectionBVT"
         $testCategory += ")"
 
