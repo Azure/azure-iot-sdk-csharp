@@ -16,7 +16,7 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -build: Builds projects (use if re-running tests after a successful build).
     -unittests: Runs unit tests
-    -buildVerificationTests: Runs all tests selected for build verification. These test will be run during PR validation at our gates. Requires prerequisites and environment variables.
+    -prtests: Runs all tests selected for running during PR validation at our gates. Requires prerequisites and environment variables.
     -e2etests: Runs the complete E2E test suite. This includes E2E tests, FaultInjection tests and InvalidServiceCertificate tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
@@ -62,7 +62,7 @@ Param(
     [switch] $clean,
     [switch] $build,
     [switch] $unittests,
-    [switch] $buildVerificationTests,
+    [switch] $prtests,
     [switch] $e2etests,
     [switch] $stresstests,
     [switch] $publish,
@@ -281,7 +281,7 @@ try
         }
     }
 
-    if ($buildVerificationTests)
+    if ($prtests)
     {
         Write-Host
         Write-Host -ForegroundColor Cyan "Build verification tests"

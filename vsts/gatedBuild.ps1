@@ -24,8 +24,8 @@ dotnet --list-sdks
 $runTestCmd = ".\build.ps1 -clean -build -configuration DEBUG -framework $env:FRAMEWORK -noBuildBeforeTesting"
 if (IsPullRequestBuild)
 {
-	Write-Host "Pull request build detected, will run BVT"
-	$runTestCmd += " -buildVerificationTests"
+	Write-Host "Pull request build detected, will run PR tests"
+	$runTestCmd += " -prtests"
 
 	if (ShouldSkipDPSTests) 
 	{
