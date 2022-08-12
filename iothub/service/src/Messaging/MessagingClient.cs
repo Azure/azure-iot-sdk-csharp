@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -178,11 +176,6 @@ namespace Microsoft.Azure.Devices
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            if (message.IsBodyCalled)
-            {
-                message.ResetBody();
-            }
-
             timeout ??= _operationTimeout;
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
@@ -246,11 +239,6 @@ namespace Microsoft.Azure.Devices
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {
                 message.MessageId = Guid.NewGuid().ToString();
-            }
-
-            if (message.IsBodyCalled)
-            {
-                message.ResetBody();
             }
 
             timeout ??= _operationTimeout;
@@ -327,7 +315,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetPurgeMessageQueueAsyncUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<PurgeMessageQueueResult>(response).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<PurgeMessageQueueResult>(response, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

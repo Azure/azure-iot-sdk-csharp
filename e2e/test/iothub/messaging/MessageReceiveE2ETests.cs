@@ -327,10 +327,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
-            using (msg)
-            {
-                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-            }
+            await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             await VerifyReceivedC2dMessageWithCancellationTokenAsync(deviceClient, testDevice.Id, payload, p1Value, Logger).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -369,19 +366,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             (Message msg, string payload, string p1Value) = ComposeC2dTestMessage(Logger);
-            using (msg)
-            {
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
+            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
+            testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
-                using var cts = new CancellationTokenSource(s_tenSeconds);
-                Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
-                await Task
-                    .WhenAll(
-                        serviceClient.Messaging.SendAsync(testDevice.Id, msg),
-                        testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token))
-                    .ConfigureAwait(false);
-            }
+            using var cts = new CancellationTokenSource(s_tenSeconds);
+            Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
+            await Task
+                .WhenAll(
+                    serviceClient.Messaging.SendAsync(testDevice.Id, msg),
+                    testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token))
+                .ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);

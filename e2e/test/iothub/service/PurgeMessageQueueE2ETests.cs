@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         [TestMethod]
         public async Task PurgeMessageQueueOperation()
         {
-            using Message testMessage = ComposeD2CTestMessage();
+            Message testMessage = ComposeD2CTestMessage();
             using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             var deviceId = TestConfiguration.IoTHub.X509ChainDeviceName;
             var expectedResult = new PurgeMessageQueueResult()

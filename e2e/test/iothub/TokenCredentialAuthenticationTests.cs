@@ -8,7 +8,6 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ClientOptions = Microsoft.Azure.Devices.Client.IotHubClientOptions;
 
@@ -58,13 +57,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate
+                var twinUpdate = new ScheduledTwinUpdate
                 {
                     Twin = twin,
                     QueryCondition = query,
                     StartTimeUtc = DateTime.UtcNow
                 };
-                ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
+                var twinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
                     MaxExecutionTime = TimeSpan.FromMinutes(2)
@@ -125,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
             await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
+            var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
             // act
             Func<Task> act = async () => await serviceClient.Messaging.SendAsync(ghostDevice, message).ConfigureAwait(false);

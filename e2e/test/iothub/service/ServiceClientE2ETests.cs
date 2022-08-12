@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Logger.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
             try
             {
-                using var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
+                var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
                 await sender.Messaging.SendAsync(testDevice.Id, testMessage, timeout).ConfigureAwait(false);
             }
             finally
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task ServiceClient_SendsMessage(TransportType transportType)
         {
             // arrange
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only
             };
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string messageId = Guid.NewGuid().ToString();
 
             // act and expect no exception
-            using var message = new Message
+            var message = new Message
             {
                 MessageId = messageId,
             };
@@ -99,8 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string messageId = Guid.NewGuid().ToString();
 
             // act
-            using var messageWithoutId = new Message();
-            using var messageWithId = new Message
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
             {
                 MessageId = messageId,
             };
@@ -128,8 +128,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string messageId = Guid.NewGuid().ToString();
 
             // act
-            using var messageWithoutId = new Message();
-            using var messageWithId = new Message
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
             {
                 MessageId = messageId,
             };
@@ -157,8 +157,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string messageId = Guid.NewGuid().ToString();
 
             // act
-            using var messageWithoutId = new Message();
-            using var messageWithId = new Message
+            var messageWithoutId = new Message();
+            var messageWithId = new Message
             {
                 MessageId = messageId,
             };

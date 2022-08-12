@@ -51,7 +51,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 (Message msg, string _, string _) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
                 await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                msg.Dispose();
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
                 Client.Message message = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
