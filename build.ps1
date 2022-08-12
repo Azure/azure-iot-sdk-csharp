@@ -16,8 +16,8 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -build: Builds projects (use if re-running tests after a successful build).
     -unittests: Runs unit tests
-    -prtests: Runs all tests selected for PR validation
-    -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
+    -buildVerificationTests: Runs all tests selected for build verification. These test will be run during PR validation at our gates. Requires prerequisites and environment variables.
+    -e2etests: Runs the complete E2E test suite. This includes E2E tests, FaultInjection tests and InvalidServiceCertificate tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
@@ -62,7 +62,7 @@ Param(
     [switch] $clean,
     [switch] $build,
     [switch] $unittests,
-    [switch] $prtests,
+    [switch] $buildVerificationTests,
     [switch] $e2etests,
     [switch] $stresstests,
     [switch] $publish,
@@ -281,10 +281,10 @@ try
         }
     }
 
-    if ($prtests)
+    if ($buildVerificationTests)
     {
         Write-Host
-        Write-Host -ForegroundColor Cyan "PR validation tests"
+        Write-Host -ForegroundColor Cyan "Build verification tests"
         Write-Host
 
         # Tests categories to include
@@ -292,8 +292,6 @@ try
         $testCategory += "TestCategory=Unit"
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
         $testCategory += "|"
         $testCategory += "TestCategory=FaultInjectionBVT"
         $testCategory += ")"
@@ -355,7 +353,16 @@ try
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E | TestCategory=FaultInjection"
+        # Tests categories to include
+        $testCategory = "("
+        $testCategory += "TestCategory=E2E"
+        $testCategory += "|"
+        $testCategory += "TestCategory=FaultInjection"
+        $testCategory += "|"
+        $testCategory += "TestCategory=InvalidServiceCertificate"
+        $testCategory += ")"
+
+        RunTests "E2E tests" -filterTestCategory $testCategory -framework $framework
 
         $verbosity = $oldVerbosity
 
