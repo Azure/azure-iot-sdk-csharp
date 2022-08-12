@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
     /// This code is provides as a sample to enable provisioning on hardware without an actual hardware TPM device and
     /// provides no real security.
     /// </summary>
-    public class AuthenticationProviderTpmSimulator : AuthenticationProviderTpm, IDisposable
+    public sealed class AuthenticationProviderTpmSimulator : AuthenticationProviderTpm, IDisposable
     {
         private const string SimulatorAddress = "127.0.0.1";
         private const string SimulatorExeName = "Simulator.exe";
@@ -120,6 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
             simulatorProcess.Start();
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _innerClient?.Dispose();

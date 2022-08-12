@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
     /// <summary>
     /// The Provisioning Authentication Client implementation for TPM.
     /// </summary>
-    public class AuthenticationProviderTpmHsm : AuthenticationProviderTpm, IDisposable
+    public sealed class AuthenticationProviderTpmHsm : AuthenticationProviderTpm, IDisposable
     {
         private bool _disposed;
 
@@ -259,13 +259,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             return result;
         }
 
-        /// <summary>
-        /// Releases the unmanaged resources used by this class and optionally disposes of the managed resources.
-        /// </summary>
-        /// <remarks>
-        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call.
-        /// </remarks>
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (_disposed)
