@@ -14,140 +14,20 @@ namespace Microsoft.Azure.Devices.Client.Test
     public class MessageTests
     {
         [TestMethod]
-        public void ConstructorTakingStreamTest()
+        public void ConstructorTakingPayloadTest()
         {
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms);
-            var stream = msg.GetBodyStream();
-            Assert.AreSame(ms, stream);
-        }
-
-        [TestMethod]
-        public void ConstructorTakingNullStreamTest()
-        {
-            var msg = new Message((Stream)null);
-            var stream = msg.GetBodyStream();
-            Assert.IsNotNull(stream);
-            var ms = new MemoryStream();
-            stream.CopyTo(ms);
-
-            int buffLen = 0;
-#if NETCOREAPP1_1
-            ms.TryGetBuffer(out ArraySegment<byte> buffer);
-            buffLen = buffer.Count;
-#else
-            byte[] buffer = ms.GetBuffer();
-            buffLen = buffer.Length;
-#endif
-            Assert.AreEqual(0, buffLen);
-
-            msg = new Message((Stream)null);
-            byte[] bytes = msg.GetBytes();
-            Assert.AreEqual(0, bytes.Length);
-        }
-
-        [TestMethod]
-        public void ConstructorTakingByteArrayTest()
-        {
-            const string MsgContents = "Hello, World!";
-            var msg = new Message(Encoding.UTF8.GetBytes(MsgContents));
-            var stream = msg.GetBodyStream();
-            var sr = new StreamReader(stream);
-            Assert.AreEqual(sr.ReadToEnd(), MsgContents);
-
-            msg = new Message(Encoding.UTF8.GetBytes(MsgContents));
-            var msgBytes = msg.GetBytes();
-            Assert.AreEqual(Encoding.UTF8.GetString(msgBytes), MsgContents);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ConstructorTakingNullByteArrayTest()
-        {
-            new Message((byte[])null);
+            string payloadString = "Hello, World!";
+            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
+            var msg = new Message(payloadBytes);
+            msg.Payload.Should().BeEquivalentTo(payloadBytes);
         }
 
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
             var msg = new Message(new byte[0]);
-            var stream = msg.GetBodyStream();
-            Assert.IsNotNull(stream);
-            var ms = new MemoryStream();
-            stream.CopyTo(ms);
-
-            int buffLen = 0;
-#if NETCOREAPP1_1
-            ms.TryGetBuffer(out ArraySegment<byte> buffer);
-            buffLen = buffer.Count;
-#else
-            byte[] buffer = ms.GetBuffer();
-            buffLen = buffer.Length;
-#endif
-            Assert.AreEqual(0, buffLen);
-
-            msg = new Message(new byte[0]);
-            byte[] bytes = msg.GetBytes();
-            Assert.AreEqual(0, bytes.Length);
-        }
-
-        [TestMethod]
-        public void RetrievingMessageBytesAfterGetBodyStreamTest()
-        {
-            var msg = new Message(new byte[0]);
-            msg.GetBodyStream();
-
-            TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
-        }
-
-        [TestMethod]
-        public void RetrievingMessageBodyStreamAfterGetBytesTest()
-        {
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms);
-            msg.GetBytes();
-            msg.ResetBody();
-            var stream = msg.GetBodyStream();
-
-            Assert.AreSame(ms, stream);
-        }
-
-        [TestMethod]
-        public void Message_CallingGetBytesTwiceWithoutReset_Fails()
-        {
-            const string MsgContents = "Hello, World!";
-
-            var msg = new Message(Encoding.UTF8.GetBytes(MsgContents));
-            msg.GetBytes();
-
-            Assert.ThrowsException<InvalidOperationException>(() => { byte[] msgBytes = msg.GetBytes(); });
-        }
-
-        [TestMethod]
-        public void CallingGetBodyStreamTwiceTest()
-        {
-            var msg = new Message(new byte[0]);
-            msg.GetBodyStream();
-
-            TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());
-        }
-
-        [TestMethod]
-        public void DisposingOwnedStreamTest()
-        {
-            // SDK should dispose the stream.
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            var msg = new Message(ms, StreamDisposalResponsibility.Sdk);
-            msg.Dispose();
-
-            TestAssert.Throws<ObjectDisposedException>(() => ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5));
-
-            // The calling application will dispose the stream.
-            ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
-            msg = new Message(ms, StreamDisposalResponsibility.App);
-            msg.Dispose();
-
-            ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5);
+            Assert.IsNotNull(msg.Payload);
+            Assert.AreEqual(0, msg.Payload.Length);
         }
 
         [TestMethod]
@@ -178,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string propName2 = "test2";
             string propValue2 = "test_v_2";
             string originalMessageContent = "Original copy";
-            using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
+            var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
             {
                 MessageId = messageId,
                 ContentEncoding = contentEncoding,
@@ -193,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             string clonedMessageContent = "Cloned version";
-            using var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
+            var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
 
             // assert
             clonedMessage.Properties.Count.Should().Be(2);
@@ -204,12 +84,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             clonedMessage.UserId.Should().Be(userId, "Cloned message should have the original message's system properties.");
             clonedMessage.MessageId.Should().Be(messageId, "Cloned message should have the original message's system properties.");
 
-            using var originalContentReader = new StreamReader(originalMessage.BodyStream, Encoding.UTF8);
-            string originalContent = originalContentReader.ReadToEnd();
-            using var clonedContentReader = new StreamReader(clonedMessage.BodyStream, Encoding.UTF8);
-            string clonedContent = clonedContentReader.ReadToEnd();
-            clonedContent.Should().NotBe(originalContent, "Cloned message was initialized with a different content body.");
-            clonedContent.Should().Be(clonedMessageContent, $"Cloned message was initialized with \"{clonedMessageContent}\" as content body.");
+            clonedMessage.Payload.Should().NotBeEquivalentTo(originalMessage.Payload, "Cloned message was initialized with a different content body.");
+            Encoding.UTF8.GetString(clonedMessage.Payload).Should().Be(clonedMessageContent, $"Cloned message was initialized with \"{clonedMessageContent}\" as content body.");
         }
 
         [TestMethod]
@@ -221,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string propValue1 = "test_v_1";
             string propName2 = "test2";
             string originalMessageContent = "Original copy";
-            using var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
+            var originalMessage = new Message(Encoding.UTF8.GetBytes(originalMessageContent))
             {
                 ContentEncoding = contentEncoding,
                 ContentType = null,
@@ -234,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             string clonedMessageContent = "Cloned version";
-            using var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
+            var clonedMessage = originalMessage.CloneWithBody(Encoding.UTF8.GetBytes(clonedMessageContent));
 
             // assert
             clonedMessage.Properties.Count.Should().Be(2);

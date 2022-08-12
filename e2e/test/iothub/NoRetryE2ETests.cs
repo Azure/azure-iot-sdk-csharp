@@ -14,7 +14,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     public class NoRetryE2ETests : E2EMsTestBase
     {
@@ -79,6 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             disconnected.Should().Be(1, $"Should get {ConnectionState.Disconnected} once but got it {disconnected} times.");
         }
 
+        [TestCategory("E2E")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DuplicateDevice_NoRetry_NoPingpong_OpenAsync()
         {

@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(null, 0), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // arrange
             var responseBytes = Encoding.UTF8.GetBytes(fakeMethodResponseBody);
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-            var response = new MethodResponseInternal(responseBytes, fakeResponseId, statusSuccess);
+            var response = new MethodResponseInternal(fakeResponseId, statusSuccess, responseBytes);
             MessageMatcher matches = (msg) =>
             {
                 return StringComparer.InvariantCulture.Equals(msg.MqttTopicName, $"$iothub/methods/res/{statusSuccess}/?$rid={fakeResponseId}");
@@ -416,14 +416,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_022: `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_023: `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_024: `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_025: `SendTwinPatchAsync` shall serialize the `reportedProperties` object into a JSON string
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_026: `SendTwinPatchAsync` shall set the body of the message to the JSON string
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_027: `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_030: If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller.
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_035: `SendTwinPatchAsync` shall shall open the transport if this method is called when the transport is not open.
         [TestMethod]
         public async Task MqttTransportHandlerSendTwinPatchAsyncHappyPath()
         {
@@ -432,16 +424,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var props = new TwinCollection();
             string receivedBody = null;
             props["foo"] = "bar";
+            string expectedBody = JsonConvert.SerializeObject(props);
+
             channel
                 .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinPatchReportedTopicPrefix)))
                 .Returns(msg =>
                 {
                     var request = msg.Arg<Message>();
-                    StreamReader reader = new StreamReader(request.GetBodyStream(), System.Text.Encoding.UTF8);
-                    receivedBody = reader.ReadToEnd();
+                    receivedBody = Encoding.UTF8.GetString(request.Payload);
 
-                    var response = new Message();
-                    response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusSuccess);
+                    var response = new Message
+                    {
+                        MqttTopicName = GetResponseTopic(request.MqttTopicName, statusSuccess),
+                    };
                     transport.OnMessageReceived(response);
 
                     return TaskHelpers.CompletedTask;
@@ -452,11 +447,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            string expectedBody = JsonConvert.SerializeObject(props);
-            Assert.AreEqual<string>(expectedBody, receivedBody);
+            receivedBody.Should().Be(expectedBody);
         }
 
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_028: If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
         [TestMethod]
         public async Task MqttTransportHandlerSendTwinPatchAsyncReturnsFailure()
         {

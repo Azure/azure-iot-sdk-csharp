@@ -33,7 +33,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
         public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -43,7 +44,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -54,7 +56,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(

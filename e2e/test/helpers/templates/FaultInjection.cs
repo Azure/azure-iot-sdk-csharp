@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             try
             {
                 using var cts = new CancellationTokenSource(LatencyTimeBuffer);
-                using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
+                Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
                     delay,

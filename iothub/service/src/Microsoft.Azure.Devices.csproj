@@ -57,10 +57,6 @@
     <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
       <Link>ExceptionHandlingHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\FxCop.cs">
-      <Link>Common\FxCop.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,9 +68,6 @@
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.22.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
