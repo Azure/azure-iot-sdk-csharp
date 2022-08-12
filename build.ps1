@@ -16,8 +16,8 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -build: Builds projects (use if re-running tests after a successful build).
     -unittests: Runs unit tests
-    -prtests: Runs all tests selected for PR validation
-    -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
+    -prtests: Runs all tests selected for PR validation at our gates. Requires prerequisites and environment variables.
+    -e2etests: Runs the complete E2E test suite. This includes E2E tests, FaultInjection tests and InvalidServiceCertificate tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
@@ -293,8 +293,6 @@ try
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
         $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
-        $testCategory += "|"
         $testCategory += "TestCategory=FaultInjectionBVT"
         $testCategory += ")"
 
@@ -355,7 +353,16 @@ try
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        # Tests categories to include
+        $testCategory = "("
+        $testCategory += "TestCategory=E2E"
+        $testCategory += "|"
+        $testCategory += "TestCategory=FaultInjection"
+        $testCategory += "|"
+        $testCategory += "TestCategory=InvalidServiceCertificate"
+        $testCategory += ")"
+
+        RunTests "E2E tests" -filterTestCategory $testCategory -framework $framework
 
         $verbosity = $oldVerbosity
 

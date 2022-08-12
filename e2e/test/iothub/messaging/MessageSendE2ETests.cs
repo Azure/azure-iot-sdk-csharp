@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            using var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
+            var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
             //Mqtt topic name consists of, among other things, system properties and user properties
             // setting lots of very long user properties should cause a MessageTooLargeException explaining
             // that the topic name is too long to publish over mqtt
@@ -340,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendBatchMessagesAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
+            await SendBatchMessagesAsync(deviceClient, Logger).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageModuleAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
+            await SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -368,45 +368,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 (testMessage, _, _) = ComposeD2cTestMessageOfSpecifiedSize(messageSize, logger);
             }
 
-            using (testMessage)
-            {
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-            }
+            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
-        public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, string deviceId, MsTestLogger logger)
+        public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, MsTestLogger logger)
         {
             var messagesToBeSent = new Dictionary<Client.Message, Tuple<string, string>>();
 
-            try
+            for (int i = 0; i < MessageBatchCount; i++)
             {
-                var props = new List<Tuple<string, string>>();
-                for (int i = 0; i < MessageBatchCount; i++)
-                {
-                    (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
-                    messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
-                }
+                (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
+                messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
+            }
 
-                await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
-            }
-            finally
-            {
-                foreach (KeyValuePair<Client.Message, Tuple<string, string>> messageEntry in messagesToBeSent)
-                {
-                    Client.Message message = messageEntry.Key;
-                    message.Dispose();
-                }
-            }
+            await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient, string deviceId)
+        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
             (Client.Message testMessage, _, _) = ComposeD2cTestMessage(Logger);
 
-            using (testMessage)
-            {
-                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
-            }
+            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
         public static (Client.Message message, string payload, string p1Value) ComposeD2cTestMessage(MsTestLogger logger)

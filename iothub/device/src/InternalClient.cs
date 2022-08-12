@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Utilities;
 
@@ -29,9 +28,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Connection state change information
         private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
-
-        private ConnectionState _lastConnectionState = ConnectionState.Disconnected;
-        private ConnectionStateChangeReason _lastConnectionStateChangeReason = ConnectionStateChangeReason.ClientClose;
+        internal ConnectionInfo _connectionInfo { get; private set; } = new ConnectionInfo();
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
@@ -405,10 +402,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 foreach (Message message in messages)
                 {
-                    if (message.MessageId == null)
-                    {
-                        message.MessageId = Guid.NewGuid().ToString();
-                    }
+                    message.MessageId ??= Guid.NewGuid().ToString();
                 }
             }
 
@@ -602,7 +596,6 @@ namespace Microsoft.Azure.Devices.Client
 
             Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> callbackContextPair = null;
             MethodResponseInternal methodResponseInternal = null;
-            byte[] requestData = methodRequestInternal.GetBytes();
 
             await _methodsSemaphore.WaitAsync().ConfigureAwait(false);
             try
@@ -628,15 +621,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                try
-                {
-                    methodResponseInternal?.Dispose();
-                }
-                finally
-                {
-                    // Need to release this semaphore even if the above dispose call fails
-                    _methodsSemaphore.Release();
-                }
+                _methodsSemaphore.Release();
             }
 
             if (callbackContextPair == null)
@@ -653,12 +638,10 @@ namespace Microsoft.Azure.Devices.Client
                     object userSuppliedContext = callbackContextPair.Item2;
 
                     MethodResponse rv = await userSuppliedCallback
-                        .Invoke(new MethodRequest(methodRequestInternal.Name, requestData), userSuppliedContext)
+                        .Invoke(new MethodRequest(methodRequestInternal.Name, methodRequestInternal.Payload), userSuppliedContext)
                         .ConfigureAwait(false);
 
-                    methodResponseInternal = rv.Result == null
-                        ? new MethodResponseInternal(methodRequestInternal.RequestId, rv.Status)
-                        : new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
+                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, rv.Status, rv.Result);
                 }
                 catch (Exception ex)
                 {
@@ -669,14 +652,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            try
-            {
-                await SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
-            }
-            finally
-            {
-                methodResponseInternal?.Dispose();
-            }
+            await SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalledAsync));
@@ -1186,16 +1162,16 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
 
-                if (_lastConnectionState != state
-                    || _lastConnectionStateChangeReason != reason)
+                if (_connectionInfo.State != state
+                    || _connectionInfo.ChangeReason != reason)
                 {
                     _connectionStateChangeHandler?.Invoke(state, reason);
                 }
             }
             finally
             {
-                _lastConnectionState = state;
-                _lastConnectionStateChangeReason = reason;
+                _connectionInfo = new ConnectionInfo(state, reason, DateTimeOffset.UtcNow);
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
             }

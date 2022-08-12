@@ -139,6 +139,11 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
         /// <summary>
+        /// The latest connection information since the last state change.
+        /// </summary>
+        public ConnectionInfo ConnectionInfo => InternalClient._connectionInfo;
+
+        /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
         /// (desired or reported) from the service.
         /// Set callback value to null to clear.

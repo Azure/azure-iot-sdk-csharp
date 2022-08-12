@@ -19,10 +19,8 @@ namespace Microsoft.Azure.Devices.Authentication
             _registrationId = registrationId;
         }
 
-        /// <summary>
-        /// Gets the Registration Id used during device enrollment.
-        /// </summary>
-        public override string GetRegistrationID()
+        /// <inheritdoc/>
+        public override string GetRegistrationId()
         {
             return _registrationId;
         }

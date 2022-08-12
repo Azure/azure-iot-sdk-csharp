@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             try
             {
                 using var cts = new CancellationTokenSource(LatencyTimeBuffer);
-                using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
+                Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
                     delay,
@@ -133,15 +133,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
-            ConnectionState? lastConnectionState = null;
-            ConnectionStateChangeReason? lastConnectionStateChangeReason = null;
             int connectionStateChangeCount = 0;
 
             deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
             {
                 connectionStateChangeCount++;
-                lastConnectionState = state;
-                lastConnectionStateChangeReason = stateChangeReason;
                 logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: state={state} stateChangeReason={stateChangeReason} count={connectionStateChangeCount}");
             });
 
@@ -154,8 +150,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
                     connectionStateChangeCount.Should().BeGreaterOrEqualTo(1);
-                    lastConnectionState.Should().Be(ConnectionState.Connected);
-                    lastConnectionStateChangeReason.Should().Be(ConnectionStateChangeReason.ConnectionOk);
+                    deviceClient.ConnectionInfo.State.Should().Be(ConnectionState.Connected);
+                    deviceClient.ConnectionInfo.ChangeReason.Should().Be(ConnectionStateChangeReason.ConnectionOk);
                 }
 
                 if (initOperation != null)
@@ -200,13 +196,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     logger.Trace($"{nameof(FaultInjection)}: Confirming device back online.");
 
                     sw.Start();
-                    while (lastConnectionState != ConnectionState.Connected && sw.Elapsed < duration.Add(LatencyTimeBuffer))
+                    while (deviceClient.ConnectionInfo.State != ConnectionState.Connected && sw.Elapsed < duration.Add(LatencyTimeBuffer))
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
                     sw.Reset();
 
-                    Assert.AreEqual(ConnectionState.Connected, lastConnectionState, $"{testDevice.Id} did not reconnect.");
+                    Assert.AreEqual(ConnectionState.Connected, deviceClient.ConnectionInfo.State, $"{testDevice.Id} did not reconnect.");
                     logger.Trace($"{nameof(FaultInjection)}: Confirmed device back online.");
 
                     // Perform the test operation.
@@ -246,8 +242,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         // account for real network issues.
                         connectionStateChangeCount.Should().Be(2, $"Device Id {testDevice.Id}");
                     }
-                    lastConnectionState.Should().Be(ConnectionState.Disabled, $"The connection state change reason was {lastConnectionStateChangeReason}");
-                    lastConnectionStateChangeReason.Should().Be(ConnectionStateChangeReason.ClientClose);
+                    deviceClient.ConnectionInfo.State.Should().Be(ConnectionState.Disabled, $"The connection state change reason was {deviceClient.ConnectionInfo.ChangeReason}");
+                    deviceClient.ConnectionInfo.ChangeReason.Should().Be(ConnectionStateChangeReason.ClientClose);
                 }
             }
             finally

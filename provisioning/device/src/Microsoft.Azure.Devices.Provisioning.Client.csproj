@@ -52,7 +52,6 @@
     <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
       <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
