@@ -13,14 +13,14 @@ namespace Microsoft.Azure.Devices.Client
         {
             State = ConnectionState.Disconnected;
             ChangeReason = ConnectionStateChangeReason.ClientClose;
-            ChangedOnUtc = DateTimeOffset.UtcNow;
+            StateLastChangedOnUtc = DateTimeOffset.UtcNow;
         }
 
         internal ConnectionInfo(ConnectionState state, ConnectionStateChangeReason changeReason, DateTimeOffset changedOnUtc)
         { 
             State = state;
             ChangeReason = changeReason;
-            ChangedOnUtc = changedOnUtc;
+            StateLastChangedOnUtc = changedOnUtc;
         }
 
         /// <summary>
@@ -42,6 +42,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Timestamp in UTC when the last connection state was changed.
         /// </summary>
-        public DateTimeOffset ChangedOnUtc { get; internal set; }
+        public DateTimeOffset StateLastChangedOnUtc { get; internal set; }
     }
 }
