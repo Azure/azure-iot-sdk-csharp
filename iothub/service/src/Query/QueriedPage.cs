@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.Azure.Devices.Common.Extensions;
+using Microsoft.Azure.Devices.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class AuthenticationMethodFactory
     {
-        static internal IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        internal static IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (!string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.DeviceId))
             {
