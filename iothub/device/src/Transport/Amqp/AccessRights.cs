@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client
 {
     [Flags]
     [JsonConverter(typeof(StringEnumConverter))]
