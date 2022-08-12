@@ -284,7 +284,7 @@ try
     if ($prtests)
     {
         Write-Host
-        Write-Host -ForegroundColor Cyan "Build verification tests"
+        Write-Host -ForegroundColor Cyan "PR validation tests"
         Write-Host
 
         # Tests categories to include
