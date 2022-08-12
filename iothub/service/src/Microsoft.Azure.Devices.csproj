@@ -52,7 +52,7 @@
 
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Common\Logging.Common.cs</Link>
+      <Link>Fx\Logging.Common.cs</Link>
     </Compile>
     <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
       <Link>ExceptionHandlingHelper.cs</Link>

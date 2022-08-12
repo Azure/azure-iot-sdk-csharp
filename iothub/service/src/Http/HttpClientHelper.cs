@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Common.Extensions;
+using Microsoft.Azure.Devices.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
