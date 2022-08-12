@@ -387,7 +387,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 if (transportSettings is IotHubClientMqttSettings)
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                    try
+                    {
+                        await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // An OperationCanceledException is expected since there was no message sent from the service end.
+                        // ignore and proceed.
+                    }
                 }
             }
 
