@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Connection state change information
         private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
-        internal ConnectionInfo _connectionInfo { get; private set; }
+        internal ConnectionInfo _connectionInfo { get; private set; } = new ConnectionInfo();
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
