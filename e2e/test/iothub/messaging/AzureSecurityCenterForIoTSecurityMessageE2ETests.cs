@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            using Client.Message testMessage = ComposeD2CSecurityTestMessage();
+            Client.Message testMessage = ComposeD2CSecurityTestMessage();
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             IotHubModuleClient moduleClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            using Client.Message testMessage = ComposeD2CSecurityTestMessage();
+            Client.Message testMessage = ComposeD2CSecurityTestMessage();
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 

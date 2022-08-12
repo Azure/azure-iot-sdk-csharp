@@ -80,12 +80,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-
-                            if (message.IsBodyCalled)
-                            {
-                                message.ResetBody();
-                            }
-
                             await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -110,15 +104,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-
-                            foreach (Message m in messages)
-                            {
-                                if (m.IsBodyCalled)
-                                {
-                                    m.ResetBody();
-                                }
-                            }
-
                             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
