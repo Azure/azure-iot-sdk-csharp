@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_x509CertificatesFolder, Logger);
 
             using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);
-            using var auth = new AuthenticationProviderX509Certificate(cert);
+            var auth = new AuthenticationProviderX509Certificate(cert);
             var provisioningDeviceClient = ProvisioningDeviceClient.Create(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",

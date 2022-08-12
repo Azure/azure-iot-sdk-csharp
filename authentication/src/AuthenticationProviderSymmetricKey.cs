@@ -25,10 +25,8 @@ namespace Microsoft.Azure.Devices.Authentication
             _secondaryKey = secondaryKey;
         }
 
-        /// <summary>
-        /// Gets the Registration Id used during device enrollment.
-        /// </summary>
-        public override string GetRegistrationID()
+        /// <inheritdoc/>
+        public override string GetRegistrationId()
         {
             return _registrationId;
         }
@@ -44,11 +42,5 @@ namespace Microsoft.Azure.Devices.Authentication
         /// </summary>
         /// <returns>secondary key</returns>
         public string GetSecondaryKey() => _secondaryKey;
-
-        /// <summary>
-        /// Releases all resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
-        protected override void Dispose(bool disposing) { }
     }
 }

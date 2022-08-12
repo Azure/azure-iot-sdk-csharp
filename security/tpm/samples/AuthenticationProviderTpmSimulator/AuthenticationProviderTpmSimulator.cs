@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
     /// This code is provides as a sample to enable provisioning on hardware without an actual hardware TPM device and
     /// provides no real security.
     /// </summary>
-    public class AuthenticationProviderTpmSimulator : AuthenticationProviderTpm
+    public class AuthenticationProviderTpmSimulator : AuthenticationProviderTpm, IDisposable
     {
         private const string SimulatorAddress = "127.0.0.1";
         private const string SimulatorExeName = "Simulator.exe";
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 tpm2.Startup(Su.Clear);
             }
 
-            _innerClient = new AuthenticationProviderTpmHsm(GetRegistrationID(), _tpmDevice);
+            _innerClient = new AuthenticationProviderTpmHsm(GetRegistrationId(), _tpmDevice);
         }
 
         public override void ActivateIdentityKey(byte[] encryptedKey)
@@ -120,16 +120,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
             simulatorProcess.Start();
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
-            {
-                _innerClient?.Dispose();
-                _innerClient = null;
+            _innerClient?.Dispose();
+            _innerClient = null;
 
-                _tpmDevice?.Dispose();
-                _tpmDevice = null;
-            }
+            _tpmDevice?.Dispose();
+            _tpmDevice = null;
         }
     }
 }

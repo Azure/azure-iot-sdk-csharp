@@ -10,11 +10,8 @@ namespace Microsoft.Azure.Devices.Authentication
     /// </summary>
     public abstract class AuthenticationProviderX509 : AuthenticationProvider
     {
-        /// <summary>
-        /// Returns the registration Id.
-        /// </summary>
-        /// <returns>The registration Id.</returns>
-        public override string GetRegistrationID()
+        /// <inheritdoc/>
+        public override string GetRegistrationId()
         {
             X509Certificate2 cert = GetAuthenticationCertificate();
             return cert.GetNameInfo(X509NameType.DnsName, false);
