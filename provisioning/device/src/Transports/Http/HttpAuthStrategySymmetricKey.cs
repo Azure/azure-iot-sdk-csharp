@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public override DeviceRegistrationHttp CreateDeviceRegistration()
         {
-            return new DeviceRegistrationHttp(registrationId: _authentication.GetRegistrationID());
+            return new DeviceRegistrationHttp(registrationId: _authentication.GetRegistrationId());
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)
