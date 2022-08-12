@@ -181,8 +181,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has a void return type. As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
         // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
-        private async void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
+        private async void ConnectionStateChangeHandler(ConnectionInfo connectionInfo)
         {
+            var state = connectionInfo.State;
+            var reason = connectionInfo.ChangeReason;
             Console.WriteLine($"Connection state changed: state={state}, reason={reason}");
 
             switch (state)

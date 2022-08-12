@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
         /// HTTP, as that protocol is stateless.
         /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
-        public void SetConnectionStateChangeHandler(Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler)
+        public void SetConnectionStateChangeHandler(Action<ConnectionInfo> stateChangeHandler)
             => InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
         /// <summary>

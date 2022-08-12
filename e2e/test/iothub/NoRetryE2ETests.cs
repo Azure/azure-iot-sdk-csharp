@@ -30,11 +30,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.SetRetryPolicy(new NoRetry());
 
             var connectionStateChange = new Dictionary<ConnectionState, int>();
-            deviceClient.SetConnectionStateChangeHandler((state, reason) =>
+            deviceClient.SetConnectionStateChangeHandler((connectionInfo) =>
             {
-                connectionStateChange.TryGetValue(state, out int count);
+                connectionStateChange.TryGetValue(connectionInfo.State, out int count);
                 count++;
-                connectionStateChange[state] = count;
+                connectionStateChange[connectionInfo.State] = count;
             });
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
@@ -94,19 +94,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient1.SetRetryPolicy(new NoRetry());
 
             var connectionStateChangeDevice1 = new Dictionary<ConnectionState, int>();
-            deviceClient1.SetConnectionStateChangeHandler((state, reason) =>
+            deviceClient1.SetConnectionStateChangeHandler((connectionInfo) =>
             {
-                connectionStateChangeDevice1.TryGetValue(state, out int count);
+                connectionStateChangeDevice1.TryGetValue(connectionInfo.State, out int count);
                 count++;
-                connectionStateChangeDevice1[state] = count;
+                connectionStateChangeDevice1[connectionInfo.State] = count;
             });
 
             var connectionStateChangeDevice2 = new Dictionary<ConnectionState, int>();
-            deviceClient2.SetConnectionStateChangeHandler((state, reason) =>
+            deviceClient2.SetConnectionStateChangeHandler((connectionInfo) =>
             {
-                connectionStateChangeDevice2.TryGetValue(state, out int count);
+                connectionStateChangeDevice2.TryGetValue(connectionInfo.State, out int count);
                 count++;
-                connectionStateChangeDevice2[state] = count;
+                connectionStateChangeDevice2[connectionInfo.State] = count;
             });
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");

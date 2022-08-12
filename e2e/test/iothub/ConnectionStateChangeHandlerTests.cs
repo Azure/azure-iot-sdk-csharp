@@ -117,18 +117,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string deviceId = config.DeviceID;
 
-            ConnectionState? state = null;
-            ConnectionStateChangeReason? stateChangeReason = null;
+            ConnectionInfo connectionInfo = null;
             int deviceDisabledReceivedCount = 0;
 
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(deviceConnectionString, options);
-            void stateChangeHandler(ConnectionState s, ConnectionStateChangeReason r)
+            void stateChangeHandler(ConnectionInfo c)
             {
-                if (r == ConnectionStateChangeReason.DeviceDisabled)
+                if (c.ChangeReason == ConnectionStateChangeReason.DeviceDisabled)
                 {
-                    state = s;
-                    stateChangeReason = r;
+                    connectionInfo = c;
                     deviceDisabledReceivedCount++;
                 }
             }
@@ -165,8 +163,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(IotHubDeviceClient_Gives_ConnectionState_DeviceDisabled_Base)}: Asserting connection state change.");
 
             Assert.AreEqual(1, deviceDisabledReceivedCount);
-            Assert.AreEqual(ConnectionState.Disconnected, state);
-            Assert.AreEqual(ConnectionStateChangeReason.DeviceDisabled, stateChangeReason);
+            Assert.AreEqual(ConnectionState.Disconnected, connectionInfo.State);
+            Assert.AreEqual(ConnectionStateChangeReason.DeviceDisabled, connectionInfo.ChangeReason);
         }
 
         private async Task ModuleClient_Gives_ConnectionState_DeviceDisabled_Base(
@@ -176,15 +174,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             var transportSettings = new IotHubClientAmqpSettings(protocol);
 
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix, Logger).ConfigureAwait(false);
-            ConnectionState? state = null;
-            ConnectionStateChangeReason? stateChangeReason = null;
+            ConnectionInfo connectionInfo = null;
             int deviceDisabledReceivedCount = 0;
-            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
+            Action<ConnectionInfo> stateChangeHandler = (c) =>
             {
-                if (r == ConnectionStateChangeReason.DeviceDisabled)
+                if (c.ChangeReason == ConnectionStateChangeReason.DeviceDisabled)
                 {
-                    state = s;
-                    stateChangeReason = r;
+                    connectionInfo = c;
                     deviceDisabledReceivedCount++;
                 }
             };
@@ -223,8 +219,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(ModuleClient_Gives_ConnectionState_DeviceDisabled_Base)}: Asserting connection state change.");
 
             Assert.AreEqual(1, deviceDisabledReceivedCount);
-            Assert.AreEqual(ConnectionState.Disconnected, state);
-            Assert.AreEqual(ConnectionStateChangeReason.DeviceDisabled, stateChangeReason);
+            Assert.AreEqual(ConnectionState.Disconnected, connectionInfo.State);
+            Assert.AreEqual(ConnectionStateChangeReason.DeviceDisabled, connectionInfo.ChangeReason);
         }
     }
 }

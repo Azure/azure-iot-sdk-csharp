@@ -148,10 +148,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 _logger = logger;
             }
 
-            public void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
+            public void ConnectionStateChangeHandler(ConnectionInfo connectionInfo)
             {
                 ConnectionStateChangeHandlerCount++;
-                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStateChangeHandler)}: state={state} stateChangeReason={reason} count={ConnectionStateChangeHandlerCount}");
+                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStateChangeHandler)}: state={connectionInfo.State} stateChangeReason={connectionInfo.ChangeReason} count={ConnectionStateChangeHandlerCount}");
             }
 
             public int ConnectionStateChangeHandlerCount { get; set; }

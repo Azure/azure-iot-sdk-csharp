@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly IotHubClientOptions _clientOptions;
 
         // Connection state change information
-        private volatile Action<ConnectionState, ConnectionStateChangeReason> _connectionStateChangeHandler;
+        private volatile Action<ConnectionInfo> _connectionStateChangeHandler;
         internal ConnectionInfo _connectionInfo { get; private set; } = new ConnectionInfo();
 
         // Method callback information
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate.
         /// </summary>
         /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStateChangeHandler(Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler)
+        public void SetConnectionStateChangeHandler(Action<ConnectionInfo> stateChangeHandler)
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
@@ -1155,8 +1155,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStateChanged(ConnectionState state, ConnectionStateChangeReason reason)
+        internal void OnConnectionStateChanged(ConnectionInfo connectionInfo)
         {
+            var state = connectionInfo.State;
+            var reason = connectionInfo.ChangeReason;
+
             try
             {
                 if (Logging.IsEnabled)
@@ -1165,7 +1168,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (_connectionInfo.State != state
                     || _connectionInfo.ChangeReason != reason)
                 {
-                    _connectionStateChangeHandler?.Invoke(state, reason);
+                    _connectionStateChangeHandler?.Invoke(connectionInfo);
                 }
             }
             finally
