@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// URL encoded serializer for message properties.
