@@ -16,7 +16,7 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -build: Builds projects (use if re-running tests after a successful build).
     -unittests: Runs unit tests
-    -prtests: Runs all tests selected for running during PR validation at our gates. Requires prerequisites and environment variables.
+    -prtests: Runs all tests selected for PR validation at our gates. Requires prerequisites and environment variables.
     -e2etests: Runs the complete E2E test suite. This includes E2E tests, FaultInjection tests and InvalidServiceCertificate tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
