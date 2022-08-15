@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Common
         public static Exception AssertAndThrow(string description)
         {
             Assert(description);
-            throw Exception.AsError(new AssertionFailedException(description));
+            throw Exception.AsError(new FatalException(description));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

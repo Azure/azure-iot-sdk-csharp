@@ -5,7 +5,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Microsoft.Azure.Devices.Common.Data
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Shared access policy permissions of IoT hub.

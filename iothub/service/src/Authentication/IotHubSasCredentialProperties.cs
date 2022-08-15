@@ -7,13 +7,11 @@ using Microsoft.Azure.Amqp;
 using System.Collections.Generic;
 using System.Linq;
 using Azure;
-using Microsoft.Azure.Devices.Common.Data;
 
 namespace Microsoft.Azure.Devices
 {
     internal class IotHubSasCredentialProperties : IotHubConnectionProperties
     {
-
         private readonly AzureSasCredential _credential;
 
         public IotHubSasCredentialProperties(string hostName, AzureSasCredential credential) : base(hostName)

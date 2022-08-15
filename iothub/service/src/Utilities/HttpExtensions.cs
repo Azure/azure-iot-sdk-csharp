@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 
-namespace Microsoft.Azure.Devices.Common.Extensions
+namespace Microsoft.Azure.Devices.Utilities
 {
     /// <summary>
     /// Extension helper methods.

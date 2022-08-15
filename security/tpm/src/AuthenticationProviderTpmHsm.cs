@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
     /// <summary>
     /// The Provisioning Authentication Client implementation for TPM.
     /// </summary>
-    public class AuthenticationProviderTpmHsm : AuthenticationProviderTpm
+    public sealed class AuthenticationProviderTpmHsm : AuthenticationProviderTpm, IDisposable
     {
         private bool _disposed;
 
@@ -259,15 +259,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             return result;
         }
 
-        /// <summary>
-        /// Releases the unmanaged resources used by this class and optionally disposes of the managed resources.
-        /// </summary>
-        /// <remarks>
-        /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
-        /// if your TPM hardware does not support the relevant API call.
-        /// </remarks>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
-        protected override void Dispose(bool disposing)
+        /// <inheritdoc/>
+        public void Dispose()
         {
             if (_disposed)
             {
@@ -277,18 +270,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             if (Logging.IsEnabled)
                 Logging.Info(this, "Disposing");
 
-            if (disposing)
+            // _tpmDevice is owned by _tpm2, which will disposed it, but not if it is null.
+            if (_tpm2 == null)
             {
-                // _tpmDevice is owned by _tpm2, which will disposed it, but not if it is null
-                if (_tpm2 == null)
-                {
-                    _tpmDevice?.Dispose();
-                    _tpmDevice = null;
-                }
-
-                _tpm2.Dispose();
-                _tpm2 = null;
+                _tpmDevice?.Dispose();
+                _tpmDevice = null;
             }
+
+            _tpm2.Dispose();
+            _tpm2 = null;
 
             _disposed = true;
         }

@@ -936,7 +936,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
 
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
-            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
+            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -1007,7 +1007,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
@@ -1017,7 +1017,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     deviceCertificate?.Dispose();
                 }
 
-                if (authMethod != null && authMethod is IDisposable disposableAuth)
+                if (authMethod is IDisposable disposableAuthMethod)
+                {
+                    disposableAuthMethod?.Dispose();
+                }
+
+                if (auth is IDisposable disposableAuth)
                 {
                     disposableAuth?.Dispose();
                 }
@@ -1086,7 +1091,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             };
 
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
-            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
+            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -1129,7 +1134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
@@ -1143,31 +1148,49 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
             }
+            finally
+            {
+                if (auth is IDisposable disposableAuth)
+                {
+                    disposableAuth?.Dispose();
+                }
+            }
         }
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(IotHubClientTransportSettings transportSettings)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
-            using AuthenticationProvider auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
-            var provClient = ProvisioningDeviceClient.Create(
-                s_globalDeviceEndpoint,
-                TestConfiguration.Provisioning.IdScope,
-                auth,
-                new ProvisioningClientOptions(transport));
+            using var auth = new AuthenticationProviderTpmSimulator("invalidregistrationid");
 
-            using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
+            try
+            {
+                var provClient = ProvisioningDeviceClient.Create(
+                    s_globalDeviceEndpoint,
+                    TestConfiguration.Provisioning.IdScope,
+                    auth,
+                    new ProvisioningClientOptions(transport));
 
-            Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
+                using var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-            DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                Logger.Trace("ProvisioningDeviceClient RegisterAsync . . . ");
 
-            Logger.Trace($"{result.Status}");
+                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
-            Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
-            Assert.IsNull(result.AssignedHub);
-            Assert.IsNull(result.DeviceId);
-            // Exception message must contain the errorCode value as below
-            Assert.AreEqual(404201, result.ErrorCode);
+                Logger.Trace($"{result.Status}");
+
+                Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
+                Assert.IsNull(result.AssignedHub);
+                Assert.IsNull(result.DeviceId);
+                // Exception message must contain the errorCode value as below
+                Assert.AreEqual(404201, result.ErrorCode);
+            }
+            finally
+            {
+                if (auth is IDisposable disposableAuth)
+                {
+                    disposableAuth?.Dispose();
+                }
+            }
         }
 
         private async Task ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
@@ -1177,7 +1200,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId)
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
-            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
+            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -1210,7 +1233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
@@ -1218,6 +1241,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
                     deviceCertificate?.Dispose();
+                }
+
+                if (auth is IDisposable disposableAuth)
+                {
+                    disposableAuth?.Dispose();
                 }
             }
         }
@@ -1229,7 +1257,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = "")
         {
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
-            using AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
+            AuthenticationProvider auth = await CreateAuthProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -1265,7 +1293,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 }
                 else
                 {
-                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                    Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                     await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
                 }
 
@@ -1273,6 +1301,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 {
                     X509Certificate2 deviceCertificate = x509Auth.GetAuthenticationCertificate();
                     deviceCertificate?.Dispose();
+                }
+
+                if (auth is IDisposable disposableAuth)
+                {
+                    disposableAuth?.Dispose();
                 }
             }
         }
@@ -1577,7 +1610,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         .RetryOperationsAsync(
                             async () =>
                             {
-                                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationID()).ConfigureAwait(false);
+                                await dpsClient.DeleteIndividualEnrollmentAsync(authProvider.GetRegistrationId()).ConfigureAwait(false);
                             },
                             s_provisioningServiceRetryPolicy,
                             s_retryableExceptions,
