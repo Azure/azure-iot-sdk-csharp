@@ -46,15 +46,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
@@ -74,7 +67,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
 </Project>
