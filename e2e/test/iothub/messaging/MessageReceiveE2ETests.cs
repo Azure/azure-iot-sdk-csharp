@@ -640,9 +640,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
-            deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
+            deviceClient.SetConnectionStateChangeHandler(connectionInfo =>
             {
-                if (state == ConnectionState.Disconnected || state == ConnectionState.DisconnectedRetrying)
+                if (connectionInfo.State == ConnectionState.Disconnected || connectionInfo.State == ConnectionState.DisconnectedRetrying)
                 {
                     lostConnection = true;
                 }

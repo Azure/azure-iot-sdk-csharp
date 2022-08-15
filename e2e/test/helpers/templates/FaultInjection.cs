@@ -135,10 +135,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             int connectionStateChangeCount = 0;
 
-            deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
+            deviceClient.SetConnectionStateChangeHandler(connectionInfo =>
             {
                 connectionStateChangeCount++;
-                logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: state={state} stateChangeReason={stateChangeReason} count={connectionStateChangeCount}");
+                logger.Trace($"{nameof(FaultInjection)}.{nameof(TestErrorInjectionAsync)}: state={connectionInfo.State} stateChangeReason={connectionInfo.ChangeReason} count={connectionStateChangeCount}");
             });
 
             var watch = new Stopwatch();

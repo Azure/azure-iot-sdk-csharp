@@ -133,10 +133,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
-            deviceClient.SetConnectionStateChangeHandler((ConnectionState status, ConnectionStateChangeReason reason) =>
+            deviceClient.SetConnectionStateChangeHandler((ConnectionInfo connectionInfo) =>
             {
-                Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
-                if (status == ConnectionState.DisconnectedRetrying || status == ConnectionState.Disconnected)
+                var state = connectionInfo.State;
+                var reason = connectionInfo.ChangeReason;
+                Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {state}; {reason}");
+                if (state == ConnectionState.DisconnectedRetrying || state == ConnectionState.Disconnected)
                 {
                     deviceDisconnected.Release();
                 }
@@ -185,10 +187,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                deviceClient.SetConnectionStateChangeHandler((ConnectionState status, ConnectionStateChangeReason reason) =>
+                deviceClient.SetConnectionStateChangeHandler((ConnectionInfo connectionInfo) =>
                 {
-                    Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
-                    if (status == ConnectionState.DisconnectedRetrying || status == ConnectionState.Disconnected)
+                    var state = connectionInfo.State;
+                    var reason = connectionInfo.ChangeReason;
+                    Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {state}; {reason}");
+                    if (state == ConnectionState.DisconnectedRetrying || state == ConnectionState.Disconnected)
                     {
                         deviceDisconnected.Release();
                     }

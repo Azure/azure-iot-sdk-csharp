@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal ClientConfiguration ClientConfiguration { get; set; }
 
-        internal Action<ConnectionState, ConnectionStateChangeReason> ConnectionStateChangeHandler { get; set; }
+        internal Action<ConnectionInfo> ConnectionStateChangeHandler { get; set; }
 
         internal Action<TwinCollection> DesiredPropertyUpdateCallback { get; set; }
 

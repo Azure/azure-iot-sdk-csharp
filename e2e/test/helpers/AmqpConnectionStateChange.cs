@@ -19,10 +19,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public int ConnectionStateChangeCount { get; set; }
 
-        public void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
+        public void ConnectionStateChangeHandler(ConnectionInfo connectionInfo)
         {
             ConnectionStateChangeCount++;
-            _logger.Trace($"{nameof(AmqpConnectionStateChange)}.{nameof(ConnectionStateChangeHandler)}: {_deviceId}: state={state} stateChangeReason={reason} count={ConnectionStateChangeCount}");
+            _logger.Trace($"{nameof(AmqpConnectionStateChange)}.{nameof(ConnectionStateChangeHandler)}: {_deviceId}: state={connectionInfo.State} stateChangeReason={connectionInfo.ChangeReason} count={ConnectionStateChangeCount}");
         }
     }
 }
