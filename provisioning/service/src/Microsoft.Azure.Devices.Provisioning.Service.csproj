@@ -41,10 +41,6 @@
     <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
-  </PropertyGroup>
-
   <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
