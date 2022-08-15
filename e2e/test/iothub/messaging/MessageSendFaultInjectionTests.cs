@@ -218,30 +218,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
-        {
-            try
-            {
-                await SendMessageRecoveryAsync(
-                    TestDeviceType.Sasl,
-                    new IotHubClientHttpSettings(),
-                    FaultInjection.FaultType_Throttle,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration,
-                    FaultInjection.ShortRetryDuration).ConfigureAwait(false);
-
-                Assert.Fail("None of the expected exceptions were thrown.");
-            }
-            catch (IotHubThrottledException) { }
-            catch (IotHubCommunicationException ex)
-            {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
-            }
-            catch (TimeoutException) { }
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_Amqp()
@@ -268,31 +244,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultFaultDelay,
                 FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize]
-        public async Task Message_QuotaExceededRecovery_Http()
-        {
-            try
-            {
-                await SendMessageRecoveryAsync(
-                    TestDeviceType.Sasl,
-                    new IotHubClientHttpSettings(),
-                    FaultInjection.FaultType_QuotaExceeded,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration,
-                    FaultInjection.ShortRetryDuration).ConfigureAwait(false);
-
-                Assert.Fail("None of the expected exceptions were thrown.");
-            }
-            catch (QuotaExceededException) { }
-            catch (IotHubCommunicationException ex)
-            {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
-            }
-            catch (TimeoutException) { }
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
