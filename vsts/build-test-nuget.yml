@@ -8,7 +8,7 @@ jobs:
   ### Build nuget packages ###
   - job: Build_Packages
     displayName: Build Nuget Packages
-    timeoutInMinutes: 20
+    timeoutInMinutes: 15
 
     condition: succeeded()
     pool:
@@ -43,49 +43,10 @@ jobs:
           ArtifactName: unsigned_nuget_packages
         condition: always()
 
-      - task: PowerShell@2
-        displayName: 'Rename Packages for Partner Release Pipeline'
-        inputs:
-          targetType: 'inline'
-          script: |
-            Write-Host ""
-            Rename-Item $(Build.SourcesDirectory)/bin/pkg $(Build.SourcesDirectory)/bin/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)
-            Write-Host " "
-            Write-Host "Package contents (renamed):"
-            gci -Path $(Build.SourcesDirectory)/bin -Recurse -Force
-
-#TODO: fix this script to get partner secret from key vault and copy file (avoid update needed for key rotation)
-#      - task: AzureCLI@2
-#        displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
-#        inputs:
-#          azureSubscription: azuresdkpartnerdrops
-#          scriptType: ps
-#          scriptLocation: inlineScript
-#          inlineScript: |
-#            Write-Host "Copy release package to partner pipeline drops/azure-iot-sdk/net/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)"
-#            $env:AZCOPY_SPA_CLIENT_SECRET=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-service-principal-key -AsPlainText
-#			      $env:AZCOPY_SPA_CLIENT_SECRET_APP=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-application-id -AsPlainText
-#            azcopy login --service-principal --application-id $env:AZCOPY_SPA_CLIENT_SECRET_APP
-#            azcopy copy "$(Build.SourcesDirectory)/bin" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/azure-iot-sdk/net" --recursive
-
-      - task: AzureFileCopy@2
-        displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
-        inputs:
-          SourcePath: '$(Build.SourcesDirectory)/bin'
-          azureSubscription: azuresdkpartnerdrops
-          Destination: AzureBlob
-          storage: azuresdkpartnerdrops
-          ContainerName: 'drops/azure-iot-sdk/net'
-      
-#      - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-#        displayName: 'SBOM Generation Task'
-#        inputs:
-#          BuildDropPath: '$(Build.SourcesDirectory)/bin/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)'
-
-  ### Windows Tests ###
-  - job: Windows_Test
-    displayName: Windows Tests
-    timeoutInMinutes: 300
+  ### Windows Tests (E2E) ###
+  - job: Windows_Tests_E2E
+    displayName: Windows Tests (E2E)
+    timeoutInMinutes: 180
 
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
@@ -104,7 +65,7 @@ jobs:
         .Net Framework 4.5.1:
           FRAMEWORK: net451
 
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
     pool:
       vmImage: windows-2022
@@ -238,13 +199,13 @@ jobs:
         condition: always()
 
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Build Artifacts: $(FRAMEWORK)'
+        displayName: 'Publish WIndows Test Artifacts: $(FRAMEWORK)'
         inputs:
           ArtifactName: testresults_windows_$(FRAMEWORK)
         condition: always()
 
       - task: PublishTestResults@2
-        displayName: 'Publish Test Results: $(FRAMEWORK)'
+        displayName: 'Publish Windows Test Results: $(FRAMEWORK)'
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
@@ -254,9 +215,9 @@ jobs:
         condition: always()
 
   ### Linux Tests ###
-  - job: Linux_Test
+  - job: Linux_Tests
     displayName: Linux Tests
-    timeoutInMinutes: 400
+    timeoutInMinutes: 180
 
     strategy:
       # Change maxParallel to 1 make builds run in serial rather than in parallel
@@ -271,7 +232,7 @@ jobs:
         .Net Core 2.1.30:
           FRAMEWORK: netcoreapp2.1.30
 
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
     pool:
       vmImage: ubuntu-20.04
@@ -409,15 +370,91 @@ jobs:
         condition: always()
 
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Build Artifacts: $(FRAMEWORK)'
+        displayName: 'Publish Linux Test Artifacts: $(FRAMEWORK)'
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
         condition: always()
 
       - task: PublishTestResults@2
-        displayName: 'Publish Test Results: $(FRAMEWORK)'
+        displayName: 'Publish Linux Test Results: $(FRAMEWORK)'
         inputs:
           testRunner: VSTest
           testResultsFiles: '**/*.trx'
           testRunTitle: 'Linux Tests $(FRAMEWORK)'
         condition: always()
+
+  ### Upload unisgned packages for partner signing and release pipeline ###
+  - job: Upload_Packages
+    displayName: Upload Nuget Packages
+    timeoutInMinutes: 15
+
+    condition: succeeded()
+    dependsOn:
+      - Build_Packages
+#      - Windows_Tests
+#      - Linux_Tests
+### TODO: add these dependency if tests are more stable
+
+    pool:
+      vmImage: windows-2022
+
+    variables:
+      NUGET_PACKGE_FOLDER: $[ dependencies.Build_Packages.outputs['BUILD_PKG.NUGET_PKG_DATE'] ]
+
+    steps:
+
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download nuget packages from pipeline artifacts'
+        inputs:
+          buildType: 'current'
+          artifactName: 'unsigned_nuget_packages'
+          itemPattern: '**/*.*nupkg'
+          targetPath: '$(Build.SourcesDirectory)/bin'
+            
+      - task: PowerShell@2
+        displayName: 'Downloaded nuget package files checkpoint'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Download contents:"
+            gci -Path $(Build.SourcesDirectory)/bin/nuget -Recurse -Force
+
+
+      - task: PowerShell@2
+        displayName: 'Rename Packages for Partner Release Pipeline'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host ""
+            Rename-Item $(Build.SourcesDirectory)/bin/nuget $(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)
+            Write-Host " "
+            Write-Host "Package contents (renamed):"
+            gci -Path $(Build.SourcesDirectory)/bin -Recurse -Force
+
+#TODO: fix this script to get partner secret from key vault and copy file (avoid update needed for key rotation)
+#      - task: AzureCLI@2
+#        displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
+#        inputs:
+#          azureSubscription: azuresdkpartnerdrops
+#          scriptType: ps
+#          scriptLocation: inlineScript
+#          inlineScript: |
+#            Write-Host "Copy release package to partner pipeline drops/azure-iot-sdk/net/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)"
+#            $env:AZCOPY_SPA_CLIENT_SECRET=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-service-principal-key -AsPlainText
+#			      $env:AZCOPY_SPA_CLIENT_SECRET_APP=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-application-id -AsPlainText
+#            azcopy login --service-principal --application-id $env:AZCOPY_SPA_CLIENT_SECRET_APP
+#            azcopy copy "$(Build.SourcesDirectory)/bin" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/azure-iot-sdk/net" --recursive
+
+      - task: AzureFileCopy@2
+        displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
+        inputs:
+          SourcePath: '$(Build.SourcesDirectory)/bin'
+          azureSubscription: azuresdkpartnerdrops
+          Destination: AzureBlob
+          storage: azuresdkpartnerdrops
+          ContainerName: 'drops/azure-iot-sdk/net'
+      
+#      - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+#        displayName: 'SBOM Generation Task'
+#        inputs:
+#          BuildDropPath: '$(Build.SourcesDirectory)/bin/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)'
