@@ -46,15 +46,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />

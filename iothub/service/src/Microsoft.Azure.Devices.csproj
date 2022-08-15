@@ -42,22 +42,12 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;1138</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Fx\Logging.Common.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
-      <Link>ExceptionHandlingHelper.cs</Link>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">

@@ -21,15 +21,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Common\Logging.Common.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <PropertyGroup>
     <Version>2.0.0-preview001</Version>
     <Title>Microsoft Azure IoT Provisioning Device Authentication TPM Client</Title>
     <IncludeSource>True</IncludeSource>

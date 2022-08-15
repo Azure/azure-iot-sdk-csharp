@@ -41,18 +41,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <Common>$(RootDir)\common\src</Common>
     <AppDesignerFolder>Properties</AppDesignerFolder>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Common\Logging.Common.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
-      <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
