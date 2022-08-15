@@ -41,6 +41,7 @@
     <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
+  <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">

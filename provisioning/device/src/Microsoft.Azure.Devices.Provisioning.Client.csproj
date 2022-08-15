@@ -44,6 +44,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
   </PropertyGroup>
 
+  <!--Project reference dependencies-->
+  <ItemGroup>
+    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
+  </ItemGroup>
+
+  <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
@@ -55,9 +61,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.21" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
   </ItemGroup>
 </Project>
