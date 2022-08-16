@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             var expectedResult = new PurgeMessageQueueResult()
             {
                 DeviceId = deviceId,
-                TotalMessagesPurged = 50
+                TotalMessagesPurged = 3
             };
-            for (int i = 0; i < 50; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 await sc.Messaging.SendAsync(deviceId, testMessage);
             }
