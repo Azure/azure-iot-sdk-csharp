@@ -203,7 +203,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         internal MqttTransportHandler(PipelineContext context, IotHubClientMqttSettings settings)
             : base(context, settings)
         {
-            //TODO assert before cast
             _mqttTransportSettings = settings;
             _deviceId = context.ClientConfiguration.DeviceId;
             _moduleId = context.ClientConfiguration.ModuleId;
@@ -542,7 +541,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (getTwinStatus != 200)
             {
                 //TODO tim
-                throw new Exception("Failed to get twin");
+                throw new IotHubException("Failed to get twin");
             }
 
             return getTwinResponse.Twin;
@@ -588,7 +587,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (patchTwinResponse.Status != 204)
             {
                 //TODO tim
-                throw new Exception("Failed to send twin patch");
+                throw new IotHubException("Failed to send twin patch");
             }
 
             //TODO new twin version should be returned here, but API surface doesn't currently allow it
