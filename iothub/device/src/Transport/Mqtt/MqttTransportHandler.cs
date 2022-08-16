@@ -541,7 +541,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (getTwinStatus != 200)
             {
-                throw ExceptionHandlingHelper.GetExceptionFromStatusCode(getTwinStatus, "Failed to get twin");
+                //TODO tim
+                throw new Exception("Failed to get twin");
             }
 
             return getTwinResponse.Twin;
@@ -586,7 +587,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             reportedPropertyUpdateResponses.TryRemove(requestId, out PatchTwinResponse patchTwinResponse);
             if (patchTwinResponse.Status != 204)
             {
-                throw ExceptionHandlingHelper.GetExceptionFromStatusCode(patchTwinResponse.Status, "Failed to send twin patch");
+                //TODO tim
+                throw new Exception("Failed to send twin patch");
             }
 
             //TODO new twin version should be returned here, but API surface doesn't currently allow it
