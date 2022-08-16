@@ -5,17 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
+    internal sealed class SharedAccessSignature
     {
-        private readonly string _encodedAudience;
-        private readonly string _expiry;
-
-        private SharedAccessSignature(string iotHubName, DateTime expiresOn, string expiry, string keyName, string signature, string encodedAudience)
+        private SharedAccessSignature(string iotHubName, DateTime expiresOn, string keyName, string signature, string encodedAudience)
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
@@ -29,11 +24,9 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubName = iotHubName;
-            _expiry = expiry;
             KeyName = keyName ?? string.Empty;
             Signature = signature;
             Audience = WebUtility.UrlDecode(encodedAudience);
-            _encodedAudience = encodedAudience;
         }
 
         public string IotHubName { get; }
@@ -81,7 +74,6 @@ namespace Microsoft.Azure.Devices.Client
             return new SharedAccessSignature(
                 iotHubName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
-                expiry,
                 keyName,
                 signature,
                 encodedAudience);
