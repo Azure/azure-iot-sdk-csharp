@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -17,7 +16,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using MQTTnet;
 using MQTTnet.Adapter;
@@ -618,6 +616,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
+            OnTransportClosedGracefully();
             MqttClientDisconnectOptions disconnectOptions = new MqttClientDisconnectOptions();
             await _mqttClient.DisconnectAsync(disconnectOptions, cancellationToken);
         }
