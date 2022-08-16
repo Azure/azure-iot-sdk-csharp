@@ -50,6 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             var httpTransportSettings = new HttpTransportSettings
