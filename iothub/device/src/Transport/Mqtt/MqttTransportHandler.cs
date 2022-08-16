@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -217,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _mqttClient = mqttFactory.CreateMqttClient();
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
-            _hostName = context.ClientConfiguration.HostName;
+            _hostName = context.ClientConfiguration.IotHubHostName;
             if (context.ClientConfiguration.SharedAccessKey != null || context.ClientConfiguration.TokenRefresher != null)
             {
                 _isSymmetricKeyAuthenticated = true;
@@ -335,7 +337,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (_isSymmetricKeyAuthenticated)
             {
                 // Symmetric key authenticated connections need to set client Id, username, and password
-                string password = await _clientConfiguration.TokenRefresher.GetTokenAsync(_clientConfiguration.Audience);
+                string password = await _clientConfiguration.TokenRefresher.GetTokenAsync(_clientConfiguration.IotHubHostName);
                 _mqttClientOptionsBuilder.WithCredentials(username, password);
             }
             else
@@ -391,16 +393,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 TopicName = PopulateMessagePropertiesFromMessage(_moduleToCloudMessagesTopic, message);
             }
 
-            Stream payloadStream = message.GetBodyStream();
-            long streamLength = payloadStream.Length;
-            if (streamLength > MaxMessageSize)
+            if (message.HasPayload && message.Payload.Length > MaxMessageSize)
             {
-                throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxMessageSize}");
+                throw new InvalidOperationException($"Message size ({message.Payload.Length} bytes) is too big to process. Maximum allowed payload size is {MaxMessageSize}");
             }
 
             var mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(TopicName)
-                .WithPayload(payloadStream)
+                .WithPayload(message.Payload)
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
@@ -445,7 +445,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
-                .WithPayload(methodResponse.BodyStream)
+                .WithPayload(methodResponse.Payload)
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
@@ -762,8 +762,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, "Received a cloud to device message while user's callback for handling them was null. Disposing message.");
-
-                receivedCloudToDeviceMessage.Dispose();
             }
         }
 
@@ -773,7 +771,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
-            using var receivedDirectMethod = new Message(payload);
+            var receivedDirectMethod = new Message(payload);
 
             PopulateMessagePropertiesFromPacket(receivedDirectMethod, receivedEventArgs.ApplicationMessage);
 
@@ -783,7 +781,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = queryStringKeyValuePairs.Get("$rid");
             string methodName = tokens[3];
 
-            using var methodRequest = new MethodRequestInternal(methodName, requestId, new MemoryStream(payload));
+            var methodRequest = new MethodRequestInternal(methodName, requestId, payload);
 
             // We are intentionally not awaiting _methodListener callback.
             // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
@@ -856,7 +854,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
             receivedEventArgs.AutoAcknowledge = true;
 
-            using var iotHubMessage = new Message(payload);
+            var iotHubMessage = new Message(payload);
 
             // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
             // We try to get the endpoint from the topic, if the topic is in the above format.
@@ -920,7 +918,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             if (property.Key == MessageSystemPropertyNames.Ack)
             {
-                return Utils.ConvertDeliveryAckTypeFromString(property.Value);
+                return ConvertDeliveryAckTypeFromString(property.Value);
             }
             return property.Value;
         }
@@ -935,7 +933,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     systemProperties[propertyName] = ConvertFromSystemProperties(property.Value);
                 }
             }
-            string properties = UrlEncodedDictionarySerializer.Serialize(Utils.MergeDictionaries(new IDictionary<string, string>[] { systemProperties, message.Properties }));
+            string properties = UrlEncodedDictionarySerializer.Serialize(MergeDictionaries(new IDictionary<string, string>[] { systemProperties, message.Properties }));
 
             string msg = properties.Length != 0
                 ? topicName.EndsWith("/", StringComparison.Ordinal) ? topicName + properties + "/" : topicName + "/" + properties
@@ -976,6 +974,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             return false;
+        }
+
+        private static IReadOnlyDictionary<TKey, TValue> MergeDictionaries<TKey, TValue>(IDictionary<TKey, TValue>[] dictionaries)
+        {
+            // No item in the array should be null.
+            if (dictionaries == null || dictionaries.Any(item => item == null))
+            {
+                throw new ArgumentNullException(nameof(dictionaries), "Provided dictionaries should not be null");
+            }
+
+            var result = dictionaries.SelectMany(dict => dict)
+                .ToLookup(pair => pair.Key, pair => pair.Value)
+                .ToDictionary(group => group.Key, group => group.First());
+
+            return new ReadOnlyDictionary<TKey, TValue>(result);
+        }
+
+        private static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
+        {
+            return value switch
+            {
+                "none" => DeliveryAcknowledgement.None,
+                "negative" => DeliveryAcknowledgement.NegativeOnly,
+                "positive" => DeliveryAcknowledgement.PositiveOnly,
+                "full" => DeliveryAcknowledgement.Full,
+                _ => throw new NotSupportedException($"Unknown value: '{value}'"),
+            };
         }
     }
 }
