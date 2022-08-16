@@ -58,6 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             }
         }
 
+        /// <summary>
+        /// Indicates whether a specified string is null, empty, or consists only of white-space characters.
+        /// </summary>
         public static bool IsNullOrWhiteSpace(this string value)
         {
             return string.IsNullOrWhiteSpace(value);
