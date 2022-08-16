@@ -123,10 +123,10 @@ jobs:
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
  
-      - script: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-          sn -Vr *,31bf3856ad364e35
-        displayName: 'Disable strong name validation'
+#      - script: |
+#          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+#          sn -Vr *,31bf3856ad364e35
+#        displayName: 'Disable strong name validation'
 
       - script: |
           choco install -y squid
@@ -140,8 +140,7 @@ jobs:
             Write-Host Start TPM Simulator
             Start $(Build.SourcesDirectory)\vsts\TpmSimulator\Simulator.exe
 
-      - powershell: write-host "./vsts/releaseTest.ps1"
-#      - powershell: ./vsts/releaseTest.ps1
+      - powershell: ./vsts/releaseTest.ps1
         displayName: 'E2E Tests'
         env:
           # Environment variables for IoT Hub E2E tests
@@ -312,7 +311,8 @@ jobs:
           ports: '127.0.0.1:8888:8888'
           restartPolicy: unlessStopped
 
-      - powershell: ./vsts/releaseTest.ps1
+      - powershell: write-host "./vsts/releaseTest.ps1"
+#      - powershell: ./vsts/releaseTest.ps1
         displayName: 'E2E Tests'
         env:
           # Environment variables for IoT Hub E2E tests
