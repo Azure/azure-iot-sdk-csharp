@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     Port = Port,
                 };
 
-                string registrationId = message.Authentication.GetRegistrationID();
+                string registrationId = message.Authentication.GetRegistrationId();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 using AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);

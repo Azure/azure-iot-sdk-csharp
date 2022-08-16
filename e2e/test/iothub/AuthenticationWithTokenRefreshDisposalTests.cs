@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Create an instance of the device client, send a test message and then close and dispose it.
             var options = new IotHubClientOptions(transportSettings);
             var deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, options);
-            using var message1 = new Client.Message();
+            var message1 = new Client.Message();
             await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
             await deviceClient.CloseAsync();
             deviceClient.Dispose();
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Since the default behavior is to dispose AuthenticationWithTokenRefresh authentication method on DeviceClient disposal,
             // this should now throw an ObjectDisposedException.
             var deviceClient2 = IotHubDeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, options);
-            using var message2 = new Client.Message();
+            var message2 = new Client.Message();
 
             Func<Task> act = async () => await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
             await act.Should().ThrowAsync<ObjectDisposedException>();
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Create an instance of the device client, send a test message and then close and dispose it.
             var deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, options);
-            using var message1 = new Client.Message();
+            var message1 = new Client.Message();
             await deviceClient.SendEventAsync(message1).ConfigureAwait(false);
             await deviceClient.CloseAsync();
             deviceClient.Dispose();
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Perform the same steps again, reusing the previously created authentication method instance to ensure
             // that the SDK did not dispose the user supplied authentication method instance.
             var deviceClient2 = IotHubDeviceClient.Create(testDevice.IotHubHostName, authenticationMethod, options);
-            using var message2 = new Client.Message();
+            var message2 = new Client.Message();
             await deviceClient2.SendEventAsync(message2).ConfigureAwait(false);
             await deviceClient2.CloseAsync();
             deviceClient2.Dispose();
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClients[0].CloseAsync().ConfigureAwait(false);
             deviceClients[0].Dispose();
 
-            amqpConnectionStates[0].LastConnectionState.Should().Be(ConnectionState.Disabled);
+            deviceClients[0].ConnectionInfo.State.Should().Be(ConnectionState.Disabled);
 
             Logger.Trace($"{nameof(ReuseAuthenticationMethod_MuxedDevices)}: Confirming the rest of the multiplexed devices are online and operational.");
 
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 notRecovered = false;
                 for (int i = 1; i < devicesCount; i++)
                 {
-                    if (amqpConnectionStates[i].LastConnectionState != ConnectionState.Connected)
+                    if (deviceClients[i].ConnectionInfo.State != ConnectionState.Connected)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                         notRecovered = true;
@@ -236,7 +236,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClients[i].SendEventAsync(message).ConfigureAwait(false);
                 Logger.Trace($"Test with client {i} completed.");
             }
-            message.Dispose();
 
             // Close and dispose all of the client instances.
             for (int i = 1; i < devicesCount; i++)
@@ -270,13 +269,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Also dispose the authentication methods created.
             for (int i = 0; i < devicesCount; i++)
             {
-                amqpConnectionStates[i].LastConnectionState.Should().Be(ConnectionState.Connected);
+                deviceClients[i].ConnectionInfo.State.Should().Be(ConnectionState.Connected);
 
                 await deviceClients[i].CloseAsync();
                 deviceClients[i].Dispose();
                 authenticationMethods[i].Dispose();
 
-                amqpConnectionStates[i].LastConnectionState.Should().Be(ConnectionState.Disabled);
+                deviceClients[i].ConnectionInfo.State.Should().Be(ConnectionState.Disabled);
             }
         }
 

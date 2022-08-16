@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     deviceRegistration.Payload = new JRaw(message.Payload);
                 }
-                string registrationId = message.Authentication.GetRegistrationID();
+                string registrationId = message.Authentication.GetRegistrationId();
 
                 RegistrationOperationStatus operation = await client.RuntimeRegistration
                     .RegisterDeviceAsync(

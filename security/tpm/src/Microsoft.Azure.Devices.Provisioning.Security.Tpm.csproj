@@ -21,15 +21,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Common\Logging.Common.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <PropertyGroup>
     <Version>2.0.0-preview001</Version>
     <Title>Microsoft Azure IoT Provisioning Device Authentication TPM Client</Title>
     <IncludeSource>True</IncludeSource>
@@ -50,20 +41,17 @@
     <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
+  <!--Project reference dependencies-->
+  <ItemGroup>
+    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj"/>
+  </ItemGroup>
+
+  <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
-
-    <!-- FXCop -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\authentication\src\Microsoft.Azure.Devices.Authentication.csproj">
-      <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
-      <Name>Microsoft.Azure.Devices.Authentication</Name>
-    </ProjectReference>
   </ItemGroup>
 </Project>

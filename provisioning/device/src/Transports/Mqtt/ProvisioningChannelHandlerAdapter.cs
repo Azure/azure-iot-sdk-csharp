@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private Task ConnectAsync(IChannelHandlerContext context)
         {
-            string registrationId = _message.Authentication.GetRegistrationID();
+            string registrationId = _message.Authentication.GetRegistrationId();
             string userAgent = _message.ProductInfo;
 
             string password = null;

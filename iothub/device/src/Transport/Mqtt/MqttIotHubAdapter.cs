@@ -22,7 +22,6 @@ using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using TaskCompletionSource = Microsoft.Azure.Devices.TaskCompletionSource;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -68,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly Action<object> s_checkConnAckTimeoutCallback = ShutdownIfNotReady;
         private static readonly Func<IChannelHandlerContext, Exception, bool> s_shutdownOnWriteErrorHandler = (ctx, ex) => { ShutdownOnErrorAsync(ctx, ex); return false; };
         private static readonly TimeSpan s_pingResponseTimeout = TimeSpan.FromSeconds(30); // The ping response duration is set to 30 secs.
-        private static readonly SemaphoreSlim s_pingResponseSemaphore = new SemaphoreSlim(0, 1);
+        private static readonly SemaphoreSlim s_pingResponseSemaphore = new(0, 1);
 
         private readonly IMqttIotHubEventHandler _mqttIotHubEventHandler;
 
@@ -87,8 +86,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private DateTime _lastChannelActivityTime;
         private StateFlags _stateFlags;
 
-        private readonly ConcurrentDictionary<int, TaskCompletionSource> _subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
-        private readonly ConcurrentDictionary<int, TaskCompletionSource> _unsubscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
+        private readonly ConcurrentDictionary<int, TaskCompletionSource> _subscribeCompletions = new();
+        private readonly ConcurrentDictionary<int, TaskCompletionSource> _unsubscribeCompletions = new();
 
         private int InboundBacklogSize => _deviceBoundOneWayProcessor.BacklogSize + _deviceBoundTwoWayProcessor.BacklogSize;
 
@@ -749,25 +748,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        [SuppressMessage(
-            "Reliability",
-            "CA2000:Dispose objects before losing scope",
-            Justification = "The created message is handed to the user and the user application is in charge of disposing the message.")]
         private Task AcceptMessageAsync(IChannelHandlerContext context, PublishPacket publish)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, publish, nameof(AcceptMessageAsync));
 
             Message message = null;
-            ReadOnlyByteBufferStream bodyStream = null;
             try
             {
-                bodyStream = new ReadOnlyByteBufferStream(publish.Payload, true);
-
-                message = new Message(bodyStream, StreamDisposalResponsibility.Sdk);
-
+                using var ms = new MemoryStream();
+                using var bodyStream = new ReadOnlyByteBufferStream(publish.Payload, true);
+                bodyStream.CopyTo(ms);
+                message = new Message(ms.ToArray());
                 PopulateMessagePropertiesFromPacket(message, publish);
-
                 message.MqttTopicName = publish.TopicName;
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
@@ -776,10 +769,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Error(context, $"Received a non-fatal exception while processing a received PUBLISH packet, will shut down: {ex}", nameof(AcceptMessageAsync));
 
                 ShutdownOnErrorAsync(context, ex);
-
-                // If there is an exception thrown, we will dispose the message and the body stream since the user will not receive this message in order to dispose it.
-                message?.Dispose();
-                bodyStream?.Dispose();
 
                 return TaskHelpers.CompletedTask;
             }
@@ -1161,7 +1150,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     packet.PacketId = packetId;
                 }
-                Stream payloadStream = message.GetBodyStream();
+                using Stream payloadStream = new MemoryStream(message.Payload);
                 long streamLength = payloadStream.Length;
                 if (streamLength > MaxPayloadSize)
                 {
@@ -1185,7 +1174,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public static void PopulateMessagePropertiesFromPacket(Message message, PublishPacket publish)
         {
-            message.LockToken = publish.QualityOfService == QualityOfService.AtLeastOnce ? publish.PacketId.ToString(CultureInfo.InvariantCulture) : null;
+            message.LockToken = publish.QualityOfService == QualityOfService.AtLeastOnce
+                ? publish.PacketId.ToString(CultureInfo.InvariantCulture)
+                : null;
 
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
@@ -1228,56 +1219,58 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public const string ComponentName = "$.sub";
         }
 
-        private static readonly Dictionary<string, string> s_toSystemPropertiesMap = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> s_toSystemPropertiesMap = new()
         {
-            {IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc},
-            {IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId},
-            {IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId},
-            {IotHubWirePropertyNames.To, MessageSystemPropertyNames.To},
-            {IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId},
-            {IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema},
-            {IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc},
-            {IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType},
-            {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
-            {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
-            {IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
-            {IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
-            {IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
-            {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext},
-            {IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId}
+            { IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc },
+            { IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId },
+            { IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId },
+            { IotHubWirePropertyNames.To, MessageSystemPropertyNames.To },
+            { IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId },
+            { IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema },
+            { IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc },
+            { IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType },
+            { IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding },
+            { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
+            { MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack },
+            { IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId  },
+            { IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId  },
+            { IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId },
+            { IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext },
+            { IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId },
         };
 
-        private static readonly Dictionary<string, string> s_fromSystemPropertiesMap = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> s_fromSystemPropertiesMap = new()
         {
-            {MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime},
-            {MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId},
-            {MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId},
-            {MessageSystemPropertyNames.To, IotHubWirePropertyNames.To},
-            {MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId},
-            {MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema},
-            {MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc},
-            {MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType},
-            {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
-            {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
-            {MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
-            {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
-            {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey},
-            {MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId},
-            {MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName }
+            { MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime },
+            { MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId },
+            { MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId },
+            { MessageSystemPropertyNames.To, IotHubWirePropertyNames.To },
+            { MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId },
+            { MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema },
+            { MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc },
+            { MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType },
+            { MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding },
+            { MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation },
+            { MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack },
+            { MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName  },
+            { MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey },
+            { MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey },
+            { MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId },
+            { MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName  },
         };
 
         private static string ConvertFromSystemProperties(object systemProperty)
         {
-            if (systemProperty is string)
+            if (systemProperty is string systemPropertyString)
             {
-                return (string)systemProperty;
+                return systemPropertyString;
             }
-            if (systemProperty is DateTime)
+
+            if (systemProperty is DateTime systemPropertyDateTime)
             {
-                return ((DateTime)systemProperty).ToString("o", CultureInfo.InvariantCulture);
+                return systemPropertyDateTime.ToString("o", CultureInfo.InvariantCulture);
             }
+
             return systemProperty?.ToString();
         }
 
@@ -1287,15 +1280,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 return property.Value;
             }
-            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime ||
-                property.Key == IotHubWirePropertyNames.CreationTimeUtc)
+
+            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime
+                || property.Key == IotHubWirePropertyNames.CreationTimeUtc)
             {
                 return DateTime.ParseExact(property.Value, "o", CultureInfo.InvariantCulture);
             }
+
             if (property.Key == MessageSystemPropertyNames.Ack)
             {
                 return ConvertDeliveryAckTypeFromString(property.Value);
             }
+
             return property.Value;
         }
 

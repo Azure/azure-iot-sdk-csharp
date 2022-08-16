@@ -68,9 +68,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 stopwatch.Reset();
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
-                using Client.Message message = messages[i];
+                Client.Message message = messages[i];
                 await deviceClient.CompleteMessageAsync(message, cts.Token).ConfigureAwait(false);
-                message.Dispose();
 
                 stopwatch.Stop();
                 stopwatch.Elapsed.Should().BeLessThan(s_oneMinute, $"CompleteMessageAsync exceeded the cancellation token source timeout.");

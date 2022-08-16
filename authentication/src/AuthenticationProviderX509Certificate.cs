@@ -48,11 +48,5 @@ namespace Microsoft.Azure.Devices.Authentication
         {
             return _certificateChain;
         }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by this class and optionally disposes of the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
-        protected override void Dispose(bool disposing) { }
     }
 }

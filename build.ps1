@@ -16,8 +16,8 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -build: Builds projects (use if re-running tests after a successful build).
     -unittests: Runs unit tests
-    -prtests: Runs all tests selected for PR validation
-    -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
+    -prtests: Runs all tests selected for PR validation at our gates. Requires prerequisites and environment variables.
+    -e2etests: Runs the complete E2E test suite. This includes E2E tests, FaultInjection tests and InvalidServiceCertificate tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
@@ -259,8 +259,13 @@ try
         # We must disable package testing here as the E2E csproj may reference new APIs that are not available in existing NuGet packages.
         $packageTempPath = $env:AZURE_IOT_LOCALPACKAGES
         $env:AZURE_IOT_LOCALPACKAGES = ""
+        
         # SDK binaries
         BuildProject . "Azure IoT C# SDK Solution"
+
+        # Samples
+        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
+
         $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
     }
 
@@ -293,12 +298,11 @@ try
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
         $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
+        $testCategory += "TestCategory=FaultInjectionBVT"
         $testCategory += ")"
 
         # test categories to exclude
         $testCategory += "&TestCategory!=LongRunning"
-        $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
 
         if ($skipIotHubTests)
@@ -354,12 +358,18 @@ try
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        # Tests categories to include
+        $testCategory = "("
+        $testCategory += "TestCategory=E2E"
+        $testCategory += "|"
+        $testCategory += "TestCategory=FaultInjection"
+        $testCategory += "|"
+        $testCategory += "TestCategory=InvalidServiceCertificate"
+        $testCategory += ")"
+
+        RunTests "E2E tests" -filterTestCategory $testCategory -framework $framework
 
         $verbosity = $oldVerbosity
-
-        # Samples
-        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
     }
 
     if ($stresstests)

@@ -537,11 +537,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             token.ThrowIfCancellationRequested();
 
-            using Stream stream = await content.ReadHttpContentAsStream(token).ConfigureAwait(false);
+            using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
             return new JsonSerializer().Deserialize<T>(jsonReader);
         }
-
-        }
+    }
 }

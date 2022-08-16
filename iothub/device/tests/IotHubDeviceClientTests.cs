@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9");
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -370,7 +370,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", Encoding.UTF8.GetBytes("{\"grade\":\"good\"}"));
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -390,7 +390,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", Encoding.UTF8.GetBytes("{\"grade\":\"good\"}"));
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -416,7 +416,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", Encoding.UTF8.GetBytes("{\"grade\":\"good\"}"));
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -443,7 +443,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", Encoding.UTF8.GetBytes("{\"grade\":\"good\"}"));
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -464,7 +464,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new MethodResponse(200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", Encoding.UTF8.GetBytes("{\"grade\":\"good\"}"));
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", Encoding.UTF8.GetBytes("{\"grade\":\"good\"}"));
 
             await deviceClient.InternalClient.OnMethodCalledAsync(methodRequestInternal).ConfigureAwait(false);
 
@@ -488,7 +488,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerSetFirstMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -511,7 +511,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -522,7 +522,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -534,7 +534,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerSetFirstMethodDefaultHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -557,7 +557,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -580,7 +580,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerOverwriteExistingDelegate()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -603,7 +603,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -627,7 +627,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", Encoding.UTF8.GetBytes(methodBody2))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -639,7 +639,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerOverwriteExistingDefaultDelegate()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -662,7 +662,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -686,7 +686,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId2", Encoding.UTF8.GetBytes(methodBody2))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -698,7 +698,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetLastMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -721,7 +721,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -731,7 +731,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -740,7 +740,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetLastMethodHandlerWithDefaultHandlerSet()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -763,7 +763,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -774,7 +774,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -784,13 +784,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -799,7 +799,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetDefaultHandlerSet()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -822,7 +822,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -833,7 +833,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -843,13 +843,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalledAsync(new MethodRequestInternal(methodName, "fakeRequestId", Encoding.UTF8.GetBytes(methodBody))).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -858,7 +858,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubDeviceClient_SetMethodHandlerUnsetWhenNoMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -873,22 +873,20 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionState? state = null;
-            ConnectionStateChangeReason? stateChangeReason = null;
-            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
+            ConnectionInfo connectionInfo = new ConnectionInfo();
+            Action<ConnectionInfo> stateChangeHandler = (c) =>
             {
                 handlerCalled = true;
-                state = s;
-                stateChangeReason = r;
+                connectionInfo = c;
             };
             deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
             // Connection state change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+            deviceClient.InternalClient.OnConnectionStateChanged(new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionState.Connected, state);
-            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, stateChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, connectionInfo.State);
+            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, connectionInfo.ChangeReason);
         }
 
         [TestMethod]
@@ -896,19 +894,17 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionState? state = null;
-            ConnectionStateChangeReason? stateChangeReason = null;
-            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
+            ConnectionInfo connectionInfo = new ConnectionInfo();
+            Action<ConnectionInfo> stateChangeHandler = (c) =>
             {
                 handlerCalled = true;
-                state = s;
-                stateChangeReason = r;
+                connectionInfo = c;
             };
             deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
             deviceClient.SetConnectionStateChangeHandler(null);
 
             // Connection state change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+            deviceClient.InternalClient.OnConnectionStateChanged(new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -918,26 +914,24 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
             bool handlerCalled = false;
-            ConnectionState? state = null;
-            ConnectionStateChangeReason? stateChangeReason = null;
-            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
+            ConnectionInfo connectionInfo = new ConnectionInfo();
+            Action<ConnectionInfo> stateChangeHandler = (c) =>
             {
                 handlerCalled = true;
-                state = s;
-                stateChangeReason = r;
+                connectionInfo = c;
             };
             deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
             // current state = disabled
 
-            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+            deviceClient.InternalClient.OnConnectionStateChanged(new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionState.Connected, state);
-            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, stateChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, connectionInfo.State);
+            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, connectionInfo.ChangeReason);
             handlerCalled = false;
 
             // current state = connected
-            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+            deviceClient.InternalClient.OnConnectionStateChanged(new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -950,30 +944,28 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.InnerHandler = innerHandler;
             var sender = new object();
             bool handlerCalled = false;
-            ConnectionState? state = null;
-            ConnectionStateChangeReason? stateChangeReason = null;
-            Action<ConnectionState, ConnectionStateChangeReason> stateChangeHandler = (s, r) =>
+            ConnectionInfo connectionInfo = new ConnectionInfo();
+            Action<ConnectionInfo> stateChangeHandler = (c) =>
             {
                 handlerCalled = true;
-                state = s;
-                stateChangeReason = r;
+                connectionInfo = c;
             };
             deviceClient.SetConnectionStateChangeHandler(stateChangeHandler);
 
             // current state = disabled
-            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+            deviceClient.InternalClient.OnConnectionStateChanged(new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionState.Connected, state);
-            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, stateChangeReason);
+            Assert.AreEqual(ConnectionState.Connected, connectionInfo.State);
+            Assert.AreEqual(ConnectionStateChangeReason.ConnectionOk, connectionInfo.ChangeReason);
             handlerCalled = false;
 
             // current state = connected
-            deviceClient.InternalClient.OnConnectionStateChanged(ConnectionState.DisconnectedRetrying, ConnectionStateChangeReason.NoNetwork);
+            deviceClient.InternalClient.OnConnectionStateChanged(new ConnectionInfo(ConnectionState.DisconnectedRetrying, ConnectionStateChangeReason.NoNetwork, DateTimeOffset.UtcNow));
 
             Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionState.DisconnectedRetrying, state);
-            Assert.AreEqual(ConnectionStateChangeReason.NoNetwork, stateChangeReason);
+            Assert.AreEqual(ConnectionState.DisconnectedRetrying, connectionInfo.State);
+            Assert.AreEqual(ConnectionStateChangeReason.NoNetwork, connectionInfo.ChangeReason);
         }
 
         [TestMethod]
@@ -1574,8 +1566,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            using var message = new Message();
-            Func<Task> act = async () => await deviceClient.SendEventAsync(message, cts.Token);
+            Func<Task> act = async () => await deviceClient.SendEventAsync(new Message(), cts.Token);
 
             // assert
 

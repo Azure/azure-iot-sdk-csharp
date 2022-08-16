@@ -42,7 +42,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
@@ -50,63 +49,17 @@
     <NoWarn>1701;1702;1138</NoWarn>
   </PropertyGroup>
 
+  <!--Nuget package dependencies-->
   <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Common\Logging.Common.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\AuthenticationMethodFactory.cs">
-      <Link>Authentication\AuthenticationMethodFactory.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\CommonConstants.cs">
-      <Link>Common\CommonConstants.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\CommonResources.cs">
-      <Link>Common\CommonResources.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
-      <Link>ExceptionHandlingHelper.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionTrace.cs">
-      <Link>Common\ExceptionTrace.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\FatalException.cs">
-      <Link>Common\Exceptions\FatalException.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\FxCop.cs">
-      <Link>Common\FxCop.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\IAuthorizationHeaderProvider.cs">
-      <Link>Authentication\IAuthorizationHeaderProvider.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\IotHubConnectionString.cs">
-      <Link>Authentication\IotHubConnectionString.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\StringValidationHelper.cs">
-      <Link>Common\StringValidationHelper.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\TaskHelpers.cs">
-      <Link>Common\TaskHelpers.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\StreamDisposalResponsibility.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Http\HttpContentExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.22.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Azure.Core" Version="1.22.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
   </ItemGroup>
 </Project>

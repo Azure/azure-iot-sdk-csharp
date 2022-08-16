@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 logger.Trace($"Receiving messages for device {deviceId}.");
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
-                using Client.Message receivedMessage = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                Client.Message receivedMessage = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
 
                 receivedMessage.Should().NotBeNull($"No message is received for device {deviceId} in {s_oneMinute}.");
 
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 receivedMessage.UserId.Should().Be(message.UserId, "Received user Id is not what was sent by service");
                 receivedMessage.To.Should().Be(receivedMessageDestination, "Received message destination is not what was sent by service");
 
-                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
                 logger.Trace($"{nameof(VerifyReceivedC2dMessageAsync)}: Received message: for {deviceId}: {messageData}");
                 if (Equals(payload, messageData))
                 {
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 logger.Trace($"Receiving messages for device {deviceId}.");
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
-                using Client.Message receivedMessage = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                Client.Message receivedMessage = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
 
                 if (receivedMessage == null)
                 {
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     // ignore exception from CompleteAsync
                 }
 
-                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                string messageData = Encoding.ASCII.GetString(receivedMessage.Payload);
                 logger.Trace($"{nameof(VerifyReceivedC2dMessageWithCancellationTokenAsync)}: Received message: for {deviceId}: {messageData}");
                 if (payload == messageData)
                 {
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 using var cts = new CancellationTokenSource(s_oneSecond);
                 try
                 {
-                    using Client.Message discardMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                    Client.Message discardMessage = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) { }
             }
@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             sw.Restart();
             try
             {
-                using Client.Message message = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                Client.Message message = await dc.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                 sw.Stop();
                 logger.Trace($"{nameof(ReceiveMessageWithoutTimeoutCheckAsync)} - Received message={message}; time taken={sw.Elapsed}.");
                 await dc.CompleteMessageAsync(message).ConfigureAwait(false);
@@ -397,7 +397,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 try
                 {
                     using var cts1 = new CancellationTokenSource(s_oneSecond);
-                    using Client.Message discardMessage = await deviceClient.ReceiveMessageAsync(cts1.Token).ConfigureAwait(false);
+                    Client.Message discardMessage = await deviceClient.ReceiveMessageAsync(cts1.Token).ConfigureAwait(false);
                     Logger.Trace($"Leftover message on Mqtt was: {discardMessage} with Id={discardMessage?.MessageId}");
                 }
                 catch (OperationCanceledException) { }
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             Logger.Trace($"Sent C2D message from service, messageId={firstMessage.MessageId} - to be received on polling ReceiveAsync");
 
             using var cts2 = new CancellationTokenSource(s_fiveSeconds);
-            using Client.Message firstPolledMessage = await deviceClient.ReceiveMessageAsync(cts2.Token).ConfigureAwait(false);
+            Client.Message firstPolledMessage = await deviceClient.ReceiveMessageAsync(cts2.Token).ConfigureAwait(false);
             firstPolledMessage.MessageId.Should().Be(firstMessage.MessageId);
             await deviceClient.CompleteMessageAsync(firstPolledMessage).ConfigureAwait(false);
 
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // A call to ReceiveAsync() should return null immediately because the client has a subscription.
             using var cts3 = new CancellationTokenSource(s_fiveSeconds);
-            using Client.Message noMessageShouldBeDelivered = await deviceClient.ReceiveMessageAsync(cts3.Token).ConfigureAwait(false);
+            Client.Message noMessageShouldBeDelivered = await deviceClient.ReceiveMessageAsync(cts3.Token).ConfigureAwait(false);
             noMessageShouldBeDelivered.Should().BeNull();
 
             // The message should be received on the callback
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 try
                 {
                     using var cts4 = new CancellationTokenSource(s_oneSecond);
-                    using Client.Message unexpectedLeftoverMessage = await deviceClient.ReceiveMessageAsync(cts4.Token).ConfigureAwait(false);
+                    Client.Message unexpectedLeftoverMessage = await deviceClient.ReceiveMessageAsync(cts4.Token).ConfigureAwait(false);
                     Logger.Trace($"Leftover message on Mqtt was: {unexpectedLeftoverMessage} with Id={unexpectedLeftoverMessage?.MessageId}");
                     await deviceClient.CompleteMessageAsync(unexpectedLeftoverMessage).ConfigureAwait(false);
                     unexpectedLeftoverMessage.Should().BeNull("Didn't expect to receive a message by polling when none was sent for this scenario.");
@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (OperationCanceledException) { }
 
             using var cts6 = new CancellationTokenSource(s_fiveSeconds);
-            using Client.Message secondPolledMessage = await deviceClient.ReceiveMessageAsync(cts6.Token).ConfigureAwait(false);
+            Client.Message secondPolledMessage = await deviceClient.ReceiveMessageAsync(cts6.Token).ConfigureAwait(false);
             secondPolledMessage.MessageId.Should().Be(thirdMessage.MessageId);
             await deviceClient.CompleteMessageAsync(secondPolledMessage).ConfigureAwait(false);
 
@@ -531,7 +531,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 try
                 {
                     using var cts = new CancellationTokenSource(s_oneSecond);
-                    using Client.Message noExpectedMsg = await deviceClient1.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
+                    Client.Message noExpectedMsg = await deviceClient1.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
                     await deviceClient1.CompleteMessageAsync(noExpectedMsg).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) { }
@@ -556,7 +556,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 receivedMessageIds.Add(message.MessageId);
                 await deviceClient2.CompleteMessageAsync(message).ConfigureAwait(false);
-                message.Dispose();
 
                 messageReceived.SetResult(true);
             }
@@ -635,9 +634,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
-            deviceClient.SetConnectionStateChangeHandler((state, stateChangeReason) =>
+            deviceClient.SetConnectionStateChangeHandler(connectionInfo =>
             {
-                if (state == ConnectionState.Disconnected || state == ConnectionState.DisconnectedRetrying)
+                if (connectionInfo.State == ConnectionState.Disconnected || connectionInfo.State == ConnectionState.DisconnectedRetrying)
                 {
                     lostConnection = true;
                 }

@@ -13,6 +13,12 @@
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
+  <!--Project reference dependencies-->
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.Azure.Devices.csproj" />
+  </ItemGroup>
+
+  <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
@@ -21,15 +27,8 @@
     <PackageReference Include="FluentAssertions" Version="5.10.0" />
   </ItemGroup>
 
+  <!--Conditional package dependencies-->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.Azure.Devices.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TestResults\" />
   </ItemGroup>
 </Project>
