@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
-                var sas = SharedAccessSignature.Parse(".", _token);
+                SharedAccessSignature sas = SharedAccessSignatureParser.Parse(_token);
                 ExpiresOn = sas.ExpiresOn;
                 UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 

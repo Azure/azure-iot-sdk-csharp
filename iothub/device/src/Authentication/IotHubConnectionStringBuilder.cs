@@ -251,14 +251,9 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
             {
-                if (SharedAccessSignatureParser.IsSharedAccessSignature(SharedAccessSignature))
-                {
-                    SharedAccessSignatureParser.Parse(IotHubName, SharedAccessSignature);
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid shared access signature (SAS).");
-                }
+                // Parse the supplied shared access signature string
+                // and throw exception if the string is not in the expected format.
+                _ = SharedAccessSignatureParser.Parse(SharedAccessSignature);
             }
 
             ValidateFormat(HostName, HostNamePropertyName, s_hostNameRegex);

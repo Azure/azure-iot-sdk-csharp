@@ -5,35 +5,46 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class IotHubConnectionString
     {
+        internal IotHubConnectionString(string hostName, string gatewayHostName, string deviceId, string moduleId, string sharedAccessKeyName, string sharedAccessKey, string sharedAccessSignature)
+        {
+            HostName = hostName;
+            GatewayHostName = gatewayHostName;
+            DeviceId = deviceId;
+            ModuleId = moduleId;
+            SharedAccessKeyName = sharedAccessKeyName;
+            SharedAccessKey = sharedAccessKey;
+            SharedAccessSignature = sharedAccessSignature;
+        }
+
         /// <summary>
         /// Gets or sets the value of the fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
-        public string HostName { get; internal set; }
+        public string HostName { get; }
 
         /// <summary>
         /// Gets the optional name of the gateway to connect to
         /// </summary>
-        public string GatewayHostName { get; internal set; }
+        public string GatewayHostName { get; }
 
         /// <summary>
         /// Gets the device identifier of the device connecting to the service.
         /// </summary>
-        public string DeviceId { get; internal set; }
+        public string DeviceId { get; }
 
         /// <summary>
         /// Gets the module identifier of the module connecting to the service.
         /// </summary>
-        public string ModuleId { get; internal set; }
+        public string ModuleId { get; }
 
         /// <summary>
         /// Gets the shared access key name used to connect the device to the IoT hub service.
         /// </summary>
-        public string SharedAccessKeyName { get; internal set; }
+        public string SharedAccessKeyName { get; }
 
         /// <summary>
         /// Gets the shared access key used to connect to the IoT hub service.
         /// </summary>
-        public string SharedAccessKey { get; internal set; }
+        public string SharedAccessKey { get; }
 
         /// <summary>
         /// Gets the shared access signature used to connect to the IoT hub service.
@@ -44,6 +55,6 @@ namespace Microsoft.Azure.Devices.Client
         /// SAS token, when that token expires, the client must be disposed, and if desired, recreated
         /// with a newly derived SAS token.
         /// </remarks>
-        public string SharedAccessSignature { get; internal set; }
+        public string SharedAccessSignature { get; }
     }
 }

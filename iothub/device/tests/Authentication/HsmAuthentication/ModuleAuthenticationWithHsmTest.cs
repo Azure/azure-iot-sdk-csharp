@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 
             // Act
             string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
-            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasToken);
 
             string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
                 this.iotHub,
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 
             // Act
             string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
-            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasToken);
 
             string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
                 this.iotHub,

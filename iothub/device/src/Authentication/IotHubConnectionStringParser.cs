@@ -7,11 +7,10 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Authentication
 {
-    internal class IotHubConnectionStringParser
+    internal sealed class IotHubConnectionStringParser
     {
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
-        private const string HostNameSeparator = ".";
         private const string HostNamePropertyName = "HostName";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
         private const string DeviceIdPropertyName = "DeviceId";
@@ -26,12 +25,15 @@ namespace Microsoft.Azure.Devices.Client.Authentication
 
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
-            // Hostname
+            // Host name
             string hostName = GetConnectionStringValue(map, HostNamePropertyName);
             if (hostName.IsNullOrWhiteSpace())
             {
                 throw new ArgumentException("IoT hub hostname must be specified in connection string");
             }
+
+            // Gateway host name
+            string gatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
 
             // Device Id
             string deviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
@@ -39,6 +41,12 @@ namespace Microsoft.Azure.Devices.Client.Authentication
             {
                 throw new ArgumentException("DeviceId must be specified in connection string");
             }
+
+            // Module Id
+            string moduleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
+
+            // SHared access key name
+            string sharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
 
             // Shared access key
             string sharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
@@ -52,26 +60,19 @@ namespace Microsoft.Azure.Devices.Client.Authentication
             string sharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
             if (!sharedAccessSignature.IsNullOrWhiteSpace())
             {
-                if (SharedAccessSignature.IsSharedAccessSignature(sharedAccessSignature))
-                {
-                    SharedAccessSignature.Parse(hostName, sharedAccessSignature);
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid shared access signature (SAS).");
-                }
+                // Parse the supplied shared access signature string
+                // and throw exception if the string is not in the expected format.
+                _ = SharedAccessSignatureParser.Parse(sharedAccessSignature);
             }
 
-            return new IotHubConnectionString
-            {
-                HostName = hostName,
-                GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName),
-                DeviceId = deviceId,
-                ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName),
-                SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName),
-                SharedAccessKey = sharedAccessKey,
-                SharedAccessSignature = sharedAccessSignature,
-            };
+            return new IotHubConnectionString(
+                hostName,
+                gatewayHostName,
+                deviceId,
+                moduleId,
+                sharedAccessKeyName,
+                sharedAccessKey,
+                sharedAccessSignature);
         }
 
         private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
