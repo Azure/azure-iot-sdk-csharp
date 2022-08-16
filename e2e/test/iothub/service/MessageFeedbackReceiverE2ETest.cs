@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             using var message = new Message(Encoding.UTF8.GetBytes("some payload"));
             message.Ack = DeliveryAcknowledgement.Full;
             messagedFeedbackReceived = false;
-            await serviceClient.Messaging.SendAsync("TestInstance", message).ConfigureAwait(false);
+            await serviceClient.Messaging.SendAsync(TestConfiguration.IoTHub.X509ChainDeviceName, message).ConfigureAwait(false);
             await receiveMessage().ConfigureAwait(false);
 
             var timer = Stopwatch.StartNew();
