@@ -42,7 +42,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
@@ -50,28 +49,17 @@
     <NoWarn>1701;1702;1138</NoWarn>
   </PropertyGroup>
 
+  <!--Nuget package dependencies-->
   <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Fx\Logging.Common.cs</Link>
-    </Compile>
-    <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
-      <Link>ExceptionHandlingHelper.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.22.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Azure.Core" Version="1.22.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
   </ItemGroup>
 </Project>

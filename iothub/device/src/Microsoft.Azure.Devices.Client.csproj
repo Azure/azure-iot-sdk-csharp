@@ -9,9 +9,6 @@
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 
-    <!-- Don't auto-compile platform-specific files: -->
-    <DefaultItemExcludes>ModernDotNet/**;$(DefaultItemExcludes)</DefaultItemExcludes>
-
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
@@ -46,35 +43,26 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
+  <!--Project reference dependencies-->
   <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <LinkBase>Common</LinkBase>
-    </Compile>
+    <ProjectReference Include="..\..\..\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
   </ItemGroup>
 
+  <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.0" />
     <!-- We will need to keep this reference to DotNetty.Common until the next release of DotNetty includes this dependency -->
     <PackageReference Include="DotNetty.Common" Version="0.7.1" />
     <PackageReference Include="DotNetty.Handlers" Version="0.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
 </Project>

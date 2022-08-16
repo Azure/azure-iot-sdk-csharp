@@ -259,8 +259,13 @@ try
         # We must disable package testing here as the E2E csproj may reference new APIs that are not available in existing NuGet packages.
         $packageTempPath = $env:AZURE_IOT_LOCALPACKAGES
         $env:AZURE_IOT_LOCALPACKAGES = ""
+        
         # SDK binaries
         BuildProject . "Azure IoT C# SDK Solution"
+
+        # Samples
+        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
+
         $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
     }
 
@@ -365,9 +370,6 @@ try
         RunTests "E2E tests" -filterTestCategory $testCategory -framework $framework
 
         $verbosity = $oldVerbosity
-
-        # Samples
-        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
     }
 
     if ($stresstests)
