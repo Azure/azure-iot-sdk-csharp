@@ -14,6 +14,7 @@ using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -476,35 +477,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleIncomingTwinPatchAsync(Message message)
         {
-            try
+            if (_onDesiredStatePatchListener != null)
             {
-                if (_onDesiredStatePatchListener != null)
-                {
-                    using var reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8);
-                    string patch = reader.ReadToEnd();
-                    TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                    await Task.Run(() => _onDesiredStatePatchListener(props)).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                message.Dispose();
+                string payloadString = Encoding.UTF8.GetString(message.Payload, 0, message.Payload.Length);
+                TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(payloadString);
+                await Task.Run(() => _onDesiredStatePatchListener(props)).ConfigureAwait(false);
             }
         }
 
         private async Task HandleIncomingMethodPostAsync(Message message)
         {
-            try
-            {
-                string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
+            string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
-                using var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream());
-                await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
-            }
-            finally
-            {
-                message.Dispose();
-            }
+            var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.Payload);
+            await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
         }
 
         [SuppressMessage(
@@ -593,30 +579,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleIncomingEventMessageAsync(Message message)
         {
-            try
+            // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
+            // We try to get the endpoint from the topic, if the topic is in the above format.
+            string[] tokens = message.MqttTopicName.Split('/');
+            string inputName = tokens.Length >= 6 ? tokens[5] : null;
+
+            // Add the endpoint as a SystemProperty
+            message.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
+
+            if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
             {
-                // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
-                // We try to get the endpoint from the topic, if the topic is in the above format.
-                string[] tokens = message.MqttTopicName.Split('/');
-                string inputName = tokens.Length >= 6 ? tokens[5] : null;
-
-                // Add the endpoint as a SystemProperty
-                message.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
-
-                if (_qosReceivePacketFromService == QualityOfService.AtLeastOnce)
+                lock (_syncRoot)
                 {
-                    lock (_syncRoot)
-                    {
-                        _completionQueue.Enqueue(message.LockToken);
-                    }
+                    _completionQueue.Enqueue(message.LockToken);
                 }
-                message.LockToken = _generationId + message.LockToken;
-                await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
             }
-            finally
-            {
-                message.Dispose();
-            }
+            message.LockToken = _generationId + message.LockToken;
+            await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
         }
 
         public async void OnError(Exception exception)
@@ -813,7 +792,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            using var message = new Message(methodResponse.BodyStream)
+            var message = new Message(methodResponse.Payload)
             {
                 MqttTopicName = MethodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId)
             };
@@ -855,27 +834,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             EnsureValidState();
 
-            using var request = new Message();
+            var request = new Message();
 
             string rid = Guid.NewGuid().ToString();
             request.MqttTopicName = TwinGetTopic.FormatInvariant(rid);
 
-            using Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
-
-            using var reader = new StreamReader(response.GetBodyStream(), System.Text.Encoding.UTF8);
-            string body = reader.ReadToEnd();
+            Message response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+            string payload = Encoding.UTF8.GetString(response.Payload);
 
             try
             {
                 return new Twin
                 {
-                    Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
+                    Properties = JsonConvert.DeserializeObject<TwinProperties>(payload),
                 };
             }
             catch (JsonReaderException ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{payload}'");
 
                 throw;
             }
@@ -887,9 +864,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             EnsureValidState();
 
             string body = JsonConvert.SerializeObject(reportedProperties);
-            using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
-
-            using var request = new Message(bodyStream);
+            var request = new Message(Encoding.UTF8.GetBytes(body));
 
             string rid = Guid.NewGuid().ToString();
             request.MqttTopicName = TwinPatchTopic.FormatInvariant(rid);

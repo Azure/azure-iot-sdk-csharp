@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Common.Extensions;
+using Microsoft.Azure.Devices.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-            string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
+            string str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = JsonConvert.DeserializeObject<T>(str);
 
             // Etag in the header is considered authoritative

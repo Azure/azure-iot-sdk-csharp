@@ -14,23 +14,13 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         public string PrimaryKey
         {
             get => _primaryKey;
-
-            set
-            {
-                StringValidationHelper.EnsureNullOrBase64String(value, "PrimaryKey");
-                _primaryKey = value;
-            }
+            set => _primaryKey = value;
         }
 
         public string SecondaryKey
         {
             get => _secondaryKey;
-
-            set
-            {
-                StringValidationHelper.EnsureNullOrBase64String(value, "SecondaryKey");
-                _secondaryKey = value;
-            }
+            set => _secondaryKey = value;
         }
 
         public AccessRights Rights { get; set; }

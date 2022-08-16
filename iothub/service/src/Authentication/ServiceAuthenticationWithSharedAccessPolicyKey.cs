@@ -79,11 +79,6 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (!StringValidationHelper.IsBase64String(key))
-            {
-                throw new ArgumentException("Key must be Base64 encoded");
-            }
-
             _key = key;
         }
     }

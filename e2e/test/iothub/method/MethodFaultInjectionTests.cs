@@ -17,7 +17,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
     public class MethodFaultInjectionTests : E2EMsTestBase
@@ -31,174 +30,172 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientMqttSettings(),
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
-            await SendMethodAndRespondRecoveryAsync(new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+            await SendMethodAndRespondRecoveryAsync(
+                new IotHubClientMqttSettings(),
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_GracefulShutdownMqtt,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(),
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecoveryAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_Tcp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+            await SendMethodAndRespondRecoveryAsync(
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_AmqpConn,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(),
+                FaultInjection.FaultType_AmqpConn,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_AmqpConn,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_AmqpConn,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_AmqpSess,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(),
+                FaultInjection.FaultType_AmqpSess,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_AmqpSess,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_AmqpSess,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_AmqpMethodReq,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(),
+                FaultInjection.FaultType_AmqpMethodReq,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_AmqpMethodReq,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_AmqpMethodReq,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_AmqpMethodResp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(),
+                FaultInjection.FaultType_AmqpMethodResp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_AmqpMethodResp,
-                    FaultInjection.FaultCloseReason_Boom,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_AmqpMethodResp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(),
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjection.FaultType_GracefulShutdownAmqp,
-                    FaultInjection.FaultCloseReason_Bye,
-                    FaultInjection.DefaultFaultDelay)
-                .ConfigureAwait(false);
+                new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
         }
 
         private async Task ServiceSendMethodAndVerifyResponseAsync(string deviceName, string methodName, string respJson, string reqJson)

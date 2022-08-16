@@ -1,10 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -82,7 +83,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetTwinUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -130,7 +131,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModuleTwinRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -285,7 +286,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Updating device twin on device: {deviceId}", nameof(UpdateAsync));
             }
-
         }
 
         /// <summary>
@@ -427,7 +427,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Replacing device twin on device: {deviceId}", nameof(ReplaceAsync));
             }
-            
         }
 
         /// <summary>
@@ -575,7 +574,6 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-
         private async Task<Twin> UpdateInternalAsync(string deviceId, Twin twin, string etag, bool isReplace, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -588,7 +586,7 @@ namespace Microsoft.Azure.Devices
                 HttpMessageHelper2.InsertETag(request, etag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -601,7 +599,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Replacing device twin on device: {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
             }
-
         }
 
         private async Task<Twin> UpdateInternalAsync(string deviceId, string moduleId, Twin twin, string etag, bool isReplace, CancellationToken cancellationToken)
@@ -617,7 +614,7 @@ namespace Microsoft.Azure.Devices
                 HttpMessageHelper2.InsertETag(request, etag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -641,7 +638,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<T>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<T>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

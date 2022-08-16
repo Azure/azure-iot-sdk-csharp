@@ -3,74 +3,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using Microsoft.Azure.Devices.Client.Common.Api;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
-    public sealed class Message : IDisposable
+    public sealed class Message
     {
-        private volatile Stream _bodyStream;
-        private bool _disposed;
-        private StreamDisposalResponsibility _streamDisposalResponsibility;
-
-        private const long StreamCannotSeek = -1;
-        private long _originalStreamPosition = StreamCannotSeek;
-
-        private int _getBodyCalled;
+        private readonly byte[] _payload;
 
         /// <summary>
-        /// Default constructor with no body data
+        /// Default instantiation with no telemetry payload.
         /// </summary>
-        public Message()
-        {
-            Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            SystemProperties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            InitializeWithStream(Stream.Null, StreamDisposalResponsibility.Sdk);
-        }
+        public Message() { }
 
         /// <summary>
-        /// Constructor which uses the argument stream as the body stream.
-        /// </summary>
-        /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
-        /// <param name="stream">A stream which will be used as body stream.</param>
-        // UWP cannot expose a method with System.IO.Stream in signature. TODO: consider adding an IRandomAccessStream overload
-        public Message(Stream stream)
-            : this()
-        {
-            if (stream != null)
-            {
-                InitializeWithStream(stream, StreamDisposalResponsibility.App);
-            }
-        }
-
-        /// <summary>
-        /// Constructor which uses the input byte array as the body.
+        /// Creates a telemetry message with the specified payload.
         /// </summary>
         /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
-        /// <param name="byteArray">A byte array which will be used to form the body stream.</param>
-        public Message(byte[] byteArray)
-            : this(new MemoryStream(byteArray))
+        /// <param name="payload">A byte array to send as a payload.</param>
+        public Message(byte[] payload)
         {
-            // Reset the owning of the stream
-            _streamDisposalResponsibility = StreamDisposalResponsibility.Sdk;
-        }
-
-        /// <summary>
-        /// This constructor is only used on the Gateway HTTP path so that we can clean up the stream.
-        /// </summary>
-        /// <param name="stream">A stream which will be used as body stream.</param>
-        /// <param name="streamDisposalResponsibility">Indicates if the stream passed in should be disposed by the
-        /// client library, or by the calling application.</param>
-        internal Message(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
-            : this(stream)
-        {
-            _streamDisposalResponsibility = streamDisposalResponsibility;
+            _payload = payload;
         }
 
         /// <summary>
@@ -159,12 +114,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// For outgoing messages, contains the Mqtt topic that the message is being sent to
-        /// For incoming messages, contains the Mqtt topic that the message arrived on
-        /// </summary>
-        internal string MqttTopicName { get; set; }
-
-        /// <summary>
         /// Used to specify the schema of the message content.
         /// </summary>
         public string MessageSchema
@@ -245,23 +194,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets the dictionary of user properties which are set when user send the data.
-        /// </summary>
-        public IDictionary<string, string> Properties { get; private set; }
-
-        /// <summary>
         /// Gets the dictionary of system properties which are managed internally.
         /// </summary>
-        internal IDictionary<string, object> SystemProperties { get; private set; }
-
-        /// <summary>
-        /// The body stream of the current event data instance
-        /// </summary>
-        [SuppressMessage(
-            "Naming",
-            "CA1721:Property names should not match get methods",
-            Justification = "Cannot remove public property on a public facing type")]
-        public Stream BodyStream => _bodyStream;
+        internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side check-pointing.
@@ -269,43 +204,27 @@ namespace Microsoft.Azure.Devices.Client
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
         /// <summary>
-        /// Dispose the current event data instance
+        /// For outgoing messages, contains the Mqtt topic that the message is being sent to.
+        /// For incoming messages, contains the Mqtt topic that the message arrived on.
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        internal bool HasBodyStream()
-        {
-            return _bodyStream != null;
-        }
+        internal string MqttTopicName { get; set; }
 
         /// <summary>
-        /// Return the body stream of the current event data instance
+        /// Gets the dictionary of user properties which are set when user send the data.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
-        /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
-        /// <remarks>This method can only be called once and afterwards method will throw <see cref="InvalidOperationException"/>.</remarks>
-        public Stream GetBodyStream()
-        {
-            ThrowIfDisposed();
-            SetGetBodyCalled();
-            return _bodyStream ?? Stream.Null;
-        }
+        public IDictionary<string, string> Properties { get; private set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// This methods return the body stream as a byte array
+        /// The message payload.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
-        public byte[] GetBytes()
-        {
-            ThrowIfDisposed();
-            SetGetBodyCalled();
-            return _bodyStream == null ? Array.Empty<byte>() : ReadFullStream(_bodyStream);
-        }
+        // DotNetty won't allow a null payload. After replacing with MqttNet, consider removing this.
+        public byte[] Payload => _payload ?? Array.Empty<byte>();
+
+        /// <summary>
+        /// Indicates if the message has a payload.
+        /// </summary>
+        /// <returns>True, if there is a payload.</returns>
+        public bool HasPayload => _payload != null;
 
         /// <summary>
         /// Clones an existing <see cref="Message"/> instance and sets content body defined by <paramref name="byteArray"/> on it.
@@ -335,27 +254,6 @@ namespace Microsoft.Azure.Devices.Client
             return result;
         }
 
-        internal void ResetBody()
-        {
-            if (_originalStreamPosition == StreamCannotSeek)
-            {
-                throw new IOException("Stream cannot seek.");
-            }
-
-            _bodyStream.Seek(_originalStreamPosition, SeekOrigin.Begin);
-            Interlocked.Exchange(ref _getBodyCalled, 0);
-        }
-
-        internal bool IsBodyCalled => Volatile.Read(ref _getBodyCalled) == 1;
-
-        private void SetGetBodyCalled()
-        {
-            if (1 == Interlocked.Exchange(ref _getBodyCalled, 1))
-            {
-                throw Fx.Exception.AsError(new InvalidOperationException(ApiResources.MessageBodyConsumed));
-            }
-        }
-
         /// <summary>
         /// Sets the message as an security message
         /// </summary>
@@ -364,56 +262,11 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
-        private void InitializeWithStream(Stream stream, StreamDisposalResponsibility streamDisposalResponsibility)
-        {
-            // This method should only be used in constructor because
-            // this has no locking on the bodyStream.
-            _bodyStream = stream;
-            _streamDisposalResponsibility = streamDisposalResponsibility;
-
-            if (_bodyStream.CanSeek)
-            {
-                _originalStreamPosition = _bodyStream.Position;
-            }
-        }
-
-        private static byte[] ReadFullStream(Stream inputStream)
-        {
-            using var ms = new MemoryStream();
-            inputStream.CopyTo(ms);
-            return ms.ToArray();
-        }
-
         private T GetSystemProperty<T>(string key)
         {
             return SystemProperties.ContainsKey(key)
                 ? (T)SystemProperties[key]
                 : default;
-        }
-
-        internal void ThrowIfDisposed()
-        {
-            if (_disposed)
-            {
-                throw Fx.Exception.ObjectDisposed(ApiResources.MessageDisposed);
-            }
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    if (_bodyStream != null && _streamDisposalResponsibility == StreamDisposalResponsibility.Sdk)
-                    {
-                        _bodyStream.Dispose();
-                        _bodyStream = null;
-                    }
-                }
-            }
-
-            _disposed = true;
         }
     }
 }

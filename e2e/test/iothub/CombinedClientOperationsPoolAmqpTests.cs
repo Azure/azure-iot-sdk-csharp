@@ -22,56 +22,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
 
-        // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        [Ignore]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DeviceSak_DeviceCombinedClientOperations_SingleConnection_Amqp()
-        {
-            await DeviceCombinedClientOperationsAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.SingleConnection_PoolSize,
-                    PoolingOverAmqp.SingleConnection_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        [Ignore]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DeviceSak_DeviceCombinedClientOperations_SingleConnection_AmqpWs()
-        {
-            await DeviceCombinedClientOperationsAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.SingleConnection_PoolSize,
-                    PoolingOverAmqp.SingleConnection_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        [Ignore]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task IoTHubSak_DeviceCombinedClientOperations_SingleConnection_Amqp()
-        {
-            await DeviceCombinedClientOperationsAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.SingleConnection_PoolSize,
-                    PoolingOverAmqp.SingleConnection_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
-                .ConfigureAwait(false);
-        }
-
-        // TODO: #943 - Honor different pool sizes for different connection pool settings.
-        [Ignore]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task IoTHubSak_DeviceCombinedClientOperations_SingleConnection_AmqpWs()
-        {
-            await DeviceCombinedClientOperationsAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.SingleConnection_PoolSize,
-                    PoolingOverAmqp.SingleConnection_DevicesCount,
-                    ConnectionStringAuthScope.IoTHub)
-                .ConfigureAwait(false);
-        }
-
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
@@ -83,7 +33,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
         public async Task DeviceSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -93,7 +44,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_Amqp()
         {
             await DeviceCombinedClientOperationsAsync(
@@ -104,7 +56,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
         public async Task IoTHubSak_DeviceCombinedClientOperations_MultipleConnections_AmqpWs()
         {
             await DeviceCombinedClientOperationsAsync(

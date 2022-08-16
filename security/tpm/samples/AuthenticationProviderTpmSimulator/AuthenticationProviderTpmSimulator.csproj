@@ -7,8 +7,13 @@
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Security</RootNamespace>
   </PropertyGroup>
 
+  <!--Project reference dependencies-->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
+    <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+  </ItemGroup>
+
+  <!--Nuget package dependencies-->
+  <ItemGroup>
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 
