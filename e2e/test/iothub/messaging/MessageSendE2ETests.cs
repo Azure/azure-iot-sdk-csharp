@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -36,68 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
         private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IoTHub.ProxyServerAddress;
-
-        [LoggedTestMethod]
-        public async Task perfTestMqtt()
-        {
-            int messageCount = 10000;
-            int messageSize = 256;
-            await perfTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), messageCount, messageSize);
-            var proc = Process.GetCurrentProcess();
-            var mem = proc.WorkingSet64;
-            var cpu = proc.TotalProcessorTime;
-            Console.WriteLine();
-            Console.WriteLine($"MQTT test process for {messageCount} messages of size {messageSize / 1000.0} kb used working set {mem / 1024.0} kb and {cpu.TotalMilliseconds} CPU msec");
-            Console.WriteLine();
-        }
-
-        [LoggedTestMethod]
-        public async Task perfTestMqttWs()
-        {
-            int messageCount = 1000;
-            int messageSize = 256;
-            await perfTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp), messageCount, messageSize);
-            var proc = Process.GetCurrentProcess();
-            var mem = proc.WorkingSet64;
-            var cpu = proc.TotalProcessorTime;
-            Console.WriteLine();
-            Console.WriteLine($"MQTT_WS test process for {messageCount} messages of size {messageSize / 1000.0} kb used working set {mem / 1024.0} kb and {cpu.TotalMilliseconds} CPU msec");
-            Console.WriteLine();
-        }
-
-        public async Task perfTest(IotHubClientTransportSettings transportSettings, int messageCount, int messageSize)
-        {
-            using var testDevice = await TestDevice.GetTestDeviceAsync(Logger, "timsTestDevice");
-
-            IotHubClientOptions options = new IotHubClientOptions(transportSettings);
-
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
-            Task[] sendTasks = new Task[messageCount];
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            for (int i = 0; i < messageCount; i++)
-            {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                var message = new Client.Message(new byte[messageSize]);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                sendTasks[i] = deviceClient.SendEventAsync(message);
-            }
-
-            await Task.WhenAll(sendTasks);
-            stopwatch.Stop();
-
-            Debug.WriteLine("Protocol: " + transportSettings.Protocol);
-            Debug.WriteLine("Message size: " + messageSize);
-            Debug.WriteLine("Total messages sent: " + messageCount);
-            Debug.WriteLine("Total millis: " + stopwatch.ElapsedMilliseconds);
-
-            double messagesPerSecond = 1000.0 * messageCount / stopwatch.ElapsedMilliseconds;
-            Debug.WriteLine("Messages per second: " + messagesPerSecond);
-        }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
@@ -403,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
-            await SendBatchMessagesAsync(deviceClient, testDevice.Id, Logger).ConfigureAwait(false);
+            await SendBatchMessagesAsync(deviceClient, Logger).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -414,7 +351,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageModuleAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
+            await SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -434,33 +371,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
-        public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, string deviceId, MsTestLogger logger)
+        public static async Task SendBatchMessagesAsync(IotHubDeviceClient deviceClient, MsTestLogger logger)
         {
             var messagesToBeSent = new Dictionary<Client.Message, Tuple<string, string>>();
 
-            try
+            for (int i = 0; i < MessageBatchCount; i++)
             {
-                var props = new List<Tuple<string, string>>();
-                for (int i = 0; i < MessageBatchCount; i++)
-                {
-                    (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
-                    messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
-                }
+                (Client.Message testMessage, string payload, string p1Value) = ComposeD2cTestMessage(logger);
+                messagesToBeSent.Add(testMessage, Tuple.Create(payload, p1Value));
+            }
 
-                await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
-            }
-            finally
-            {
-                foreach (KeyValuePair<Client.Message, Tuple<string, string>> messageEntry in messagesToBeSent)
-                {
-                    Client.Message message = messageEntry.Key;
-                }
-            }
+            await deviceClient.SendEventBatchAsync(messagesToBeSent.Keys.ToList()).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient, string deviceId)
+        private async Task SendSingleMessageModuleAsync(IotHubModuleClient moduleClient)
         {
             (Client.Message testMessage, _, _) = ComposeD2cTestMessage(Logger);
+
             await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
         }
 
