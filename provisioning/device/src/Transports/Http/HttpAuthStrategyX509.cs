@@ -33,9 +33,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public override DeviceRegistrationHttp CreateDeviceRegistration()
         {
             Debug.Assert(_certificate != null);
-            Debug.Assert(_authentication.GetRegistrationID() == _certificate.GetNameInfo(X509NameType.DnsName, false));
+            Debug.Assert(_authentication.GetRegistrationId() == _certificate.GetNameInfo(X509NameType.DnsName, false));
 
-            return new DeviceRegistrationHttp(registrationId: _authentication.GetRegistrationID());
+            return new DeviceRegistrationHttp(registrationId: _authentication.GetRegistrationId());
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

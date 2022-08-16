@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
 
-        private readonly ConnectionStateChangeHandler _onConnectionStateChanged;
+        private readonly Action<ConnectionInfo> _onConnectionStateChanged;
 
         public RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
@@ -80,12 +80,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-
-                            if (message.IsBodyCalled)
-                            {
-                                message.ResetBody();
-                            }
-
                             await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -110,15 +104,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
-
-                            foreach (Message m in messages)
-                            {
-                                if (m.IsBodyCalled)
-                                {
-                                    m.ResetBody();
-                                }
-                            }
-
                             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
@@ -676,6 +661,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
         {
+            var connectionInfo = new ConnectionInfo();
+
             if (withRetry)
             {
                 await _internalRetryPolicy
@@ -689,7 +676,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                                 // Will throw on error.
                                 await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-                                _onConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+
+                                connectionInfo = new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                                _onConnectionStateChanged(connectionInfo);
                             }
                             catch (Exception ex) when (!Fx.IsFatal(ex))
                             {
@@ -713,7 +702,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     // Will throw on error.
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-                    _onConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+
+                    connectionInfo = new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                    _onConnectionStateChanged(connectionInfo);
                 }
                 catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
@@ -731,6 +722,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // Triggered from connection loss event
         private async Task HandleDisconnectAsync()
         {
+            var connectionInfo = new ConnectionInfo();
+
             if (_disposed)
             {
                 if (Logging.IsEnabled)
@@ -750,7 +743,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                _onConnectionStateChanged(ConnectionState.Disabled, ConnectionStateChangeReason.ClientClose);
+                connectionInfo = new ConnectionInfo(ConnectionState.Disabled, ConnectionStateChangeReason.ClientClose, DateTimeOffset.UtcNow);
+                _onConnectionStateChanged(connectionInfo);
                 return;
             }
 
@@ -768,7 +762,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                    _onConnectionStateChanged(ConnectionState.Disconnected, ConnectionStateChangeReason.RetryExpired);
+                    connectionInfo = new ConnectionInfo(ConnectionState.Disconnected, ConnectionStateChangeReason.RetryExpired, DateTimeOffset.UtcNow);
+                    _onConnectionStateChanged(connectionInfo);
                     return;
                 }
 
@@ -778,7 +773,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 // always reconnect.
-                _onConnectionStateChanged(ConnectionState.DisconnectedRetrying, ConnectionStateChangeReason.CommunicationError);
+                connectionInfo = new ConnectionInfo(ConnectionState.DisconnectedRetrying, ConnectionStateChangeReason.CommunicationError, DateTimeOffset.UtcNow);
+                _onConnectionStateChanged(connectionInfo);
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
                 // This will recover to the state before the disconnect.
@@ -824,7 +820,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _transportClosedTask = HandleDisconnectAsync();
 
                     _opened = true;
-                    _onConnectionStateChanged(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk);
+                    connectionInfo = new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                    _onConnectionStateChanged(connectionInfo);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
@@ -880,7 +877,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            _onConnectionStateChanged(state, reason);
+            _onConnectionStateChanged(new ConnectionInfo(state, reason, DateTimeOffset.UtcNow));
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,

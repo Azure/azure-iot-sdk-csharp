@@ -471,20 +471,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             string groupId = null;
             if (enrollmentType == EnrollmentType.Group)
             {
-                if (attestationType == AttestationMechanismType.X509)
-                {
-                    groupId = TestConfiguration.Provisioning.X509GroupEnrollmentName;
-                }
-                else
-                {
-                    groupId = _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-                }
+                groupId = attestationType == AttestationMechanismType.X509
+                    ? TestConfiguration.Provisioning.X509GroupEnrollmentName
+                    : _idPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             }
 
             bool transportProtocolSupportsTwinOperations = transportSettings is not IotHubClientHttpSettings;
 
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportSettings);
-            using AuthenticationProvider auth = await CreateAuthenticationProviderFromNameAsync(
+            AuthenticationProvider auth = await CreateAuthenticationProviderFromNameAsync(
                     attestationType,
                     enrollmentType,
                     groupId,
@@ -530,7 +525,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             }
             else
             {
-                Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationID()}.");
+                Logger.Trace($"Deleting test enrollment type {attestationType}-{enrollmentType} with registration Id {auth.GetRegistrationId()}.");
                 await DeleteCreatedEnrollmentAsync(enrollmentType, auth, groupId, Logger).ConfigureAwait(false);
             }
 
@@ -540,7 +535,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 deviceCertificate?.Dispose();
             }
 
-            if (authMethod != null && authMethod is IDisposable disposableAuth)
+            if (authMethod is IDisposable disposableAuth)
             {
                 disposableAuth?.Dispose();
             }
@@ -561,7 +556,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
 
-            using var message = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var message = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
             await iotClient.SendEventAsync(message).ConfigureAwait(false);
 
             if (transportProtocolSupportsTwinOperations)
@@ -806,7 +801,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         async () =>
                         {
                             retrievedEnrollment = await provisioningServiceClient
-                                .GetIndividualEnrollmentAsync(auth.GetRegistrationID())
+                                .GetIndividualEnrollmentAsync(auth.GetRegistrationId())
                                 .ConfigureAwait(false);
                         },
                         s_provisioningServiceRetryPolicy,
@@ -816,7 +811,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (retrievedEnrollment == null)
                 {
-                    throw new ArgumentException($"The individual enrollment entry with registration Id {auth.GetRegistrationID()} could not be retrieved; exiting test.");
+                    throw new ArgumentException($"The individual enrollment entry with registration Id {auth.GetRegistrationId()} could not be retrieved; exiting test.");
                 }
 
                 retrievedEnrollment.IotHubs = iotHubsToReprovisionTo;
@@ -838,7 +833,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                 if (updatedEnrollment == null)
                 {
-                    throw new ArgumentException($"The individual enrollment entry with registration Id {auth.GetRegistrationID()} could not be updated; exiting test.");
+                    throw new ArgumentException($"The individual enrollment entry with registration Id {auth.GetRegistrationId()} could not be updated; exiting test.");
                 }
             }
             else
@@ -921,7 +916,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
 
-            using var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
+            var testMessage = new Client.Message(Encoding.UTF8.GetBytes("TestMessage"));
             await iotClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
             // Twin can be configured to revert back to default twin when provisioned, or to keep twin

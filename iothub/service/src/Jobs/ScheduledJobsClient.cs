@@ -25,8 +25,9 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
+        private readonly QueryClient _queryClient;
+
         private const string JobsUriFormat = "/jobs/v2/{0}";
-        private const string JobsQueryFormat = "/jobs/v2/query";
         private const string CancelJobUriFormat = "/jobs/v2/{0}/cancel";
 
         private const string ContinuationTokenHeader = "x-ms-continuation";
@@ -45,12 +46,14 @@ namespace Microsoft.Azure.Devices
             string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
-            HttpRequestMessageFactory httpRequestMessageFactory)
+            HttpRequestMessageFactory httpRequestMessageFactory,
+            QueryClient queryClient)
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
+            _queryClient = queryClient;
         }
 
         /// <summary>
@@ -84,7 +87,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -100,13 +103,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets <see cref="IQuery"/> through which job responses for specified jobType and jobStatus are retrieved page by page,
-        /// and specify page size.
+        /// Queries an iterable set of jobs for specified type and status.
         /// </summary>
-        /// <param name="jobType">The job type to query. Could be null if not querying.</param>
-        /// <param name="jobStatus">The job status to query. Could be null if not querying.</param>
-        /// <param name="pageSize">Number of job responses in a page.</param>
-        /// <returns>A <see cref="IQuery"/> object to get results and next pages.</returns>
+        /// <param name="jobType">The job type to query. If null, jobs of all types will be returned.</param>
+        /// <param name="jobStatus">The job status to query. If null, jobs of all states will be returned.</param>
+        /// <param name="options">The optional parameters to run the query with.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <returns>An iterable set of jobs for specified type and status.</returns>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -116,15 +119,10 @@ namespace Microsoft.Azure.Devices
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
         /// certificate validation.
         /// </exception>
-        public virtual IQuery CreateQuery(JobType? jobType = null, JobStatus? jobStatus = null, int? pageSize = null)
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public virtual Task<QueryResponse<ScheduledJob>> Query(JobType? jobType = null, JobStatus? jobStatus = null, QueryOptions options = null, CancellationToken cancellationToken = default)
         {
-            return new Query(async (token) => await GetAsync(
-                jobType,
-                jobStatus,
-                pageSize,
-                token,
-                CancellationToken.None)
-            .ConfigureAwait(false));
+            return _queryClient.CreateAsync(jobType, jobStatus, options, cancellationToken);
         }
 
         /// <summary>
@@ -158,7 +156,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri(CancelJobUriFormat.FormatInvariant(jobId), UriKind.Relative), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -217,7 +215,7 @@ namespace Microsoft.Azure.Devices
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -266,17 +264,17 @@ namespace Microsoft.Azure.Devices
 
                 var jobRequest = new JobRequest
                 {
-                    JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
+                    JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions?.JobId) ? Guid.NewGuid().ToString() : scheduledJobsOptions.JobId,
                     JobType = JobType.ScheduleUpdateTwin,
                     UpdateTwin = scheduledTwinUpdate.Twin,
                     QueryCondition = scheduledTwinUpdate.QueryCondition,
                     StartTimeUtc = scheduledTwinUpdate.StartTimeUtc,
-                    MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime
+                    MaxExecutionTime = scheduledJobsOptions?.MaxExecutionTime
                 };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response, cancellationToken).ConfigureAwait(false);
+                return await HttpMessageHelper2.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -289,59 +287,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             }
-        }
-
-        private async Task<QueryResult> GetAsync(JobType? jobType, JobStatus? jobStatus, int? pageSize, string continuationToken, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetAsync));
-
-            try
-            {
-                var customHeaders = new Dictionary<string, string>();
-                if (!string.IsNullOrWhiteSpace(continuationToken))
-                {
-                    customHeaders.Add(ContinuationTokenHeader, continuationToken);
-                }
-
-                if (pageSize != null)
-                {
-                    customHeaders.Add(PageSizeHeader, pageSize.ToString());
-                }
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, new Uri(JobsQueryFormat, UriKind.Relative), _credentialProvider, null, BuildQueryJobUri(jobType, jobStatus));
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"jobType=[{jobType}], jobStatus=[{jobStatus}], pageSize=[{pageSize}]", nameof(GetAsync));
-            }
-        }
-
-        private static string BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)
-        {
-            var stringBuilder = new StringBuilder();
-
-            if (jobType != null)
-            {
-                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
-            }
-
-            if (jobStatus != null)
-            {
-                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
-            }
-
-            return stringBuilder.ToString();
         }
 
         private static Uri GetJobUri(string jobId)

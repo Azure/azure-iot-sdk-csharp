@@ -13,14 +13,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [TestCategory("FaultInjection")]
     public class TwinFaultInjectionTests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(TwinFaultInjectionTests)}_";
 
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -32,7 +34,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -43,8 +44,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -56,7 +59,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -67,8 +69,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -80,7 +84,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -91,8 +94,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestCategory("FaultInjectionBVT")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -104,7 +109,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(
@@ -116,7 +120,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -128,7 +131,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -140,7 +142,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -152,7 +153,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -164,7 +164,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -176,7 +175,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -188,7 +186,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
@@ -200,7 +197,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryAsync(

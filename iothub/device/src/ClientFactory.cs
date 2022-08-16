@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
-                    $"HostName={clientConfiguration.HostName};DeviceId={clientConfiguration.DeviceId};ModuleId={clientConfiguration.ModuleId}",
+                    $"HostName={clientConfiguration.GatewayHostName};DeviceId={clientConfiguration.DeviceId};ModuleId={clientConfiguration.ModuleId}",
                     options);
 
             return client;

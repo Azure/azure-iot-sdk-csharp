@@ -41,19 +41,7 @@
     <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(common)\service\CommonResources.cs" Link="Common\CommonResources.cs" />
-    <Compile Include="$(common)\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
-    <Compile Include="$(common)\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
-    <Compile Include="$(common)\service\Utils.cs" Link="Common\Utils.cs" />
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" Link="Utilities\HttpContentExtensions.cs" />
-  </ItemGroup>
-
+  <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">

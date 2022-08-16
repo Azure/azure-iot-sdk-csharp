@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 watch.Start();
 
                 logger.Trace($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices[0].Id} Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={durationInSec}s");
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
                 await deviceClients[0].SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
 
                 logger.Trace($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         notRecovered = false;
                         for (j = 0; j < devicesCount; j++)
                         {
-                            if (amqpConnectionStates[j].LastConnectionState != ConnectionState.Connected)
+                            if (deviceClients[j].ConnectionInfo.State != ConnectionState.Connected)
                             {
                                 await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                                 notRecovered = true;
@@ -194,8 +194,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             Assert.IsTrue(amqpConnectionStates[i].ConnectionStateChangeCount >= 2, $"The expected connection state change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStates[i].ConnectionStateChangeCount}");
                         }
                     }
-                    Assert.AreEqual(ConnectionState.Disabled, amqpConnectionStates[i].LastConnectionState, $"The expected connection state should be {ConnectionState.Disabled} but was {amqpConnectionStates[i].LastConnectionState}");
-                    Assert.AreEqual(ConnectionStateChangeReason.ClientClose, amqpConnectionStates[i].LastConnectionStateChangeReason, $"The expected connection state change reason should be {ConnectionStateChangeReason.ClientClose} but was {amqpConnectionStates[i].LastConnectionStateChangeReason}");
+                    Assert.AreEqual(ConnectionState.Disabled, deviceClients[i].ConnectionInfo.State, $"The expected connection state should be {ConnectionState.Disabled} but was {deviceClients[i].ConnectionInfo.State}");
+                    Assert.AreEqual(ConnectionStateChangeReason.ClientClose, deviceClients[i].ConnectionInfo.ChangeReason, $"The expected connection state change reason should be {ConnectionStateChangeReason.ClientClose} but was {deviceClients[i].ConnectionInfo.ChangeReason}");
                 }
             }
             finally

@@ -134,8 +134,13 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
-        public void SetConnectionStateChangeHandler(ConnectionStateChangeHandler stateChangeHandler) =>
-            InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
+        public void SetConnectionStateChangeHandler(Action<ConnectionInfo> stateChangeHandler)
+            => InternalClient.SetConnectionStateChangeHandler(stateChangeHandler);
+
+        /// <summary>
+        /// The latest connection information since the last state change.
+        /// </summary>
+        public ConnectionInfo ConnectionInfo => InternalClient._connectionInfo;
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update
@@ -149,8 +154,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Context object that will be passed into callback.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
+        public Task SetDesiredPropertyUpdateCallbackAsync(
+            Func<TwinCollection, object, Task> callback,
+            object userContext, CancellationToken cancellationToken = default)
+            => InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
 
         /// <summary>
         /// Sets a new delegate for the named method. If a delegate is already associated with the named method, it will be replaced with the new delegate.
@@ -161,8 +168,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
-        public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
+        public Task SetMethodHandlerAsync(
+            string methodName,
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
 
         /// <summary>
         /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
@@ -173,8 +184,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
+        public Task SetMethodDefaultHandlerAsync(
+            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
         /// <summary>
         /// Sets a new delegate for the particular input. If a delegate is already associated with
@@ -186,8 +200,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
-        public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isAnEdgeModule, cancellationToken);
+        public Task SetInputMessageHandlerAsync(
+            string inputName,
+            Func<Message, object, Task<MessageResponse>> messageHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isAnEdgeModule, cancellationToken);
 
         /// <summary>
         /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
@@ -199,8 +217,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The task containing the event</returns>
-        public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken = default) =>
-            InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isAnEdgeModule, cancellationToken);
+        public Task SetMessageHandlerAsync(
+            Func<Message, object, Task<MessageResponse>> messageHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+            => InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isAnEdgeModule, cancellationToken);
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.

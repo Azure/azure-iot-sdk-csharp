@@ -346,33 +346,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task RegistryManager_Query_Works()
-        {
-            // arrange
-
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-            string deviceId = TestConfiguration.IoTHub.X509ChainDeviceName;
-
-            Device device = await serviceClient.Devices
-                .GetAsync(deviceId)
-                .ConfigureAwait(false);
-            device.Should().NotBeNull($"Device {deviceId} should already exist in hub setup for E2E tests");
-
-            // act
-
-            string queryText = $"select * from devices where deviceId = '{deviceId}'";
-            IQuery query = serviceClient.Query.CreateAsync(queryText);
-            IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
-
-            // assert
-
-            twins.Count().Should().Be(1, "only asked for 1 device by its Id");
-            twins.First().DeviceId.Should().Be(deviceId, "The Id of the device returned should match");
-            query.HasMoreResults.Should().BeFalse("We've processed the single, expected result");
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_GetModulesOnDevice()
         {
             const int moduleCount = 2;

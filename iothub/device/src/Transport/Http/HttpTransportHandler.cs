@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ProductInfo productInfo = context.ClientConfiguration.ClientOptions.ProductInfo;
             _deviceId = context.ClientConfiguration.DeviceId;
             _moduleId = context.ClientConfiguration.ModuleId;
-            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.ClientConfiguration.HostName).Uri;
+            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.ClientConfiguration.GatewayHostName).Uri;
             _httpClientHelper = new HttpClientHelper(
                 httpsEndpoint,
                 context.ClientConfiguration,
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return _httpClientHelper.PostAsync(
                 GetRequestUri(_deviceId, CommonConstants.DeviceEventPathTemplate, null),
-                message.GetBytes(),
+                message.Payload,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 customHeaders,
                 cancellationToken);
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             byte[] byteContent = await responseMessage.Content
-                .ReadHttpContentAsByteArrayAsync(cancellationToken)
+                .ReadAsByteArrayAsync()
                 .ConfigureAwait(false);
 
             Message message = byteContent == null
@@ -469,7 +469,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 // always encode body as Base64 string
                 writer.WritePropertyName("body");
-                writer.WriteValue(Convert.ToBase64String(message.GetBytes()));
+                writer.WriteValue(Convert.ToBase64String(message.Payload));
 
                 // skip base64Encoded property since the default is true
 

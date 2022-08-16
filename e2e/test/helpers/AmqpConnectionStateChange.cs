@@ -12,8 +12,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public AmqpConnectionStateChange(string deviceId, MsTestLogger logger)
         {
-            LastConnectionState = null;
-            LastConnectionStateChangeReason = null;
             ConnectionStateChangeCount = 0;
             _deviceId = deviceId;
             _logger = logger;
@@ -21,16 +19,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public int ConnectionStateChangeCount { get; set; }
 
-        public ConnectionState? LastConnectionState { get; set; }
-
-        public ConnectionStateChangeReason? LastConnectionStateChangeReason { get; set; }
-
-        public void ConnectionStateChangeHandler(ConnectionState state, ConnectionStateChangeReason reason)
+        public void ConnectionStateChangeHandler(ConnectionInfo connectionInfo)
         {
             ConnectionStateChangeCount++;
-            LastConnectionState = state;
-            LastConnectionStateChangeReason = reason;
-            _logger.Trace($"{nameof(AmqpConnectionStateChange)}.{nameof(ConnectionStateChangeHandler)}: {_deviceId}: state={state} stateChangeReason={reason} count={ConnectionStateChangeCount}");
+            _logger.Trace($"{nameof(AmqpConnectionStateChange)}.{nameof(ConnectionStateChangeHandler)}: {_deviceId}: state={connectionInfo.State} stateChangeReason={connectionInfo.ChangeReason} count={ConnectionStateChangeCount}");
         }
     }
 }

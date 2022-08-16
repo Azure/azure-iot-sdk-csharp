@@ -5,14 +5,12 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("FaultInjection")]
     public class FileUploadFaultInjectionTests : E2EMsTestBase
@@ -30,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                using Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
+                Client.Message faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
                 await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
             }
             catch

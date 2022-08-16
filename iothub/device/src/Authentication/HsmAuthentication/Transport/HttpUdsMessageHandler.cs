@@ -25,11 +25,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             using var stream = new HttpBufferedStream(new NetworkStream(socket, true));
 
             byte[] requestBytes = HttpRequestResponseSerializer.SerializeRequest(request);
-            await stream.WriteToStreamAsync(requestBytes, cancellationToken).ConfigureAwait(false);
+            await stream.WriteAsync(requestBytes, 0, requestBytes.Length, cancellationToken).ConfigureAwait(false);
 
             if (request.Content != null)
             {
-                await request.Content.CopyToStreamAsync(stream, cancellationToken).ConfigureAwait(false);
+                await request.Content.CopyToAsync(stream).ConfigureAwait(false);
             }
 
             HttpResponseMessage response = await HttpRequestResponseSerializer.DeserializeResponseAsync(stream, cancellationToken).ConfigureAwait(false);

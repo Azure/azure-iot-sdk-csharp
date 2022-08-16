@@ -192,10 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private Message CreateMessage()
         {
-            const string MessageBody = "My Message";
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(MessageBody));
-            var message = new Message(memoryStream);
-            return message;
+            return new Message(Encoding.UTF8.GetBytes("My Message"));
         }
     }
 }

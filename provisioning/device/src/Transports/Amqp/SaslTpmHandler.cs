@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly byte[] _storageRootKey;
         private byte[] _nonceBuffer = Array.Empty<byte>();
         private byte _nextSequenceNumber;
-        private string _hostName => $"{_idScope}/registrations/{_authentication.GetRegistrationID()}";
+        private string _hostName => $"{_idScope}/registrations/{_authentication.GetRegistrationId()}";
 
         public SaslTpmHandler(
             byte[] endorsementKey,
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             var initContent = new StringBuilder();
             initContent.Append(_idScope);
             initContent.Append('\0');
-            initContent.Append(_authentication.GetRegistrationID());
+            initContent.Append(_authentication.GetRegistrationId());
             initContent.Append('\0');
 
             byte[] initContentInBytes = Encoding.UTF8.GetBytes(initContent.ToString());

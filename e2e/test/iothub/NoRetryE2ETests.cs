@@ -14,7 +14,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     public class NoRetryE2ETests : E2EMsTestBase
     {
@@ -30,16 +29,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: deviceId={testDevice.Id}");
             deviceClient.SetRetryPolicy(new NoRetry());
 
-            ConnectionState? lastConnectionState = null;
-            ConnectionStateChangeReason? lastConnectionStateChangeReason = null;
             var connectionStateChange = new Dictionary<ConnectionState, int>();
-            deviceClient.SetConnectionStateChangeHandler((state, reason) =>
+            deviceClient.SetConnectionStateChangeHandler((connectionInfo) =>
             {
-                connectionStateChange.TryGetValue(state, out int count);
+                connectionStateChange.TryGetValue(connectionInfo.State, out int count);
                 count++;
-                connectionStateChange[state] = count;
-                lastConnectionState = state;
-                lastConnectionStateChangeReason = reason;
+                connectionStateChange[connectionInfo.State] = count;
             });
 
             Logger.Trace($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
@@ -71,6 +66,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             sw.Reset();
 
+            var lastConnectionState = deviceClient.ConnectionInfo.State;
+            var lastConnectionStateChangeReason = deviceClient.ConnectionInfo.ChangeReason;
+
             lastConnectionState.Should().Be(ConnectionState.Disconnected, $"Expected device to be {ConnectionState.Disconnected} but was {lastConnectionState}.");
             lastConnectionStateChangeReason.Should().Be(ConnectionStateChangeReason.RetryExpired, $"Expected device to be {ConnectionStateChangeReason.RetryExpired} but was {lastConnectionStateChangeReason}.");
             connectionStateChange.Should().NotContainKey(ConnectionState.DisconnectedRetrying, $"Shouldn't get {ConnectionState.DisconnectedRetrying} state change.");
@@ -80,6 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             disconnected.Should().Be(1, $"Should get {ConnectionState.Disconnected} once but got it {disconnected} times.");
         }
 
+        [TestCategory("E2E")]
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DuplicateDevice_NoRetry_NoPingpong_OpenAsync()
         {
@@ -94,24 +93,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: set device client instance 1 to no retry.");
             deviceClient1.SetRetryPolicy(new NoRetry());
 
-            ConnectionState? lastConnectionStateDevice1 = null;
             var connectionStateChangeDevice1 = new Dictionary<ConnectionState, int>();
-            deviceClient1.SetConnectionStateChangeHandler((state, reason) =>
+            deviceClient1.SetConnectionStateChangeHandler((connectionInfo) =>
             {
-                connectionStateChangeDevice1.TryGetValue(state, out int count);
+                connectionStateChangeDevice1.TryGetValue(connectionInfo.State, out int count);
                 count++;
-                connectionStateChangeDevice1[state] = count;
-                lastConnectionStateDevice1 = state;
+                connectionStateChangeDevice1[connectionInfo.State] = count;
             });
 
-            ConnectionState? lastConnectionStateDevice2 = null;
             var connectionStateChangeDevice2 = new Dictionary<ConnectionState, int>();
-            deviceClient2.SetConnectionStateChangeHandler((state, reason) =>
+            deviceClient2.SetConnectionStateChangeHandler((connectionInfo) =>
             {
-                connectionStateChangeDevice2.TryGetValue(state, out int count);
+                connectionStateChangeDevice2.TryGetValue(connectionInfo.State, out int count);
                 count++;
-                connectionStateChangeDevice2[state] = count;
-                lastConnectionStateDevice2 = state;
+                connectionStateChangeDevice2[connectionInfo.State] = count;
             });
 
             Logger.Trace($"{nameof(DuplicateDevice_NoRetry_NoPingpong_OpenAsync)}: device client instance 1 calling OpenAsync...");
@@ -144,6 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             sw.Reset();
 
+            var lastConnectionStateDevice1 = deviceClient1.ConnectionInfo.State;
             lastConnectionStateDevice1.Should().Be(ConnectionState.Disconnected, $"Excpected device 1 to be {ConnectionState.Disconnected} but was {lastConnectionStateDevice1}.");
             connectionStateChangeDevice1.Should().NotContainKey(ConnectionState.DisconnectedRetrying, $"Shouldn't get {ConnectionState.DisconnectedRetrying} state change.");
             int connected = connectionStateChangeDevice1[ConnectionState.Connected];
@@ -151,6 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int disconnected = connectionStateChangeDevice1[ConnectionState.Disconnected];
             disconnected.Should().Be(1, $"Should get {ConnectionState.Disconnected} once but got it {disconnected} times.");
 
+            var lastConnectionStateDevice2 = deviceClient2.ConnectionInfo.State;
             lastConnectionStateDevice2.Should().Be(ConnectionState.Connected, $"Expected device 2 to be {ConnectionState.Connected} but was {lastConnectionStateDevice2}.");
         }
     }
