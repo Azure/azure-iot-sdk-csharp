@@ -130,8 +130,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             // That's why these checks aren't more specific.
             queriedJob.JobId.Should().NotBeNull();
             queriedJob.JobType.Should().NotBeNull();
-            queriedJob.StartTimeUtc.Should().NotBeNull();
-            queriedJob.EndTimeUtc.Should().NotBeNull();
             queriedJob.CreatedTimeUtc.Should().NotBeNull();
             queriedJob.Status.Should().NotBeNull();
         }
