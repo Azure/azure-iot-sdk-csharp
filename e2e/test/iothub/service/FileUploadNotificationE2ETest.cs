@@ -3,10 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
+using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
@@ -64,8 +63,11 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             {
                 FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
                 Uri uploadUri = sasUri.GetBlobUri();
-                var blockBlobClient = new BlockBlobClient(uploadUri);
-                await blockBlobClient.UploadAsync(fileStreamSource, new BlobUploadOptions());
+
+                var blob = new CloudBlockBlob(uploadUri);
+                Task uploadTask = blob.UploadFromStreamAsync(fileStreamSource);
+                await uploadTask.ConfigureAwait(false);
+
                 var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification
                 {
                     CorrelationId = sasUri.CorrelationId,
