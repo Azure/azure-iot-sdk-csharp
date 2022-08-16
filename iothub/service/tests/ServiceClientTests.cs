@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices.Api.Test
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Devices.Http2;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 

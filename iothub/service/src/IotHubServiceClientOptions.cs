@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices
         {
             Proxy = DefaultWebProxySettings.Instance;
             UseWebSocketOnly = false;
-            TransportSettings = new ServiceClientTransportSettings();
         }
 
         /// <summary>
@@ -65,18 +64,9 @@ namespace Microsoft.Azure.Devices
         /// Whether to use web sockets or not.
         /// </summary>
         /// <remarks>
-        /// Only used for AMQP or MQTT.
+        /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
         public bool UseWebSocketOnly { get; set; }
-
-        /// <summary>
-        /// Service client transport settings used for AMQP/MQTT operations.
-        /// </summary>
-        /// <remarks>
-        /// If provided, all other settings will be ignored, otherwise,
-        /// a transport settings client will be created based on other provided settings.
-        /// </remarks>
-        public ServiceClientTransportSettings TransportSettings { get; set; }
         
         /// <summary>
         /// The version of TLS to use by default.

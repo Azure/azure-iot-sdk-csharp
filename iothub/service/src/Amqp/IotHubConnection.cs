@@ -28,7 +28,6 @@ namespace Microsoft.Azure.Devices
         internal static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMinutes(1);
 
         private readonly bool _useWebSocketOnly;
-        private readonly ServiceClientTransportSettings _transportSettings;
         private readonly IotHubServiceClientOptions _options;
 
         // Disposables
@@ -37,14 +36,13 @@ namespace Microsoft.Azure.Devices
         private ClientWebSocketTransport _clientWebSocketTransport;
         private IOThreadTimerSlim _refreshTokenTimer;
 
-        public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings, IotHubServiceClientOptions options)
+        public IotHubConnection(IotHubConnectionProperties credential, bool useWebSocketOnly, IotHubServiceClientOptions options)
         {
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshTokenAsync(), this);
 
             Credential = credential;
             _faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(CreateSessionAsync, CloseConnection);
             _useWebSocketOnly = useWebSocketOnly;
-            _transportSettings = transportSettings;
             _options = options;
         }
 
@@ -369,7 +367,7 @@ namespace Microsoft.Azure.Devices
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
 
                 // Check if we're configured to use a proxy server
-                IWebProxy webProxy = _transportSettings.AmqpProxy;
+                IWebProxy webProxy = _options.Proxy;
 
                 try
                 {

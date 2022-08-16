@@ -30,7 +30,6 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-        private readonly IotHubServiceClientOptions _options;
         private const string ApiVersion = "2021-04-12";
 
         /// <summary>
@@ -61,8 +60,7 @@ namespace Microsoft.Azure.Devices
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _options = options;
-            InitializeSubclients();
+            InitializeSubclients(options);
         }
 
         /// <summary>
@@ -94,9 +92,8 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _options = options;
 
-            InitializeSubclients();
+            InitializeSubclients(options);
         }
 
         /// <summary>
@@ -127,9 +124,8 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-            _options = options;
 
-            InitializeSubclients();
+            InitializeSubclients(options);
         }
 
         /// <summary>
@@ -186,7 +182,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> for handling cloud-to-device message feedback.
         /// </summary>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         public MessageFeedbackProcessorClient MessageFeedbackProcessor { get; protected set; }
 
         /// <summary>
@@ -198,7 +194,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud to device and cloud to module messages.
         /// </summary>
-        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         public MessagingClient Messaging { get; protected set; }
 
         /// <summary>
@@ -210,7 +206,7 @@ namespace Microsoft.Azure.Devices
             _httpClient?.Dispose();
         }
 
-        private void InitializeSubclients()
+        private void InitializeSubclients(IotHubServiceClientOptions _options)
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);

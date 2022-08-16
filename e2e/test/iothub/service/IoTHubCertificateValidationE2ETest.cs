@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpWs_Fails()
         {
-            TransportType transport = TransportType.Amqp_WebSocket_Only;
+            TransportType transport = TransportType.Amqp_WebSocket;
             WebSocketException exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
                 () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             IotHubServiceClientOptions options = new IotHubServiceClientOptions
             {
-                UseWebSocketOnly = transport == TransportType.Amqp_WebSocket_Only
+                UseWebSocketOnly = transport == TransportType.Amqp_WebSocket
             };
             using var service = new IotHubServiceClient(
                 TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate, options);

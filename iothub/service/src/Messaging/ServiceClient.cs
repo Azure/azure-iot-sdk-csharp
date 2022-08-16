@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
             ServiceClientOptions options,
             IotHubServiceClientOptions options2)
         {
-            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings, options2);
+            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, options2);
             _iotHubName = connectionProperties.IotHubName;
             _clientOptions = options;
             _httpClientHelper = new HttpClientHelper(
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
-            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket;
 
             return new ServiceClient(
                 tokenCredentialProperties,
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
-            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket;
 
             return new ServiceClient(
                 sasCredentialProperties,
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket;
 
             return new ServiceClient(
                 iotHubConnectionString,

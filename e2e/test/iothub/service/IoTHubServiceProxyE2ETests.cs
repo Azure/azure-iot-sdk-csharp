@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             IotHubServiceClientOptions options = new IotHubServiceClientOptions
             {
-                TransportSettings = transportSettings
+                Proxy = transportSettings.AmqpProxy
             };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix).ConfigureAwait(false);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString);

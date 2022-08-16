@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 using var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
-                await sender.Messaging.SendAsync(testDevice.Id, testMessage, timeout).ConfigureAwait(false);
+                await sender.Messaging.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
             }
             finally
             {
@@ -67,13 +67,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportType.Amqp)]
-        [DataRow(TransportType.Amqp_WebSocket_Only)]
+        [DataRow(TransportType.Amqp_WebSocket)]
         public async Task ServiceClient_SendsMessage(TransportType transportType)
         {
             // arrange
             IotHubServiceClientOptions options = new IotHubServiceClientOptions
             {
-                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket
             };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);

@@ -36,17 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
         private Message ComposeD2CTestMessage()
         {
-            string messageId = Guid.NewGuid().ToString();
-            string payload = Guid.NewGuid().ToString();
-            string p1Value = Guid.NewGuid().ToString();
-
-            var message = new Message(Encoding.UTF8.GetBytes(payload))
-            {
-                MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
-            };
-
-            return message;
+            return new Message(Encoding.UTF8.GetBytes("some payload"));
         }
     }
 }
