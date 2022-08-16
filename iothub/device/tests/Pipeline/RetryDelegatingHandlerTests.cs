@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Returns(t =>
                     {
                         return ++callCounter == 1
-                            ? throw new IotHubException("Test transient exception", isTransient: true)
+                            ? throw new IotHubClientException("Test transient exception", isTransient: true)
                             : TaskHelpers.CompletedTask;
                     });
             nextHandlerMock.WaitForTransportClosedAsync().Returns(Task.Delay(TimeSpan.FromSeconds(10)));
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
                         return TaskHelpers.CompletedTask;
                     });
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
                         return TaskHelpers.CompletedTask;
                     });
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
                         return TaskHelpers.CompletedTask;
                     });
@@ -241,12 +241,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
                 .OpenAsync(cts.Token)
-                .Returns(t => throw new IotHubException(TestExceptionMessage, isTransient: true));
+                .Returns(t => throw new IotHubClientException(TestExceptionMessage, isTransient: true));
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            IotHubException exception = await sut
+            IotHubClientException exception = await sut
                 .OpenAsync(cts.Token)
-                .ExpectedAsync<IotHubException>()
+                .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
             // act

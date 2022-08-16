@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
     /// </summary>
     [Serializable]
-    public class IotHubSuspendedException : IotHubException
+    public class IotHubSuspendedException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

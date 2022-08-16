@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// Retrying operations failed due to timeouts could resolve the error.
     /// </remarks>
     [Serializable]
-    public sealed class IotHubCommunicationException : IotHubException
+    public sealed class IotHubCommunicationException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

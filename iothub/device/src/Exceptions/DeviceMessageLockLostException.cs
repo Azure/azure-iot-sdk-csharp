@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// For more information on cloud-to-device message lifecycle, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
     /// </remarks>
     [Serializable]
-    public class DeviceMessageLockLostException : IotHubException
+    public class DeviceMessageLockLostException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

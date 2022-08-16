@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -434,7 +434,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
         }
 
         [TestMethod]

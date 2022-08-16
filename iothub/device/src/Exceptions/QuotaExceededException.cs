@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded">Troubleshoot Quota Exceeded</see> guide.
     /// </remarks>
     [Serializable]
-    public sealed class QuotaExceededException : IotHubException
+    public sealed class QuotaExceededException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

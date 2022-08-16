@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly IClientConfiguration _clientConfiguration;
 
         private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
-        private readonly Action<Twin, string, TwinCollection, IotHubException> _twinMessageListener;
+        private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
         private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
         private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IClientConfiguration clientConfiguration,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
+            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
@@ -105,13 +105,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
-        /// <exception cref="IotHubException">Thrown if an attempt is made to open a session on a client that is already closed.</exception>
+        /// <exception cref="IotHubClientException">Thrown if an attempt is made to open a session on a client that is already closed.</exception>
         /// <exception cref="TimeoutException">Thrown if the operation timed out before it could gain access to the semaphore for retrieving the session reference.</exception>
         internal async Task<AmqpIotSession> EnsureSessionIsOpenAsync(CancellationToken cancellationToken)
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (_disposed)
                 {
-                    throw new IotHubException("Device is now offline.", false);
+                    throw new IotHubClientException("Device is now offline.", false);
                 }
             }
             catch (Exception)
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -374,7 +374,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -410,7 +410,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -527,7 +527,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -628,7 +628,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -887,7 +887,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_closed)
             {
-                throw new IotHubException("Device is now offline.", false);
+                throw new IotHubClientException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled)
@@ -990,7 +990,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void OnDesiredPropertyReceived(Twin twin, string correlationId, TwinCollection twinCollection, IotHubClientException ex = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, twin, nameof(OnDesiredPropertyReceived));

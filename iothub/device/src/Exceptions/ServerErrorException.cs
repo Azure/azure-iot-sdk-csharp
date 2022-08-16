@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// the SDK will utilize the <see cref="ExponentialBackoff"/> retry strategy.
     /// </remarks>
     [Serializable]
-    public sealed class ServerErrorException : IotHubException
+    public sealed class ServerErrorException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

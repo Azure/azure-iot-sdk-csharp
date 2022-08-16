@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// guide for more information.
     /// </remarks>
     [Serializable]
-    public sealed class UnauthorizedException : IotHubException
+    public sealed class UnauthorizedException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

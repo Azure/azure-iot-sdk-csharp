@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             public bool IsTransient(Exception ex)
             {
-                return ex is IotHubException exception && exception.IsTransient;
+                return ex is IotHubClientException exception && exception.IsTransient;
             }
         }
 
@@ -900,7 +900,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ConnectionStateChangeReason reason = ConnectionStateChangeReason.CommunicationError;
             ConnectionState state = ConnectionState.Disconnected;
 
-            if (exception is IotHubException hubException)
+            if (exception is IotHubClientException hubException)
             {
                 if (hubException.IsTransient)
                 {

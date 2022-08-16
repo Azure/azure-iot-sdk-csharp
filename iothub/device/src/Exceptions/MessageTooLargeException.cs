@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#other-limits">IoT hub quotas and throttling | Other limits</see>
     /// </remarks>
     [Serializable]
-    public sealed class MessageTooLargeException : IotHubException
+    public sealed class MessageTooLargeException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

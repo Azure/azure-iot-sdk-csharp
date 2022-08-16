@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_qosReceivePacketFromService == QualityOfService.AtMostOnce)
             {
-                throw new IotHubException("Complete is not allowed for QoS 0.", isTransient: false);
+                throw new IotHubClientException("Complete is not allowed for QoS 0.", isTransient: false);
             }
 
             Task completeOperationCompletion;
@@ -350,21 +350,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (!lockToken.StartsWith(_generationId, StringComparison.InvariantCulture))
                 {
-                    throw new IotHubException(
+                    throw new IotHubClientException(
                         "Lock token is stale or never existed. The message will be redelivered. Please discard this lock token and do not retry the operation.",
                         isTransient: false);
                 }
 
                 if (_completionQueue.Count == 0)
                 {
-                    throw new IotHubException("Unknown lock token.", isTransient: false);
+                    throw new IotHubClientException("Unknown lock token.", isTransient: false);
                 }
 
                 string actualLockToken = _completionQueue.Peek();
                 if (lockToken.IndexOf(actualLockToken, s_generationPrefixLength, StringComparison.Ordinal) != s_generationPrefixLength ||
                     lockToken.Length != actualLockToken.Length + s_generationPrefixLength)
                 {
-                    throw new IotHubException(
+                    throw new IotHubClientException(
                         $"Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
                         isTransient: false);
                 }
@@ -1031,7 +1031,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 }
                                 else
                                 {
-                                    throw new IotHubException($"Request {rid} returned status {status}", isTransient: false);
+                                    throw new IotHubClientException($"Request {rid} returned status {status}", isTransient: false);
                                 }
                             }
                             else

@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(UnauthorizedException),
             typeof(DeviceNotFoundException),
             typeof(QuotaExceededException),
-            typeof(IotHubException),
+            typeof(IotHubClientException),
         };
 
         private const string ErrorMessage = "Error occurred.";
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(MessageTooLargeException), () => new MessageTooLargeException(ErrorMessage) },
             { typeof(DeviceMessageLockLostException), () => new DeviceMessageLockLostException(ErrorMessage) },
             { typeof(ServerBusyException), () => new ServerBusyException(ErrorMessage) },
-            { typeof(IotHubException), () => new IotHubException(ErrorMessage) },
+            { typeof(IotHubClientException), () => new IotHubClientException(ErrorMessage) },
             { typeof(IOException), () => new IOException(ErrorMessage) },
             { typeof(TimeoutException), () => new TimeoutException(ErrorMessage) },
             { typeof(ObjectDisposedException), () => new ObjectDisposedException(ErrorMessage) },

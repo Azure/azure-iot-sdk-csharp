@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Exception retException;
             if (outcome == null)
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubClientException("Unknown error.");
                 return retException;
             }
 
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubClientException("Unknown error.");
             }
 
             return retException;
@@ -74,11 +74,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.DecodeError, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.NotAllowed, amqpSymbol))
             {
@@ -98,19 +98,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.ResourceDeleted, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.IllegalState, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.FrameSizeTooSmall, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             // AMQP Connection Error
             else if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol))
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             // AMQP Transaction Error
             else if (Equals(AmqpErrorCode.TransactionUnknownId, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.TransactionRollback, amqpSymbol))
             {
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else
             {
-                return new IotHubException(message, amqpException);
+                return new IotHubClientException(message, amqpException);
             }
         }
 
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Exception retException;
             if (error == null)
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubClientException("Unknown error.");
                 return retException;
             }
 
@@ -260,11 +260,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else
             {
-                retException = new IotHubException(message);
+                retException = new IotHubClientException(message);
             }
 
             if (trackingId != null
-                && retException is IotHubException hubEx)
+                && retException is IotHubClientException hubEx)
             {
                 hubEx.TrackingId = trackingId;
             }

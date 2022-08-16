@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// </list>
     /// </summary>
     [Serializable]
-    public sealed class DeviceNotFoundException : IotHubException
+    public sealed class DeviceNotFoundException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class.

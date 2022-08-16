@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// The exception type has not been changed to avoid breaking changes but the inner exception has the correct exception type.
     /// </summary>
     [Serializable]
-    public sealed class DeviceMaximumQueueDepthExceededException : IotHubException
+    public sealed class DeviceMaximumQueueDepthExceededException : IotHubClientException
     {
         /// <summary>
         /// Initializes a new instance of the class with the message string containing the identifier of the already existing device.

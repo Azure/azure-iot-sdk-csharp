@@ -643,12 +643,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         })
                     .ConfigureAwait(false);
             }
-            catch (IotHubException)
+            catch (IotHubClientException)
             {
                 exceptionThrown = true;
             }
 
-            Assert.IsTrue(exceptionThrown, "IotHubException was expected for updating reported property with an invalid property name, but was not thrown.");
+            Assert.IsTrue(exceptionThrown, "IotHubClientException was expected for updating reported property with an invalid property name, but was not thrown.");
 
             Twin serviceTwin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));

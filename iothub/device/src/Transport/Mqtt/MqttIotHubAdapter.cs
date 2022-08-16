@@ -517,7 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (packet.ReturnCode != ConnectReturnCode.Accepted)
             {
                 string reason = "CONNECT failed: " + packet.ReturnCode;
-                IotHubException iotHubException;
+                IotHubClientException iotHubException;
 
                 switch (packet.ReturnCode)
                 {
@@ -540,13 +540,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
-                    // These return codes are non-retryable, they are mapped to IotHubException.
+                    // These return codes are non-retryable, they are mapped to IotHubClientException.
                     case ConnectReturnCode.RefusedIdentifierRejected:
                     case ConnectReturnCode.RefusedUnacceptableProtocolVersion:
                         if (Logging.IsEnabled)
                             Logging.Error(this, "Invalid MQTT specification was provided while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new IotHubException(reason);
+                        iotHubException = new IotHubClientException(reason);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
                 }
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Error(this, "A CONNECT packet was received while the connection was already open, will shut down.", nameof(ProcessConnectAckAsync));
 
                 string reason = "CONNECT has been received, however a session has already been established. Only one CONNECT/CONNACK pair is expected per session.";
-                var iotHubException = new IotHubException(reason);
+                var iotHubException = new IotHubClientException(reason);
                 ShutdownOnErrorAsync(context, iotHubException);
                 return;
             }

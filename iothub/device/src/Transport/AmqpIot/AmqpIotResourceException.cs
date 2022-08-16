@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotResourceException : IotHubException
+    internal class AmqpIotResourceException : IotHubClientException
     {
         internal AmqpIotResourceException(bool isTransient = false)
             : base(isTransient)
