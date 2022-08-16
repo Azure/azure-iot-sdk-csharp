@@ -12,6 +12,13 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class ClientConfiguration : IClientConfiguration
     {
+        /// <summary>
+        /// This constructor is for mocking purposes only.
+        /// </summary>
+        protected ClientConfiguration()
+        {
+        }
+
         public ClientConfiguration(
             IotHubConnectionStringBuilder builder,
             IotHubClientOptions iotHubClientOptions)
@@ -130,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public AuthenticationModel AuthenticationModel { get; }
 
-        public IotHubClientOptions ClientOptions { get; }
+        public virtual IotHubClientOptions ClientOptions { get; }
 
         // TODO (abmisr): Consolidate with Audience
         public string AmqpCbsAudience { get; }

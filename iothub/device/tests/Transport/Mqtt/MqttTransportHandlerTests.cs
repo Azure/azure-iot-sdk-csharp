@@ -19,8 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
     [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
-        private const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
-
         [TestMethod]
         public async Task MqttTransportHandler_OpenAsyncCallsConnectAsync()
         {
@@ -39,14 +37,18 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         internal MqttTransportHandler createTransportHandler(IMqttClient mockMqttClient)
         {
             var pipelineContext = new PipelineContext();
-            pipelineContext.ProductInfo = new ProductInfo();
+            var clientOptionsMock = new Mock<IotHubClientOptions>();
+            clientOptionsMock.SetupGet(x => x.ProductInfo).Returns(new ProductInfo());
+            var clientConfigurationMock = new Mock<ClientConfiguration>();
+            clientConfigurationMock.SetupGet(x => x.ClientOptions).Returns(clientOptionsMock.Object);
+            pipelineContext.ClientConfiguration = clientConfigurationMock.Object;
+
             var transportHandler = new MqttTransportHandler(
                 pipelineContext,
-                IotHubConnectionStringExtensions.Parse(DumpyConnectionString),
-                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+                new IotHubClientMqttSettings());
 
             // make the mqtt client used by the handler mocked so no network calls are actually made
-            transportHandler.mqttClient = mockMqttClient;
+            transportHandler._mqttClient = mockMqttClient;
 
             return transportHandler;
         }
