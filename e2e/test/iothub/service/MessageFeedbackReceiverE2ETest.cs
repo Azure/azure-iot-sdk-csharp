@@ -50,7 +50,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={TestConfiguration.IoTHub.X509ChainDeviceName}");
             Client.Message message = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
             await deviceClient.CompleteMessageAsync(message.LockToken).ConfigureAwait(false);
-            message.Dispose();
         }
     }
 }
