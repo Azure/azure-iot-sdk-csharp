@@ -124,8 +124,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
+            await serviceClient.OpenAsync().ConfigureAwait(false);
+            var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
             // act
             Func<Task> act = async () => await serviceClient.Messaging.SendAsync(ghostDevice, message).ConfigureAwait(false);

@@ -90,27 +90,24 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Send C2D Message
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
-                using (msg)
-                {
-                    messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
-                    Task sendC2dMessage = serviceClient.Messaging.SendAsync(testDevice.Id, msg);
-                    initOperations.Add(sendC2dMessage);
+                messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
+                Task sendC2dMessage = serviceClient.SendAsync(testDevice.Id, msg);
+                initOperations.Add(sendC2dMessage);
 
-                    // Set method handler
-                    Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
-                    Task<Task> methodReceivedTask = MethodE2ETests.SetDeviceReceiveMethodAsync(deviceClient, MethodName, Logger);
-                    initOperations.Add(methodReceivedTask);
+                // Set method handler
+                Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
+                Task<Task> methodReceivedTask = MethodE2ETests.SetDeviceReceiveMethodAsync(deviceClient, MethodName, Logger);
+                initOperations.Add(methodReceivedTask);
 
-                    // Set the twin desired properties callback
-                    Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set desired property callback for device={testDevice.Id}");
-                    string propName = Guid.NewGuid().ToString();
-                    string propValue = Guid.NewGuid().ToString();
-                    twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
-                    Task<Task> updateReceivedTask = TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync(deviceClient, propName, propValue, Logger);
-                    initOperations.Add(updateReceivedTask);
+                // Set the twin desired properties callback
+                Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set desired property callback for device={testDevice.Id}");
+                string propName = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
+                twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
+                Task<Task> updateReceivedTask = TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync(deviceClient, propName, propValue, Logger);
+                initOperations.Add(updateReceivedTask);
 
-                    await Task.WhenAll(initOperations).ConfigureAwait(false);
-                }
+                await Task.WhenAll(initOperations).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
