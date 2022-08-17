@@ -180,19 +180,19 @@ namespace Microsoft.Azure.Devices
         public TwinsClient Twins { get; protected set; }
 
         /// <summary>
-        /// Subclient of <see cref="IotHubServiceClient"/> for handling cloud-to-device message feedback.
+        /// Subclient of <see cref="IotHubServiceClient"/> for receiving cloud-to-device message feedback.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         public MessageFeedbackProcessorClient MessageFeedbackProcessor { get; protected set; }
 
         /// <summary>
-        /// Subclient of <see cref="IotHubServiceClient"/> for handling file upload notications.
+        /// Subclient of <see cref="IotHubServiceClient"/> for receiving file upload notifications.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#service-file-upload-notifications"/>.
         public FileUploadNotificationProcessorClient FileUploadNotificationProcessor { get; protected set; }
 
         /// <summary>
-        /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud to device and cloud to module messages.
+        /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         public MessagingClient Messaging { get; protected set; }

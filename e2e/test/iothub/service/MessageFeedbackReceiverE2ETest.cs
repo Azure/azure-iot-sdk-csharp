@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,14 +16,14 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MessageFeedbackReceiverE2ETest : E2EMsTestBase
+    public class MessageFeedbackReceiverE2eTest : E2EMsTestBase
     {
         private bool messagedFeedbackReceived;
         [TestMethod]
         public async Task MessageFeedbackReceiver_Operation()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            serviceClient.MessageFeedbackProcessor._messageFeedbackProcessor = feedbackCallback;
+            serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = feedbackCallback;
             await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
             using var message = new Message(Encoding.UTF8.GetBytes("some payload"));
             message.Ack = DeliveryAcknowledgement.Full;
@@ -37,13 +37,13 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 continue;
             }
             await serviceClient.MessageFeedbackProcessor.CloseAsync();
-            Assert.IsTrue(messagedFeedbackReceived);
+            messagedFeedbackReceived.Should().BeTrue();
         }
 
-        private DeliveryAcknowledgement feedbackCallback(FeedbackBatch feedback)
+        private AcknowledgementType feedbackCallback(FeedbackBatch feedback)
         {
             messagedFeedbackReceived = true;
-            return DeliveryAcknowledgement.PositiveOnly;
+            return AcknowledgementType.Complete;
         }
         private async Task receiveMessage()
         {

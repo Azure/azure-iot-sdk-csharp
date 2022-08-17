@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -17,7 +20,7 @@ using Microsoft.Azure.Devices.Http2;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud to device and cloud to module messages.
+    /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
     public class MessagingClient : IDisposable
@@ -37,7 +40,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
-        public Action<ErrorContext> _errorProcessor;
+        public Action<ErrorContext> ErrorProcessor;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -64,7 +67,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Open this instance. Must be done before any cloud to device messages can be sent.
+        /// Open this instance. Must be done before any cloud-to-device messages can be sent.
         /// </summary>
         /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
@@ -85,6 +88,8 @@ namespace Microsoft.Azure.Devices
                 await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
                 SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
                 sendingLink.Session.Connection.Closed += ConnectionClosed;
+                sendingLink.Session.Closed += ConnectionClosed;
+                sendingLink.Closed += ConnectionClosed;
             }
             catch(Exception ex)
             {
@@ -208,9 +213,9 @@ namespace Microsoft.Azure.Devices
                 if (ex is IotHubException || ex is IOException)
                 {
                     if (ex is IotHubException)
-                        _errorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
                     else
-                        _errorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
                 }
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
@@ -278,9 +283,9 @@ namespace Microsoft.Azure.Devices
                 if (ex is IotHubException || ex is IOException)
                 {
                     if (ex is IotHubException)
-                        _errorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
                     else
-                        _errorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
                 }
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
@@ -379,7 +384,7 @@ namespace Microsoft.Azure.Devices
             IotHubException ex = new IotHubException(e.ToString());
             if (Logging.IsEnabled)
                 Logging.Error(this, $"{nameof(sender) + '.' + nameof(ConnectionClosed)} threw an exception: {ex}", nameof(ConnectionClosed));
-            _errorProcessor?.Invoke(new ErrorContext(ex));
+            ErrorProcessor?.Invoke(new ErrorContext(ex));
         }
     }
 }

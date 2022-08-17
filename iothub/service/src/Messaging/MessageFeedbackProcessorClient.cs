@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
@@ -14,7 +17,7 @@ using Microsoft.Azure.Devices.Common.Extensions;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Subclient of <see cref="IotHubServiceClient"/> for handling cloud-to-device message feedback.
+    /// Subclient of <see cref="IotHubServiceClient"/> for receiving cloud-to-device message feedback.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
     public class MessageFeedbackProcessorClient : IDisposable
@@ -22,7 +25,7 @@ namespace Microsoft.Azure.Devices
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly IotHubConnection _connection;
-
+        private readonly AmqpFeedbackReceiver _feedbackReceiver;
 
         /// <summary>
         /// The callback to be executed each time message feedback is received from the service.
@@ -30,12 +33,12 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// May not be null.
         /// </remarks>
-        public Func<FeedbackBatch, DeliveryAcknowledgement> _messageFeedbackProcessor;
+        public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor;
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
-        public Action<ErrorContext> _errorProcessor;
+        public Action<ErrorContext> ErrorProcessor;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -52,17 +55,15 @@ namespace Microsoft.Azure.Devices
             _hostName = hostName;
             _credentialProvider = credentialProvider;
             _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
-            FeedbackReceiver = new AmqpFeedbackReceiver(_connection);
+            _feedbackReceiver = new AmqpFeedbackReceiver(_connection);
         }
-
-        /// <summary>
-        /// Gets the AmqpFeedbackReceiver which receives acknowledgments for messages sent to a device/module from IoT hub.
-        /// </summary>
-        internal AmqpFeedbackReceiver FeedbackReceiver;
 
         /// <summary>
         /// Open the connection and start receiving acknowledgments for messages sent.
         /// </summary>
+        /// <remarks>
+        /// Callback for message feedback must be set before opening the connection.
+        /// </remarks>
         /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
         /// <see cref="OperationCanceledException"/>.</exception>
@@ -78,15 +79,17 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Opening MessageFeedbackProcessorClient", nameof(OpenAsync));
             try
             {
-                if(_messageFeedbackProcessor == null)
+                if(MessageFeedbackProcessor == null)
                 {
-                    throw new Exception("Callback for message feedback {0} must be set before opening the connection.".FormatInvariant(_messageFeedbackProcessor));
+                    throw new Exception("Callback for message feedback must be set before opening the connection.");
                 }
-                await FeedbackReceiver.OpenAsync().ConfigureAwait(false);
-                ReceivingAmqpLink receivingAmqpLink = await FeedbackReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
+                ReceivingAmqpLink receivingAmqpLink = await _feedbackReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 receivingAmqpLink.RegisterMessageListener(OnFeedbackMessageReceivedAsync);
                 receivingAmqpLink.Session.Connection.Closed += ConnectionClosed;
-                await FeedbackReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+                receivingAmqpLink.Session.Closed += ConnectionClosed;
+                receivingAmqpLink.Closed += ConnectionClosed;
+                await _feedbackReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
             }
             catch(Exception ex)
             {
@@ -123,7 +126,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                await FeedbackReceiver.CloseAsync().ConfigureAwait(false);
+                await _feedbackReceiver.CloseAsync().ConfigureAwait(false);
                 await _connection.CloseAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -145,7 +148,7 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Disposing MessageFeedbackProcessorClient", nameof(Dispose));
 
-            FeedbackReceiver.Dispose();
+            _feedbackReceiver.Dispose();
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, $"Disposing MessageFeedbackProcessorClient", nameof(Dispose));
@@ -166,25 +169,22 @@ namespace Microsoft.Azure.Devices
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.BatchedFeedbackContentType);
                         IEnumerable<FeedbackRecord> records = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
-
+                       
                         FeedbackBatch feedbackBatch = new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString(),
+                            LockToken = amqpMessage.DeliveryTag.Array.ToString(),
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };
-                        DeliveryAcknowledgement ack = _messageFeedbackProcessor.Invoke(feedbackBatch);
+                        AcknowledgementType ack = MessageFeedbackProcessor.Invoke(feedbackBatch);
                         switch (ack)
                         {
-                            case DeliveryAcknowledgement.NegativeOnly:
-                                await FeedbackReceiver.AbandonAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
+                            case AcknowledgementType.Abandon:
+                                await _feedbackReceiver.AbandonAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
                                 break;
-                            case DeliveryAcknowledgement.PositiveOnly:
-                                await FeedbackReceiver.CompleteAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
-                                break;
-                            case DeliveryAcknowledgement.Full:
-                                await FeedbackReceiver.AbandonAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
+                            case AcknowledgementType.Complete:
+                                await _feedbackReceiver.CompleteAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
                                 break;
                             default:
                                 break;
@@ -199,9 +199,9 @@ namespace Microsoft.Azure.Devices
                 if (ex is IotHubException || ex is IOException)
                 {
                     if (ex is IotHubException)
-                        _errorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
                     else
-                        _errorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
                 }
             }
             finally
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices
             IotHubException ex = new IotHubException(e.ToString());
             if (Logging.IsEnabled)
                 Logging.Error(this, $"{nameof(sender) + '.' + nameof(ConnectionClosed)} threw an exception: {ex}", nameof(ConnectionClosed));
-            _errorProcessor?.Invoke(new ErrorContext(ex));
+            ErrorProcessor?.Invoke(new ErrorContext(ex));
         }
     }
 }

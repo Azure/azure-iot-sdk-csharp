@@ -1,8 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Storage.Blob;
@@ -16,27 +20,27 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class FileUploadNotificationE2ETest : E2EMsTestBase
+    public class FileUploadNotificationE2eTest : E2EMsTestBase
     {
         public bool fileUploaded;
         [TestMethod]
         public async Task FileUploadNotification_Operation()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            serviceClient.FileUploadNotificationProcessor._fileNotificationProcessor = fileUploadCallback;
+            serviceClient.FileUploadNotificationProcessor.FileNotificationProcessor = fileUploadCallback;
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
-
+            fileUploaded = false;
             await uploadFile().ConfigureAwait(false);
             Thread.Sleep(10000);
 
             await serviceClient.FileUploadNotificationProcessor.CloseAsync();
-            Assert.IsTrue(fileUploaded);
+            fileUploaded.Should().BeTrue();
         }
 
-        private DeliveryAcknowledgement fileUploadCallback(FileNotification notification)
+        private AcknowledgementType fileUploadCallback(FileNotification notification)
         {
             fileUploaded = true;
-            return DeliveryAcknowledgement.PositiveOnly;
+            return AcknowledgementType.Complete;
         }
 
         private async Task uploadFile()
