@@ -443,22 +443,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // TODO: pradeepc - need to confirm this with ASP.NET team
                 if (innerExceptions.Any(e => e is TimeoutException))
                 {
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 throw new IotHubClientException(ex.Message, ex);
             }
             catch (TimeoutException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (IOException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (HttpRequestException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (OperationCanceledException)
             {

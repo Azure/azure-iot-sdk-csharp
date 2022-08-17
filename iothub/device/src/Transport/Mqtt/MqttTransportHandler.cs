@@ -1141,7 +1141,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
 
-                return channel ?? throw new IotHubCommunicationException("MQTT channel open failed.");
+                return channel ?? throw new IotHubClientException("MQTT channel open failed.", null, true, IotHubStatusCode.NetworkErrors);
             };
         }
 
@@ -1260,7 +1260,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (throwIfNotOpen && (State & TransportState.Open) == 0)
             {
-                throw new IotHubCommunicationException("MQTT connection is not established. Please retry later.");
+                throw new IotHubClientException("MQTT connection is not established. Please retry later.", null, true, IotHubStatusCode.NetworkErrors);
             }
         }
 

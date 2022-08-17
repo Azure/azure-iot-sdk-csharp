@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             // Generic AMQP error
             if (Equals(AmqpErrorCode.InternalError, amqpSymbol))
             {
-                return new IotHubCommunicationException(message, amqpException);
+                return new IotHubClientException(message, amqpException, true, IotHubStatusCode.NetworkErrors);
             }
             else if (Equals(AmqpErrorCode.NotFound, amqpSymbol))
             {
@@ -170,11 +170,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.TransactionRollback, amqpSymbol))
             {
-                return new IotHubCommunicationException(message, amqpException);
+                return new IotHubClientException(message, amqpException, true, IotHubStatusCode.NetworkErrors);
             }
             else if (Equals(AmqpErrorCode.TransactionTimeout, amqpSymbol))
             {
-                return new IotHubCommunicationException(message, amqpException);
+                return new IotHubClientException(message, amqpException, true, IotHubStatusCode.NetworkErrors);
             }
             else
             {

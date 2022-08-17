@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (exception is TimeoutException)
             {
-                return new IotHubCommunicationException(exception.Message, exception);
+                return new IotHubClientException(exception.Message, exception, true, IotHubStatusCode.NetworkErrors);
             }
 
             if (exception is UnauthorizedAccessException)
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 (ex is InvalidOperationException
                 || ex is OperationCanceledException))
             {
-                return new IotHubCommunicationException("Amqp resource is disconnected.");
+                return new IotHubClientException("Amqp resource is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
             }
             else
             {

@@ -178,6 +178,12 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             IsTransient = isTransient;
         }
 
+        internal IotHubClientException(bool isTransient, IotHubStatusCode statusCode) : base()
+        {
+            IsTransient = isTransient;
+            StatusCode = statusCode;
+        }
+
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>

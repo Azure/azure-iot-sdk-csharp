@@ -339,17 +339,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t =>
                {
                    nextHandlerCallCounter++;
-                   throw new IotHubCommunicationException();
+                   throw new IotHubClientException(true, IotHubStatusCode.NetworkErrors);
                });
 
             // act and assert
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
+            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
 
             var noretry = new NoRetry();
             sut.SetRetryPolicy(noretry);
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
+            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
 
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 Counter++;
-                lastException.Should().BeOfType(typeof(IotHubCommunicationException));
+                lastException.Should().BeOfType(typeof(IotHubClientException));
 
                 retryInterval = TimeSpan.MinValue;
                 return Counter < 2;

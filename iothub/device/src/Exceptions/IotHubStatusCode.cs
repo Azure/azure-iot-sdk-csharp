@@ -47,18 +47,13 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 
         /// <summary>
         /// The attempt to communicate with the IoT hub service fails due to transient network errors after exhausting
-        /// all the retries based on the retry policy set on the client. 
+        /// all the retries based on the retry policy set on the client or due to operation timeouts.
         /// </summary>
         /// <remark>
         /// By default, the SDK indefinitely retries dropped connections, unless the retry policy is overridden.
         /// For more information on the SDK's retry policy and how to override it, see <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/device/devdoc/retrypolicy.md"/>.
         /// </remark>
-        RetryExhausted,
-
-        /// <summary>
-        /// The attempt to communicate with the IoT hub service fails due to operation timeouts.
-        /// </summary>
-        OperationTimeout,
+        NetworkErrors,
 
         /// <summary>
         /// The IoT hub has been suspended. This is likely due to exceeding Azure spending limits. 

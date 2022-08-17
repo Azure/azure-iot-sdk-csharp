@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubCommunicationException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task MqttTransportHandler_OpenAsync_OpenHandlesConnectExceptionAndThrowsWhenChannelIsNotInitialized()
         {
             // arrange

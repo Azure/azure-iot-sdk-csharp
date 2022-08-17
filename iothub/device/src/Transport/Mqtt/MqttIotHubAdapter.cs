@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     if (Logging.IsEnabled)
                         Logging.Error(this, "When writing data to the MQTT transport layer, it had already been closed.", nameof(WriteAsync));
 
-                    throw new IotHubCommunicationException("MQTT is disconnected.");
+                    throw new IotHubClientException("MQTT is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 if (data is Message message)
@@ -526,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Error(this, "The endpoint server was unavailable while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new IotHubCommunicationException(reason);
+                        iotHubException = new IotHubClientException(reason, null, true, IotHubStatusCode.NetworkErrors);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
@@ -808,7 +808,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Error(this, "When processing a PUBLISH packet, the MQTT transport layer had already been closed.", nameof(ProcessPublish));
 
-                throw new IotHubCommunicationException("MQTT is disconnected.");
+                throw new IotHubClientException("MQTT is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
             }
 
             switch (packet.QualityOfService)

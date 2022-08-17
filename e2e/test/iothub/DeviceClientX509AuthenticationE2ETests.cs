@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 // It should always throw UnauthorizedException
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is TaskCanceledException)
+            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.NetworkErrors && ex.InnerException is TaskCanceledException)
             {
                 Assert.Fail("Call to OpenAsync timed out.");
             }
