@@ -524,14 +524,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
-            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
-
-            if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+            try
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}");
-            }
+                // Note the request as "in progress" before actually sending it so that no matter how quickly the service
+                // responds, this layer can correlate the request.
+                _inProgressGetTwinRequests.Add(requestId);
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
 
-            _inProgressGetTwinRequests.Add(requestId);
+                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new IotHubCommunicationException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}");
+                }
+            }
+            catch (Exception)
+            {
+                // Since the request failed due to a network level issue or was rejected by the service, stop tracking
+                // this request id.
+                _inProgressGetTwinRequests.Remove(requestId);
+                throw;
+            }
 
             Logging.Info(this, $"Sent twin get request with request id {requestId}. Now waiting for the service response.");
             while (!getTwinResponses.ContainsKey(requestId))
@@ -572,14 +583,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithPayload(Encoding.UTF8.GetBytes(body))
                 .Build();
 
-            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
-
-            if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+            try
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for patching this client's twin with reason code {result.ReasonCode}");
-            }
+                // Note the request as "in progress" before actually sending it so that no matter how quickly the service
+                // responds, this layer can correlate the request.
+                _inProgressUpdateReportedPropertiesRequests.Add(requestId);
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
 
-            _inProgressUpdateReportedPropertiesRequests.Add(requestId);
+                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new IotHubCommunicationException($"Failed to publish the mqtt packet for patching this client's twin with reason code {result.ReasonCode}");
+                }
+            }
+            catch (Exception)
+            {
+                // Since the request failed due to a network level issue or was rejected by the service, stop tracking
+                // this request id.
+                _inProgressUpdateReportedPropertiesRequests.Remove(requestId);
+                throw;
+            }
 
             Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
             while (!reportedPropertyUpdateResponses.ContainsKey(requestId))
@@ -854,6 +876,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     _inProgressUpdateReportedPropertiesRequests.Remove(receivedRequestId);
                     reportedPropertyUpdateResponses[receivedRequestId] = new PatchTwinResponse(status, version);
                     _reportedPropertyUpdateResponsesSemaphore.Release();
+                }
+                else
+                {
+                    Logging.Info(this, $"Received response to an unknown twin request with request id {receivedRequestId}. Discarding it.");
                 }
             }
         }
