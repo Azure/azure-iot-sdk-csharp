@@ -533,6 +533,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             _inProgressGetTwinRequests.Add(requestId);
 
+            Logging.Info(this, $"Sent twin get request with request id {requestId}. Now waiting for the service response.");
             while (!getTwinResponses.ContainsKey(requestId))
             {
                 // May need to wait multiple times. This semaphore is released each time a get twin
@@ -542,7 +543,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             getTwinResponses.TryRemove(requestId, out GetTwinResponse getTwinResponse);
             int getTwinStatus = getTwinResponse.Status;
-
+            Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinStatus}.");
             if (getTwinStatus != 200)
             {
                 //TODO tim
@@ -580,6 +581,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             _inProgressUpdateReportedPropertiesRequests.Add(requestId);
 
+            Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
             while (!reportedPropertyUpdateResponses.ContainsKey(requestId))
             {
                 // May need to wait multiple times. This semaphore is released each time a reported
@@ -589,6 +591,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             reportedPropertyUpdateResponses.TryRemove(requestId, out PatchTwinResponse patchTwinResponse);
+            Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.");
             if (patchTwinResponse.Status != 204)
             {
                 //TODO tim
@@ -814,6 +817,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // This received message is in response to a GetTwin request
                     _inProgressGetTwinRequests.Remove(receivedRequestId);
 
+                    Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.");
+
                     string body = Encoding.UTF8.GetString(payload);
 
                     if (status != 200)
@@ -844,6 +849,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 else if (_inProgressUpdateReportedPropertiesRequests.Contains(receivedRequestId))
                 {
+                    Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.");
                     // This received message is in response to an update reported properties request.
                     _inProgressUpdateReportedPropertiesRequests.Remove(receivedRequestId);
                     reportedPropertyUpdateResponses[receivedRequestId] = new PatchTwinResponse(status, version);
