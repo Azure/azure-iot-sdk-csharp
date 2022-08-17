@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameAuthMethod_SharedAccessSignature()
         {
-            IAuthenticationMethod authMethod = AuthenticationMethodFactory.CreateAuthenticationWithToken(DeviceId, SharedAccessSignature);
+            IAuthenticationMethod authMethod = new DeviceAuthenticationWithToken(DeviceId, SharedAccessSignature);
             var csBuilder = new IotHubConnectionStringBuilder(authMethod, HostName);
             csBuilder.HostName.Should().Be(HostName);
             csBuilder.DeviceId.Should().Be(DeviceId);

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Devices.Client.Extensions;
 
-namespace Microsoft.Azure.Devices.Client.Authentication
+namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class IotHubConnectionStringParser
     {

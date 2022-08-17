@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
 
 namespace Microsoft.Azure.Devices.Client
 {

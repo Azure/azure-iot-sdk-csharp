@@ -8,8 +8,49 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Creates an instance of an implementation of <see cref="IAuthenticationMethod"/> based on known authentication parameters.
     /// </summary>
-    public sealed class AuthenticationMethodFactory
+    internal sealed class AuthenticationMethodFactory
     {
+        internal static IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionCredentials credentials)
+        {
+            if (credentials.IotHubConnectionString.SharedAccessKeyName != null)
+            {
+                return new DeviceAuthenticationWithSharedAccessPolicyKey(
+                    credentials.IotHubConnectionString.DeviceId,
+                    credentials.IotHubConnectionString.SharedAccessKeyName,
+                    credentials.IotHubConnectionString.SharedAccessKey);
+            }
+            else if (credentials.IotHubConnectionString.SharedAccessKey != null)
+            {
+                return credentials.IotHubConnectionString.ModuleId == null
+                    ? new DeviceAuthenticationWithRegistrySymmetricKey(
+                        credentials.IotHubConnectionString.DeviceId,
+                        credentials.IotHubConnectionString.SharedAccessKey)
+                    : new ModuleAuthenticationWithRegistrySymmetricKey(
+                        credentials.IotHubConnectionString.DeviceId,
+                        credentials.IotHubConnectionString.ModuleId,
+                        credentials.IotHubConnectionString.SharedAccessKey);
+            }
+            else if (credentials.IotHubConnectionString.SharedAccessSignature != null)
+            {
+                return credentials.IotHubConnectionString.ModuleId == null
+                    ? new DeviceAuthenticationWithToken(
+                        credentials.IotHubConnectionString.DeviceId,
+                        credentials.IotHubConnectionString.SharedAccessSignature)
+                    : new ModuleAuthenticationWithToken(
+                        credentials.IotHubConnectionString.DeviceId,
+                        credentials.IotHubConnectionString.ModuleId,
+                        credentials.IotHubConnectionString.SharedAccessSignature);
+            }
+            else if (credentials.UsingX509Cert)
+            {
+                return new DeviceAuthenticationWithX509Certificate(
+                    credentials.IotHubConnectionString.DeviceId,
+                    credentials.Certificate);
+            }
+
+            throw new InvalidOperationException($"Unsupported authentication method in '{credentials}'.");
+        }
+
         internal static IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder csBuilder)
         {
             if (csBuilder.SharedAccessKeyName != null)
@@ -52,64 +93,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             throw new InvalidOperationException($"Unsupported authentication method in '{csBuilder}'.");
-        }
-
-        /// <summary>
-        /// Creates a <see cref="DeviceAuthenticationWithSharedAccessPolicyKey"/> instance based on the parameters.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="policyName">Name of the shared access policy to use.</param>
-        /// <param name="key">Key associated with the shared access policy.</param>
-        /// <returns>A new instance of the <see cref="DeviceAuthenticationWithSharedAccessPolicyKey"/> class.</returns>
-        public static IAuthenticationMethod CreateAuthenticationWithSharedAccessPolicyKey(string deviceId, string policyName, string key)
-        {
-            return new DeviceAuthenticationWithSharedAccessPolicyKey(deviceId, policyName, key);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="DeviceAuthenticationWithToken"/> instance based on the parameters.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="token">Security token associated with the device.</param>
-        /// <returns>A new instance of the <see cref="DeviceAuthenticationWithToken"/> class.</returns>
-        public static IAuthenticationMethod CreateAuthenticationWithToken(string deviceId, string token)
-        {
-            return new DeviceAuthenticationWithToken(deviceId, token);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ModuleAuthenticationWithToken"/> instance based on the parameters.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="moduleId">Module Identifier.</param>
-        /// <param name="token">Security token associated with the device.</param>
-        /// <returns>A new instance of the <see cref="ModuleAuthenticationWithToken"/> class.</returns>
-        public static IAuthenticationMethod CreateAuthenticationWithToken(string deviceId, string moduleId, string token)
-        {
-            return new ModuleAuthenticationWithToken(deviceId, moduleId, token);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="DeviceAuthenticationWithRegistrySymmetricKey"/> instance based on the parameters.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="key">Key associated with the device in the device registry.</param>
-        /// <returns>A new instance of the <see cref="DeviceAuthenticationWithRegistrySymmetricKey"/> class.</returns>
-        public static IAuthenticationMethod CreateAuthenticationWithRegistrySymmetricKey(string deviceId, string key)
-        {
-            return new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, key);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ModuleAuthenticationWithRegistrySymmetricKey"/> instance based on the parameters.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="moduleId">Module Identifier.</param>
-        /// <param name="key">Key associated with the module in the device registry.</param>
-        /// <returns>A new instance of the <see cref="ModuleAuthenticationWithRegistrySymmetricKey"/> class.</returns>
-        public static IAuthenticationMethod CreateAuthenticationWithRegistrySymmetricKey(string deviceId, string moduleId, string key)
-        {
-            return new ModuleAuthenticationWithRegistrySymmetricKey(deviceId, moduleId, key);
         }
     }
 }
