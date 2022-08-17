@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         public async Task FileUploadNotification_Operation()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            serviceClient.FileUploadNotificationProcessor.FileNotificationProcessor = fileUploadCallback;
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = fileUploadCallback;
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
             fileUploaded = false;
             await uploadFile().ConfigureAwait(false);
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             fileUploaded.Should().BeTrue();
         }
 
-        private AcknowledgementType fileUploadCallback(FileNotification notification)
+        private AcknowledgementType fileUploadCallback(FileUploadNotification notification)
         {
             fileUploaded = true;
             return AcknowledgementType.Complete;

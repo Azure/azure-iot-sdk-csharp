@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// May not be null.
         /// </remarks>
-        public Func<FileNotification, AcknowledgementType> FileNotificationProcessor;
+        public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor;
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                if (FileNotificationProcessor == null)
+                if (FileUploadNotificationProcessor == null)
                 {
                     throw new Exception("Callback for file upload notifications must be set before opening the connection.");
                 }
@@ -166,18 +166,19 @@ namespace Microsoft.Azure.Devices
                     using (amqpMessage)
                     {
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.FileNotificationContentType);
-                        FileNotification fileNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileNotification>(amqpMessage).ConfigureAwait(false);
-                        fileNotification.LockToken = amqpMessage.DeliveryTag.Array.ToString();
-
-                        AcknowledgementType ack = FileNotificationProcessor.Invoke(fileNotification);
-                        switch(ack)
+                        FileUploadNotification fileUploadNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage).ConfigureAwait(false);
+                        fileUploadNotification.DeliveryTag = amqpMessage.DeliveryTag;
+                        AcknowledgementType ack = FileUploadNotificationProcessor.Invoke(fileUploadNotification);
+                        switch (ack)
                         {
                             case AcknowledgementType.Abandon:
-                                await _fileNotificationReceiver.AbandonAsync(fileNotification, CancellationToken.None).ConfigureAwait(false);
+                                await _fileNotificationReceiver.AbandonAsync(fileUploadNotification, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             case AcknowledgementType.Complete:
-                                await _fileNotificationReceiver.CompleteAsync(fileNotification, CancellationToken.None).ConfigureAwait(false);
+                                await _fileNotificationReceiver.CompleteAsync(fileUploadNotification, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             default:
                                 break;
                         }
@@ -202,10 +203,10 @@ namespace Microsoft.Azure.Devices
                     Logging.Exit(this, amqpMessage, nameof(OnNotificationMessageReceivedAsync));
             }
         }
-            
+
         private void ConnectionClosed(object sender, EventArgs e)
         {
-            IotHubException ex = new IotHubException(e.ToString());
+            var ex = new IotHubException(e.ToString());
             if (Logging.IsEnabled)
                 Logging.Error(this, $"{nameof(sender) + '.' + nameof(ConnectionClosed)} threw an exception: {ex}", nameof(ConnectionClosed));
             ErrorProcessor?.Invoke(new ErrorContext(ex));

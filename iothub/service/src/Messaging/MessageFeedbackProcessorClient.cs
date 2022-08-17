@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Opening MessageFeedbackProcessorClient", nameof(OpenAsync));
             try
             {
-                if(MessageFeedbackProcessor == null)
+                if (MessageFeedbackProcessor == null)
                 {
                     throw new Exception("Callback for message feedback must be set before opening the connection.");
                 }
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
                 receivingAmqpLink.Closed += ConnectionClosed;
                 await _feedbackReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
@@ -169,11 +169,11 @@ namespace Microsoft.Azure.Devices
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.BatchedFeedbackContentType);
                         IEnumerable<FeedbackRecord> records = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
-                       
+
                         FeedbackBatch feedbackBatch = new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            LockToken = amqpMessage.DeliveryTag.Array.ToString(),
+                            DeliveryTag = amqpMessage.DeliveryTag,
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };
@@ -183,9 +183,11 @@ namespace Microsoft.Azure.Devices
                             case AcknowledgementType.Abandon:
                                 await _feedbackReceiver.AbandonAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             case AcknowledgementType.Complete:
                                 await _feedbackReceiver.CompleteAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             default:
                                 break;
                         }

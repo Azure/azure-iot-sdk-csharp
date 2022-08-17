@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class AmqpFileNotificationReceiver : FileNotificationReceiver<FileNotification>, IDisposable
+    internal sealed class AmqpFileNotificationReceiver : FileNotificationReceiver<FileUploadNotification>, IDisposable
     {
         private readonly string _receivingPath;
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override async Task<FileNotification> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<FileUploadNotification> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
 
@@ -78,8 +78,8 @@ namespace Microsoft.Azure.Devices
                     {
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.FileNotificationContentType);
 
-                        FileNotification fileNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileNotification>(amqpMessage).ConfigureAwait(false);
-                        fileNotification.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                        FileUploadNotification fileNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage).ConfigureAwait(false);
+                        fileNotification.DeliveryTag = amqpMessage.DeliveryTag;
 
                         return fileNotification;
                     }
@@ -118,21 +118,21 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override Task CompleteAsync(FileNotification fileNotification, CancellationToken cancellationToken)
+        public override Task CompleteAsync(FileUploadNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
-                fileNotification.LockToken,
+                fileNotification.DeliveryTag,
                 AmqpConstants.AcceptedOutcome,
                 false,
                 cancellationToken);
         }
 
-        public override Task AbandonAsync(FileNotification fileNotification, CancellationToken cancellationToken)
+        public override Task AbandonAsync(FileUploadNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
-                fileNotification.LockToken,
+                fileNotification.DeliveryTag,
                 AmqpConstants.ReleasedOutcome,
                 false,
                 cancellationToken);

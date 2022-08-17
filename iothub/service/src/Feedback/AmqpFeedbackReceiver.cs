@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices
                         return new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString(),
+                            DeliveryTag = amqpMessage.DeliveryTag,
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
-                feedback.LockToken,
+                feedback.DeliveryTag,
                 AmqpConstants.AcceptedOutcome,
                 false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
-                feedback.LockToken,
+                feedback.DeliveryTag,
                 AmqpConstants.ReleasedOutcome,
                 false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);

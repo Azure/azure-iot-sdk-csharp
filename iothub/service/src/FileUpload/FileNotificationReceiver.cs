@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices
     /// Contains methods that services can use to perform file notification receive operations.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class FileNotificationReceiver<T> : Receiver<T> where T : FileNotification
+    public abstract class FileNotificationReceiver<T> : Receiver<T> where T : FileUploadNotification
     {
     }
 }

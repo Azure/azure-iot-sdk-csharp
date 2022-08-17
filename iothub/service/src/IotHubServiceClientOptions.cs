@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices
         /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
         public bool UseWebSocketOnly { get; set; }
-        
+
         /// <summary>
         /// The version of TLS to use by default.
         /// </summary>

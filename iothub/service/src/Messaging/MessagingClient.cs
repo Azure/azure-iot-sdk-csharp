@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         internal MessagingClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
-            HttpClient httpClient, 
+            HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options)
         {
@@ -63,7 +63,6 @@ namespace Microsoft.Azure.Devices
             _clientOptions = options;
             _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, _connection.CloseLink);
-            
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace Microsoft.Azure.Devices
                 sendingLink.Session.Closed += ConnectionClosed;
                 sendingLink.Closed += ConnectionClosed;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
@@ -205,13 +204,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                if (ex is IotHubException || ex is IOException)
-                {
-                    if (ex is IotHubException)
-                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
-                    else
-                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
-                }
+
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
@@ -275,13 +268,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                if (ex is IotHubException || ex is IOException)
-                {
-                    if (ex is IotHubException)
-                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
-                    else
-                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
-                }
+
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
