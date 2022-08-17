@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // act
             await serviceClient.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
+            var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
             await serviceClient.SendAsync(testDevice.Id, message);
 
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             signature = TestConfiguration.IoTHub.GetIotHubSharedAccessSignature(TimeSpan.FromHours(1));
             sasCredential.Update(signature);
             await serviceClient.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
+            var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
             await serviceClient.SendAsync(testDevice.Id, message);
 
             // cleanup
