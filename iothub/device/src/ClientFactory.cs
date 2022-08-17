@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
                 options = new();
             }
 
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var csBuilder = new IotHubConnectionCredentials(connectionString);
             if (csBuilder.UsingX509Cert)
             {
                 throw new ArgumentException("To use X509 certificates, use the initializer with the IAuthenticationMethod parameter.", nameof(connectionString));
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
 
-            var csBuilder = new IotHubConnectionStringBuilder(authenticationMethod, hostName, options?.GatewayHostName);
+            var csBuilder = new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName);
 
             // Make sure client options is initialized with the correct transport setting.
             EnsureOptionsIsSetup(csBuilder.Certificate, ref options);
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         static InternalClient CreateInternal(
             IDeviceClientPipelineBuilder pipelineBuilder,
-            IotHubConnectionStringBuilder csBuilder,
+            IotHubConnectionCredentials csBuilder,
             IotHubClientOptions options)
         {
             Argument.AssertNotNull(csBuilder, nameof(csBuilder));

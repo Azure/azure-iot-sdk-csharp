@@ -22,8 +22,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string FakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=";
         private const string FakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=fake;SharedAccessKey=dGVzdFN0cmluZzE=;ModuleId=mod1";
         private const string TestModelId = "dtmi:com:example:testModel;1";
+        private const string FakeHostName = "acme.azure-devices.net";
 
-        private static readonly IotHubConnectionStringBuilder s_csBuilder = new(FakeConnectionString);
+        private static readonly IotHubConnectionCredentials s_csBuilder = new(FakeConnectionString);
 
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
@@ -1293,7 +1294,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                new IotHubConnectionStringBuilder(FakeConnectionString),
+                new IotHubConnectionCredentials(FakeConnectionString),
                 options);
 
             // assert
@@ -1338,7 +1339,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                new IotHubConnectionStringBuilder(FakeConnectionString, authMethod1),
+                new IotHubConnectionCredentials(authMethod1, FakeHostName),
                 options);
 
             // assert

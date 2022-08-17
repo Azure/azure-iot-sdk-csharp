@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new HttpTransportHandler(
                 new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(DumpyConnectionString), new IotHubClientOptions(new IotHubClientHttpSettings())),
+                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionCredentials(DumpyConnectionString), new IotHubClientOptions(new IotHubClientHttpSettings())),
                 },                
                 new IotHubClientHttpSettings());
         }

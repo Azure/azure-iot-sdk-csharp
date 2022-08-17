@@ -1371,7 +1371,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             if (capabilities != null && capabilities.IotEdge)
             {
                 //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
-                var csBuilder = new Client.IotHubConnectionStringBuilder(auth, result.AssignedHub);
+                var csBuilder = new Client.IotHubConnectionCredentials(auth, result.AssignedHub);
                 string edgehubConnectionString = csBuilder.ToString() + ";ModuleId=$edgeHub";
                 using var moduleClient = IotHubModuleClient.CreateFromConnectionString(edgehubConnectionString);
                 await moduleClient.OpenAsync().ConfigureAwait(false);
