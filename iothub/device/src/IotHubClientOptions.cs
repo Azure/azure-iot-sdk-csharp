@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instances of this class with the default transport settings.
         /// </summary>
         public IotHubClientOptions()
+            : this(new IotHubClientMqttSettings())
         {
-            TransportSettings = new IotHubClientMqttSettings();
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
             if (transportSettings is not IotHubClientMqttSettings
-                || transportSettings is not IotHubClientAmqpSettings)
+                && transportSettings is not IotHubClientAmqpSettings)
             {
                 throw new ArgumentException("Transport settings must be MQTT or AMQP.", nameof(transportSettings));
             }

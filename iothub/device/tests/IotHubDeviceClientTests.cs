@@ -37,23 +37,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void DeviceAuthenticationWithX509Certificate_ChainCertsHttp_Throws()
-        {
-            // arrange
-            string hostName = "acme.azure-devices.net";
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-            using var cert = new X509Certificate2();
-#pragma warning restore SYSLIB0026 // Type or member is obsolete
-            var certs = new X509Certificate2Collection();
-            var authMethod = new DeviceAuthenticationWithX509Certificate("fakeDeviceId", cert, certs);
-            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
-
-            // act
-            using var dc = IotHubDeviceClient.Create(hostName, authMethod, options);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void DeviceAuthenticationWithX509Certificate_ChainCertsAmqpWs_Throws()
         {
             // arrange
@@ -272,22 +255,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             catch (ArgumentOutOfRangeException)
             {
                 Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
-            }
-        }
-
-        [TestMethod]
-        public void IotHubDeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
-        {
-            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, options);
-            try
-            {
-                deviceClient.DiagnosticSamplingPercentage = 100;
-                Assert.Fail("Should have thrown an exception.");
-            }
-            catch (NotSupportedException e)
-            {
-                e.Message.Should().Contain($"transport doesn't support E2E diagnostic.");
             }
         }
 
@@ -1370,28 +1337,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_InitWithTransportAndModelId_ThrowsWhenHttp()
-        {
-            // arrange
-
-            var clientOptions = new IotHubClientOptions(new IotHubClientHttpSettings())
-            {
-                ModelId = TestModelId,
-            };
-
-            // act
-
-            Action act = () => IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, clientOptions);
-
-            // assert
-
-            act.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("*Plug and Play*")
-                .WithMessage("*HTTP*");
-        }
-
-        [TestMethod]
         public void IotHubDeviceClient_InitWithMqttTcpTransportAndModelId_DoesNotThrow()
         {
             IotHubDeviceClient_InitWithNonHttpTransportAndModelId_DoesNotThrow(new IotHubClientMqttSettings());
@@ -1427,17 +1372,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act and assert
             FluentActions
                 .Invoking(() => { using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, clientOptions); })
-                .Should()
-                .NotThrow();
-        }
-
-        [TestMethod]
-        public void IotHubDeviceClient_InitWithHttpTransportButNoModelId_DoesNotThrow()
-        {
-            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
-            // act and assert
-            FluentActions
-                .Invoking(() => { using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, options); })
                 .Should()
                 .NotThrow();
         }

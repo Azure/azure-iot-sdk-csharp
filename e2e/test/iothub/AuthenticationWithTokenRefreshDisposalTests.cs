@@ -48,12 +48,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Http()
-        {
-            await ReuseAuthenticationMethod_SingleDevice(new IotHubClientHttpSettings()).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_Amqp()
         {
             await ReuseAuthenticationMethod_MuxedDevices(new IotHubClientAmqpSettings(), 2).ConfigureAwait(false);
@@ -63,12 +57,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceSak_ReusableAuthenticationMethod_MuxedDevicesPerConnection_AmqpWs()
         {
             await ReuseAuthenticationMethod_MuxedDevices(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), 2).ConfigureAwait(false); ;
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task IotHubDeviceClient_AuthenticationMethodDisposesTokenRefresher_Http()
-        {
-            await AuthenticationMethodDisposesTokenRefresher(new IotHubClientHttpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

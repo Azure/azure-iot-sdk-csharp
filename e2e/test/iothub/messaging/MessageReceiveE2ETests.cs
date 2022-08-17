@@ -43,12 +43,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_DeviceReceiveSingleMessageWithCancellationToken_Http()
-        {
-            await ReceiveSingleMessageWithCancellationTokenAsync(TestDeviceType.Sasl, new IotHubClientHttpSettings()).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveMessageCancelsAfterSpecifiedDelay_Amqp()
         {
             await IotHubDeviceClient_GivesUpWaitingForC2dMessageAsync(new IotHubClientAmqpSettings()).ConfigureAwait(false);

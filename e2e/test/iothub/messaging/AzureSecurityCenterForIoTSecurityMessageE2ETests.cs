@@ -69,12 +69,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public Task SecurityMessage_DeviceSendSingleMessage_Http()
-        {
-            return TestSecurityMessageAsync(new IotHubClientHttpSettings());
-        }
-
         private Client.Message ComposeD2CSecurityTestMessage()
         {
             string eventId = Guid.NewGuid().ToString();
