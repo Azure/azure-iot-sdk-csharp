@@ -426,6 +426,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await Task.WhenAll(sendTasks);
         }
 
+        public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            //TODO stubbing this method because we plan on removing it from the device client later.
+            Message message = null;
+            return Task.FromResult(message);
+        }
+
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             await SubscribeAsync(DirectMethodsRequestTopic, cancellationToken);
@@ -736,10 +743,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        [SuppressMessage(
-            "Reliability",
-            "CA2000:Dispose objects before losing scope",
-            Justification = "The created message is handed to the user and the user application is in charge of disposing the message.")]
         private async Task HandleReceivedCloudToDeviceMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
