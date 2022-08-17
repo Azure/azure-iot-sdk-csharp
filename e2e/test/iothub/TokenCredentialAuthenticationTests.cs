@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 TestConfiguration.IoTHub.GetClientSecretCredential(),
                 TransportType.Amqp);
             await serviceClient.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
+            var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
             // act
             Func<Task> act = async () => await serviceClient.SendAsync(ghostDevice, message).ConfigureAwait(false);

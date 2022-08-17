@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var service = ServiceClient.CreateFromConnectionString(
                 TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate,
                 transport);
-            using var testMessage = new Message();
+            var testMessage = new Message();
             await service.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
         }
 
