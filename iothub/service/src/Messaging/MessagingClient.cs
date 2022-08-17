@@ -183,11 +183,6 @@ namespace Microsoft.Azure.Devices
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            if (message.IsBodyCalled)
-            {
-                message.ResetBody();
-            }
-
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
 

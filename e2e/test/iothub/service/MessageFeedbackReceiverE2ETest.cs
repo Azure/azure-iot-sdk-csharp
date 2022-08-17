@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = feedbackCallback;
             await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.UTF8.GetBytes("some payload"));
+            var message = new Message(Encoding.UTF8.GetBytes("some payload"));
             message.Ack = DeliveryAcknowledgement.Full;
             messagedFeedbackReceived = false;
             await serviceClient.Messaging.SendAsync(TestConfiguration.IoTHub.X509ChainDeviceName, message).ConfigureAwait(false);

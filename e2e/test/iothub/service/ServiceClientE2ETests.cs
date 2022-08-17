@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
-                await sender.SendAsync(testDevice.Id, testMessage, timeout).ConfigureAwait(false);
+                await sender.Messaging.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
 
             }
             finally
