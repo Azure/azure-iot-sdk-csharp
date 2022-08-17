@@ -199,7 +199,7 @@ jobs:
         condition: always()
 
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish WIndows Test Artifacts: $(FRAMEWORK)'
+        displayName: 'Publish Windows Test Artifacts: $(FRAMEWORK)'
         inputs:
           ArtifactName: testresults_windows_$(FRAMEWORK)
         condition: always()
