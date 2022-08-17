@@ -356,10 +356,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString(), Logger).ConfigureAwait(false);
 
-            int connectionStateChangeCount = 0;
-            Action<ConnectionState, ConnectionStateChangeReason> connectionStateChangeHandler = (ConnectionState state, ConnectionStateChangeReason reason) =>
+            int connectionStatusChangeCount = 0;
+            Action<ConnectionStatus, ConnectionStatusChangeReason> connectionStatusChangeHandler = (ConnectionStatus status, ConnectionStatusChangeReason reason) =>
             {
-                Interlocked.Increment(ref connectionStateChangeCount);
+                Interlocked.Increment(ref connectionStatusChangeCount);
             };
 
             string propName = Guid.NewGuid().ToString();
@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
 
             // assert
-            Assert.AreEqual(0, connectionStateChangeCount, "AMQP should not be disconnected.");
+            Assert.AreEqual(0, connectionStatusChangeCount, "AMQP should not be disconnected.");
         }
 
         private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackSingleDeviceAsync(IotHubClientTransportSettings transportSettings)

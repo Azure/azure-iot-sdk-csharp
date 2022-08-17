@@ -116,12 +116,12 @@ namespace Microsoft.Azure.Devices.Client
         public DateTime? StatusUpdatedTime { get; internal set; }
 
         /// <summary>
-        /// Corresponding Device's ConnectionState
+        /// Corresponding Device's ConnectionStatus
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState? ConnectionState { get; internal set; }
+        public DeviceConnectionStatus? ConnectionStatus { get; internal set; }
 
         /// <summary>
         /// Time when the corresponding Device was last active

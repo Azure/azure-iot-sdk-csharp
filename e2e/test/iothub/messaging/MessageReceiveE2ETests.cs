@@ -125,13 +125,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
         {
-            await UnsubscribeDoesNotCauseConnectionStateEventAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientAmqpSettings()).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Mqtt()
         {
-            await UnsubscribeDoesNotCauseConnectionStateEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
+            await UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType.Sasl, new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
 
         public static (Message message, string payload, string p1Value) ComposeC2dTestMessage(MsTestLogger logger)
@@ -634,15 +634,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         // This test ensures that the SDK does not have this bug again
         // https://github.com/Azure/azure-iot-sdk-csharp/issues/2218
-        private async Task UnsubscribeDoesNotCauseConnectionStateEventAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
+        private async Task UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;
-            deviceClient.SetConnectionStateChangeHandler(connectionInfo =>
+            deviceClient.SetConnectionStatusChangeHandler(connectionInfo =>
             {
-                if (connectionInfo.State == ConnectionState.Disconnected || connectionInfo.State == ConnectionState.DisconnectedRetrying)
+                if (connectionInfo.Status == ConnectionStatus.Disconnected || connectionInfo.Status == ConnectionStatus.DisconnectedRetrying)
                 {
                     lostConnection = true;
                 }
