@@ -21,16 +21,21 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class with the specified transport settings.
         /// </summary>
-        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/>,
-        /// <see cref="IotHubClientAmqpSettings"/>, or <see cref="IotHubClientHttpSettings"/>).</param>
+        /// <param name="transportSettings">The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/> or
+        /// <see cref="IotHubClientAmqpSettings"/>.</param>
         /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
         public IotHubClientOptions(IotHubClientTransportSettings transportSettings)
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+            if (transportSettings is not IotHubClientMqttSettings
+                || transportSettings is not IotHubClientAmqpSettings)
+            {
+                throw new ArgumentException("Transport settings must be MQTT or AMQP.", nameof(transportSettings));
+            }
         }
 
         /// <summary>
-        /// The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/>, <see cref="IotHubClientAmqpSettings"/>, or <see cref="IotHubClientHttpSettings"/>).
+        /// The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/> or <see cref="IotHubClientAmqpSettings"/>).
         /// </summary>
         public IotHubClientTransportSettings TransportSettings { get; }
 
