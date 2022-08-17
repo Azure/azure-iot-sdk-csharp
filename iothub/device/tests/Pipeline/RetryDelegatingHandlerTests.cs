@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new DeviceNotFoundException());
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException() { StatusCode = IotHubStatusCode.DeviceNotFound});
 
             ConnectionInfo connectionInfo = new ConnectionInfo();
             Action<ConnectionInfo> stateChangeHandler = (c) =>
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             await ((Func<Task>)(() => sut
                 .OpenAsync(CancellationToken.None)))
-                .ExpectedAsync<DeviceNotFoundException>()
+                .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
             // assert

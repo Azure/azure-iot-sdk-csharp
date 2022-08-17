@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (Equals(AmqpErrorCode.NotFound, amqpSymbol))
             {
-                return new DeviceNotFoundException(message, amqpException);
+                return new IotHubClientException(message, amqpException, false, IotHubStatusCode.DeviceNotFound);
             }
             else if (Equals(AmqpErrorCode.UnauthorizedAccess, amqpSymbol))
             {
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {
-                retException = new DeviceNotFoundException(message, (Exception)null);
+                retException = new IotHubClientException(message, (Exception)null, false, IotHubStatusCode.DeviceNotFound);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotImplemented))
             {
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (error.Condition.Equals(MessageLockLostError))
             {
-                retException = new DeviceMessageLockLostException(message);
+                retException = new IotHubClientException(message, false, IotHubStatusCode.DeviceMessageLockLost);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotAllowed))
             {
@@ -243,12 +243,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 // Error code 403002 is applicable to D2C (Device client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded
                 // We have opted not to change the exception type thrown here since it will be a breaking change, alternatively, we are adding the correct exception type
                 // as the inner exception.
-                retException = new DeviceMaximumQueueDepthExceededException(
+                retException = new IotHubClientException(
                     $"Please check the inner exception for more information.\n " +
-                    $"The correct exception type is `{nameof(QuotaExceededException)}` " +
+                    $"The correct exception type is `{IotHubStatusCode.QuotaExceeded}` " +
                     $"but since that is a breaking change to the current behavior in the SDK, you can refer to the inner exception " +
                     $"for more information. Exception message: {message}",
-                    new QuotaExceededException(message));
+                    new IotHubClientException(message, innerException: null, isTransient: true, IotHubStatusCode.QuotaExceeded),
+                    isTransient: false,
+                    IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
             }
             else if (error.Condition.Equals(DeviceContainerThrottled))
             {

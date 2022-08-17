@@ -917,7 +917,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     reason = ConnectionStateChangeReason.BadCredential;
                 }
-                else if (hubException is DeviceNotFoundException)
+                else if (hubException.StatusCode is IotHubStatusCode.DeviceNotFound)
                 {
                     reason = ConnectionStateChangeReason.DeviceDisabled;
                 }

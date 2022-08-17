@@ -66,6 +66,18 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
+        /// Creates an instance of this class with the supplied error message and a flag indicating if the error was transient, 
+        /// and the HTTP status code returned by the IoT Hub service.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
+        public IotHubClientException(string message, bool isTransient, IotHubStatusCode statusCode)
+            : this(message, null, isTransient, trackingId: string.Empty, statusCode)
+        {
+        }
+
+        /// <summary>
         /// Creates an instance of this class with an empty error message and a reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
@@ -99,6 +111,20 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 
         /// <summary>
         /// Creates an instance of this class with a specified error message, a reference
+        /// to the inner exception that caused this exception, a flag indicating if the error was transient 
+        /// and the HTTP status code returned by the IoT Hub service.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
+        public IotHubClientException(string message, Exception innerException, bool isTransient, IotHubStatusCode statusCode)
+            : this(message, innerException, isTransient, trackingId: string.Empty, statusCode)
+        {
+        }
+
+        /// <summary>
+        /// Creates an instance of this class with a specified error message, a reference
         /// to the inner exception that caused this exception, a flag indicating if the error was transient
         /// and the service returned tracking Id associated with this particular error.
         /// </summary>
@@ -111,6 +137,24 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
             IsTransient = isTransient;
             TrackingId = trackingId;
+        }
+
+        /// <summary>
+        /// Creates an instance of this class with a specified error message, a reference
+        /// to the inner exception that caused this exception, a flag indicating if the error was transient,
+        /// the service returned tracking Id associated with this particular error, and the HTTP status code returned by the IoT Hub service.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
+        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
+        /// <param name="statusCode">The HTTP status code returned by the IoT hub service.</param>
+        public IotHubClientException(string message, Exception innerException, bool isTransient, string trackingId, IotHubStatusCode statusCode)
+            : base(message, innerException)
+        {
+            IsTransient = isTransient;
+            TrackingId = trackingId;
+            StatusCode = statusCode;
         }
 
         /// <summary>
@@ -143,6 +187,11 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
         public string TrackingId { get; set; }
+
+        /// <summary>
+        /// The HTTP status code returned by the IoT hub service.
+        /// </summary>
+        public IotHubStatusCode StatusCode { get; internal set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

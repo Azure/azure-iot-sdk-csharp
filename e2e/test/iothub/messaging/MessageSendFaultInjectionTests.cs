@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
-        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(IotHubClientException))]
         [DoNotParallelize]
         [TestCategory("LongRunning")]
         public async Task Message_QuotaExceededRecovery_AmqpWs()

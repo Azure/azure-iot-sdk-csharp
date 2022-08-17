@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(DeviceNotFoundException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
