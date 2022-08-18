@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method.</param>
         /// <param name="options">The optional client settings.</param>
         /// <returns>InternalClient</returns>
-        internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+        internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options)
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));

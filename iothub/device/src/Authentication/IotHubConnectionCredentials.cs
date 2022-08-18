@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
-        private const string HostNameSeparator = ".";
         private const string HostNamePropertyName = "HostName";
         private const string DeviceIdPropertyName = "DeviceId";
         private const string ModuleIdPropertyName = "ModuleId";
@@ -42,6 +41,11 @@ namespace Microsoft.Azure.Devices.Client
             AuthenticationMethod = authenticationMethod;
             HostName = hostName;
             GatewayHostName = gatewayHostName;
+
+            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
+            {
+                UsingX509Cert = true;
+            }
 
             Validate();
         }
@@ -164,12 +168,12 @@ namespace Microsoft.Azure.Devices.Client
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
             HostName = GetConnectionStringValue(map, HostNamePropertyName);
+            GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
             DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
             ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-            GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
         }
 
         internal void Validate()
