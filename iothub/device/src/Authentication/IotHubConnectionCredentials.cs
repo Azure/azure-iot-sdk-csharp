@@ -24,8 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
 
-        private IAuthenticationMethod _authenticationMethod;
-
         /// <summary>
         /// Creates an instnace of this class based on an authentication method and the hostname of the IoT hub.
         /// </summary>
@@ -38,14 +36,11 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
 
-            AuthenticationMethod = authenticationMethod;
             HostName = hostName;
             GatewayHostName = gatewayHostName;
 
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
-            {
-                UsingX509Cert = true;
-            }
+            AuthenticationMethod = authenticationMethod;
+            AuthenticationMethod.Populate(this);
 
             Validate();
         }
@@ -110,11 +105,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the authentication method to be used with the IoT hub service.
         /// </summary>
-        public IAuthenticationMethod AuthenticationMethod
-        {
-            get => _authenticationMethod;
-            set => SetAuthenticationMethod(value);
-        }
+        public IAuthenticationMethod AuthenticationMethod { get; }
 
         /// <summary>
         /// Indicates if the client uses X509 certificates for authenticating with IoT hub.
@@ -221,14 +212,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException(
                     "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
             }
-        }
-
-        private void SetAuthenticationMethod(IAuthenticationMethod authMethod)
-        {
-            Argument.AssertNotNull(authMethod, nameof(authMethod));
-
-            authMethod.Populate(this);
-            _authenticationMethod = authMethod;
         }
 
         private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)

@@ -26,13 +26,13 @@ namespace Microsoft.Azure.Devices.Client
                 options = new();
             }
 
-            var csBuilder = new IotHubConnectionCredentials(connectionString);
-            if (csBuilder.UsingX509Cert)
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            if (iotHubConnectionCredentials.UsingX509Cert)
             {
                 throw new ArgumentException("To use X509 certificates, use the initializer with the IAuthenticationMethod parameter.", nameof(connectionString));
             }
 
-            return CreateInternal(null, csBuilder, options);
+            return CreateInternal(null, iotHubConnectionCredentials, options);
         }
 
         /// <summary>
@@ -42,41 +42,41 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method.</param>
         /// <param name="options">The optional client settings.</param>
         /// <returns>InternalClient</returns>
-        internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options)
+        internal static InternalClient Create(
+            string hostName,
+            IAuthenticationMethod authenticationMethod,
+            IotHubClientOptions options)
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
 
-            var csBuilder = new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName);
 
             // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(csBuilder.Certificate, ref options);
+            EnsureOptionsIsSetup(iotHubConnectionCredentials.Certificate, ref options);
 
             // Validate certs.
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
+            if (iotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 // Prep for certificate auth.
-                if (csBuilder.AuthenticationMethod is DeviceAuthenticationWithX509Certificate
-                    && csBuilder.Certificate == null)
+                if (iotHubConnectionCredentials.Certificate == null)
                 {
                     throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.");
                 }
 
-                if (csBuilder.AuthenticationMethod is DeviceAuthenticationWithX509Certificate certificate
-                    && certificate.ChainCertificates != null
-                    && (options.TransportSettings is not IotHubClientAmqpSettings
-                    && options.TransportSettings is not IotHubClientMqttSettings
-                    || options.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp))
+                if (iotHubConnectionCredentials.ChainCertificates != null)
                 {
-                    throw new ArgumentException("Certificate chains are only supported on MQTT and AMQP over TCP.");
-                }
+                    if (options.TransportSettings is not IotHubClientAmqpSettings
+                        && options.TransportSettings is not IotHubClientMqttSettings
+                        || options.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                    {
+                        throw new ArgumentException("Certificate chains are only supported on MQTT over TCP and AMQP over TCP.");
+                    }
 
-                // Install all the intermediate certificates in the chain if specified.
-                if (csBuilder.ChainCertificates != null)
-                {
+                    // Install all the intermediate certificates in the chain if specified.
                     try
                     {
-                        CertificateInstaller.EnsureChainIsInstalled(csBuilder.ChainCertificates);
+                        CertificateInstaller.EnsureChainIsInstalled(iotHubConnectionCredentials.ChainCertificates);
                     }
                     catch (Exception ex)
                     {
@@ -88,8 +88,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            InternalClient internalClient = CreateInternal(null, csBuilder, options);
-            internalClient.Certificate = csBuilder.Certificate;
+            InternalClient internalClient = CreateInternal(null, iotHubConnectionCredentials, options);
+            internalClient.Certificate = iotHubConnectionCredentials.Certificate;
 
             return internalClient;
         }

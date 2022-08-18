@@ -134,28 +134,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        public void IotHubConnectionStringBuilder_OverrideAuthMethodToken()
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessSignature={SharedAccessSignature}";
-            var csBuilder = new IotHubConnectionCredentials(connectionString);
-            csBuilder.AuthenticationMethod = new DeviceAuthenticationWithToken(DeviceId, SharedAccessSignature);
-
-            csBuilder.SharedAccessSignature.Should().Be(SharedAccessSignature);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
-        }
-
-        [TestMethod]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_OverrideAuthMethodSapk()
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessSignature={SharedAccessSignature}";
-            var csBuilder = new IotHubConnectionCredentials(connectionString);
-            csBuilder.AuthenticationMethod = new DeviceAuthenticationWithSharedAccessPolicyKey(DeviceId, SharedAccessKeyName, SharedAccessKey);
-
-            csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
-        }
-
-        [TestMethod]
         [DataRow("true")]
         [DataRow("True")]
         [DataRow("TRUE")]
