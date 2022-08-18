@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
@@ -79,19 +81,19 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Opening MessageFeedbackProcessorClient", nameof(OpenAsync));
             try
             {
-                if(MessageFeedbackProcessor == null)
+                if (MessageFeedbackProcessor == null)
                 {
                     throw new Exception("Callback for message feedback must be set before opening the connection.");
                 }
                 await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
                 ReceivingAmqpLink receivingAmqpLink = await _feedbackReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 receivingAmqpLink.RegisterMessageListener(OnFeedbackMessageReceivedAsync);
-                receivingAmqpLink.Session.Connection.Closed += ConnectionClosed;
-                receivingAmqpLink.Session.Closed += ConnectionClosed;
-                receivingAmqpLink.Closed += ConnectionClosed;
+                receivingAmqpLink.Session.Connection.Closed += OnConnectionClosed;
+                receivingAmqpLink.Session.Closed += OnConnectionClosed;
+                receivingAmqpLink.Closed += OnConnectionClosed;
                 await _feedbackReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
@@ -169,8 +171,8 @@ namespace Microsoft.Azure.Devices
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.BatchedFeedbackContentType);
                         IEnumerable<FeedbackRecord> records = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
-                       
-                        FeedbackBatch feedbackBatch = new FeedbackBatch
+
+                        var feedbackBatch = new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
                             LockToken = amqpMessage.DeliveryTag.Array.ToString(),
@@ -183,9 +185,11 @@ namespace Microsoft.Azure.Devices
                             case AcknowledgementType.Abandon:
                                 await _feedbackReceiver.AbandonAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             case AcknowledgementType.Complete:
                                 await _feedbackReceiver.CompleteAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             default:
                                 break;
                         }
@@ -211,12 +215,39 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private void ConnectionClosed(object sender, EventArgs e)
+        private void OnConnectionClosed(object sender, EventArgs e)
         {
-            IotHubException ex = new IotHubException(e.ToString());
-            if (Logging.IsEnabled)
-                Logging.Error(this, $"{nameof(sender) + '.' + nameof(ConnectionClosed)} threw an exception: {ex}", nameof(ConnectionClosed));
-            ErrorProcessor?.Invoke(new ErrorContext(ex));
+            if (((AmqpObject)sender).TerminalException is AmqpException exception)
+            {
+                Exception ex;
+                Error error = exception.Error;
+                AmqpSymbol amqpSymbol = error.Condition;
+                string message = error.ToString();
+                if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
+                    || Equals(AmqpErrorCode.FramingError, amqpSymbol)
+                    || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
+                    || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
+                    || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
+                    || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol)
+                    || Equals(AmqpErrorCode.DetachForced, amqpSymbol)
+                    || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
+                    || Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol)
+                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.Stolen, amqpSymbol))
+                {
+                    ex = new IotHubException(message, exception);
+                    ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                }
+                else
+                {
+                    ex = new IOException(message, exception);
+                    ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                }
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {ex}", nameof(OnConnectionClosed));
+            }
         }
     }
 }

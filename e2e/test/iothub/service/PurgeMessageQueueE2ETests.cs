@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestCategory("IoTHub")]
     public class PurgeMesageQueueE2eTests : E2EMsTestBase
     {
-        [TestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task PurgeMessageQueueOperation()
         {
             Message testMessage = ComposeD2CTestMessage();

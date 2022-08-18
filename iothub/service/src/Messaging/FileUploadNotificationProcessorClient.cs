@@ -3,11 +3,14 @@
 
 using System;
 using System.IO;
+using System.Net.Mail;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
@@ -85,9 +88,9 @@ namespace Microsoft.Azure.Devices
                 await _fileNotificationReceiver.OpenAsync().ConfigureAwait(false);
                 ReceivingAmqpLink receivingAmqpLink = await _fileNotificationReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 receivingAmqpLink.RegisterMessageListener(OnNotificationMessageReceivedAsync);
-                receivingAmqpLink.Session.Connection.Closed += ConnectionClosed;
-                receivingAmqpLink.Session.Closed += ConnectionClosed;
-                receivingAmqpLink.Closed += ConnectionClosed;
+                receivingAmqpLink.Session.Connection.Closed += OnConnectionClosed;
+                receivingAmqpLink.Session.Closed += OnConnectionClosed;
+                receivingAmqpLink.Closed += OnConnectionClosed;
                 await _fileNotificationReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -170,14 +173,16 @@ namespace Microsoft.Azure.Devices
                         fileNotification.LockToken = amqpMessage.DeliveryTag.Array.ToString();
 
                         AcknowledgementType ack = FileNotificationProcessor.Invoke(fileNotification);
-                        switch(ack)
+                        switch (ack)
                         {
                             case AcknowledgementType.Abandon:
                                 await _fileNotificationReceiver.AbandonAsync(fileNotification, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             case AcknowledgementType.Complete:
                                 await _fileNotificationReceiver.CompleteAsync(fileNotification, CancellationToken.None).ConfigureAwait(false);
                                 break;
+
                             default:
                                 break;
                         }
@@ -202,13 +207,40 @@ namespace Microsoft.Azure.Devices
                     Logging.Exit(this, amqpMessage, nameof(OnNotificationMessageReceivedAsync));
             }
         }
-            
-        private void ConnectionClosed(object sender, EventArgs e)
+
+        private void OnConnectionClosed(object sender, EventArgs e)
         {
-            IotHubException ex = new IotHubException(e.ToString());
-            if (Logging.IsEnabled)
-                Logging.Error(this, $"{nameof(sender) + '.' + nameof(ConnectionClosed)} threw an exception: {ex}", nameof(ConnectionClosed));
-            ErrorProcessor?.Invoke(new ErrorContext(ex));
+            if (((AmqpObject)sender).TerminalException is AmqpException exception)
+            {
+                Exception ex;
+                Error error = exception.Error;
+                AmqpSymbol amqpSymbol = error.Condition;
+                string message = error.ToString();
+                if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
+                    || Equals(AmqpErrorCode.FramingError, amqpSymbol)
+                    || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
+                    || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
+                    || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
+                    || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol)
+                    || Equals(AmqpErrorCode.DetachForced, amqpSymbol)
+                    || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
+                    || Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol)
+                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.Stolen, amqpSymbol))
+                {
+                    ex = new IotHubException(message, exception);
+                    ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                }
+                else
+                {
+                    ex = new IOException(message, exception);
+                    ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                }
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {ex}", nameof(OnConnectionClosed));
+            }
         }
     }
 }

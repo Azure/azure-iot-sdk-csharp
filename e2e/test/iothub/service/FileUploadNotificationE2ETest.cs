@@ -2,15 +2,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ConnectionState = Microsoft.Azure.Devices.Client.ConnectionState;
 
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 {
@@ -23,27 +26,35 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     public class FileUploadNotificationE2eTest : E2EMsTestBase
     {
         public bool fileUploaded;
-        [TestMethod]
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task FileUploadNotification_Operation()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            serviceClient.FileUploadNotificationProcessor.FileNotificationProcessor = fileUploadCallback;
+            serviceClient.FileUploadNotificationProcessor.FileNotificationProcessor = OnNotificationReceived;
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
             fileUploaded = false;
-            await uploadFile().ConfigureAwait(false);
-            Thread.Sleep(10000);
+            await UploadFile().ConfigureAwait(false);
+            var timer = Stopwatch.StartNew();
+            while (!fileUploaded && timer.ElapsedMilliseconds < 10000)
+            {
+                continue;
+            }
+            timer.Stop();
+            if (!fileUploaded)
+                throw new AssertionFailedException("Timed out waiting to receive file upload notification.");
 
             await serviceClient.FileUploadNotificationProcessor.CloseAsync();
             fileUploaded.Should().BeTrue();
         }
 
-        private AcknowledgementType fileUploadCallback(FileNotification notification)
+        private AcknowledgementType OnNotificationReceived(FileNotification notification)
         {
             fileUploaded = true;
             return AcknowledgementType.Complete;
         }
 
-        private async Task uploadFile()
+        private async Task UploadFile()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={TestConfiguration.IoTHub.X509ChainDeviceName}");
             const string filePath = "TestPayload.txt";
@@ -61,32 +72,22 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             {
                 BlobName = fileName
             };
+            FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
+            Uri uploadUri = sasUri.GetBlobUri();
 
-            Console.WriteLine("Getting SAS URI from IoT Hub to use when uploading the file...");
-            try
+            var blob = new CloudBlockBlob(uploadUri);
+            Task uploadTask = blob.UploadFromStreamAsync(fileStreamSource);
+            await uploadTask.ConfigureAwait(false);
+
+            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification
             {
-                FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
-                Uri uploadUri = sasUri.GetBlobUri();
+                CorrelationId = sasUri.CorrelationId,
+                IsSuccess = true,
+                StatusCode = 200,
+                StatusDescription = "Success"
+            };
 
-                var blob = new CloudBlockBlob(uploadUri);
-                Task uploadTask = blob.UploadFromStreamAsync(fileStreamSource);
-                await uploadTask.ConfigureAwait(false);
-
-                var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification
-                {
-                    CorrelationId = sasUri.CorrelationId,
-                    IsSuccess = true,
-                    StatusCode = 200,
-                    StatusDescription = "Success1"
-                };
-
-                await deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            
+            await deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
         }
     }
 }

@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -52,7 +53,7 @@ namespace Microsoft.Azure.Devices
         internal MessagingClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
-            HttpClient httpClient, 
+            HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options)
         {
@@ -63,7 +64,6 @@ namespace Microsoft.Azure.Devices
             _clientOptions = options;
             _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, _connection.CloseLink);
-            
         }
 
         /// <summary>
@@ -87,11 +87,11 @@ namespace Microsoft.Azure.Devices
                 using var ctx = new CancellationTokenSource();
                 await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
                 SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                sendingLink.Session.Connection.Closed += ConnectionClosed;
-                sendingLink.Session.Closed += ConnectionClosed;
-                sendingLink.Closed += ConnectionClosed;
+                sendingLink.Session.Connection.Closed += OnConnectionClosed;
+                sendingLink.Session.Closed += OnConnectionClosed;
+                sendingLink.Closed += OnConnectionClosed;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OpenAsync)} threw an exception: {ex}", nameof(OpenAsync));
@@ -374,12 +374,39 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private void ConnectionClosed(object sender, EventArgs e)
+        private void OnConnectionClosed(object sender, EventArgs e)
         {
-            IotHubException ex = new IotHubException(e.ToString());
-            if (Logging.IsEnabled)
-                Logging.Error(this, $"{nameof(sender) + '.' + nameof(ConnectionClosed)} threw an exception: {ex}", nameof(ConnectionClosed));
-            ErrorProcessor?.Invoke(new ErrorContext(ex));
+            if (((AmqpObject)sender).TerminalException is AmqpException exception)
+            {
+                Exception ex;
+                Error error = exception.Error;
+                AmqpSymbol amqpSymbol = error.Condition;
+                string message = error.ToString();
+                if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
+                    || Equals(AmqpErrorCode.FramingError, amqpSymbol)
+                    || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
+                    || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
+                    || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
+                    || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol)
+                    || Equals(AmqpErrorCode.DetachForced, amqpSymbol)
+                    || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
+                    || Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol)
+                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                    || Equals(AmqpErrorCode.Stolen, amqpSymbol))
+                {
+                    ex = new IotHubException(message, exception);
+                    ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                }
+                else
+                {
+                    ex = new IOException(message, exception);
+                    ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                }
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {ex}", nameof(OnConnectionClosed));
+            }
         }
     }
 }

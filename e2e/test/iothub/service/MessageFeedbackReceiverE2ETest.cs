@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,33 +20,39 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     public class MessageFeedbackReceiverE2eTest : E2EMsTestBase
     {
         private bool messagedFeedbackReceived;
-        [TestMethod]
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task MessageFeedbackReceiver_Operation()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = feedbackCallback;
+            serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = OnFeedbackReceived;
             await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
             var message = new Message(Encoding.UTF8.GetBytes("some payload"));
             message.Ack = DeliveryAcknowledgement.Full;
             messagedFeedbackReceived = false;
             await serviceClient.Messaging.SendAsync(TestConfiguration.IoTHub.X509ChainDeviceName, message).ConfigureAwait(false);
-            await receiveMessage().ConfigureAwait(false);
+            await ReceiveMessage().ConfigureAwait(false);
 
             var timer = Stopwatch.StartNew();
-            while (timer.ElapsedMilliseconds < 60000)
+            while (!messagedFeedbackReceived && timer.ElapsedMilliseconds < 60000)
             {
                 continue;
             }
+            timer.Stop();
+            if (!messagedFeedbackReceived)
+                throw new AssertionFailedException("Timed out waiting to receive message feedback.");
+
             await serviceClient.MessageFeedbackProcessor.CloseAsync();
             messagedFeedbackReceived.Should().BeTrue();
         }
 
-        private AcknowledgementType feedbackCallback(FeedbackBatch feedback)
+        private AcknowledgementType OnFeedbackReceived(FeedbackBatch feedback)
         {
             messagedFeedbackReceived = true;
             return AcknowledgementType.Complete;
         }
-        private async Task receiveMessage()
+
+        private async Task ReceiveMessage()
         {
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={TestConfiguration.IoTHub.X509ChainDeviceName}");
             Client.Message message = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
