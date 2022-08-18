@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
             Status = status;
             ChangeReason = changeReason;
             StatusLastChangedOnUtc = DateTimeOffset.UtcNow;
-            RecommendedAction = GetRecommendedActionBasedOnConnectionStatusAndChangeReason(status, changeReason);
+            RecommendedAction = GetRecommendedAction(status, changeReason);
         }
 
         /// <summary>
@@ -55,33 +55,27 @@ namespace Microsoft.Azure.Devices.Client
         /// </remark>>
         public RecommendedAction RecommendedAction { get; }
 
-        private RecommendedAction GetRecommendedActionBasedOnConnectionStatusAndChangeReason(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
+        private RecommendedAction GetRecommendedAction(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             switch (status)
             {
                 case ConnectionStatus.Connected:
-                    return RecommendedAction.NoActionWhenNormal;
+                    return RecommendedAction.PerformNormally;
 
                 case ConnectionStatus.DisconnectedRetrying:
-                    return RecommendedAction.NoActionWhenRetrying;
-
                 case ConnectionStatus.Disabled:
-                    return RecommendedAction.DisposeAndOpenIfWish;
+                    return RecommendedAction.NotDoAnything;
 
                 case ConnectionStatus.Disconnected:
                     switch (changeReason)
                     {
                         case ConnectionStatusChangeReason.RetryExpired:
-                            return RecommendedAction.DisposeAndOpenIfWish;
-
                         case ConnectionStatusChangeReason.CommunicationError:
-                            return RecommendedAction.DisposeAndOpenIfWish;
+                            return RecommendedAction.ReinitializeClient;
 
                         case ConnectionStatusChangeReason.BadCredential:
-                            return RecommendedAction.UseValidCredential;
-
                         case ConnectionStatusChangeReason.DeviceDisabled:
-                            return RecommendedAction.FixDeviceStatus;
+                            return RecommendedAction.NotDoAnything;
 
                         default:
                             return RecommendedAction.ContactUs;

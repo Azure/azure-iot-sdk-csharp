@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var status = connectionInfo.Status;
             var reason = connectionInfo.ChangeReason;
             Console.WriteLine($"Connection status changed: status={status}, reason={reason}");
-            Console.WriteLine($"The recommended actions upon the current status and change reason is {connectionInfo.RecommendedAction}");
+            Console.WriteLine($"The recommended action upon the current status and change reason is {connectionInfo.RecommendedAction}");
 
             switch (status)
             {
@@ -219,9 +219,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             break;
 
                         case ConnectionStatusChangeReason.RetryExpired:
-                            await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
-                            break;
-
                         case ConnectionStatusChangeReason.CommunicationError:
                             await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
                             break;
