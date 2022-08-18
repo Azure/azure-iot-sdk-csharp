@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up device due to {ex.Message}");
+                    Logger.Trace($"Failed to clean up device {deviceId} due to {ex.Message}");
                 }
 
                 try
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up config due to {ex.Message}");
+                    Logger.Trace($"Failed to clean up config {configId} due to {ex.Message}");
                 }
             }
         }

@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             catch (Exception ex)
             {
-                Logger.Trace($"Failed to remove device during cleanup due to {ex.Message}");
+                Logger.Trace($"Failed to remove device {deviceId} during cleanup due to {ex.Message}");
             }
 
             try
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             catch (Exception ex)
             {
-                Logger.Trace($"Failed to remove device during cleanup due to {ex.Message}");
+                Logger.Trace($"Failed to remove device {deviceId} during cleanup due to {ex.Message}");
             }
 
             try
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             catch (Exception ex)
             {
-                Logger.Trace($"Failed to remove device during cleanup due to {ex.Message}");
+                Logger.Trace($"Failed to remove device {deviceId} during cleanup due to {ex.Message}");
             }
 
             try
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             catch (Exception ex)
             {
-                Logger.Trace($"Failed to remove config during cleanup due to {ex.Message}");
+                Logger.Trace($"Failed to remove config {configurationId} during cleanup due to {ex.Message}");
             }
         }
     }
