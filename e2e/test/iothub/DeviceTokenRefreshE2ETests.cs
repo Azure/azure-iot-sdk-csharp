@@ -54,14 +54,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Flaky")]
-        [TestCategory("LongRunning")]
-        public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Http()
-        {
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientHttpSettings()).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Amqp()
         {

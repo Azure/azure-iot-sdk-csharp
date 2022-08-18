@@ -62,107 +62,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_Http_Tpm_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(new IotHubClientHttpSettings(), AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_X509_IndividualEnrollment_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(new IotHubClientHttpSettings(), AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_X509_GroupEnrollment_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.X509,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
-        public async Task DPS_Registration_Http_SymmetricKey_GroupEnrollment_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_HttpWithProxy_Tpm_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.Tpm,
-                    EnrollmentType.Individual,
-                    true,
-                    s_proxyServerAddress)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        [TestCategory("LongRunning")]
-        public async Task DPS_Registration_HttpWithNullProxy_Tpm_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.Tpm,
-                    EnrollmentType.Individual,
-                    true)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        public async Task DPS_Registration_HttpWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    true,
-                    s_proxyServerAddress)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Proxy")]
-        public async Task DPS_Registration_HttpWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    true,
-                    s_proxyServerAddress)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Amqp_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
@@ -520,28 +419,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         #region CustomAllocationDefinition tests
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Individual,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_SymmetricKey_GroupEnrollment_CustomAllocationPolicy_RegisterOk()
-        {
-            await ProvisioningDeviceClientCustomAllocationPolicyAsync(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.SymmetricKey,
-                    EnrollmentType.Group,
-                    false)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Registration_Amqp_SymmetricKey_IndividualEnrollment_CustomAllocationPolicy_RegisterOk()
         {
             await ProvisioningDeviceClientCustomAllocationPolicyAsync(
@@ -636,22 +513,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_Http_Tpm_InvalidRegistrationId_RegisterFail()
-        {
-            try
-            {
-                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(new IotHubClientHttpSettings()).ConfigureAwait(false);
-                Assert.Fail("Expected exception not thrown");
-            }
-            catch (ProvisioningTransportException ex)
-            {
-                // Exception message must contain the errorCode value as below
-                Assert.IsTrue(ex.Message.Contains("404201"));
-            }
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         public async Task DPS_Registration_Amqp_Tpm_InvalidRegistrationId_RegisterFail()
         {
             try
@@ -708,40 +569,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     EnrollmentType.Group,
                     "")
                 .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        public async Task DPS_Registration_Http_Tpm_InvalidIdScope_RegisterFail()
-        {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.Tpm,
-                    null, ""
-                    )
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
-        {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.X509,
-                    EnrollmentType.Individual,
-                    "")
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
-        {
-            await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.X509,
-                    EnrollmentType.Group,
-                    "")
-                    .ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -833,16 +660,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     AttestationMechanismType.X509,
                     EnrollmentType.Individual)
                 .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Registration_Http_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
-        {
-            await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(
-                    new IotHubClientHttpSettings(),
-                    AttestationMechanismType.X509,
-                    EnrollmentType.Individual,
-                    null).ConfigureAwait(false);
         }
 
         // Note: This test takes 3 minutes.
