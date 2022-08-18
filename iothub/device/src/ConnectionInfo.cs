@@ -18,11 +18,11 @@ namespace Microsoft.Azure.Devices.Client
             RecommendedAction = RecommendedAction.DefaultAction;
         }
 
-        internal ConnectionInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason, DateTimeOffset changedOnUtc)
+        internal ConnectionInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             Status = status;
             ChangeReason = changeReason;
-            StatusLastChangedOnUtc = changedOnUtc;
+            StatusLastChangedOnUtc = DateTimeOffset.UtcNow;
             RecommendedAction = GetRecommendedActionBasedOnConnectionStatusAndChangeReason(status, changeReason);
         }
 
@@ -45,15 +45,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Timestamp in UTC when the last connection status was changed.
         /// </summary>
-        public DateTimeOffset StatusLastChangedOnUtc { get; internal set; }
+        public DateTimeOffset StatusLastChangedOnUtc { get; }
 
         /// <summary>
         /// Recommended actions for users to take upon different ConnectionStatus and ConnectionStatusChangeReason.
         /// </summary>
         /// <remark>
-        /// Defaults to <see cref="RecommendedAction.DisposeAndOpenIfWish"/>.
+        /// Defaults to <see cref="RecommendedAction.DefaultAction"/>.
         /// </remark>>
-        public RecommendedAction RecommendedAction { get; internal set; }
+        public RecommendedAction RecommendedAction { get; }
 
         private RecommendedAction GetRecommendedActionBasedOnConnectionStatusAndChangeReason(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {

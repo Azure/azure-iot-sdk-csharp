@@ -1169,7 +1169,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (_connectionInfo.Status != status
                     || _connectionInfo.ChangeReason != reason)
                 {
-                    _connectionInfo = new ConnectionInfo(status, reason, DateTimeOffset.UtcNow);
+                    _connectionInfo = new ConnectionInfo(status, reason);
                     _connectionStatusChangeHandler?.Invoke(_connectionInfo);
                 }
             }
