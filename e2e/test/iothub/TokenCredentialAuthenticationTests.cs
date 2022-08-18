@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -21,7 +21,7 @@ using Azure.Identity;
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using Azure active directory succeeds in all the clients.

@@ -9,19 +9,11 @@ namespace Microsoft.Azure.Devices.E2ETests
     [EventSource(Name = "Microsoft-Azure-Devices-TestLogging")]
     internal class EventSourceTestLogger : EventSource
     {
-        private static EventSourceTestLogger s_log = new EventSourceTestLogger();
-
         private EventSourceTestLogger()
         {
         }
 
-        public static EventSourceTestLogger Log
-        {
-            get
-            {
-                return s_log;
-            }
-        }
+        public static EventSourceTestLogger Log { get; } = new();
 
         [Event(1, Keywords = Keywords.Default, Level = EventLevel.Informational)]
         public void TestMessage(string message)

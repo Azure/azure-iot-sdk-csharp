@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
@@ -27,20 +27,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private const int MaxIterationWait = 30;
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
-        private static readonly IReadOnlyList<JobStatus> s_incompleteJobs = new[]
-        {
-            JobStatus.Running,
-            JobStatus.Enqueued,
-            JobStatus.Queued,
-            JobStatus.Scheduled,
-            JobStatus.Unknown,
-        };
-
         [DataTestMethod]
         [TestCategory("LongRunning")]
         [Timeout(LongRunningTestTimeoutMilliseconds)] // the number of jobs that can be run at a time are limited anyway
         [DoNotParallelize]
-        [Ignore]
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, true)]
@@ -156,11 +146,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 try
                 {
                     await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up device {deviceId} due to {ex.Message}");
+                }
+
+                try
+                {
                     await registryManager.RemoveConfigurationAsync(configId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    Logger.Trace($"Failed to clean up device/config due to {ex}");
+                    Logger.Trace($"Failed to clean up config {configId} due to {ex.Message}");
                 }
             }
         }
@@ -192,9 +190,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             Uri containerUri,
             ManagedIdentity identity)
         {
-            int tryCount = 0;
-            JobProperties importJobResponse = null;
-
             JobProperties jobProperties = JobProperties.CreateForImportJob(
                 containerUri.ToString(),
                 containerUri.ToString(),
@@ -204,39 +199,42 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             jobProperties.ConfigurationsBlobName = configsFileName;
             jobProperties.IncludeConfigurations = true;
 
-            while (tryCount < MaxIterationWait)
+            var sw = Stopwatch.StartNew();
+
+            while (!jobProperties.IsFinished)
             {
                 try
                 {
-                    importJobResponse = await registryManager.ImportDevicesAsync(jobProperties).ConfigureAwait(false);
-                    if (!string.IsNullOrWhiteSpace(importJobResponse.FailureReason))
+                    jobProperties = await registryManager.ImportDevicesAsync(jobProperties).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(jobProperties.FailureReason))
                     {
-                        Logger.Trace($"Job failed due to {importJobResponse.FailureReason}");
+                        Logger.Trace($"Job failed due to {jobProperties.FailureReason}");
                     }
                     break;
                 }
-                // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
+                // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests running jobs.
+                catch (JobQuotaExceededException)
                 {
-                    Logger.Trace($"JobQuotaExceededException... waiting.");
+                    Logger.Trace($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     continue;
                 }
             }
 
+            sw.Stop();
+            Logger.Trace($"Job started after {sw.Elapsed}.");
+
+            sw.Restart();
+
             // Wait for job to complete
-            for (int i = 0; i < MaxIterationWait; ++i)
+            while (!jobProperties.IsFinished)
             {
                 await Task.Delay(1000).ConfigureAwait(false);
-                importJobResponse = await registryManager.GetJobAsync(importJobResponse?.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {importJobResponse.JobId} is {importJobResponse.Status} with progress {importJobResponse.Progress}%");
-                if (!s_incompleteJobs.Contains(importJobResponse.Status))
-                {
-                    break;
-                }
+                jobProperties = await registryManager.GetJobAsync(jobProperties.JobId).ConfigureAwait(false);
+                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} with progress {jobProperties.Progress}% after {sw.Elapsed}.");
             }
 
-            return importJobResponse;
+            return jobProperties;
         }
     }
 }

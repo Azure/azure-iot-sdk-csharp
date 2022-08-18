@@ -19,7 +19,7 @@ namespace System.Diagnostics.Tracing
         // Link to EventListener sourcecode: https://github.com/dotnet/runtime/blob/6696065ab0f517f5a9e5f55c559df0010a816dbe/src/libraries/System.Private.CoreLib/src/System/Diagnostics/Tracing/EventSource.cs#L4009-L4018
         private static readonly string[] s_eventFilter = new string[] { "DotNetty-Default", "Microsoft-Azure-Devices", "Azure-Core", "Azure-Identity" };
 
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
