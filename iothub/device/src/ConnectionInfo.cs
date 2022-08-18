@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal ConnectionInfo()
         {
-            Status = ConnectionStatus.Disabled;
+            Status = ConnectionStatus.Disconnected;
             ChangeReason = ConnectionStatusChangeReason.ClientClose;
             StatusLastChangedOnUtc = DateTimeOffset.UtcNow;
-            RecommendedAction = RecommendedAction.DisposeAndOpenIfWish;
+            RecommendedAction = RecommendedAction.DefaultAction;
         }
 
         internal ConnectionInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason, DateTimeOffset changedOnUtc)
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The current connection status of the device or module.
         /// </summary>
         /// <remark>
-        /// Defaults to <see cref="ConnectionStatus.Disabled"/>.
+        /// Defaults to <see cref="ConnectionStatus.Disconnected"/>.
         /// </remark>>
         public ConnectionStatus Status { get; }
 

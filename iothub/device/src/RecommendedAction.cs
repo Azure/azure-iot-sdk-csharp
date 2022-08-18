@@ -48,8 +48,13 @@ namespace Microsoft.Azure.Devices.Client
         FixDeviceStatus,
 
         /// <summary>
-        /// This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.
+        /// The combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.
         /// </summary>
         ContactUs,
+
+        /// <summary>
+        /// The default recommended action. This is being used for the initialization of ConnectionInfo only.
+        /// </summary>
+        DefaultAction,
     }
 }
