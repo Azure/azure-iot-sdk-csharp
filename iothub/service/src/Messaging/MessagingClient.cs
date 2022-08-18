@@ -205,13 +205,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                if (ex is IotHubException || ex is IOException)
-                {
-                    if (ex is IotHubException)
-                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
-                    else
-                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
-                }
+
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
@@ -275,13 +269,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                if (ex is IotHubException || ex is IOException)
-                {
-                    if (ex is IotHubException)
-                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
-                    else
-                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
-                }
+
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally

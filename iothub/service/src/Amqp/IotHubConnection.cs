@@ -292,6 +292,7 @@ namespace Microsoft.Azure.Devices
                     MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                     ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture), // Use a human readable link name to help with debugging
                     HostName = Credential.AmqpEndpoint.Host,
+                    IdleTimeOut = Convert.ToUInt32(_options.AmqpConnectionKeepAlive.TotalMilliseconds)
                 };
 
                 var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
@@ -365,6 +366,12 @@ namespace Microsoft.Azure.Devices
 
                 // Set SubProtocol to AMQPWSB10
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
+
+                if (_options.AmqpWebSocketKeepAlive != null)
+                {
+                    // safe to cast from TimeSpan? to TimeSpan since it is not null
+                    websocket.Options.KeepAliveInterval = (TimeSpan)_options.AmqpWebSocketKeepAlive;
+                }
 
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = _options.Proxy;

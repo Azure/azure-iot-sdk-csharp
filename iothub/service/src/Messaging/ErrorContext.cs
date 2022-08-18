@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices
         /// For example, if you attempt to send a cloud-to-device message to a device that does not exist. if this exception is null, then <see cref="IOException"/> will not be null.
         /// </remarks>
         public IotHubException IotHubException { get; }
+
         /// <summary>
         /// The network level exception, if any network level exception caused this connection loss.
         /// </summary>

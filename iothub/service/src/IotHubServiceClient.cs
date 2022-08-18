@@ -204,6 +204,9 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _httpClient?.Dispose();
+            MessageFeedbackProcessor?.Dispose();
+            FileUploadNotificationProcessor?.Dispose();
+            Messaging?.Dispose();
         }
 
         private void InitializeSubclients(IotHubServiceClientOptions _options)
@@ -217,7 +220,7 @@ namespace Microsoft.Azure.Devices
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Messaging = new MessagingClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _options);
-            
+
             MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
             FileUploadNotificationProcessor = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
         }

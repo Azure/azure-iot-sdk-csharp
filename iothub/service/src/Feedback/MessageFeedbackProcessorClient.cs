@@ -172,10 +172,10 @@ namespace Microsoft.Azure.Devices
                         IEnumerable<FeedbackRecord> records = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
 
-                        var feedbackBatch = new FeedbackBatch
+                        FeedbackBatch feedbackBatch = new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            LockToken = amqpMessage.DeliveryTag.Array.ToString(),
+                            DeliveryTag = amqpMessage.DeliveryTag,
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };

@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.Client
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly IotHubClientOptions _clientOptions;
 
-        // Connection state change information
-        private volatile Action<ConnectionInfo> _connectionStateChangeHandler;
+        // Connection status change information
+        private volatile Action<ConnectionInfo> _connectionStatusChangeHandler;
 
         internal ConnectionInfo _connectionInfo { get; private set; } = new ConnectionInfo();
 
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
                 ClientConfiguration = clientConfiguration,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
-                ConnectionStateChangeHandler = OnConnectionStateChanged,
+                ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 ModuleEventCallback = OnModuleEventMessageReceivedAsync,
                 DeviceEventCallback = OnDeviceMessageReceivedAsync,
             };
@@ -146,27 +146,27 @@ namespace Microsoft.Azure.Devices.Client
         internal ClientConfiguration IotHubConnectionInfo { get; private set; }
 
         /// <summary>
-        /// Sets a new delegate for the connection state changed callback. If a delegate is already associated,
+        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
         /// it will be replaced with the new delegate.
         /// </summary>
-        /// <param name="stateChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStateChangeHandler(Action<ConnectionInfo> stateChangeHandler)
+        /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
+        public void SetConnectionStatusChangeHandler(Action<ConnectionInfo> statusChangeHandler)
         {
             if (Logging.IsEnabled)
-                Logging.Info(this, stateChangeHandler, nameof(SetConnectionStateChangeHandler));
+                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeHandler));
 
-            _connectionStateChangeHandler = stateChangeHandler;
+            _connectionStatusChangeHandler = statusChangeHandler;
         }
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
+        /// Set a callback that will be called whenever the client receives a status update
         /// (desired or reported) from the service.
         /// Set callback value to null to clear.
         /// </summary>
         /// <remarks>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
         /// </remarks>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="callback">Callback to call after the status update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
@@ -427,7 +427,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The device twin object for the current device</returns>
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state.
+            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
             try
             {
                 return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
@@ -1156,27 +1156,27 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStateChanged(ConnectionInfo connectionInfo)
+        internal void OnConnectionStatusChanged(ConnectionInfo connectionInfo)
         {
-            var state = connectionInfo.State;
+            var status = connectionInfo.Status;
             var reason = connectionInfo.ChangeReason;
 
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, state, reason, nameof(OnConnectionStateChanged));
+                    Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
 
-                if (_connectionInfo.State != state
+                if (_connectionInfo.Status != status
                     || _connectionInfo.ChangeReason != reason)
                 {
-                    _connectionInfo = new ConnectionInfo(state, reason, DateTimeOffset.UtcNow);
-                    _connectionStateChangeHandler?.Invoke(_connectionInfo);
+                    _connectionInfo = new ConnectionInfo(status, reason, DateTimeOffset.UtcNow);
+                    _connectionStatusChangeHandler?.Invoke(_connectionInfo);
                 }
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, state, reason, nameof(OnConnectionStateChanged));
+                    Logging.Exit(this, status, reason, nameof(OnConnectionStatusChanged));
             }
         }
 

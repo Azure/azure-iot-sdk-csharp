@@ -10,7 +10,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// E2E test class for all Query client operations.
@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class QueryClientE2ETests : E2EMsTestBase
+    public class QueryClientE2eTests : E2EMsTestBase
     {
-        private readonly string _idPrefix = $"{nameof(QueryClientE2ETests)}_";
+        private readonly string _idPrefix = $"{nameof(QueryClientE2eTests)}_";
 
         // There is some latency between when a twin/job is created and when it can be queried. This
         // timeout is for how long to wait for this latency before failing the test.

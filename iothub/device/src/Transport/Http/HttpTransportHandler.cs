@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan s_defaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
 
-        private static readonly IDictionary<string, string> s_mapMessagePropertiesToHttpHeaders = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> s_mapMessagePropertiesToHttpHeaders = new()
         {
             { MessageSystemPropertyNames.Ack, CustomHeaderConstants.Ack },
             { MessageSystemPropertyNames.CorrelationId, CustomHeaderConstants.CorrelationId },
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             { MessageSystemPropertyNames.ComponentName, CustomHeaderConstants.ComponentName }
         };
 
-        private static readonly IDictionary<string, string> s_mapHttpHeadersToMessageProperties = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> s_mapHttpHeadersToMessageProperties = new()
         {
             { HttpResponseHeader.ETag.ToString(), MessageSystemPropertyNames.LockToken },
             { CustomHeaderConstants.MessageId, MessageSystemPropertyNames.MessageId },

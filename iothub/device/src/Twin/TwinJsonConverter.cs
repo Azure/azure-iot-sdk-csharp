@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         private const string StatusTag = "status";
         private const string StatusReasonTag = "statusReason";
         private const string StatusUpdateTimeTag = "statusUpdateTime";
-        private const string ConnectionStateTag = "connectionState";
+        private const string ConnectionStatusTag = "connectionStatus";
         private const string LastActivityTimeTag = "lastActivityTime";
         private const string CloudToDeviceMessageCountTag = "cloudToDeviceMessageCount";
         private const string AuthenticationTypeTag = "authenticationType";
@@ -111,10 +111,10 @@ namespace Microsoft.Azure.Devices.Client
                 writer.WriteValue(twin.StatusUpdatedTime);
             }
 
-            if (twin.ConnectionState != null)
+            if (twin.ConnectionStatus != null)
             {
-                writer.WritePropertyName(ConnectionStateTag);
-                writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionState, new StringEnumConverter()));
+                writer.WritePropertyName(ConnectionStatusTag);
+                writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionStatus, new StringEnumConverter()));
             }
 
             if (twin.LastActivityTime != null)
@@ -288,11 +288,11 @@ namespace Microsoft.Azure.Devices.Client
                         twin.StatusUpdatedTime = ConvertToDateTime(reader.Value);
                         break;
 
-                    case ConnectionStateTag:
-                        string connectionState = reader.Value as string;
-                        twin.ConnectionState = connectionState?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState)
-                            : serializer.Deserialize<DeviceConnectionState>(reader);
+                    case ConnectionStatusTag:
+                        string connectionStatus = reader.Value as string;
+                        twin.ConnectionStatus = connectionStatus?[0] == '\"'
+                            ? JsonConvert.DeserializeObject<DeviceConnectionStatus>(connectionStatus)
+                            : serializer.Deserialize<DeviceConnectionStatus>(reader);
                         break;
 
                     case LastActivityTimeTag:

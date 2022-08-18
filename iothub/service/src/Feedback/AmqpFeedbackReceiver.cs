@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class AmqpFeedbackReceiver : FeedbackReceiver<FeedbackBatch>, IDisposable
+    internal sealed class AmqpFeedbackReceiver : IDisposable
     {
         private readonly string _receivingPath;
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
 
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices
                         return new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString(),
+                            DeliveryTag = amqpMessage.DeliveryTag,
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };
@@ -125,21 +125,21 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        public Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
-                feedback.LockToken,
+                feedback.DeliveryTag,
                 AmqpConstants.AcceptedOutcome,
                 false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
-        public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        public Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
-                feedback.LockToken,
+                feedback.DeliveryTag,
                 AmqpConstants.ReleasedOutcome,
                 false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);

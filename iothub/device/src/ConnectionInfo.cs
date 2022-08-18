@@ -2,49 +2,47 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The connection information since the last state change.
+    /// The connection information since the last status change.
     /// </summary>
     public class ConnectionInfo
     {
         internal ConnectionInfo()
         {
-            State = ConnectionState.Disconnected;
-            ChangeReason = ConnectionStateChangeReason.ClientClose;
-            StateLastChangedOnUtc = DateTimeOffset.UtcNow;
+            Status = ConnectionStatus.Disconnected;
+            ChangeReason = ConnectionStatusChangeReason.ClientClose;
+            StatusLastChangedOnUtc = DateTimeOffset.UtcNow;
         }
 
-        internal ConnectionInfo(ConnectionState state, ConnectionStateChangeReason changeReason, DateTimeOffset changedOnUtc)
+        internal ConnectionInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason, DateTimeOffset changedOnUtc)
         { 
-            State = state;
+            Status = status;
             ChangeReason = changeReason;
-            StateLastChangedOnUtc = changedOnUtc;
+            StatusLastChangedOnUtc = changedOnUtc;
         }
 
         /// <summary>
-        /// The current connection state of the device or module.
+        /// The current connection status of the device or module.
         /// </summary>
         /// <remark>
-        /// Defaults to <see cref="ConnectionState.Disconnected"/>.
+        /// Defaults to <see cref="ConnectionStatus.Disconnected"/>.
         /// </remark>>
-        public ConnectionState State { get; }
+        public ConnectionStatus Status { get; }
 
         /// <summary>
-        /// The reason for the current connection state change.
+        /// The reason for the current connection status change.
         /// </summary>
         /// <remark>
-        /// Defaults to <see cref="ConnectionStateChangeReason.ClientClose"/>.
+        /// Defaults to <see cref="ConnectionStatusChangeReason.ClientClose"/>.
         /// </remark>
-        public ConnectionStateChangeReason ChangeReason { get; }
+        public ConnectionStatusChangeReason ChangeReason { get; }
 
         /// <summary>
-        /// Timestamp in UTC when the last connection state was changed.
+        /// Timestamp in UTC when the last connection status was changed.
         /// </summary>
-        public DateTimeOffset StateLastChangedOnUtc { get; internal set; }
+        public DateTimeOffset StatusLastChangedOnUtc { get; internal set; }
     }
 }

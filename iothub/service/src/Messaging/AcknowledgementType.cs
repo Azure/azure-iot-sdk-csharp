@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
     public enum AcknowledgementType
     {
         /// <summary>
-        /// This acknowledgement will remove the received message from the service's message queue as it was received and handled by the service.
+        /// This acknowledgement will remove the received message from the service's message queue as it was received and handled by the client.
         /// </summary>
         Complete,
 
