@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -147,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<IotHubDeviceClient> deviceClients = new List<IotHubDeviceClient>();
             IList<AuthenticationWithTokenRefresh> authenticationMethods = new List<AuthenticationWithTokenRefresh>();
-            IList<AmqpConnectionStateChange> amqpConnectionStates = new List<AmqpConnectionStateChange>();
+            IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
 
             // Set up amqp transport settings to multiplex all device sessions over the same amqp connection.
             var amqpTransportSettings = new IotHubClientAmqpSettings()
@@ -172,30 +171,30 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(amqpTransportSettings);
 
-            // Initialize the client instances, set the connection state change handler and open the connection.
+            // Initialize the client instances, set the connection status change handler and open the connection.
             for (int i = 0; i < devicesCount; i++)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope - the client instance is disposed during the course of the test.
                 var deviceClient = IotHubDeviceClient.Create(testDevices[i].IotHubHostName, authenticationMethods[i], options);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                var amqpConnectionStateChange = new AmqpConnectionStateChange(testDevices[i].Id, Logger);
-                deviceClient.SetConnectionStateChangeHandler(amqpConnectionStateChange.ConnectionStateChangeHandler);
-                amqpConnectionStates.Add(amqpConnectionStateChange);
+                var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);
+                deviceClient.SetConnectionStatusChangeHandler(amqpConnectionStatusChange.ConnectionStatusChangeHandler);
+                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 deviceClients.Add(deviceClient);
             }
 
             // Close and dispose client instance 1.
-            // The closed client should report a state of "disabled" while the rest of them should be connected.
+            // The closed client should report a status of "disabled" while the rest of them should be connected.
             // This is to ensure that disposal on one multiplexed device doesn't cause cascading failures
             // in the rest of the devices on the same tcp connection.
 
             await deviceClients[0].CloseAsync().ConfigureAwait(false);
             deviceClients[0].Dispose();
 
-            deviceClients[0].ConnectionInfo.State.Should().Be(ConnectionState.Disabled);
+            deviceClients[0].ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled);
 
             Logger.Trace($"{nameof(ReuseAuthenticationMethod_MuxedDevices)}: Confirming the rest of the multiplexed devices are online and operational.");
 
@@ -206,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 notRecovered = false;
                 for (int i = 1; i < devicesCount; i++)
                 {
-                    if (deviceClients[i].ConnectionInfo.State != ConnectionState.Connected)
+                    if (deviceClients[i].ConnectionInfo.Status != ConnectionStatus.Connected)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                         notRecovered = true;
@@ -233,7 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             deviceClients.Clear();
-            amqpConnectionStates.Clear();
+            amqpConnectionStatuses.Clear();
 
             // Initialize the client instances by reusing the created authentication methods and open the connection.
             for (int i = 0; i < devicesCount; i++)
@@ -245,9 +244,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     options);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                var amqpConnectionStatusChange = new AmqpConnectionStateChange(testDevices[i].Id, Logger);
-                deviceClient.SetConnectionStateChangeHandler(amqpConnectionStatusChange.ConnectionStateChangeHandler);
-                amqpConnectionStates.Add(amqpConnectionStatusChange);
+                var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevices[i].Id, Logger);
+                deviceClient.SetConnectionStatusChangeHandler(amqpConnectionStatusChange.ConnectionStatusChangeHandler);
+                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
 
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 deviceClients.Add(deviceClient);
@@ -257,13 +256,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Also dispose the authentication methods created.
             for (int i = 0; i < devicesCount; i++)
             {
-                deviceClients[i].ConnectionInfo.State.Should().Be(ConnectionState.Connected);
+                deviceClients[i].ConnectionInfo.Status.Should().Be(ConnectionStatus.Connected);
 
                 await deviceClients[i].CloseAsync();
                 deviceClients[i].Dispose();
                 authenticationMethods[i].Dispose();
 
-                deviceClients[i].ConnectionInfo.State.Should().Be(ConnectionState.Disabled);
+                deviceClients[i].ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled);
             }
         }
 
