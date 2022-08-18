@@ -9,7 +9,7 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Specifies the different states of a device.
+    /// Specifies the different statuses of a device.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1717:OnlyFlagsEnumsShouldHavePluralNames",
         Justification = "Public API cannot change name.")]

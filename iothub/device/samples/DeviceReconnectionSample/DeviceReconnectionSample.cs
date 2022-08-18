@@ -21,11 +21,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private readonly List<string> _deviceConnectionStrings;
         private readonly IotHubClientOptions _clientOptions;
 
-        // An UnauthorizedException is handled in the connection state change handler through its corresponding state change event.
+        // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
         private readonly Dictionary<Type, string> _exceptionsToBeIgnored = new()
         {
-            { typeof(UnauthorizedException), "Unauthorized exceptions are handled by the ConnectionStateChangeHandler." }
+            { typeof(UnauthorizedException), "Unauthorized exceptions are handled by the ConnectionStatusChangeHandler." }
         };
 
         // Mark these fields as volatile so that their latest values are referenced.
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _clientOptions.SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset;
         }
 
-        private static bool IsDeviceConnected => s_deviceClient.ConnectionInfo.State == ConnectionState.Connected;
+        private static bool IsDeviceConnected => s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Connected;
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
@@ -110,13 +110,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     if (ShouldClientBeInitialized())
                     {
-                        var state = ConnectionState.Disconnected;
+                        var status = ConnectionStatus.Disconnected;
                         if (s_deviceClient != null)
                         {
-                            state = s_deviceClient.ConnectionInfo.State;
+                            status = s_deviceClient.ConnectionInfo.Status;
                         }
 
-                        Console.WriteLine($"Attempting to initialize the client instance, current state={state}");
+                        Console.WriteLine($"Attempting to initialize the client instance, current status={status}");
 
                         // If the device client instance has been previously initialized, close and dispose it.
                         if (s_deviceClient != null)
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
 
                         s_deviceClient = IotHubDeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _clientOptions);
-                        s_deviceClient.SetConnectionStateChangeHandler(ConnectionStateChangeHandler);
+                        s_deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
                         await s_deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null, s_cancellationTokenSource.Token);
                         Console.WriteLine("Initialized the client instance.");
                     }
@@ -177,40 +177,40 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"Completed message [{messageData}].");
         }
 
-        // It is not generally a good practice to have async void methods, however, DeviceClient.SetConnectionStateChangesHandler() event handler signature
+        // It is not generally a good practice to have async void methods, however, DeviceClient.SetConnectionStatusChangesHandler() event handler signature
         // has a void return type. As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
         // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
-        private async void ConnectionStateChangeHandler(ConnectionInfo connectionInfo)
+        private async void ConnectionStatusChangeHandler(ConnectionInfo connectionInfo)
         {
-            var state = connectionInfo.State;
+            var status = connectionInfo.Status;
             var reason = connectionInfo.ChangeReason;
-            Console.WriteLine($"Connection state changed: state={state}, reason={reason}");
+            Console.WriteLine($"Connection status changed: status={status}, reason={reason}");
 
-            switch (state)
+            switch (status)
             {
-                case ConnectionState.Connected:
+                case ConnectionStatus.Connected:
                     Console.WriteLine("### The DeviceClient is CONNECTED; all operations will be carried out as normal.");
 
-                    // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection state changes into Connected.
-                    // This can get back "lost" twin updates in a device reconnection from state like Disconnected_Retrying or Disconnected.
+                    // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
+                    // This can get back "lost" twin updates in a device reconnection from status like Disconnected_Retrying or Disconnected.
                     await GetTwinAndDetectChangesAsync(s_cancellationTokenSource.Token);
-                    Console.WriteLine("The client has retrieved twin values after the connection state changes into CONNECTED.");
+                    Console.WriteLine("The client has retrieved twin values after the connection status changes into CONNECTED.");
                     break;
 
-                case ConnectionState.DisconnectedRetrying:
+                case ConnectionStatus.DisconnectedRetrying:
                     Console.WriteLine("### The DeviceClient is retrying based on the retry policy. Do NOT close or open the DeviceClient instance.");
                     break;
 
-                case ConnectionState.Disabled:
+                case ConnectionStatus.Disabled:
                     Console.WriteLine("### The DeviceClient has been closed gracefully." +
                         "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
                     break;
 
-                case ConnectionState.Disconnected:
+                case ConnectionStatus.Disconnected:
                     switch (reason)
                     {
-                        case ConnectionStateChangeReason.BadCredential:
+                        case ConnectionStatusChangeReason.BadCredential:
                             // When getting this reason, the current connection string being used is not valid.
                             // If we had a backup, we can try using that.
                             _deviceConnectionStrings.RemoveAt(0);
@@ -225,20 +225,20 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             s_cancellationTokenSource.Cancel();
                             break;
 
-                        case ConnectionStateChangeReason.DeviceDisabled:
+                        case ConnectionStatusChangeReason.DeviceDisabled:
                             Console.WriteLine("### The device has been deleted or marked as disabled (on your hub instance)." +
                                 "\nFix the device status in Azure and then create a new device client instance.");
                             s_cancellationTokenSource.Cancel();
                             break;
 
-                        case ConnectionStateChangeReason.RetryExpired:
+                        case ConnectionStatusChangeReason.RetryExpired:
                             Console.WriteLine("### The DeviceClient has been disconnected because the retry policy expired." +
                                 "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
 
                             await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
                             break;
 
-                        case ConnectionStateChangeReason.CommunicationError:
+                        case ConnectionStatusChangeReason.CommunicationError:
                             Console.WriteLine("### The DeviceClient has been disconnected due to a non-retry-able exception. Inspect the exception for details." +
                                 "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
 
@@ -246,14 +246,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             break;
 
                         default:
-                            Console.WriteLine("### This combination of ConnectionState and ConnectionStateChangeReason is not expected, contact the client library team with logs.");
+                            Console.WriteLine("### This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.");
                             break;
                     }
 
                     break;
 
                 default:
-                    Console.WriteLine("### This combination of ConnectionState and ConnectionStateChangeReason is not expected, contact the client library team with logs.");
+                    Console.WriteLine("### This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.");
                     break;
             }
         }
@@ -361,14 +361,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return eventMessage;
         }
 
-        // If the client reports Connected state, it is already in operational state.
-        // If the client reports DisconnectedRetrying state, it is trying to recover its connection.
-        // If the client reports Disconnected state, you will need to dispose and recreate the client.
-        // If the client reports Disabled state, you will need to dispose and recreate the client.
+        // If the client reports Connected status, it is already in operational status.
+        // If the client reports DisconnectedRetrying status, it is trying to recover its connection.
+        // If the client reports Disconnected status, you will need to dispose and recreate the client.
+        // If the client reports Disabled status, you will need to dispose and recreate the client.
         private bool ShouldClientBeInitialized()
         {
             return (s_deviceClient == null) 
-                || (s_deviceClient.ConnectionInfo.State == ConnectionState.Disconnected || s_deviceClient.ConnectionInfo.State == ConnectionState.Disabled)
+                || (s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disabled)
                 && _deviceConnectionStrings.Any();
         }
     }

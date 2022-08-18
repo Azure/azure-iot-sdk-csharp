@@ -29,15 +29,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_disposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
 
-                if (!_disposed)
+                if (!_disposed) // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 {
                     base.Dispose(disposing);
                     if (disposing)
                     {
                         OnTransportClosedGracefully();
                     }
-
-                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 }
             }
             finally

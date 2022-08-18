@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private Task _transportClosedTask;
         private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
 
-        private readonly Action<ConnectionInfo> _onConnectionStateChanged;
+        private readonly Action<ConnectionInfo> _onConnectionStatusChanged;
 
         public RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 deltaBackoff: TimeSpan.FromMilliseconds(100));
 
             _internalRetryPolicy = new RetryPolicy(new TransientErrorStrategy(), new RetryStrategyAdapter(defaultRetryStrategy));
-            _onConnectionStateChanged = context.ConnectionStateChangeHandler;
+            _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
@@ -665,14 +665,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
 
                     // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
-                    // we are returning the corresponding connection state change event => disconnected: retry_expired.
+                    // we are returning the corresponding connection status change event => disconnected: retry_expired.
                     try
                     {
                         await OpenInternalAsync(withRetry, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (!Fx.IsFatal(ex))
                     {
-                        HandleConnectionStateExceptions(ex, true);
+                        HandleConnectionStatusExceptions(ex, true);
                         throw;
                     }
 
@@ -717,12 +717,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 // Will throw on error.
                                 await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                                connectionInfo = new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
-                                _onConnectionStateChanged(connectionInfo);
+                                connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                                _onConnectionStatusChanged(connectionInfo);
                             }
                             catch (Exception ex) when (!Fx.IsFatal(ex))
                             {
-                                HandleConnectionStateExceptions(ex);
+                                HandleConnectionStatusExceptions(ex);
                                 throw;
                             }
                             finally
@@ -743,12 +743,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Will throw on error.
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                    connectionInfo = new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
-                    _onConnectionStateChanged(connectionInfo);
+                    connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                    _onConnectionStatusChanged(connectionInfo);
                 }
                 catch (Exception ex) when (!Fx.IsFatal(ex))
                 {
-                    HandleConnectionStateExceptions(ex);
+                    HandleConnectionStatusExceptions(ex);
                     throw;
                 }
                 finally
@@ -783,8 +783,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                connectionInfo = new ConnectionInfo(ConnectionState.Disabled, ConnectionStateChangeReason.ClientClose, DateTimeOffset.UtcNow);
-                _onConnectionStateChanged(connectionInfo);
+                connectionInfo = new ConnectionInfo(ConnectionStatus.Disabled, ConnectionStatusChangeReason.ClientClose, DateTimeOffset.UtcNow);
+                _onConnectionStatusChanged(connectionInfo);
                 return;
             }
 
@@ -802,8 +802,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                    connectionInfo = new ConnectionInfo(ConnectionState.Disconnected, ConnectionStateChangeReason.RetryExpired, DateTimeOffset.UtcNow);
-                    _onConnectionStateChanged(connectionInfo);
+                    connectionInfo = new ConnectionInfo(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.RetryExpired, DateTimeOffset.UtcNow);
+                    _onConnectionStatusChanged(connectionInfo);
                     return;
                 }
 
@@ -813,11 +813,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 // always reconnect.
-                connectionInfo = new ConnectionInfo(ConnectionState.DisconnectedRetrying, ConnectionStateChangeReason.CommunicationError, DateTimeOffset.UtcNow);
-                _onConnectionStateChanged(connectionInfo);
+                connectionInfo = new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError, DateTimeOffset.UtcNow);
+                _onConnectionStatusChanged(connectionInfo);
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
-                // This will recover to the state before the disconnect.
+                // This will recover to the status before the disconnect.
                 await _internalRetryPolicy.RunWithRetryAsync(async () =>
                 {
                     if (Logging.IsEnabled)
@@ -866,8 +866,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _transportClosedTask = HandleDisconnectAsync();
 
                     _opened = true;
-                    connectionInfo = new ConnectionInfo(ConnectionState.Connected, ConnectionStateChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
-                    _onConnectionStateChanged(connectionInfo);
+                    connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                    _onConnectionStatusChanged(connectionInfo);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
@@ -879,7 +879,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex.ToString(), nameof(HandleDisconnectAsync));
 
-                HandleConnectionStateExceptions(ex, true);
+                HandleConnectionStatusExceptions(ex, true);
             }
             finally
             {
@@ -889,16 +889,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         // The retryAttemptsExhausted flag differentiates between calling this method while still retrying
         // vs calling this when no more retry attempts are being made.
-        private void HandleConnectionStateExceptions(Exception exception, bool retryAttemptsExhausted = false)
+        private void HandleConnectionStatusExceptions(Exception exception, bool retryAttemptsExhausted = false)
         {
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,
                     $"Received exception: {exception}, retryAttemptsExhausted={retryAttemptsExhausted}",
-                    nameof(HandleConnectionStateExceptions));
+                    nameof(HandleConnectionStatusExceptions));
 
-            ConnectionStateChangeReason reason = ConnectionStateChangeReason.CommunicationError;
-            ConnectionState state = ConnectionState.Disconnected;
+            ConnectionStatusChangeReason reason = ConnectionStatusChangeReason.CommunicationError;
+            ConnectionStatus status = ConnectionStatus.Disconnected;
 
             if (exception is IotHubException hubException)
             {
@@ -906,29 +906,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (retryAttemptsExhausted)
                     {
-                        reason = ConnectionStateChangeReason.RetryExpired;
+                        reason = ConnectionStatusChangeReason.RetryExpired;
                     }
                     else
                     {
-                        state = ConnectionState.DisconnectedRetrying;
+                        status = ConnectionStatus.DisconnectedRetrying;
                     }
                 }
                 else if (hubException is UnauthorizedException)
                 {
-                    reason = ConnectionStateChangeReason.BadCredential;
+                    reason = ConnectionStatusChangeReason.BadCredential;
                 }
                 else if (hubException is DeviceNotFoundException)
                 {
-                    reason = ConnectionStateChangeReason.DeviceDisabled;
+                    reason = ConnectionStatusChangeReason.DeviceDisabled;
                 }
             }
 
-            _onConnectionStateChanged(new ConnectionInfo(state, reason, DateTimeOffset.UtcNow));
+            _onConnectionStatusChanged(new ConnectionInfo(status, reason, DateTimeOffset.UtcNow));
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,
-                    $"Connection state change: state={state}, reason={reason}",
-                    nameof(HandleConnectionStateExceptions));
+                    $"Connection status change: status={status}, reason={reason}",
+                    nameof(HandleConnectionStatusExceptions));
         }
 
         protected override void Dispose(bool disposing)
