@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                                 break;
 
                             case "DEVICEID":
-                                DeviceID = part.Substring("DEVICEID=".Length);
+                                DeviceId = part.Substring("DEVICEID=".Length);
                                 break;
 
                             case "SHAREDACCESSKEYNAME":
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 public string IotHubHostName { get; private set; }
 
-                public string DeviceID { get; private set; }
+                public string DeviceId { get; private set; }
 
                 public string SharedAccessKey { get; private set; }
 
