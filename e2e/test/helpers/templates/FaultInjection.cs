@@ -242,8 +242,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         // account for real network issues.
                         connectionStatusChangeCount.Should().Be(2, $"Device Id {testDevice.Id}");
                     }
-                    deviceClient.ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled, $"The connection status change reason was {deviceClient.ConnectionInfo.ChangeReason}");
-                    deviceClient.ConnectionInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ClientClose);
+                    deviceClient.ConnectionInfo.Status.Should().Be(ConnectionStatus.Closed, $"The connection status change reason was {deviceClient.ConnectionInfo.ChangeReason}");
+                    deviceClient.ConnectionInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ClientClosed);
                 }
             }
             finally

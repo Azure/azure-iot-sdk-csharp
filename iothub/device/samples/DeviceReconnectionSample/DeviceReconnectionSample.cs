@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         }
 
                         s_deviceClient = IotHubDeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _clientOptions);
-                        s_deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandler);
+                        s_deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandlerAsync);
                         await s_deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null, s_cancellationTokenSource.Token);
                         Console.WriteLine("Initialized the client instance.");
                     }
@@ -181,49 +181,47 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has a void return type. As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
         // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
-        private async void ConnectionStatusChangeHandler(ConnectionInfo connectionInfo)
+        private async void ConnectionStatusChangeHandlerAsync(ConnectionInfo connectionInfo)
         {
-            var status = connectionInfo.Status;
-            var reason = connectionInfo.ChangeReason;
-            Console.WriteLine($"Connection status changed: status={status}, reason={reason}");
-            Console.WriteLine($"The recommended action upon the current status and change reason is {connectionInfo.RecommendedAction}");
+            ConnectionStatus status = connectionInfo.Status;
+            ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
+            Console.WriteLine($"Connection status changed: status={status}, reason={reason}, recommendation {connectionInfo.RecommendedAction}");
 
-            switch (status)
+            // In our case, we can operate with more than 1 shared access key and attempt to fall back to a secondary.
+            // We'll disregard the SDK's recommendation and attempt to connect with the second one.
+            if (status == ConnectionStatus.Disconnected
+                && reason == ConnectionStatusChangeReason.BadCredential
+                && _deviceConnectionStrings.Count > 1)
             {
-                case ConnectionStatus.Connected:
+                // When getting this reason, the current connection string being used is not valid.
+                // If we had a backup, we can try using that.
+                _deviceConnectionStrings.RemoveAt(0);
+                Console.WriteLine($"The current connection string is invalid. Trying another.");
+                await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
+                return;
+            }
+
+            // Otherwise, we follow the SDK's recommendation.
+            switch (connectionInfo.RecommendedAction)
+            {
+                case RecommendedAction.OpenConnection:
+                    Console.WriteLine($"Following recommended action of reinitializing the client.");
+                    await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
+                    break;
+
+                case RecommendedAction.PerformNormally:
                     // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
                     // This can get back "lost" twin updates in a device reconnection from status like Disconnected_Retrying or Disconnected.
                     await GetTwinAndDetectChangesAsync(s_cancellationTokenSource.Token);
                     Console.WriteLine("The client has retrieved twin values after the connection status changes into CONNECTED.");
                     break;
 
-                case ConnectionStatus.Disconnected:
-                    switch (reason)
-                    {
-                        case ConnectionStatusChangeReason.BadCredential:
-                            // When getting this reason, the current connection string being used is not valid.
-                            // If we had a backup, we can try using that.
-                            _deviceConnectionStrings.RemoveAt(0);
-                            if (_deviceConnectionStrings.Any())
-                            {
-                                Console.WriteLine($"The current connection string is invalid. Trying another.");
-                                await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
-                                break;
-                            }
+                case RecommendedAction.WaitForRetryPolicy:
+                    Console.WriteLine("Letting the client retry.");
+                    break;
 
-                            s_cancellationTokenSource.Cancel();
-                            break;
-
-                        case ConnectionStatusChangeReason.DeviceDisabled:
-                            s_cancellationTokenSource.Cancel();
-                            break;
-
-                        case ConnectionStatusChangeReason.RetryExpired:
-                        case ConnectionStatusChangeReason.CommunicationError:
-                            await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
-                            break;
-                    }
-
+                case RecommendedAction.Quit:
+                    s_cancellationTokenSource.Cancel();
                     break;
             }
         }
@@ -338,7 +336,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private bool ShouldClientBeInitialized()
         {
             return (s_deviceClient == null)
-                || (s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disabled)
+                || (s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Closed)
                 && _deviceConnectionStrings.Any();
         }
     }

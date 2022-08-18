@@ -194,8 +194,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangeCount >= 2, $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
                         }
                     }
-                    Assert.AreEqual(ConnectionStatus.Disabled, deviceClients[i].ConnectionInfo.Status, $"The expected connection status should be {ConnectionStatus.Disabled} but was {deviceClients[i].ConnectionInfo.Status}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.ClientClose, deviceClients[i].ConnectionInfo.ChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.ClientClose} but was {deviceClients[i].ConnectionInfo.ChangeReason}");
+                    Assert.AreEqual(ConnectionStatus.Closed, deviceClients[i].ConnectionInfo.Status, $"The expected connection status should be {ConnectionStatus.Closed} but was {deviceClients[i].ConnectionInfo.Status}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.ClientClosed, deviceClients[i].ConnectionInfo.ChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.ClientClosed} but was {deviceClients[i].ConnectionInfo.ChangeReason}");
                 }
             }
             finally

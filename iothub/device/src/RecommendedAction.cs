@@ -1,17 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Threading;
+
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Recommended actions for device applications to take upon different connection change events.
+    /// The recommended action for device applications to take in response to a connection change event.
     /// </summary>
     public enum RecommendedAction
     {
         /// <summary>
-        /// The default recommended action. This is being used for the initialization of ConnectionInfo only.
+        /// It's recommended to initialize (if previously open, dispose, and then call open) the device client when the client is not connected.
         /// </summary>
-        DefaultAction,
+        /// <remarks>
+        /// When a client is first initialized, this is the default state.
+        /// When a client is disconnected with retries being exhausted, the client also returns the decision on whether to attempt reconnection to
+        /// the device app, with reasons such as:
+        /// <list type="bullet">
+        /// <item><see cref="ConnectionStatusChangeReason.RetryExpired"/></item>
+        /// <item><see cref="ConnectionStatusChangeReason.CommunicationError"/></item>
+        /// </list>
+        /// </remarks>
+        OpenConnection,
 
         /// <summary>
         /// It's recommended to perform operations normally on your device client as it is successfully connected to the IoT hub.
@@ -19,25 +30,25 @@ namespace Microsoft.Azure.Devices.Client
         PerformNormally,
 
         /// <summary>
-        /// It's recommended to not perform any operations on the client when:
+        /// It's recommended to not perform any operations on the client while it is trying to reconnect.
+        /// </summary>
+        /// <remarks>
+        /// This occurs when the client has encountered a retryable error. The connection status is <see cref="ConnectionStatus.DisconnectedRetrying"/>.
+        /// </remarks>
+        WaitForRetryPolicy,
+
+        /// <summary>
+        /// This is a terminal state of the client where it is unclear if the device will ever be able to connect, and may require manual intervention.
+        /// </summary>
+        /// <remarks>
+        /// This can occur when the client has been closed gracefully (by calling <see cref="IotHubDeviceClient.CloseAsync(CancellationToken)"/>
+        /// or the <see cref="IotHubModuleClient"/> equivalent).
+        /// Other terminal states include when the client has been disconnected due to non-retryable exceptions. The disconnection reasons include:
         /// <list type="bullet">
-        /// <item><description>The client has been closed gracefully.</description></item>
-        /// <item><description>The client is trying to recover from a retry-able exception.</description></item>
-        /// <item><description>The client has been disconnected due to non-retry-able exceptions with <see cref="ConnectionStatusChangeReason.BadCredential"/> or <see cref="ConnectionStatusChangeReason.DeviceDisabled"/>.
-        /// Inspect the exception for details.</description></item>
+        /// <item><see cref="ConnectionStatusChangeReason.BadCredential"/></item>
+        /// <item><see cref="ConnectionStatusChangeReason.DeviceDisabled"/></item>
         /// </list>
-        /// </summary>
-        NotDoAnything,
-
-        /// <summary>
-        /// It's recommended to re-initialize (dispose and open) the device client when the client has been disconnected due to non-retry-able exceptions with
-        /// <see cref="ConnectionStatusChangeReason.RetryExpired"/> or <see cref="ConnectionStatusChangeReason.CommunicationError"/>.
-        /// </summary>
-        ReinitializeClient,
-
-        /// <summary>
-        /// The combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.
-        /// </summary>
-        ContactUs,
+        /// </remarks>
+        Quit,
     }
 }

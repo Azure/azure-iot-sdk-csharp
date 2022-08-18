@@ -783,7 +783,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                connectionInfo = new ConnectionInfo(ConnectionStatus.Disabled, ConnectionStatusChangeReason.ClientClose);
+                connectionInfo = new ConnectionInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
                 _onConnectionStatusChanged(connectionInfo);
                 return;
             }

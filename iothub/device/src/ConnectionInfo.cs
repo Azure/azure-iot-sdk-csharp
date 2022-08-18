@@ -11,11 +11,9 @@ namespace Microsoft.Azure.Devices.Client
     public class ConnectionInfo
     {
         internal ConnectionInfo()
+            : this(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.ClientClosed)
         {
-            Status = ConnectionStatus.Disconnected;
-            ChangeReason = ConnectionStatusChangeReason.ClientClose;
-            StatusLastChangedOnUtc = DateTimeOffset.UtcNow;
-            RecommendedAction = RecommendedAction.DefaultAction;
+            RecommendedAction = RecommendedAction.OpenConnection;
         }
 
         internal ConnectionInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
@@ -38,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The reason for the current connection status change.
         /// </summary>
         /// <remark>
-        /// Defaults to <see cref="ConnectionStatusChangeReason.ClientClose"/>.
+        /// Defaults to <see cref="ConnectionStatusChangeReason.ClientClosed"/>.
         /// </remark>
         public ConnectionStatusChangeReason ChangeReason { get; }
 
@@ -51,11 +49,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Recommended actions for users to take upon different ConnectionStatus and ConnectionStatusChangeReason.
         /// </summary>
         /// <remark>
-        /// Defaults to <see cref="RecommendedAction.DefaultAction"/>.
+        /// Defaults to <see cref="RecommendedAction.OpenConnection"/>.
         /// </remark>>
         public RecommendedAction RecommendedAction { get; }
 
-        private RecommendedAction GetRecommendedAction(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
+        private static RecommendedAction GetRecommendedAction(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             switch (status)
             {
@@ -63,27 +61,26 @@ namespace Microsoft.Azure.Devices.Client
                     return RecommendedAction.PerformNormally;
 
                 case ConnectionStatus.DisconnectedRetrying:
-                case ConnectionStatus.Disabled:
-                    return RecommendedAction.NotDoAnything;
+                    return RecommendedAction.WaitForRetryPolicy;
+
+                case ConnectionStatus.Closed:
+                    return RecommendedAction.Quit;
 
                 case ConnectionStatus.Disconnected:
                     switch (changeReason)
                     {
                         case ConnectionStatusChangeReason.RetryExpired:
                         case ConnectionStatusChangeReason.CommunicationError:
-                            return RecommendedAction.ReinitializeClient;
+                            return RecommendedAction.OpenConnection;
 
                         case ConnectionStatusChangeReason.BadCredential:
                         case ConnectionStatusChangeReason.DeviceDisabled:
-                            return RecommendedAction.NotDoAnything;
-
-                        default:
-                            return RecommendedAction.ContactUs;
+                            return RecommendedAction.Quit;
                     }
-
-                default:
-                    return RecommendedAction.ContactUs;
+                    break;
             }
+
+            return RecommendedAction.OpenConnection;
         }
     }
 }
