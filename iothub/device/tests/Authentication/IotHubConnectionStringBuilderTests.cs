@@ -134,28 +134,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        public void IotHubConnectionStringBuilder_OverrideAuthMethodToken()
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessSignature={SharedAccessSignature}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.AuthenticationMethod = new DeviceAuthenticationWithToken(DeviceId, SharedAccessSignature);
-
-            csBuilder.SharedAccessSignature.Should().Be(SharedAccessSignature);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
-        }
-
-        [TestMethod]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_OverrideAuthMethodSapk()
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessSignature={SharedAccessSignature}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.AuthenticationMethod = new DeviceAuthenticationWithSharedAccessPolicyKey(DeviceId, SharedAccessKeyName, SharedAccessKey);
-
-            csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
-        }
-
-        [TestMethod]
         [DataRow("true")]
         [DataRow("True")]
         [DataRow("TRUE")]
@@ -249,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameAuthMethod_SharedAccessSignature()
         {
-            IAuthenticationMethod authMethod = AuthenticationMethodFactory.CreateAuthenticationWithToken(DeviceId, SharedAccessSignature);
+            IAuthenticationMethod authMethod = new DeviceAuthenticationWithToken(DeviceId, SharedAccessSignature);
             var csBuilder = new IotHubConnectionStringBuilder(authMethod, HostName);
             csBuilder.HostName.Should().Be(HostName);
             csBuilder.DeviceId.Should().Be(DeviceId);
