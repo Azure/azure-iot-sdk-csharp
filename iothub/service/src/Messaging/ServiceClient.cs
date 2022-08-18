@@ -333,11 +333,6 @@ namespace Microsoft.Azure.Devices
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            if (message.IsBodyCalled)
-            {
-                message.ResetBody();
-            }
-
             timeout ??= _operationTimeout;
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
@@ -455,11 +450,6 @@ namespace Microsoft.Azure.Devices
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {
                 message.MessageId = Guid.NewGuid().ToString();
-            }
-
-            if (message.IsBodyCalled)
-            {
-                message.ResetBody();
             }
 
             timeout ??= _operationTimeout;

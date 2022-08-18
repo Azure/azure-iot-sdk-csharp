@@ -4,13 +4,13 @@
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Connection state supported by the client.
+    /// Connection status supported by the client.
     /// </summary>
-    public enum ConnectionState
+    public enum ConnectionStatus
     {
         /// <summary>
         /// The device or module is disconnected.
-        /// <para>Inspect the associated <see cref="ConnectionStateChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
+        /// <para>Inspect the associated <see cref="ConnectionStatusChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
         /// </summary>
         Disconnected,
 

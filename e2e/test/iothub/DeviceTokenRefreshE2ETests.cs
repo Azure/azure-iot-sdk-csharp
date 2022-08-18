@@ -54,14 +54,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Flaky")]
-        [TestCategory("LongRunning")]
-        public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Http()
-        {
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientHttpSettings()).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
@@ -133,12 +125,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
-            deviceClient.SetConnectionStateChangeHandler((ConnectionInfo connectionInfo) =>
+            deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
             {
-                var state = connectionInfo.State;
+                var status = connectionInfo.Status;
                 var reason = connectionInfo.ChangeReason;
-                Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {state}; {reason}");
-                if (state == ConnectionState.DisconnectedRetrying || state == ConnectionState.Disconnected)
+                Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
+                if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                 {
                     deviceDisconnected.Release();
                 }
@@ -187,12 +179,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                deviceClient.SetConnectionStateChangeHandler((ConnectionInfo connectionInfo) =>
+                deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
                 {
-                    var state = connectionInfo.State;
+                    var status = connectionInfo.Status;
                     var reason = connectionInfo.ChangeReason;
-                    Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {state}; {reason}");
-                    if (state == ConnectionState.DisconnectedRetrying || state == ConnectionState.Disconnected)
+                    Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
+                    if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                     {
                         deviceDisconnected.Release();
                     }

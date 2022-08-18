@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ConstructorTakingEmptyByteArrayTest()
         {
             var msg = new Message(new byte[0]);
-            Assert.IsNotNull(msg.Payload);
-            Assert.AreEqual(0, msg.Payload.Length);
+            msg.Payload.Should().NotBeNull();
+            msg.Payload.Length.Should().Be(0);
         }
 
         [TestMethod]
@@ -35,14 +35,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var msg = new Message(Encoding.UTF8.GetBytes("security message test"));
 
-            Assert.IsFalse(msg.IsSecurityMessage);
-            Assert.IsFalse(msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId));
+            msg.IsSecurityMessage.Should().BeFalse();
+            msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeFalse();
 
             msg.SetAsSecurityMessage();
 
-            Assert.IsTrue(msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId));
-            Assert.AreEqual(CommonConstants.SecurityMessageInterfaceId, msg.SystemProperties[MessageSystemPropertyNames.InterfaceId]);
-            Assert.IsTrue(msg.IsSecurityMessage);
+            msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId).Should().BeTrue();
+            msg.SystemProperties[MessageSystemPropertyNames.InterfaceId].Should().Equals(CommonConstants.SecurityMessageInterfaceId);
+            msg.IsSecurityMessage.Should().BeTrue();
         }
 
         [TestMethod]

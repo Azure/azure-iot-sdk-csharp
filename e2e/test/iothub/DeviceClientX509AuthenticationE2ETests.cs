@@ -55,14 +55,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task X509_Enable_CertificateRevocationCheck_Httt_Tcp()
-        {
-            IotHubClientTransportSettings transportSetting
-                = CreateHttpTransportSettingWithCertificateRevocationCheck();
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);

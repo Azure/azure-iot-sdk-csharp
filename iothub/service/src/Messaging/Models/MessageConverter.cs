@@ -370,15 +370,11 @@ namespace Microsoft.Azure.Devices
 
         internal static AmqpMessage MessageToAmqpMessage(Message message)
         {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull(nameof(Message));
-            }
-            message.ThrowIfDisposed();
-
-            AmqpMessage amqpMessage = message.HasBodyStream()
-                ? AmqpMessage.Create(message.GetBodyStream(), false)
+            Argument.RequireNotNull(message, nameof(message));
+            AmqpMessage amqpMessage = message.HasPayload
+                ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
                 : AmqpMessage.Create();
+
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
             return amqpMessage;
         }

@@ -272,20 +272,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
-        public async Task Message_AuthenticationWontRecover_Http()
-        {
-            await SendMessageRecoveryAsync(
-                TestDeviceType.Sasl,
-                new IotHubClientHttpSettings(),
-                FaultInjection.FaultType_Auth,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultFaultDelay,
-                FaultInjection.DefaultFaultDuration,
-                FaultInjection.RecoveryTime).ConfigureAwait(false);
-        }
-
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
         [TestCategory("FaultInjectionBVT")]
