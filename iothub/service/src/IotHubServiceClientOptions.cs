@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -12,6 +13,8 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class IotHubServiceClientOptions
     {
+        private static readonly TimeSpan _defaultIdleTimeout = TimeSpan.FromMinutes(2);
+
         /// <summary>
         /// Initializes a new instance of this class using the default settings.
         /// </summary>
@@ -91,5 +94,27 @@ namespace Microsoft.Azure.Devices
         /// The default behavior is that <see cref="Message.MessageId"/> is set only by the user.
         /// </remarks>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
+
+        /// <summary>
+        /// Specify client-side heartbeat interval.
+        /// The interval, that the client establishes with the service, for sending keep alive pings.
+        /// The default value is 2 minutes.
+        /// </summary>
+        /// <remarks>
+        /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// The client will consider the connection as disconnected if the keep alive ping fails.
+        /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
+        /// client enough time to establish a connection before disconnecting and reconnecting.
+        /// </remarks>
+        public TimeSpan AmqpConnectionKeepAlive { get; set; } = _defaultIdleTimeout;
+
+        /// <summary>
+        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
+        /// </summary>
+        /// <remarks>
+        /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
+        public TimeSpan? AmqpWebSocketKeepAlive { get; set; }
     }
 }
