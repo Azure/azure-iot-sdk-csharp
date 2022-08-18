@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class AmqpFeedbackReceiver : FeedbackReceiver<FeedbackBatch>, IDisposable
+    internal sealed class AmqpFeedbackReceiver : IDisposable
     {
         private readonly string _receivingPath;
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
 
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        public Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
         }
 
-        public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        public Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,

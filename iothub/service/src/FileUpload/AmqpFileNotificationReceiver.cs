@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class AmqpFileNotificationReceiver : FileNotificationReceiver<FileUploadNotification>, IDisposable
+    internal sealed class AmqpFileNotificationReceiver : IDisposable
     {
         private readonly string _receivingPath;
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override async Task<FileUploadNotification> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<FileUploadNotification> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
 
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override Task CompleteAsync(FileUploadNotification fileNotification, CancellationToken cancellationToken)
+        public Task CompleteAsync(FileUploadNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
         }
 
-        public override Task AbandonAsync(FileUploadNotification fileNotification, CancellationToken cancellationToken)
+        public Task AbandonAsync(FileUploadNotification fileNotification, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
                 FaultTolerantReceivingLink,
