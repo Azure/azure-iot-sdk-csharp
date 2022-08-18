@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -92,6 +92,27 @@ namespace Microsoft.Azure.Devices.Client
         public string SharedAccessKey { get; set; }
 
         /// <summary>
+        /// Gets the device identifier of the device connecting to the service.
+        /// </summary>
+        public string DeviceId { get; internal set; }
+
+        /// <summary>
+        /// Gets the module identifier of the module connecting to the service.
+        /// </summary>
+        public string ModuleId { get; internal set; }
+
+        /// <summary>
+        /// Gets the shared access key name used to connect the device to the IoT hub service.
+        /// </summary>
+        public string SharedAccessKeyName { get; internal set; }
+
+        /// <summary>
+        /// Gets the shared access key used to connect to the IoT hub service.
+        /// </summary>
+        public string SharedAccessKey { get; internal set; }
+
+        /// <summary>
+>>>>>>> 992860601 (IoHubConnectionStringBuilder refactoring)
         /// Gets the shared access signature used to connect to the IoT hub service.
         /// </summary>
         /// <remarks>
