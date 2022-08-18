@@ -186,25 +186,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var status = connectionInfo.Status;
             var reason = connectionInfo.ChangeReason;
             Console.WriteLine($"Connection status changed: status={status}, reason={reason}");
+            Console.WriteLine($"The recommended actions upon the current status and change reason is {connectionInfo.RecommendedAction}");
 
             switch (status)
             {
                 case ConnectionStatus.Connected:
-                    Console.WriteLine("### The DeviceClient is CONNECTED; all operations will be carried out as normal.");
-
                     // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
                     // This can get back "lost" twin updates in a device reconnection from status like Disconnected_Retrying or Disconnected.
                     await GetTwinAndDetectChangesAsync(s_cancellationTokenSource.Token);
                     Console.WriteLine("The client has retrieved twin values after the connection status changes into CONNECTED.");
-                    break;
-
-                case ConnectionStatus.DisconnectedRetrying:
-                    Console.WriteLine("### The DeviceClient is retrying based on the retry policy. Do NOT close or open the DeviceClient instance.");
-                    break;
-
-                case ConnectionStatus.Disabled:
-                    Console.WriteLine("### The DeviceClient has been closed gracefully." +
-                        "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
                     break;
 
                 case ConnectionStatus.Disconnected:
@@ -221,39 +211,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                                 break;
                             }
 
-                            Console.WriteLine("### The supplied credentials are invalid. Update the parameters and run again.");
                             s_cancellationTokenSource.Cancel();
                             break;
 
                         case ConnectionStatusChangeReason.DeviceDisabled:
-                            Console.WriteLine("### The device has been deleted or marked as disabled (on your hub instance)." +
-                                "\nFix the device status in Azure and then create a new device client instance.");
                             s_cancellationTokenSource.Cancel();
                             break;
 
                         case ConnectionStatusChangeReason.RetryExpired:
-                            Console.WriteLine("### The DeviceClient has been disconnected because the retry policy expired." +
-                                "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
-
                             await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
                             break;
 
                         case ConnectionStatusChangeReason.CommunicationError:
-                            Console.WriteLine("### The DeviceClient has been disconnected due to a non-retry-able exception. Inspect the exception for details." +
-                                "\nIf you want to perform more operations on the device client, you should dispose (DisposeAsync()) and then open (OpenAsync()) the client.");
-
                             await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
-                            break;
-
-                        default:
-                            Console.WriteLine("### This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.");
                             break;
                     }
 
-                    break;
-
-                default:
-                    Console.WriteLine("### This combination of ConnectionStatus and ConnectionStatusChangeReason is not expected, contact the client library team with logs.");
                     break;
             }
         }
@@ -367,7 +340,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // If the client reports Disabled status, you will need to dispose and recreate the client.
         private bool ShouldClientBeInitialized()
         {
-            return (s_deviceClient == null) 
+            return (s_deviceClient == null)
                 || (s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disabled)
                 && _deviceConnectionStrings.Any();
         }
