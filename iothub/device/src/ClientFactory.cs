@@ -27,11 +27,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            if (csBuilder.UsingX509Cert)
-            {
-                throw new ArgumentException("To use X509 certificates, use the initializer with the IAuthenticationMethod parameter.", nameof(connectionString));
-            }
-
             return CreateInternal(null, csBuilder, options);
         }
 

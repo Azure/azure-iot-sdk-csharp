@@ -66,7 +66,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.UsingX509Cert = true;
             iotHubConnectionStringBuilder.Certificate = Certificate;
             iotHubConnectionStringBuilder.ChainCertificates = ChainCertificates;
             iotHubConnectionStringBuilder.SharedAccessSignature = null;

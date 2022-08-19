@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
 
             csBuilder.SharedAccessSignature.Should().BeNull("SharedAccessKey and SharedAccessSignature are mutually exclusive");
-            csBuilder.UsingX509Cert.Should().BeFalse("SharedAccessKey and X509 are mutually exclusive");
+            csBuilder.Certificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
         }
 
         [TestMethod]
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
             csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
             csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
-            csBuilder.UsingX509Cert.Should().BeFalse("SharedAccessKey and X509 are mutually exclusive");
+            csBuilder.Certificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
         }
 
         [TestMethod]
@@ -130,53 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
 
             csBuilder.SharedAccessKey.Should().BeNull("SharedAccessSignature and SharedAccessKey are mutually exclusive");
-            csBuilder.UsingX509Cert.Should().BeFalse("SharedAccessSignature and X509 are mutually exclusive");
-        }
-
-        [TestMethod]
-        [DataRow("true")]
-        [DataRow("True")]
-        [DataRow("TRUE")]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509BoolCaseInsensitive(string value)
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};X509Cert={value}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-
-            csBuilder.UsingX509Cert.Should().BeTrue();
-
-            csBuilder.SharedAccessKey.Should().BeNull();
-            csBuilder.SharedAccessKeyName.Should().BeNull();
-            csBuilder.SharedAccessSignature.Should().BeNull();
-        }
-
-        /// <summary>
-        /// Ensure we support both and either x509Cert= and x509= in our connection string builder/parser, for backward compat and alignment with other SDKs.
-        /// If either is true, then we'll consider it true.
-        /// </summary>
-        [TestMethod]
-        [DataRow("true", "true")]
-        [DataRow("false", "true")]
-        [DataRow(null, "true")]
-        [DataRow("true", "false")]
-        [DataRow("true", null)]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509Mix(string x509CertValue, string x509Value)
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId}";
-            if (x509CertValue != null)
-            {
-                connectionString += $";X509Cert={x509CertValue}";
-            }
-            if (x509Value != null)
-            {
-                connectionString += $";x509={x509Value}";
-            }
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-
-            csBuilder.UsingX509Cert.Should().BeTrue();
-
-            csBuilder.SharedAccessKey.Should().BeNull();
-            csBuilder.SharedAccessKeyName.Should().BeNull();
-            csBuilder.SharedAccessSignature.Should().BeNull();
+            csBuilder.Certificate.Should().BeNull("SharedAccessSignature and X.509 are mutually exclusive");
         }
 
         [TestMethod]

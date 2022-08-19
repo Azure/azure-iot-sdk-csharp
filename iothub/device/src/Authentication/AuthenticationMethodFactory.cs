@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class AuthenticationMethodFactory
     {
-        internal static IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder csBuilder)
+        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionStringBuilder csBuilder)
         {
             if (csBuilder.SharedAccessKeyName != null)
             {
@@ -40,10 +40,6 @@ namespace Microsoft.Azure.Devices.Client
                         csBuilder.DeviceId,
                         csBuilder.ModuleId,
                         csBuilder.SharedAccessSignature);
-            }
-            else if (csBuilder.UsingX509Cert)
-            {
-                return new DeviceAuthenticationWithX509Certificate(csBuilder.DeviceId, csBuilder.Certificate);
             }
 
             throw new InvalidOperationException($"Unsupported authentication method in '{csBuilder}'.");
