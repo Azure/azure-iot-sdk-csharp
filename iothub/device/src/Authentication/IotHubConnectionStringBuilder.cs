@@ -191,9 +191,12 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Either shared access key, shared access signature or X.509 certificate is required for authenticating the client with IoT hub.
+            // These values should be populated in the constructor. The only exception to this scenario is when the authentication method is
+            // AuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
             if (Certificate == null
                 && SharedAccessKey.IsNullOrWhiteSpace()
-                    && SharedAccessSignature.IsNullOrWhiteSpace())
+                && SharedAccessSignature.IsNullOrWhiteSpace()
+                && AuthenticationMethod is not AuthenticationWithTokenRefresh)
             {
                 throw new ArgumentException(
                         "Should specify either SharedAccessKey, SharedAccessSignature or X.509 certificate for authenticating the client with IoT hub.");
