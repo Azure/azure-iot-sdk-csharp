@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             if (!messagedFeedbackReceived)
                 throw new AssertionFailedException("Timed out waiting to receive message feedback.");
 
-            await serviceClient.MessageFeedbackProcessor.CloseAsync();
+            await serviceClient.MessageFeedbackProcessor.CloseAsync().ConfigureAwait(false);
             messagedFeedbackReceived.Should().BeTrue();
         }
 

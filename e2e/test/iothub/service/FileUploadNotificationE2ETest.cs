@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             if (!fileUploaded)
                 throw new AssertionFailedException("Timed out waiting to receive file upload notification.");
 
-            await serviceClient.FileUploadNotificationProcessor.CloseAsync();
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
             fileUploaded.Should().BeTrue();
         }
 
@@ -75,12 +75,11 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             {
                 BlobName = fileName
             };
-            FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
+            FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
             Uri uploadUri = sasUri.GetBlobUri();
 
             var blob = new CloudBlockBlob(uploadUri);
-            Task uploadTask = blob.UploadFromStreamAsync(fileStreamSource);
-            await uploadTask.ConfigureAwait(false);
+            await blob.UploadFromStreamAsync(fileStreamSource).ConfigureAwait(false);
 
             var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification
             {
@@ -90,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 StatusDescription = "Success"
             };
 
-            await deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
+            await deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification).ConfigureAwait(false);
         }
     }
 }
