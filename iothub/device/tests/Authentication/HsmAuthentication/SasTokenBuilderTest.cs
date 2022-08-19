@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 
             string sasTokenString = SasTokenBuilder.BuildSasToken(audience, signature, expiry);
 
-            SharedAccessSignature token = SharedAccessSignature.Parse("iothub.test", sasTokenString);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasTokenString);
 
             Assert.AreEqual(WebUtility.UrlDecode(audience), token.Audience);
             Assert.AreEqual(signature, token.Signature);
