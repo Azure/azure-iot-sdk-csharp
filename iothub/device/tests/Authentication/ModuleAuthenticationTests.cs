@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
     {
         static string fakeConnectionString = "HostName=acme.azure-devices.net;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=dGVzdFN0cmluZzE=";
         static string fakeToken = "HostName=acme.azure-devices.net;CredentialScope=Module;DeviceId=AngelodTest;ModuleID=AngeloModule;SharedAccessSignature=SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2FAngelodTest%2Fmodules%2FAngeloModule&sig=dGVzdFN0cmluZzY=&se=4102358400";
-
+        static string fakeHostName = "acme.azure-devices.net";
 
         [TestMethod]
         public void IotHubDeviceClient_ModuleAuthenticationWithRegistrySymmetricKey_Test()
@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             //Arrange
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder(fakeConnectionString);
 
+            //Assert
             Assert.IsNotNull(iotHubConnectionStringBuilder.HostName);
             Assert.IsNotNull(iotHubConnectionStringBuilder.DeviceId);
             Assert.IsNotNull(iotHubConnectionStringBuilder.ModuleId);
@@ -32,7 +33,9 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is ModuleAuthenticationWithRegistrySymmetricKey);
 
             //Act
-            iotHubConnectionStringBuilder.AuthenticationMethod = new ModuleAuthenticationWithRegistrySymmetricKey("Device1", "Module1", "dGVzdFN0cmluZzM=");
+            iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder(
+                new ModuleAuthenticationWithRegistrySymmetricKey("Device1", "Module1", "dGVzdFN0cmluZzM="),
+                fakeHostName);
 
             //Assert
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is ModuleAuthenticationWithRegistrySymmetricKey);
@@ -48,6 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             //Arrange
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder(fakeToken);
 
+            //Assert
             Assert.IsNotNull(iotHubConnectionStringBuilder.HostName);
             Assert.IsNotNull(iotHubConnectionStringBuilder.DeviceId);
             Assert.IsNull(iotHubConnectionStringBuilder.GatewayHostName);
@@ -59,7 +63,9 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
 
 
             //Act
-            iotHubConnectionStringBuilder.AuthenticationMethod = new ModuleAuthenticationWithToken("Device1", "Module1", "SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2FAngelodTest%2Fmodules%2FAngeloModule&sig=dGVzdFN0cmluZzY=&se=4102358400");
+            iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder(
+                new ModuleAuthenticationWithToken("Device1", "Module1", "SharedAccessSignature sr=iot-edge-1003.private.azure-devices-int.net%2Fdevices%2FAngelodTest%2Fmodules%2FAngeloModule&sig=dGVzdFN0cmluZzY=&se=4102358400"),
+                fakeHostName);
 
             //Assert
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is ModuleAuthenticationWithToken);

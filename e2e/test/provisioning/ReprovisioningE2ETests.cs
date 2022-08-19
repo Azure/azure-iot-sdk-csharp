@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttTcp_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(
@@ -221,7 +221,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_AmqpTcp_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(
