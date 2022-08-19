@@ -219,34 +219,19 @@ namespace Microsoft.Azure.Devices
         {
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
-                Exception ex;
-                Error error = exception.Error;
-                AmqpSymbol amqpSymbol = error.Condition;
-                string message = error.ToString();
-                if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
-                    || Equals(AmqpErrorCode.FramingError, amqpSymbol)
-                    || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol)
-                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
-                    || Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
-                    || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
-                    || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
-                    || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol)
-                    || Equals(AmqpErrorCode.DetachForced, amqpSymbol)
-                    || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
-                    || Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol)
-                    || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
-                    || Equals(AmqpErrorCode.Stolen, amqpSymbol))
-                {
-                    ex = new IotHubException(message, exception);
-                    ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
-                }
-                else
-                {
-                    ex = new IOException(message, exception);
-                    ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
-                }
+                ErrorContext errorContext = AmqpErrorMapper.GetErrorContextFromException(exception);
+                ErrorProcessor?.Invoke(errorContext);
+                Exception exceptionToLog = errorContext.IOException != null ? errorContext.IOException : errorContext.IotHubException;
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {ex}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+            }
+            else
+            {
+                var defaultException = new IOException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
+                ErrorContext errorContext = new ErrorContext(defaultException);
+                ErrorProcessor?.Invoke(errorContext);
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
         }
     }

@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common.Client;
 
@@ -127,6 +129,30 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             }
 
             return retException;
+        }
+
+        public static ErrorContext GetErrorContextFromException(AmqpException exception)
+        {
+            Error error = exception.Error;
+            AmqpSymbol amqpSymbol = error.Condition;
+            string message = error.ToString();
+            if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
+                || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol)
+                || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                || Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
+                || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
+                || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
+                || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol)
+                || Equals(AmqpErrorCode.DetachForced, amqpSymbol)
+                || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
+                || Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol)
+                || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                || Equals(AmqpErrorCode.Stolen, amqpSymbol))
+            {
+                return new ErrorContext(new IotHubException(message, exception));
+            }
+
+            return new ErrorContext(new IOException(message, exception));
         }
     }
 }
