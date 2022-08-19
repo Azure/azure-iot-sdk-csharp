@@ -53,6 +53,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </remark>>
         public RecommendedAction RecommendedAction { get; }
 
+        /// Please refer to the <see href="https://github.com/Azure/azure-iot-sdk-csharp/blob/previews/v2/iothub/device/samples/DeviceReconnectionSample/DeviceReconnectionSample.cs">
+        /// DeviceReconnectionSample</see> for more details regarding how to use RecommendedAction.
         private static RecommendedAction GetRecommendedAction(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             switch (status)
