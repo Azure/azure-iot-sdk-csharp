@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Http2;
-using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

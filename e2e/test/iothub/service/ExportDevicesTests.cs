@@ -2,14 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -32,15 +29,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             '\r',
             '\n',
-        };
-
-        private static readonly IReadOnlyList<JobStatus> s_incompleteJobs = new[]
-        {
-            JobStatus.Running,
-            JobStatus.Enqueued,
-            JobStatus.Queued,
-            JobStatus.Scheduled,
-            JobStatus.Unknown,
         };
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -123,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 // act
 
-                JobProperties exportJobResponse = await CreateAndWaitForJobAsync(
+                JobProperties jobProperties = await CreateAndWaitForJobAsync(
                         storageAuthenticationType,
                         isUserAssignedMsi,
                         devicesFileName,
@@ -133,13 +121,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     .ConfigureAwait(false);
 
                 // assert
+
+                jobProperties.Status.Should().Be(JobStatus.Completed, $"Export failed due to '{jobProperties.FailureReason}'.");
+                jobProperties.FailureReason.Should().BeNullOrEmpty("Otherwise export failed");
+
                 await ValidateDevicesAsync(
                         devicesFileName,
                         storageContainer,
                         edge1,
                         edge2,
                         device)
-                .ConfigureAwait(false);
+                    .ConfigureAwait(false);
                 await ValidateConfigurationsAsync(
                         configsFileName,
                         storageContainer,
@@ -160,8 +152,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient,
             Uri containerUri)
         {
-            int tryCount = 0;
-
             ManagedIdentity identity = isUserAssignedMsi
                 ? new ManagedIdentity
                 {
@@ -169,46 +159,50 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 : null;
 
-            JobProperties exportJobResponse = JobProperties.CreateForExportJob(
+            JobProperties jobProperties = JobProperties.CreateForExportJob(
                 containerUri,
                 true,
                 devicesFileName,
                 storageAuthenticationType,
                 identity);
-            exportJobResponse.IncludeConfigurations = true;
-            exportJobResponse.ConfigurationsBlobName = configsFileName;
+            jobProperties.IncludeConfigurations = true;
+            jobProperties.ConfigurationsBlobName = configsFileName;
 
-            while (tryCount < MaxIterationWait)
+            var sw = Stopwatch.StartNew();
+
+            while (!jobProperties.IsFinished)
             {
                 try
                 {
-                    exportJobResponse = await serviceClient.Devices.ExportAsync(exportJobResponse).ConfigureAwait(false);
+                    jobProperties = await serviceClient.Devices.ExportAsync(jobProperties).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(jobProperties.FailureReason))
+                    {
+                        Logger.Trace($"Job failed due to {jobProperties.FailureReason}");
+                    }
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (JobQuotaExceededException) when (++tryCount < MaxIterationWait)
+                catch (JobQuotaExceededException)
                 {
-                    Logger.Trace($"JobQuotaExceededException... waiting.");
+                    Logger.Trace($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     continue;
                 }
             }
 
-            for (int i = 0; i < MaxIterationWait; ++i)
+            sw.Stop();
+            Logger.Trace($"Job started after {sw.Elapsed}.");
+
+            sw.Restart();
+
+            while (!jobProperties.IsFinished)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                exportJobResponse = await serviceClient.Devices.GetJobAsync(exportJobResponse.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {exportJobResponse.JobId} is {exportJobResponse.Status} with progress {exportJobResponse.Progress}%");
-                if (!s_incompleteJobs.Contains(exportJobResponse.Status))
-                {
-                    break;
-                }
+                jobProperties = await serviceClient.Devices.GetJobAsync(jobProperties.JobId).ConfigureAwait(false);
+                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} with progress {jobProperties.Progress}% after {sw.Elapsed}.");
             }
 
-            exportJobResponse.Status.Should().Be(JobStatus.Completed, "Otherwise import failed");
-            exportJobResponse.FailureReason.Should().BeNullOrEmpty("Otherwise import failed");
-
-            return exportJobResponse;
+            return jobProperties;
         }
 
         private async Task ValidateDevicesAsync(
@@ -296,7 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task<string> DownloadFileAsync(StorageContainer storageContainer, string fileName)
         {
-            CloudBlockBlob exportFile = storageContainer.CloudBlobContainer.GetBlockBlobReference(fileName);
+            Storage.Blob.CloudBlockBlob exportFile = storageContainer.CloudBlobContainer.GetBlockBlobReference(fileName);
             return await exportFile.DownloadTextAsync().ConfigureAwait(false);
         }
 
@@ -310,13 +304,37 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.Trace($"Failed to remove device {deviceId} during cleanup due to {ex.Message}");
+            }
+
+            try
+            {
                 await serviceClient.Devices.DeleteAsync(edgeId2).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.Trace($"Failed to remove device {deviceId} during cleanup due to {ex.Message}");
+            }
+
+            try
+            {
                 await serviceClient.Devices.DeleteAsync(edgeId1).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.Trace($"Failed to remove device {deviceId} during cleanup due to {ex.Message}");
+            }
+
+            try
+            {
                 await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.Trace($"Failed to remove device/config during cleanup due to {ex}");
+                Logger.Trace($"Failed to remove config {configurationId} during cleanup due to {ex.Message}");
             }
         }
     }

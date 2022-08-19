@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
         private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
@@ -27,15 +27,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestCategory("LongRunning")]
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
+        [LoggedTestMethod, Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
+        public async Task IotHubDeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
         {
             await IotHubDeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
                 new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                 async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(ConnectionStatusChangeTestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(ConnectionStateChangeTestTimeoutMilliseconds)] // This test always takes more than 5 minutes for service to return. Needs investigation.
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(ConnectionStatusChangeTestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task IotHubDeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 IotHubClientTransportProtocol.Tcp, async (r, d) => await r.Devices.DeleteAsync(d).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
