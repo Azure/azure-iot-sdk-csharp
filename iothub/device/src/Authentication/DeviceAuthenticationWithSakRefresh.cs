@@ -12,19 +12,12 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly ClientConfiguration _clientConfiguration;
 
-        public DeviceAuthenticationWithSakRefresh(
-            string deviceId,
-            ClientConfiguration clientConfiguration) : base(deviceId)
-        {
-            _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
-        }
-
         internal DeviceAuthenticationWithSakRefresh(
             string deviceId,
             ClientConfiguration clientConfiguration,
-            TimeSpan sasTokenTimeToLive,
-            int sasTokenRenewalBuffer,
-            bool disposeWithClient)
+            TimeSpan sasTokenTimeToLive = default,
+            int sasTokenRenewalBuffer = default,
+            bool disposeWithClient = true)
             : base(deviceId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
         {
             _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));

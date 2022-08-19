@@ -62,37 +62,37 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the value of the fully-qualified DNS hostname of the IoT hub service.
+        /// The fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
         public string HostName { get; private set; }
 
         /// <summary>
-        /// Gets the optional name of the gateway to connect to
+        /// The optional name of the gateway to connect to
         /// </summary>
         public string GatewayHostName { get; private set; }
 
         /// <summary>
-        /// Gets the device identifier of the device connecting to the service.
+        /// The device identifier of the device connecting to the service.
         /// </summary>
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// Gets the module identifier of the module connecting to the service.
+        /// The module identifier of the module connecting to the service.
         /// </summary>
         public string ModuleId { get; set; }
 
         /// <summary>
-        /// Gets the shared access key name used to connect the device to the IoT hub service.
+        /// The shared access key name used to connect the device to the IoT hub service.
         /// </summary>
         public string SharedAccessKeyName { get; set; }
 
         /// <summary>
-        /// Gets the shared access key used to connect to the IoT hub service.
+        /// The shared access key used to connect to the IoT hub service.
         /// </summary>
         public string SharedAccessKey { get; set; }
 
         /// <summary>
-        /// Gets the shared access signature used to connect to the IoT hub service.
+        /// The shared access signature used to connect to the IoT hub service.
         /// </summary>
         /// <remarks>
         /// This is used when a device app creates its own limited-lifespan SAS token, instead of letting
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client
         public X509Certificate2Collection ChainCertificates { get; set; }
 
         /// <summary>
-        /// Gets or sets the authentication method to be used with the IoT hub service.
+        /// The authentication method to be used with the IoT hub service.
         /// </summary>
         internal IAuthenticationMethod AuthenticationMethod { get; }
 

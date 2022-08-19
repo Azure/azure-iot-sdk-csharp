@@ -27,33 +27,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device/ module client instance is disposed. To reuse the authentication method instance across
-        /// multiple client instance lifetimes, use the <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/>
-        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// multiple client instance lifetimes set <paramref name="disposeWithClient"/> to <c>false</c>.
         /// </remarks>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
         /// a percentage of the time to live.</param>
-        public AuthenticationWithTokenRefresh(
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage)
-            : this(suggestedTimeToLiveSeconds, timeBufferPercentage, true)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
-        /// </summary>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
         /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
+        /// Defaults to <c>true</c>.</param>
         public AuthenticationWithTokenRefresh(
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage,
-            bool disposeWithClient)
+            bool disposeWithClient = true)
         {
             if (suggestedTimeToLiveSeconds < 0)
             {
