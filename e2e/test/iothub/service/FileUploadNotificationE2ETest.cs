@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             fileUploaded = false;
             await UploadFile().ConfigureAwait(false);
             var timer = Stopwatch.StartNew();
-            while (!fileUploaded && timer.ElapsedMilliseconds < 10000)
+            while (!fileUploaded && timer.ElapsedMilliseconds < 60000)
             {
                 continue;
             }
