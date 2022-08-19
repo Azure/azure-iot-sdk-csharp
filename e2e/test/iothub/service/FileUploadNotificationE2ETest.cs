@@ -11,6 +11,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,6 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     public class FileUploadNotificationE2eTest : E2EMsTestBase
     {
         public bool fileUploaded;
+        private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2eTest)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task FileUploadNotification_Operation()
@@ -56,7 +58,8 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
         private async Task UploadFile()
         {
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={TestConfiguration.IoTHub.X509ChainDeviceName}");
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
             const string filePath = "TestPayload.txt";
             using FileStream fileStreamSource = File.Create(filePath);
             using var sr = new StreamWriter(fileStreamSource);

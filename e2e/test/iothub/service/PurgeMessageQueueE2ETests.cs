@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
@@ -17,12 +18,17 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestCategory("IoTHub")]
     public class PurgeMesageQueueE2eTests : E2EMsTestBase
     {
+        private readonly string _devicePrefix = $"{nameof(PurgeMesageQueueE2eTests)}_";
+
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task PurgeMessageQueueOperation()
         {
-            Message testMessage = ComposeD2CTestMessage();
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var deviceId = testDevice.Device.Id;
             using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var deviceId = TestConfiguration.IoTHub.X509ChainDeviceName;
+            PurgeMessageQueueResult result = await sc.Messaging.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
+
+            Message testMessage = ComposeD2CTestMessage();
             var expectedResult = new PurgeMessageQueueResult
             {
                 DeviceId = deviceId,
@@ -32,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             {
                 await sc.Messaging.SendAsync(deviceId, testMessage);
             }
-            PurgeMessageQueueResult result = await sc.Messaging.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false);
+            result = await sc.Messaging.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false);
             result.DeviceId.Should().Be(deviceId);
             result.TotalMessagesPurged.Should().Be(expectedResult.TotalMessagesPurged);
         }

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
@@ -19,19 +21,24 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestCategory("IoTHub")]
     public class MessageFeedbackReceiverE2eTest : E2EMsTestBase
     {
+        private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2eTest)}_";
         private bool messagedFeedbackReceived;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task MessageFeedbackReceiver_Operation()
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = OnFeedbackReceived;
             await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
             var message = new Message(Encoding.UTF8.GetBytes("some payload"));
             message.Ack = DeliveryAcknowledgement.Full;
             messagedFeedbackReceived = false;
-            await serviceClient.Messaging.SendAsync(TestConfiguration.IoTHub.X509ChainDeviceName, message).ConfigureAwait(false);
-            await ReceiveMessage().ConfigureAwait(false);
+            await serviceClient.Messaging.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
+
+            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
+            await deviceClient.CompleteMessageAsync(receivedMessage.LockToken).ConfigureAwait(false);
 
             var timer = Stopwatch.StartNew();
             while (!messagedFeedbackReceived && timer.ElapsedMilliseconds < 60000)
@@ -50,13 +57,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         {
             messagedFeedbackReceived = true;
             return AcknowledgementType.Complete;
-        }
-
-        private async Task ReceiveMessage()
-        {
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString($"{TestConfiguration.IoTHub.ConnectionString};DeviceId={TestConfiguration.IoTHub.X509ChainDeviceName}");
-            Client.Message message = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
-            await deviceClient.CompleteMessageAsync(message.LockToken).ConfigureAwait(false);
         }
     }
 }
