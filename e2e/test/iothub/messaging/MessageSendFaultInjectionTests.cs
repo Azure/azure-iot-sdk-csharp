@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(IotHubThrottledException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(IotHubThrottledException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(

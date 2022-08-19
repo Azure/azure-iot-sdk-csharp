@@ -913,7 +913,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         status = ConnectionStatus.DisconnectedRetrying;
                     }
                 }
-                else if (hubException is UnauthorizedException)
+                else if (hubException.StatusCode is IotHubStatusCode.Unauthorized)
                 {
                     reason = ConnectionStatusChangeReason.BadCredential;
                 }

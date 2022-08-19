@@ -536,7 +536,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Error(this, "Invalid credentials were provided while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new UnauthorizedException(reason);
+                        iotHubException = new IotHubClientException(reason, null, false, IotHubStatusCode.Unauthorized);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
@@ -1384,10 +1384,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 : topicName;
             if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
             {
-                throw new MessageTooLargeException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
+                throw new IotHubClientException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
                     $"current length is {Encoding.UTF8.GetByteCount(msg)}." +
                     $" The probable cause is the list of message.Properties and/or message.systemProperties is too long. " +
-                    $"Please use AMQP or HTTP.");
+                    $"Please use AMQP or HTTP.",
+                    isTransient: false,
+                    IotHubStatusCode.MessageTooLarge);
             }
 
             return msg;

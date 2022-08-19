@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
@@ -11,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// </summary>
     /// <remarks>
     /// This exception means the client is not authorized to use the specified IoT hub. Please review the
-    /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see> 
+    /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see>
     /// guide for more information.
     /// </remarks>
     [Serializable]

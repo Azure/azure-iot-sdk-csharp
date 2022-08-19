@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (exception is UnauthorizedAccessException)
             {
-                return new UnauthorizedException(exception.Message, exception);
+                return new IotHubClientException(exception.Message, exception, false, IotHubStatusCode.Unauthorized);
             }
 
             if (exception is OperationCanceledException
