@@ -57,7 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
-            string connectionString = GetValueFromEnvironment(envVariables, EdgehubConnectionstringVariableName) ?? GetValueFromEnvironment(envVariables, IothubConnectionstringVariableName);
+            string connectionString = GetValueFromEnvironment(envVariables, EdgehubConnectionstringVariableName)
+                ?? GetValueFromEnvironment(envVariables, IothubConnectionstringVariableName);
 
             // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
             if (!string.IsNullOrWhiteSpace(connectionString))
