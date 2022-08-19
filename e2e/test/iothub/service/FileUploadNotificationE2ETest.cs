@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
             serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = fileUploadCallback;
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
-            fileUploaded = false;
             await UploadFile().ConfigureAwait(false);
             var timer = Stopwatch.StartNew();
             while (!fileUploaded && timer.ElapsedMilliseconds < 60000)
