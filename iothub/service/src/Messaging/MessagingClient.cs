@@ -347,7 +347,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
                 {
-                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(TimeSpan.MaxValue).ConfigureAwait(false);
+                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(CancellationToken.None).ConfigureAwait(false);
                 }
 
                 if (Logging.IsEnabled)
