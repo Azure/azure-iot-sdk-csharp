@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// When a client is first initialized, this is the default state.
-        /// When a client is disconnected with retries being exhausted, the client also returns the decision on whether to attempt reconnection to
+        /// When a client is disconnected with retries being exhausted or non-retryable errors, the client also returns the decision on whether to attempt reconnection to
         /// the device app, with reasons such as:
         /// <list type="bullet">
         /// <item><see cref="ConnectionStatusChangeReason.RetryExpired"/></item>

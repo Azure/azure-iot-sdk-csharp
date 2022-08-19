@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             ConnectionStatus status = connectionInfo.Status;
             ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
-            Console.WriteLine($"Connection status changed: status={status}, reason={reason}, recommendation {connectionInfo.RecommendedAction}");
+            Console.WriteLine($"Connection status changed: status={status}, reason={reason}, recommendation={connectionInfo.RecommendedAction}");
 
             // In our case, we can operate with more than 1 shared access key and attempt to fall back to a secondary.
             // We'll disregard the SDK's recommendation and attempt to connect with the second one.
