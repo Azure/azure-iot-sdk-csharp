@@ -74,23 +74,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task AuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation();
-            var csBuilder = new IotHubConnectionStringBuilder(
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(
                 new ModuleAuthenticationWithRegistrySymmetricKey("deviceId", "moduleid", TestSharedAccessKey),
                 TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(null, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
 
             string token = await refresher.GetTokenAsync(TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(token, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
         }
 
         [TestMethod]

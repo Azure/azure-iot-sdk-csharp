@@ -10,9 +10,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Builds a connection string for the IoT hub service based on the properties populated by the user.
+    /// Holder for client credentials that will be used for authenticating the client with IoT hub service.
     /// </summary>
-    public sealed class IotHubConnectionStringBuilder
+    public sealed class IotHubConnectionCredentials
     {
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
@@ -25,13 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         private const string GatewayHostNamePropertyName = "GatewayHostName";
 
         /// <summary>
-        /// Creates an instnace of this class based on an authentication method and the hostname of the IoT hub.
+        /// Creates an instnace of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
-        /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
-        public IotHubConnectionStringBuilder(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
+        /// <returns>A new instance of the <see cref="IotHubConnectionCredentials"/> class with a populated connection string.</returns>
+        public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="iotHubConnectionString">The IoT hub device connection string.</param>
         /// <returns>A new instance of this class.</returns>
-        public IotHubConnectionStringBuilder(string iotHubConnectionString)
+        public IotHubConnectionCredentials(string iotHubConnectionString)
         {
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionString, nameof(iotHubConnectionString));
 
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
         internal int SasTokenRenewalBuffer { get; set; }
 
         /// <summary>
-        /// Produces the connection string based on the values of the <see cref="IotHubConnectionStringBuilder"/> instance properties.
+        /// Produces the connection string based on the values of the <see cref="IotHubConnectionCredentials"/> instance properties.
         /// </summary>
         /// <returns>A properly formatted connection string.</returns>
         public override sealed string ToString()

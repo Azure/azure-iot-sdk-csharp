@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class AuthenticationMethodFactory
     {
-        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionStringBuilder csBuilder)
+        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionCredentials csBuilder)
         {
             if (csBuilder.SharedAccessKeyName != null)
             {

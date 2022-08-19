@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     internal class ClientConfiguration : IClientConfiguration
     {
         public ClientConfiguration(
-            IotHubConnectionStringBuilder builder,
+            IotHubConnectionCredentials builder,
             IotHubClientOptions iotHubClientOptions)
         {
             Argument.AssertNotNull(builder, nameof(builder));
