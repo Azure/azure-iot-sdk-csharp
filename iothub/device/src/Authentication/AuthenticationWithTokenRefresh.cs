@@ -148,20 +148,20 @@ namespace Microsoft.Azure.Devices.Client
         /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on a snapshot of the properties of
         /// the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
-        public virtual IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionStringBuilder)
+        public virtual IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.SharedAccessSignature = _token;
-            iotHubConnectionStringBuilder.SharedAccessKey = null;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SharedAccessSignature = _token;
+            iotHubConnectionCredentials.SharedAccessKey = null;
+            iotHubConnectionCredentials.SharedAccessKeyName = null;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         /// <summary>

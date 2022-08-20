@@ -114,14 +114,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
-        public override IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionStringBuilder)
+        public override IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.ModuleId = ModuleId;
-            return iotHubConnectionStringBuilder;
+            iotHubConnectionCredentials = base.Populate(iotHubConnectionCredentials);
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
+            return iotHubConnectionCredentials;
         }
 
         private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)

@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This initializer exists only for unit tests to override the pipeline creation
         /// </summary>
         /// <param name="pipelineBuilder">Should only be specified by SDK tests to override the operation pipeline.</param>
-        /// <param name="csBuilder">The device connection string builder.</param>
+        /// <param name="iotHubConnectionCredentials">The device connection string builder.</param>
         /// <param name="options">The optional client settings.</param>
 #if DEBUG
         internal
@@ -99,23 +99,23 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         static InternalClient CreateInternal(
             IDeviceClientPipelineBuilder pipelineBuilder,
-            IotHubConnectionCredentials csBuilder,
+            IotHubConnectionCredentials iotHubConnectionCredentials,
             IotHubClientOptions options)
         {
-            Argument.AssertNotNull(csBuilder, nameof(csBuilder));
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
             Argument.AssertNotNull(options, nameof(options));
 
             // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
             // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
             // implementation constructors instead.
-            if (csBuilder.AuthenticationMethod is not AuthenticationWithTokenRefresh
-                && csBuilder.AuthenticationMethod is not DeviceAuthenticationWithX509Certificate)
+            if (iotHubConnectionCredentials.AuthenticationMethod is not AuthenticationWithTokenRefresh
+                && iotHubConnectionCredentials.AuthenticationMethod is not DeviceAuthenticationWithX509Certificate)
             {
-                csBuilder.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
-                csBuilder.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
+                iotHubConnectionCredentials.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
+                iotHubConnectionCredentials.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
-            var clientConfiguration = new ClientConfiguration(csBuilder, options);
+            var clientConfiguration = new ClientConfiguration(iotHubConnectionCredentials, options);
             var client = new InternalClient(clientConfiguration, pipelineBuilder);
 
             if (Logging.IsEnabled)
