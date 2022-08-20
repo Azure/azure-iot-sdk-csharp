@@ -10,39 +10,39 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class AuthenticationMethodFactory
     {
-        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionCredentials csBuilder)
+        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (csBuilder.SharedAccessKeyName != null)
+            if (iotHubConnectionCredentials.SharedAccessKeyName != null)
             {
                 return new DeviceAuthenticationWithSharedAccessPolicyKey(
-                    csBuilder.DeviceId,
-                    csBuilder.SharedAccessKeyName,
-                    csBuilder.SharedAccessKey);
+                    iotHubConnectionCredentials.DeviceId,
+                    iotHubConnectionCredentials.SharedAccessKeyName,
+                    iotHubConnectionCredentials.SharedAccessKey);
             }
-            else if (csBuilder.SharedAccessKey != null)
+            else if (iotHubConnectionCredentials.SharedAccessKey != null)
             {
-                return csBuilder.ModuleId == null
+                return iotHubConnectionCredentials.ModuleId == null
                     ? new DeviceAuthenticationWithRegistrySymmetricKey(
-                        csBuilder.DeviceId,
-                        csBuilder.SharedAccessKey)
+                        iotHubConnectionCredentials.DeviceId,
+                        iotHubConnectionCredentials.SharedAccessKey)
                     : new ModuleAuthenticationWithRegistrySymmetricKey(
-                        csBuilder.DeviceId,
-                        csBuilder.ModuleId,
-                        csBuilder.SharedAccessKey);
+                        iotHubConnectionCredentials.DeviceId,
+                        iotHubConnectionCredentials.ModuleId,
+                        iotHubConnectionCredentials.SharedAccessKey);
             }
-            else if (csBuilder.SharedAccessSignature != null)
+            else if (iotHubConnectionCredentials.SharedAccessSignature != null)
             {
-                return csBuilder.ModuleId == null
+                return iotHubConnectionCredentials.ModuleId == null
                     ? new DeviceAuthenticationWithToken(
-                        csBuilder.DeviceId,
-                        csBuilder.SharedAccessSignature)
+                        iotHubConnectionCredentials.DeviceId,
+                        iotHubConnectionCredentials.SharedAccessSignature)
                     : new ModuleAuthenticationWithToken(
-                        csBuilder.DeviceId,
-                        csBuilder.ModuleId,
-                        csBuilder.SharedAccessSignature);
+                        iotHubConnectionCredentials.DeviceId,
+                        iotHubConnectionCredentials.ModuleId,
+                        iotHubConnectionCredentials.SharedAccessSignature);
             }
 
-            throw new InvalidOperationException($"Unsupported authentication method in '{csBuilder}'.");
+            throw new InvalidOperationException($"Unsupported authentication method in '{iotHubConnectionCredentials}'.");
         }
     }
 }
