@@ -24,15 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
 
-        // For some reason, the .NET SDK originally expected "X509Cert=true" in a connection string to inform the SDK that it would not
-        // include a shared access key, and to not error when parsing a connection string. However, the other SDK languages all followed
-        // the same key/value pair of "x509=true".
-        // So now we're adding support for it to work either way, so we stay compliant with the past but can improve documentation so all
-        // SDK languages refer to the same key/value pair naming.
-        private const string X509CertPropertyName = "X509Cert";
-
-        private const string CommonX509CertPropertyName = "x509";
-
         /// <summary>
         /// Creates an instnace of this class based on an authentication method and the hostname of the IoT hub.
         /// </summary>
@@ -65,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // We'll parse the connection string and use that to build an auth method
             ExtractPropertiesFromConnectionString(iotHubConnectionString);
-            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(this);
+            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethodFromConnectionString(this);
 
             Validate();
         }
@@ -73,32 +64,32 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets or sets the value of the fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
-        public string HostName { get; internal set; }
+        public string HostName { get; private set; }
 
         /// <summary>
         /// Gets the optional name of the gateway to connect to
         /// </summary>
-        public string GatewayHostName { get; internal set; }
+        public string GatewayHostName { get; private set; }
 
         /// <summary>
         /// Gets the device identifier of the device connecting to the service.
         /// </summary>
-        public string DeviceId { get; internal set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Gets the module identifier of the module connecting to the service.
         /// </summary>
-        public string ModuleId { get; internal set; }
+        public string ModuleId { get; set; }
 
         /// <summary>
         /// Gets the shared access key name used to connect the device to the IoT hub service.
         /// </summary>
-        public string SharedAccessKeyName { get; internal set; }
+        public string SharedAccessKeyName { get; set; }
 
         /// <summary>
         /// Gets the shared access key used to connect to the IoT hub service.
         /// </summary>
-        public string SharedAccessKey { get; internal set; }
+        public string SharedAccessKey { get; set; }
 
         /// <summary>
         /// Gets the shared access signature used to connect to the IoT hub service.
@@ -109,28 +100,22 @@ namespace Microsoft.Azure.Devices.Client
         /// SAS token, when that token expires, the client must be disposed, and if desired, recreated
         /// with a newly derived SAS token.
         /// </remarks>
-        public string SharedAccessSignature { get; internal set; }
-
-        /// <summary>
-        /// Gets or sets the authentication method to be used with the IoT hub service.
-        /// </summary>
-        public IAuthenticationMethod AuthenticationMethod { get; }
-
-        /// <summary>
-        /// Indicates if the connection string indicates if an x509 certificate is specified for authentication.
-        /// </summary>
-        public bool UsingX509Cert { get; internal set; }
+        public string SharedAccessSignature { get; set; }
 
         /// <summary>
         /// The client X509 certificates used for authenticating with IoT hub.
         /// </summary>
-        // Device certificate
-        internal X509Certificate2 Certificate { get; set; }
+        public X509Certificate2 Certificate { get; set; }
 
         /// <summary>
         /// The full chain of certificates from the one used to sign the client certificate to the one uploaded to the service.
         /// </summary>
-        internal X509Certificate2Collection ChainCertificates { get; set; }
+        public X509Certificate2Collection ChainCertificates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authentication method to be used with the IoT hub service.
+        /// </summary>
+        internal IAuthenticationMethod AuthenticationMethod { get; }
 
         // The suggested time to live value for tokens generated for SAS authenticated clients.
         internal TimeSpan SasTokenTimeToLive { get; set; }
@@ -154,7 +139,6 @@ namespace Microsoft.Azure.Devices.Client
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(CommonX509CertPropertyName, UsingX509Cert);
             stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, GatewayHostName);
             if (stringBuilder.Length > 0)
             {
@@ -169,14 +153,12 @@ namespace Microsoft.Azure.Devices.Client
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
             HostName = GetConnectionStringValue(map, HostNamePropertyName);
+            GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
             DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
             ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-            UsingX509Cert = GetConnectionStringOptionalValueOrDefault<bool>(map, X509CertPropertyName, ParseX509, true)
-                || GetConnectionStringOptionalValueOrDefault<bool>(map, CommonX509CertPropertyName, ParseX509, true);
-            GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
         }
 
         internal void Validate()
@@ -201,28 +183,32 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Shared access signature
-            if (!string.IsNullOrWhiteSpace(SharedAccessSignature))
+            if (!SharedAccessSignature.IsNullOrWhiteSpace())
             {
                 // Parse the supplied shared access signature string
                 // and throw exception if the string is not in the expected format.
                 _ = SharedAccessSignatureParser.Parse(SharedAccessSignature);
             }
 
-            if (!(SharedAccessKey.IsNullOrWhiteSpace() ^ SharedAccessSignature.IsNullOrWhiteSpace()))
+            // Either shared access key, shared access signature or X.509 certificate is required for authenticating the client with IoT hub.
+            // These values should be populated in the constructor. The only exception to this scenario is when the authentication method is
+            // AuthenticationWithTokenRefresh, in which case the shared access signature is initially null and is generated on demand during client authentication.
+            if (Certificate == null
+                && SharedAccessKey.IsNullOrWhiteSpace()
+                && SharedAccessSignature.IsNullOrWhiteSpace()
+                && AuthenticationMethod is not AuthenticationWithTokenRefresh)
             {
-                if (!(UsingX509Cert || AuthenticationMethod is AuthenticationWithTokenRefresh))
-                {
-                    throw new ArgumentException(
-                        "Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
-                }
+                throw new ArgumentException(
+                        "Should specify either SharedAccessKey, SharedAccessSignature or X.509 certificate for authenticating the client with IoT hub.");
             }
 
-            if ((UsingX509Cert || Certificate != null)
+            // If an X.509 certificate is supplied then neither shared access key nor shared access signature should be supplied.
+            if (Certificate != null
                 && (!SharedAccessKey.IsNullOrWhiteSpace()
                     || !SharedAccessSignature.IsNullOrWhiteSpace()))
             {
                 throw new ArgumentException(
-                    "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used");
+                    "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used for authenticating the client with IoT hub.");
             }
         }
 
@@ -240,44 +226,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             map.TryGetValue(propertyName, out string value);
             return value;
-        }
-
-        private static TValue GetConnectionStringOptionalValueOrDefault<TValue>(
-            IDictionary<string, string> map,
-            string propertyName,
-            TryParse<string, TValue> tryParse,
-            bool ignoreCase)
-        {
-            var value = default(TValue);
-            if (map.TryGetValue(propertyName, out string stringValue)
-                && stringValue != null)
-            {
-                if (!tryParse(stringValue, ignoreCase, out value))
-                {
-                    throw new ArgumentException($"The connection string has an invalid value for property: {propertyName}");
-                }
-            }
-
-            return value;
-        }
-
-        private static bool ParseX509(string input, bool ignoreCase, out bool isUsingX509Cert)
-        {
-            isUsingX509Cert = false;
-
-            bool isMatch = string.Equals(
-                input,
-                "true",
-                ignoreCase
-                    ? StringComparison.OrdinalIgnoreCase
-                    : StringComparison.Ordinal);
-            if (isMatch)
-            {
-                isUsingX509Cert = true;
-            }
-
-            // Always returns true, but must return a bool because it is used in a delegate that requires that return.
-            return true;
         }
     }
 }
