@@ -146,6 +146,8 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessSignature = _token;
             iotHubConnectionCredentials.SharedAccessKey = null;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SasTokenTimeToLive = TimeSpan.FromSeconds(_suggestedTimeToLiveSeconds);
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
 
             return iotHubConnectionCredentials;
         }

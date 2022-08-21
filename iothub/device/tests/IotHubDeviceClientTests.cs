@@ -1299,8 +1299,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
             // These values are 1 hour for sas token expiration and renewed when 15% or less of its lifespan is left.
             var authMethod1 = new TestDeviceAuthenticationWithTokenRefresh();
-            int sasExpirationTimeInSecondsSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultTimeToLiveSeconds;
-            int sasRenewalBufferSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultBufferPercentage;
+            int sasExpirationTimeInSecondsSdkDefault = (int)SharedAccessSignatureConstants.DefaultSasTimeToLive.TotalSeconds;
+            int sasRenewalBufferSdkDefault = SharedAccessSignatureConstants.DefaultSasRenewalBufferPercentage;
 
             // act
             DateTime startTime = DateTime.UtcNow;

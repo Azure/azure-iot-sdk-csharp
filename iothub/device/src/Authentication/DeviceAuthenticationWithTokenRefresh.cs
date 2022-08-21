@@ -11,9 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class DeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
-        internal const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
-        internal const int DefaultBufferPercentage = 15;
-
         /// <summary>
         /// Initializes a new instance of the <c>DeviceAuthenticationWithTokenRefresh</c> class.
         /// </summary>
@@ -73,15 +70,15 @@ namespace Microsoft.Azure.Devices.Client
 
         private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)
         {
-            return suggestedTimeToLiveSeconds == 0
-                ? DefaultTimeToLiveSeconds
-                : suggestedTimeToLiveSeconds;
+            return (int)(suggestedTimeToLiveSeconds == 0
+                ? SharedAccessSignatureConstants.DefaultSasTimeToLive.TotalSeconds
+                : suggestedTimeToLiveSeconds);
         }
 
         private static int SetSasTokenRenewalBufferPercentage(int timeBufferPercentage)
         {
             return timeBufferPercentage == 0
-                ? DefaultBufferPercentage
+                ? SharedAccessSignatureConstants.DefaultSasRenewalBufferPercentage
                 : timeBufferPercentage;
         }
     }
