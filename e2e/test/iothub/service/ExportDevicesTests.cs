@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
-    [Ignore]
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
