@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(propertyName));
+                    throw new ArgumentOutOfRangeException(nameof(propertyName), $"{propertyName} was not found");
                 }
             }
             set => TrySetMemberInternal(propertyName, value);

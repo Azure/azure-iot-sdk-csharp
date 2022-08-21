@@ -101,23 +101,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
-            var csBuilder = new IotHubConnectionStringBuilder(refresher, TestIotHubName);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(TestDeviceId, csBuilder.DeviceId);
-            Assert.AreEqual(null, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
 
             string token = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(TestDeviceId, csBuilder.DeviceId);
-            Assert.AreEqual(token, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
         }
 
         [TestMethod]
@@ -175,12 +175,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var csBuilder = new IotHubConnectionStringBuilder(
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(
                 new DeviceAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestSharedAccessKey),
                 TestIotHubName);
 
             var clientOptions = new IotHubClientOptions();
-            ClientConfiguration connInfo = new ClientConfiguration(csBuilder, clientOptions);
+            ClientConfiguration connInfo = new ClientConfiguration(iotHubConnectionCredentials, clientOptions);
 
             Assert.IsNotNull(connInfo.TokenRefresher);
             Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));

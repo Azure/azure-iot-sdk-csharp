@@ -13,27 +13,27 @@ namespace Microsoft.Azure.Devices.Client
     internal class ClientConfiguration : IClientConfiguration
     {
         public ClientConfiguration(
-            IotHubConnectionStringBuilder builder,
+            IotHubConnectionCredentials iotHubConnectionCredentials,
             IotHubClientOptions iotHubClientOptions)
         {
-            Argument.AssertNotNull(builder, nameof(builder));
+            Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
 
             // Frist validate that the IotHubConnectionStringBuilder is set with the expected fields.
-            builder.Validate();
+            iotHubConnectionCredentials.Validate();
 
-            IotHubHostName = builder.HostName;
-            IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
+            IotHubHostName = iotHubConnectionCredentials.HostName;
+            IsUsingGateway = !string.IsNullOrEmpty(iotHubConnectionCredentials.GatewayHostName);
             GatewayHostName = IsUsingGateway
-                ? builder.GatewayHostName
-                : builder.HostName;
-            SharedAccessKeyName = builder.SharedAccessKeyName;
-            SharedAccessKey = builder.SharedAccessKey;
-            DeviceId = builder.DeviceId;
-            ModuleId = builder.ModuleId;
+                ? iotHubConnectionCredentials.GatewayHostName
+                : iotHubConnectionCredentials.HostName;
+            SharedAccessKeyName = iotHubConnectionCredentials.SharedAccessKeyName;
+            SharedAccessKey = iotHubConnectionCredentials.SharedAccessKey;
+            DeviceId = iotHubConnectionCredentials.DeviceId;
+            ModuleId = iotHubConnectionCredentials.ModuleId;
 
             ClientOptions = iotHubClientOptions;
 
-            if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
+            if (iotHubConnectionCredentials.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
             {
                 TokenRefresher = authWithTokenRefresh;
                 if (Logging.IsEnabled)
@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Devices.Client
                     TokenRefresher = new DeviceAuthenticationWithSakRefresh(
                         DeviceId,
                         this,
-                        builder.SasTokenTimeToLive,
-                        builder.SasTokenRenewalBuffer,
+                        iotHubConnectionCredentials.SasTokenTimeToLive,
+                        iotHubConnectionCredentials.SasTokenRenewalBuffer,
                         disposeWithClient: true);
 
                     if (Logging.IsEnabled)
@@ -72,8 +72,8 @@ namespace Microsoft.Azure.Devices.Client
                         DeviceId,
                         ModuleId,
                         this,
-                        builder.SasTokenTimeToLive,
-                        builder.SasTokenRenewalBuffer,
+                        iotHubConnectionCredentials.SasTokenTimeToLive,
+                        iotHubConnectionCredentials.SasTokenRenewalBuffer,
                         disposeWithClient: true);
 
                     if (Logging.IsEnabled)
@@ -92,9 +92,9 @@ namespace Microsoft.Azure.Devices.Client
             // as in, on disposal and reinitialization. This is because the value of the SAS token computed is stored within the authentication method,
             // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
             // instead of being identified as a sas-token-refresh-enabled-client.
-            else if (!string.IsNullOrWhiteSpace(builder.SharedAccessSignature))
+            else if (!string.IsNullOrWhiteSpace(iotHubConnectionCredentials.SharedAccessSignature))
             {
-                SharedAccessSignature = builder.SharedAccessSignature;
+                SharedAccessSignature = iotHubConnectionCredentials.SharedAccessSignature;
             }
 
             if (ClientOptions.TransportSettings.ClientCertificate == null)
