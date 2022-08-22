@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClients[0].CloseAsync().ConfigureAwait(false);
             deviceClients[0].Dispose();
 
-            deviceClients[0].ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled);
+            deviceClients[0].ConnectionInfo.Status.Should().Be(ConnectionStatus.Closed);
 
             Logger.Trace($"{nameof(ReuseAuthenticationMethod_MuxedDevices)}: Confirming the rest of the multiplexed devices are online and operational.");
 
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClients[i].Dispose();
                 authenticationMethods[i].Dispose();
 
-                deviceClients[i].ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled);
+                deviceClients[i].ConnectionInfo.Status.Should().Be(ConnectionStatus.Closed);
             }
         }
 

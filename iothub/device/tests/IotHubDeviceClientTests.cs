@@ -850,7 +850,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
             // Connection status change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionInfo.Status);
@@ -872,7 +872,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(null);
 
             // Connection status change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -891,7 +891,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
             // current status = disabled
 
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionInfo.Status);
@@ -899,7 +899,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -921,7 +921,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
             // current status = disabled
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionInfo.Status);
@@ -929,7 +929,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.DisconnectedRetrying, connectionInfo.Status);

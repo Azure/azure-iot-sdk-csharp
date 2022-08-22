@@ -100,11 +100,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                             // The connection status should be "Disabled", with connection status change reason "ClientClose"
                             Assert.AreEqual(
-                                ConnectionStatus.Disabled,
+                                ConnectionStatus.Closed,
                                 deviceClients[i].ConnectionInfo.Status,
                                 $"The actual connection status is = {deviceClients[i].ConnectionInfo.Status}");
                             Assert.AreEqual(
-                                ConnectionStatusChangeReason.ClientClose,
+                                ConnectionStatusChangeReason.ClientClosed,
                                 deviceClients[i].ConnectionInfo.ChangeReason,
                                 $"The actual connection status change reason is = {deviceClients[i].ConnectionInfo.ChangeReason}");
                         }
