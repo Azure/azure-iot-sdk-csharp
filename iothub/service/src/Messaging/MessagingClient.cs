@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-            catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
+            catch (Exception ex) when (ex is not TimeoutException && !Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
