@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task OpenAsync(CancellationToken cancellationToken = default) => InternalClient.OpenAsync(cancellationToken);
 
         /// <summary>
-        /// Sends an event to a hub
+        /// Sends an event to IoT hub.
         /// </summary>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
@@ -131,10 +131,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message to send. Should be disposed after sending.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="OperationCanceledException">Thrown if the service does not respond to the request before the
-        /// expiration of the passed <see cref="CancellationToken"/>. If a cancellation token is not supplied to the
-        /// operation call, a cancellation token with an expiration time of 4 minutes is used.
-        /// </exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
