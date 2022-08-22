@@ -1,82 +1,27 @@
+# Azure IoT SDK Node Samples
 
-This folder contains simple samples showing how to use the various features of Microsoft Azure IoT Hub service, from a device running C# code.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut quis felis aliquam eros venenatis ultrices a eget tortor. Donec tristique ante nec libero vestibulum volutpat. Mauris malesuada sodales mauris sed consequat. Donec at accumsan metus. Suspendisse et justo diam. Integer porttitor vitae nibh a aliquam. Curabitur eu elit libero. Phasellus a ultrices nibh, ut gravida nunc. Aliquam hendrerit eros id dolor mollis pulvinar. In iaculis, velit nec ultrices fermentum, erat odio placerat est, non pulvinar justo justo ut felis. Vestibulum ultrices ipsum ac erat aliquam consequat. Morbi sollicitudin gravida leo quis congue. Maecenas blandit ornare enim, et sagittis nisi pretium ac.
 
-### [Device samples][device-samples]
+## Getting started (level 100)
 
-- [Reconnection sample][d-message-sample]
-    - This sample illustrates how to write a device application to handle connection issues, connection-related exceptions, and how to manage the lifetime of the `DeviceClient`
-    - Includes sending messages and symmetric key failover
-- [Method sample][d-method-sample]
-- [Receive message sample][d-receive-message-sample]
-- [Twin sample][d-twin-sample]
-- [File upload sample][d-file-upload-sample]
-- [Import/export devices sample][d-import-export-devices-sample]
-- [Connect with X509 certificate sample][d-x509-cert-sample]
-- [Plug and Play device samples][d-pnp-sample]
-- [Xamarin sample][d-xamarin-sample]
+Nam non nulla id ante feugiat pulvinar rutrum ut mi. Quisque auctor tempor dui, et scelerisque enim congue quis. Nunc aliquam arcu risus, eu elementum leo pellentesque sed. Curabitur in auctor magna, at euismod sapien. Aenean nec venenatis tortor. Sed massa lacus, pulvinar vel sodales eget, faucibus mollis quam.
 
-### Module sample
+[Click here for getting started samples](./getting%20started)
 
-- [Message sample][m-message-sample]
-    - This sample illustrates how to write an IoT Hub module to handle connection issues, connection-related exceptions, and how to manage the lifetime of the `ModuleClient`
-    - Includes sending messages and symmetric key failover
+## How to guides (level 200-300)
 
-### Prerequisites
+Nulla id tempus tortor, ut viverra odio. Aliquam accumsan magna vel efficitur eleifend. Curabitur consectetur fringilla eros ut pellentesque. Morbi id posuere quam. Nam aliquet nisi mauris, sit amet pharetra tortor euismod ac. Cras ullamcorper non purus et aliquet. Fusce dui mi, pellentesque at sagittis a, fringilla ac velit. Nullam nec enim iaculis, dictum turpis ac, tempus turpis. Pellentesque in dolor suscipit, faucibus risus a, pretium metus.
 
-In order to run the device samples on Linux or Windows, you will first need the following prerequisites:
+[Click here for the how-to guides](./how%20to%20guides)
 
-- [Setup your IoT hub][lnk-setup-iot-hub]
-- [Provision your device and get its credentials][lnk-manage-iot-device]
+## Solutions (level 400+)
 
-### Setup environment
+Sed ultricies felis euismod diam porttitor pellentesque. Pellentesque facilisis ligula id commodo gravida. Etiam et dolor sit amet est rhoncus lobortis a eu enim. Proin lacinia dignissim nisi, non volutpat diam semper quis. Pellentesque quis elit elit. Praesent id convallis tortor. Ut metus lectus, aliquet id erat quis, posuere auctor dolor. Nam consectetur nec est sit amet lacinia. Interdum et malesuada fames ac ante ipsum primis in faucibus. In sit amet nisi congue, consequat neque vel, porttitor augue. Fusce nulla nisl, venenatis in dolor tincidunt, suscipit fringilla odio.
 
-The following prerequisite is the minimum requirement to build and run the samples. 
+[Click here for solutions](./solutions)
 
-- Install the latest .NET Core from <https://dot.net>
+# Give us your feedback
 
-> Visual Studio is **not required** to run the samples.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut quis felis aliquam eros venenatis ultrices a eget tortor. Donec tristique ante nec libero vestibulum volutpat. Mauris malesuada sodales mauris sed consequat. Donec at accumsan metus. Suspendisse et justo diam. Integer porttitor vitae nibh a aliquam. Curabitur eu elit libero. Phasellus a ultrices nibh, ut gravida nunc.
 
-### Get and run the samples
-
-You need to clone the repository or download the sample (the one you want to try) project's folder on your device.
-
-#### Build and run the samples
-
-1. Building the sample application
-
-    To build the sample application using dotnet, from terminal navigate to the sample folder (where the .csproj file lives). Then execute the following command and check for build errors:
-
-    ```console
-    dotnet build
-    ```
-
-1. Preparing the sample application:
-   1. Many of these samples take parameters. To see the parameters required, type:
-
-      ```console
-      dotnet run --help
-      ```
-
-1. Running the sample application:
-
-    To run the sample application using dotnet, execute the following command with any required parameters discovered in the previous step.
-
-    ```console
-    dotnet run
-    ```
-
-[device-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device
-[d-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/DeviceReconnectionSample
-[d-receive-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/MessageReceiveSample
-[d-method-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/MethodSample
-[d-twin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/TwinSample
-[d-file-upload-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/FileUploadSample
-[d-x509-cert-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/X509DeviceCertWithChainSample
-[d-import-export-devices-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/ImportExportDevicesSample
-[d-pnp-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/PnpDeviceSamples
-[d-xamarin-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/device/XamarinSample
-
-[m-message-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/main/iot-hub/Samples/module/ModuleSample
-
-[lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
-[lnk-manage-iot-device]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#create-new-device-in-the-iot-hub-device-identity-registry
+📫 [General feedback](https://github.com/danhellem/azure-iot-sdk-node-samples/discussions/11)
