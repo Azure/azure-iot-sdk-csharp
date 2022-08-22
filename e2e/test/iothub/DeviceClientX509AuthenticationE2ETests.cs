@@ -43,17 +43,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
+// TODO: there is a problem with DotNetty on net6.0 with gatewayv2. Wait for transition to MqttNet to re-enable and try this test out.
+#if !NET6_0_OR_GREATER
         [LoggedTestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
+#endif
 
         [LoggedTestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttWs()
         {
             await X509InvalidDeviceIdOpenAsyncTest(DeviceTransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
