@@ -12,18 +12,56 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithRegistrySymmetricKey : IAuthenticationMethod
     {
+        private const int DefaultSasRenewalBufferPercentage = 15;
+        private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
+
+        private readonly TimeSpan _suggestedTimeToLive;
+        private readonly int _timeBufferPercentage;
+
         private string _deviceId;
         private byte[] _key;
 
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="deviceId">Device Identifier.</param>
         /// <param name="key">Symmetric key associated with the device.</param>
-        public DeviceAuthenticationWithRegistrySymmetricKey(string deviceId, string key)
+        /// <param name="suggestedTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        ///</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
+        /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
+        public DeviceAuthenticationWithRegistrySymmetricKey(
+            string deviceId,
+            string key,
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default)
         {
+            if (suggestedTimeToLive.Ticks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
+            }
+
+            if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
+            }
+
             SetDeviceId(deviceId);
             SetKeyFromBase64String(key);
+
+            _suggestedTimeToLive = suggestedTimeToLive == default
+                ? s_defaultSasTimeToLive
+                : suggestedTimeToLive;
+
+            _timeBufferPercentage = timeBufferPercentage == default
+                ? DefaultSasRenewalBufferPercentage
+                : timeBufferPercentage;
         }
 
         /// <summary>
@@ -73,6 +111,8 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
             iotHubConnectionCredentials.SharedAccessSignature = null;
+            iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
 
             return iotHubConnectionCredentials;
         }
