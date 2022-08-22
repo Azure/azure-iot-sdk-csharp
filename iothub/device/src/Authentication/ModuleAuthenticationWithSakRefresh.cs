@@ -19,11 +19,12 @@ namespace Microsoft.Azure.Devices.Client
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default,
             bool disposeWithClient = true)
-            : base(deviceId,
-                  moduleId,
-                  sasTokenTimeToLive,
-                  sasTokenRenewalBuffer,
-                  disposeWithClient)
+            : base(
+                deviceId,
+                moduleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer,
+                disposeWithClient)
         {
             _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
         }
