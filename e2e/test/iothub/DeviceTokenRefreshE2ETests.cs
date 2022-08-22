@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
-            using (var deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
+            using (var deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IotHubHostName};DeviceId={config.DeviceId};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string iotHub = config.IotHubHostName;
-            string deviceId = config.DeviceID;
+            string deviceId = config.DeviceId;
             string key = config.SharedAccessKey;
 
             var builder = new SharedAccessSignatureBuilder()
