@@ -187,21 +187,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
             Console.WriteLine($"Connection status changed: status={status}, reason={reason}, recommendation={connectionInfo.RecommendedAction}");
 
-            // In our case, we can operate with more than 1 shared access key and attempt to fall back to a secondary.
-            // We'll disregard the SDK's recommendation and attempt to connect with the second one.
-            if (status == ConnectionStatus.Disconnected
-                && reason == ConnectionStatusChangeReason.BadCredential
-                && _deviceConnectionStrings.Count > 1)
-            {
-                // When getting this reason, the current connection string being used is not valid.
-                // If we had a backup, we can try using that.
-                _deviceConnectionStrings.RemoveAt(0);
-                Console.WriteLine($"The current connection string is invalid. Trying another.");
-                await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
-                return;
-            }
-
-            // Otherwise, we follow the SDK's recommendation.
+            // We follow the SDK's recommendation.
             switch (connectionInfo.RecommendedAction)
             {
                 case RecommendedAction.OpenConnection:
@@ -221,7 +207,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     break;
 
                 case RecommendedAction.Quit:
-                    s_cancellationTokenSource.Cancel();
+                    // In our case, we can operate with more than 1 shared access key and attempt to fall back to a secondary.
+                    // We'll disregard the SDK's recommendation and attempt to connect with the second one.
+                    if (status == ConnectionStatus.Disconnected
+                        && reason == ConnectionStatusChangeReason.BadCredential
+                        && _deviceConnectionStrings.Count > 1)
+                    {
+                        // When getting this reason, the current connection string being used is not valid.
+                        // If we had a backup, we can try using that.
+                        _deviceConnectionStrings.RemoveAt(0);
+                        Console.WriteLine($"The current connection string is invalid. Trying another.");
+                        await InitializeAndSetupClientAsync(s_cancellationTokenSource.Token);
+                    }
+                    else
+                    {
+                        s_cancellationTokenSource.Cancel();
+                    }
                     break;
             }
         }
