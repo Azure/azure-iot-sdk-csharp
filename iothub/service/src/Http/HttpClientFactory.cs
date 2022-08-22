@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Microsoft.Azure.Devices.Http2
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Factory for creating HTTP clients for the various service clients to use when making

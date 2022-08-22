@@ -113,17 +113,17 @@ namespace Microsoft.Azure.Devices
         public string SharedAccessSignature { get; internal set; }
 
         /// <summary>
-        /// The Id of the device
+        /// The Id of the device.
         /// </summary>
         public string DeviceId { get; internal set; }
 
         /// <summary>
-        /// The Id of the module, if present
+        /// The Id of the module, if present.
         /// </summary>
         public string ModuleId { get; internal set; }
 
         /// <summary>
-        /// The host name of the gateway, if present
+        /// The host name of the gateway, if present.
         /// </summary>
         public string GatewayHostName { get; internal set; }
 

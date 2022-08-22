@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
 {
@@ -69,8 +68,8 @@ namespace Microsoft.Azure.Devices
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -118,8 +117,8 @@ namespace Microsoft.Azure.Devices
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -196,10 +195,10 @@ namespace Microsoft.Azure.Devices
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
-                HttpMessageHelper2.InsertETag(request, module.ETag);
+                HttpMessageHelper.InsertETag(request, module.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper2.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -238,7 +237,7 @@ namespace Microsoft.Azure.Devices
             Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
 
             var module = new Module(deviceId, moduleId);
-            module.ETag = HttpMessageHelper2.ETagForce;
+            module.ETag = HttpMessageHelper.ETagForce;
             await DeleteAsync(module, cancellationToken).ConfigureAwait(false);
         }
 
@@ -281,9 +280,9 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
-                HttpMessageHelper2.InsertETag(request, module.ETag);
+                HttpMessageHelper.InsertETag(request, module.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

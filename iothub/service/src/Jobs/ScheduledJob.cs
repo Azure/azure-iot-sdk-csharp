@@ -8,7 +8,7 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Provides current job report when fetched
+    /// Provides current job report when fetched.
     /// </summary>
     public class ScheduledJob
     {
@@ -41,13 +41,13 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// System generated.  Ignored at creation.
+        /// System generated. Ignored at creation.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? StartTimeUtc { get; internal set; }
 
         /// <summary>
-        /// System generated.  Ignored at creation.
+        /// System generated. Ignored at creation.
         /// Represents the time the job stopped processing.
         /// </summary>
         [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Max execution time in secounds
+        /// Max execution time in secounds.
         /// </summary>
         [JsonProperty(PropertyName = "maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public long MaxExecutionTimeInSeconds { get; internal set; }
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// System generated.  Ignored at creation.
+        /// System generated. Ignored at creation.
         /// </summary>
         [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]
@@ -110,29 +110,33 @@ namespace Microsoft.Azure.Devices
         public Twin UpdateTwin { get; internal set; }
 
         /// <summary>
-        /// System generated.  Ignored at creation.
-        /// If status == failure, this represents a string containing the reason.
+        /// System generated. Ignored at creation.
         /// </summary>
+        /// <remarks>
+        /// If status == failure, this represents a string containing the reason.
+        /// </remarks>
         [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
         public string FailureReason { get; internal set; }
 
         /// <summary>
-        /// System generated.  Ignored at creation.
+        /// System generated. Ignored at creation.
         /// Represents a string containing a message with status about the job execution.
         /// </summary>
         [JsonProperty(PropertyName = "statusMessage", NullValueHandling = NullValueHandling.Ignore)]
         public string StatusMessage { get; internal set; }
 
         /// <summary>
-        /// Different number of devices in the job
+        /// Different number of devices in the job.
         /// </summary>
         [JsonProperty(PropertyName = "deviceJobStatistics", NullValueHandling = NullValueHandling.Ignore)]
         public DeviceJobStatistics DeviceJobStatistics { get; internal set; }
 
         /// <summary>
         /// The deviceId related to this response.
-        /// It can be null (e.g. in case of a parent orchestration).
         /// </summary>
+        /// <remarks>
+        /// It can be null (e.g. in case of a parent orchestration).
+        /// </remarks>
         [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
         public string DeviceId { get; internal set; }
 
@@ -144,36 +148,36 @@ namespace Microsoft.Azure.Devices
     }
 
     /// <summary>
-    /// The job counts, e.g., number of failed/succeeded devices
+    /// The job counts, e.g., number of failed/succeeded devices.
     /// </summary>
     public class DeviceJobStatistics
     {
         /// <summary>
-        /// Number of devices in the job
+        /// Number of devices in the job.
         /// </summary>
         [JsonProperty(PropertyName = "deviceCount")]
         public int DeviceCount { get; internal set; }
 
         /// <summary>
-        /// The number of failed jobs
+        /// The number of failed jobs.
         /// </summary>
         [JsonProperty(PropertyName = "failedCount")]
         public int FailedCount { get; internal set; }
 
         /// <summary>
-        /// The number of Successed jobs
+        /// The number of Successed jobs.
         /// </summary>
         [JsonProperty(PropertyName = "succeededCount")]
         public int SucceededCount { get; internal set; }
 
         /// <summary>
-        /// The number of running jobs
+        /// The number of running jobs.
         /// </summary>
         [JsonProperty(PropertyName = "runningCount")]
         public int RunningCount { get; internal set; }
 
         /// <summary>
-        /// The number of pending (scheduled) jobs
+        /// The number of pending (scheduled) jobs.
         /// </summary>
         [JsonProperty(PropertyName = "pendingCount")]
         public int PendingCount { get; internal set; }

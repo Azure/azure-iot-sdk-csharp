@@ -15,13 +15,13 @@ namespace Microsoft.Azure.Devices
     public class ConfigurationMetrics
     {
         /// <summary>
-        /// Results of the metrics collection queries
+        /// Results of the metrics collection queries.
         /// </summary>
         [JsonProperty("results")]
         public IDictionary<string, long> Results { get; set; } = new Dictionary<string, long>();
 
         /// <summary>
-        /// Queries used for metrics collection
+        /// Queries used for metrics collection.
         /// </summary>
         [JsonProperty("queries")]
         public IDictionary<string, string> Queries { get; set; } = new Dictionary<string, string>();

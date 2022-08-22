@@ -6,12 +6,12 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Input specific to a job used in JobRequest
+    /// Input specific to a job used in JobRequest.
     /// </summary>
     public class JobParameters
     {
         /// <summary>
-        /// Construct the parameters for a device job
+        /// Construct the parameters for a device job.
         /// </summary>
         /// <param name="jobType">The type of job to run on the device</param>
         public JobParameters(JobType jobType)
@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Required.
         /// The type of job to execute.
         /// </summary>
         [JsonProperty(PropertyName = "jobType", Required = Required.Always)]

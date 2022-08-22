@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices;
-using Microsoft.Azure.Devices.Http2;
 using Microsoft.Azure.Devices.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -42,7 +41,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -74,7 +73,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -106,7 +105,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -138,7 +137,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -170,7 +169,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceGoodAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceGoodAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -202,7 +201,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceBadAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -234,7 +233,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadAuthConfig);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceBadAuthConfig);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 }
             };
 
-            HttpContent mockContent = HttpMessageHelper2.SerializePayload(deviceBadThumbprint);
+            HttpContent mockContent = HttpMessageHelper.SerializePayload(deviceBadThumbprint);
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = mockContent;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;

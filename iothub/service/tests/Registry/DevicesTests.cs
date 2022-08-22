@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Http2;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -32,7 +31,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var deviceToReturn = new Device(DeviceId) { ConnectionState = DeviceConnectionState.Connected };
             var mockHttpResponse = new HttpResponseMessage();
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(deviceToReturn);
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
@@ -64,7 +63,7 @@ namespace Microsoft.Azure.Devices.Tests
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(deviceToReturn);
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
@@ -144,7 +143,7 @@ namespace Microsoft.Azure.Devices.Tests
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(deviceToReturn);
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(deviceToReturn);
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
@@ -245,7 +244,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -283,7 +282,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -382,7 +381,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.Content = null;
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -420,7 +419,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -523,7 +522,7 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
@@ -559,34 +558,12 @@ namespace Microsoft.Azure.Devices.Tests
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
             var mockHttpResponse = new HttpResponseMessage();
             mockHttpResponse.StatusCode = HttpStatusCode.OK;
-            mockHttpResponse.Content = HttpMessageHelper2.SerializePayload(new BulkRegistryOperationResult());
+            mockHttpResponse.Content = HttpMessageHelper.SerializePayload(new BulkRegistryOperationResult());
             var mockHttpClient = new Mock<HttpClient>();
             mockHttpClient.Setup(restOp => restOp.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(mockHttpResponse);
 
             var Twin = new TwinsClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory);
             await Twin.UpdateAsync(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public void DisposeTest()
-        {
-            var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp.Dispose());
-
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            registryManager.Dispose();
-            restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
-        }
-
-        [TestMethod]
-        public async Task CloseAsyncTest()
-        {
-            var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp.Dispose());
-
-            var registryManager = new RegistryManager(validMockConnectionString, restOpMock.Object);
-            await registryManager.CloseAsync().ConfigureAwait(false);
-            restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
         }
 
         [TestMethod]

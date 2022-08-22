@@ -53,12 +53,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Ignore]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
-            var httpTransportSettings = new HttpTransportSettings
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions
             {
-                Proxy = new WebProxy(s_proxyServerAddress),
+                Proxy = new WebProxy(s_proxyServerAddress)
             };
 
-            await JobClient_ScheduleAndRunTwinJob(httpTransportSettings).ConfigureAwait(false);
+            await JobClient_ScheduleAndRunTwinJob(options).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
@@ -86,17 +86,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);
         }
 
-        private async Task JobClient_ScheduleAndRunTwinJob(HttpTransportSettings httpTransportSettings)
+        private async Task JobClient_ScheduleAndRunTwinJob(IotHubServiceClientOptions options)
         {
             var twin = new Twin(JobDeviceId)
             {
                 Tags = new TwinCollection(),
             };
             twin.Tags[JobTestTagName] = JobDeviceId;
-            var options = new IotHubServiceClientOptions
-            {
-                Proxy = httpTransportSettings.Proxy
-            };
             using var sc = new IotHubServiceClient(s_connectionString, options);
             int tryCount = 0;
             while (true)

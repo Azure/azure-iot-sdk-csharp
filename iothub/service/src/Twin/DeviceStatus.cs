@@ -17,13 +17,13 @@ namespace Microsoft.Azure.Devices
     public enum DeviceStatus
     {
         /// <summary>
-        /// Indicates that a Device is enabled
+        /// Indicates that a Device is enabled.
         /// </summary>
         [EnumMember(Value = "enabled")]
         Enabled = 0,
 
         /// <summary>
-        /// Indicates that a Device is disabled
+        /// Indicates that a Device is disabled.
         /// </summary>
         [EnumMember(Value = "disabled")]
         Disabled,

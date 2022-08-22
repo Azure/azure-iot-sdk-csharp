@@ -5,7 +5,6 @@ using System;
 using System.Net.Http;
 using Azure;
 using Azure.Core;
-using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
 {

@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Microsoft.Azure.Devices.Http2
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Factory for creating HTTP requests to be sent by a service client. The requests created by
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Http2
                     }
                     else
                     {
-                        message.Content = HttpMessageHelper2.SerializePayload(payload);
+                        message.Content = HttpMessageHelper.SerializePayload(payload);
                     }
                 }
             }

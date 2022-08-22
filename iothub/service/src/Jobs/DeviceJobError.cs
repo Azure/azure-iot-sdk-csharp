@@ -6,18 +6,18 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains DeviceJob Errors information
+    /// Contains DeviceJob Errors information.
     /// </summary>
     public class DeviceJobError
     {
         /// <summary>
-        /// Device Job Error 
+        /// Device Job Error.
         /// </summary>
         [JsonProperty("code")]
         public string Code { get; set; }
 
         /// <summary>
-        /// Device Job Error description
+        /// Device Job Error description.
         /// </summary>
         [JsonProperty("description")]
         public string Description { get; set; }

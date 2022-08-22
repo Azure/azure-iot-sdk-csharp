@@ -14,25 +14,25 @@ namespace Microsoft.Azure.Devices
     public enum AuthenticationType
     {
         /// <summary>
-        /// Shared Access Key
+        /// Shared Access Key.
         /// </summary>
         [EnumMember(Value = "sas")]
         Sas = 0,
 
         /// <summary>
-        /// Self-signed certificate
+        /// Self-signed certificate.
         /// </summary>
         [EnumMember(Value = "selfSigned")]
         SelfSigned = 1,
 
         /// <summary>
-        /// Certificate Authority
+        /// Certificate Authority.
         /// </summary>
         [EnumMember(Value = "certificateAuthority")]
         CertificateAuthority = 2,
 
         /// <summary>
-        /// No Authentication Token at this scope
+        /// No Authentication Token at this scope.
         /// </summary>
         [EnumMember(Value = "none")]
         None = 3

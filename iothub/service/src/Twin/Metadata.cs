@@ -7,14 +7,14 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// <see cref="Metadata"/> for properties in <see cref="TwinCollection"/>
+    /// <see cref="Metadata"/> for properties in <see cref="TwinCollection"/>.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1724:TypeNamesShouldNotMatchNamespaces",
         Justification = "Public API cannot change name.")]
     public sealed class Metadata
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="Metadata"/>
+        /// Initializes a new instance of <see cref="Metadata"/>.
         /// </summary>
         /// <param name="lastUpdated"></param>
         /// <param name="lastUpdatedVersion"></param>
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Time when a property was last updated
+        /// Time when a property was last updated.
         /// </summary>
         public DateTime LastUpdated { get; set; }
 

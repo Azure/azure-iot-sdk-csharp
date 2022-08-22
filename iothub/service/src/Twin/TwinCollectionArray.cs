@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents a property array in a <see cref="TwinCollection"/>
+    /// Represents a property array in a <see cref="TwinCollection"/>.
     /// </summary>
     public class TwinCollectionArray : JArray
     {
@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the value for the given property name
+        /// Gets the value for the given property name.
         /// </summary>
-        /// <param name="propertyName">Property Name to lookup</param>
-        /// <returns>Property value, if present</returns>
+        /// <param name="propertyName">Property Name to lookup.</param>
+        /// <returns>Property value, if present.</returns>
         public dynamic this[string propertyName]
         {
             get
@@ -39,27 +39,27 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the Metadata for this property
+        /// Gets the Metadata for this property.
         /// </summary>
-        /// <returns>Metadata instance representing the metadata for this property</returns>
+        /// <returns>Metadata instance representing the metadata for this property.</returns>
         public Metadata GetMetadata()
         {
             return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
         }
 
         /// <summary>
-        /// Gets the LastUpdated time for this property
+        /// Gets the LastUpdated time for this property.
         /// </summary>
-        /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
+        /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
         public DateTime GetLastUpdated()
         {
             return (DateTime)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>
-        /// Gets the LastUpdatedVersion for this property
+        /// Gets the LastUpdatedVersion for this property.
         /// </summary>
-        /// <returns>LastUpdatdVersion if present, null otherwise</returns>
+        /// <returns>LastUpdatdVersion if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata[TwinCollection.LastUpdatedVersionName];

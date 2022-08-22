@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains properties for file upload notifications
+    /// Contains properties for file upload notifications.
     /// </summary>
     public class FileUploadNotification
     {

@@ -14,14 +14,14 @@ namespace Microsoft.Azure.Devices
     public enum StorageAuthenticationType
     {
         /// <summary>
-        /// Use a shared access key for authentication
+        /// Use a shared access key for authentication.
         /// </summary>
-        /// <remarks>This means authentication must be supplied in the storage URI(s)</remarks>
+        /// <remarks>This means authentication must be supplied in the storage URI(s).</remarks>
         [EnumMember(Value = "keyBased")]
         KeyBased = 0,
 
         /// <summary>
-        /// Use the AD identity configured on the hub for authentication to storage
+        /// Use the AD identity configured on the hub for authentication to storage.
         /// </summary>
         [EnumMember(Value = "identityBased")]
         IdentityBased = 1,

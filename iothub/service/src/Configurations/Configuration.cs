@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
         public ConfigurationContent Content { get; set; }
 
         /// <summary>
-        /// Gets the content type for configuration
+        /// Gets the content type for configuration.
         /// </summary>
         [JsonProperty(PropertyName = "contentType")]
         public string ContentType { get; internal set; }

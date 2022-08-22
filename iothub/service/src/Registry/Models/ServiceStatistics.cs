@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains service statistics that can be retrieved from IotHub.
+    /// Contains service statistics that can be retrieved from IoT hub.
     /// </summary>
     public class ServiceStatistics
     {

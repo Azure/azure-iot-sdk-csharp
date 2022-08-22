@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices
         /// the exported device registry information for the IoT hub.
         /// </summary>
         /// <remarks>
-        /// If not specified, defaults to "devices.txt"
+        /// If not specified, defaults to "devices.txt".
         /// </remarks>
         [JsonProperty(PropertyName = "outputBlobName", NullValueHandling = NullValueHandling.Ignore)]
         public string OutputBlobName { get; set; }
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
         /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
-        /// <returns>An instance of JobProperties</returns>
+        /// <returns>An instance of JobProperties.</returns>
         public static JobProperties CreateForImportJob(
             Uri inputBlobContainerUri,
             Uri outputBlobContainerUri,
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
         /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
-        /// <returns>An instance of JobProperties</returns>
+        /// <returns>An instance of JobProperties.</returns>
         public static JobProperties CreateForExportJob(
             Uri outputBlobContainerUri,
             bool excludeKeysInExport,

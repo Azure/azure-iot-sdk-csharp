@@ -22,12 +22,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Name of device
+        /// Name of device.
         /// </summary>
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// Shared access signature generated using device's shared access key
+        /// Shared access signature generated using device's shared access key.
         /// </summary>
         public string Token { get; set; }
 

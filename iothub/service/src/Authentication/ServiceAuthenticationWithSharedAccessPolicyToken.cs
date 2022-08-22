@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The name of the policy
+        /// The name of the policy.
         /// </summary>
         public string PolicyName
         {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The SAS token
+        /// The SAS token.
         /// </summary>
         public string Token
         {
@@ -44,9 +44,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Updates the specified connection string builder with policy name and token
+        /// Updates the specified connection string builder with policy name and token.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">The connection string builder to update</param>
+        /// <param name="iotHubConnectionStringBuilder">The connection string builder to update.</param>
         /// <returns>The populated connection string builder object.</returns>
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
