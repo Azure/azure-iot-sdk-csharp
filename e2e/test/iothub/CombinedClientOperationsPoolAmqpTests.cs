@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize service client for service-side operations
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             // Message payload and properties for C2D operation
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Logger.Trace($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send C2D for device={testDevice.Id}");
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
-                Task sendC2dMessage = serviceClient.SendAsync(testDevice.Id, msg);
+                Task sendC2dMessage = serviceClient.Messaging.SendAsync(testDevice.Id, msg);
                 initOperations.Add(sendC2dMessage);
 
                 // Set method handler
