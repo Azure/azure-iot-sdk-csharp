@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         private bool _isDisposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its

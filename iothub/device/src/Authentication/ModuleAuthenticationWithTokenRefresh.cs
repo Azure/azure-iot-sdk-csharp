@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class ModuleAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its

@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly AuthenticationProviderTpm _authProvider;
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes
