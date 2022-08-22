@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_AuthenticationRecovery_Amqp()
         {
             await SendMessageRecoveryAsync(
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(

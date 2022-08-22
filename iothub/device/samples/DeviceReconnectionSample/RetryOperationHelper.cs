@@ -23,13 +23,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// <param name="shouldExecuteOperation">A function that determines if the operation should be executed.
         /// Eg.: for scenarios when we want to execute the operation only if the client is connected, this would be a function that returns if the client is currently connected.</param>
         /// <param name="logger">The <see cref="ILogger"/> instance to be used.</param>
-        /// <param name="exceptionsToBeIgnored">An optional list of exceptions that can be ignored.</param>
+        /// <param name="exceptionsToBeIgnored">An optional list of status codes that can be ignored.</param>
         /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
         internal static async Task RetryTransientExceptionsAsync(
             string operationName,
             Func<Task> asyncOperation,
             Func<bool> shouldExecuteOperation,
-            IDictionary<Type, string> exceptionsToBeIgnored = default,
+            IDictionary<IotHubStatusCode, string> exceptionsToBeIgnored = default,
             CancellationToken cancellationToken = default)
         {
             IRetryPolicy retryPolicy = new ExponentialBackoffTransientExceptionRetryPolicy(maxRetryCount: int.MaxValue, exceptionsToBeIgnored: exceptionsToBeIgnored);
@@ -68,7 +68,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         await Task.Delay(retryInterval, cancellationToken);
                     }
                     catch (OperationCanceledException) { }
-
                 }
                 else
                 {

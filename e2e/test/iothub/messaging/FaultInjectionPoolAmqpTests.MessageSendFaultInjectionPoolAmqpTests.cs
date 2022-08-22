@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_DeviceSak_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_DeviceSak_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -378,7 +378,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_IoTHubSak_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -393,7 +393,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task Message_IoTHubSak_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(

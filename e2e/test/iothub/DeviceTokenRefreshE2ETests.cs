@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(IotHubClientException))]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);

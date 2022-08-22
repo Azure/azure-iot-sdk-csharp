@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
@@ -56,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         NetworkErrors,
 
         /// <summary>
-        /// The IoT hub has been suspended. This is likely due to exceeding Azure spending limits. 
+        /// The IoT hub has been suspended. This is likely due to exceeding Azure spending limits.
         /// </summary>
         /// <remark>
         /// To resolve the error, check the Azure bill and ensure there are enough credits.
@@ -108,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <remarks>
         /// This exception means the client is not authorized to use the specified IoT hub. Please review the
-        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see> 
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see>
         /// guide for more information.
         /// </remarks>
         Unauthorized,
