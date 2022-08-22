@@ -36,11 +36,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             TimeSpan sasTokenTimeToLive,
             int sasTokenRenewalBuffer,
             bool disposeWithClient)
-            : base(deviceId,
-                  moduleId,
-                  sasTokenTimeToLive,
-                  sasTokenRenewalBuffer,
-                  disposeWithClient)
+            : base(
+                deviceId,
+                moduleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer,
+                disposeWithClient)
         {
             _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
             _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
