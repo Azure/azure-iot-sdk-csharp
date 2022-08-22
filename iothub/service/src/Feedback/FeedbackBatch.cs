@@ -32,6 +32,6 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         public string UserId { get; set; }
 
-        internal string LockToken { get; set; }
+        internal ArraySegment<byte> DeliveryTag { get; set; }
     }
 }

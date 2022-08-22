@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
-        [JsonProperty(PropertyName = "startTimeUtc")]
+        [JsonProperty(PropertyName = "startTime")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
         public DateTime StartTimeUtc { get; set; }
 

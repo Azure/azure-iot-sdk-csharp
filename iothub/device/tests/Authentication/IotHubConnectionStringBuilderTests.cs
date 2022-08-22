@@ -31,16 +31,16 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesHostName()
         {
             var connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.HostName.Should().Be(HostName);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.HostName.Should().Be(HostName);
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesDeviceId()
         {
             var connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.DeviceId.Should().Be(DeviceId);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
         }
 
         [TestMethod]
@@ -59,8 +59,8 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
                     Console.WriteLine($"Testing culture {culture}");
                     Thread.CurrentThread.CurrentCulture = culture;
                     var connectionString = $"HostName={HostName};DeviceId={deviceId};SharedAccessKey={SharedAccessKey}";
-                    var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-                    csBuilder.DeviceId.Should().Be(deviceId, $"failed to match in {culture}");
+                    var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+                    iotHubConnectionCredentials.DeviceId.Should().Be(deviceId, $"failed to match in {culture}");
                 }
             }
             finally
@@ -73,29 +73,29 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesModuleId()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.ModuleId.Should().Be(ModuleId);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.ModuleId.Should().Be(ModuleId);
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesComplexDeviceId()
         {
             var connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceIdSplChar};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.DeviceId.Should().Be(DeviceIdSplChar);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.DeviceId.Should().Be(DeviceIdSplChar);
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesSharedAccessKey()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
 
-            csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
+            iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
 
-            csBuilder.SharedAccessSignature.Should().BeNull("SharedAccessKey and SharedAccessSignature are mutually exclusive");
-            csBuilder.UsingX509Cert.Should().BeFalse("SharedAccessKey and X509 are mutually exclusive");
+            iotHubConnectionCredentials.SharedAccessSignature.Should().BeNull("SharedAccessKey and SharedAccessSignature are mutually exclusive");
+            iotHubConnectionCredentials.Certificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
         }
 
         [TestMethod]
@@ -104,87 +104,41 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509False(string x509)
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey};{x509}=false";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
 
-            csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
-            csBuilder.UsingX509Cert.Should().BeFalse("SharedAccessKey and X509 are mutually exclusive");
+            iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
+            iotHubConnectionCredentials.Certificate.Should().BeNull("SharedAccessKey and X.509 are mutually exclusive");
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesSharedAccessKeyName()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.SharedAccessKeyName.Should().Be(SharedAccessKeyName);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.SharedAccessKeyName.Should().Be(SharedAccessKeyName);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesSharedAccessSignature()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessSignature={SharedAccessSignature}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
 
-            csBuilder.SharedAccessSignature.Should().Be(SharedAccessSignature);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
+            iotHubConnectionCredentials.SharedAccessSignature.Should().Be(SharedAccessSignature);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
 
-            csBuilder.SharedAccessKey.Should().BeNull("SharedAccessSignature and SharedAccessKey are mutually exclusive");
-            csBuilder.UsingX509Cert.Should().BeFalse("SharedAccessSignature and X509 are mutually exclusive");
-        }
-
-        [TestMethod]
-        [DataRow("true")]
-        [DataRow("True")]
-        [DataRow("TRUE")]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509BoolCaseInsensitive(string value)
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId};X509Cert={value}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-
-            csBuilder.UsingX509Cert.Should().BeTrue();
-
-            csBuilder.SharedAccessKey.Should().BeNull();
-            csBuilder.SharedAccessKeyName.Should().BeNull();
-            csBuilder.SharedAccessSignature.Should().BeNull();
-        }
-
-        /// <summary>
-        /// Ensure we support both and either x509Cert= and x509= in our connection string builder/parser, for backward compat and alignment with other SDKs.
-        /// If either is true, then we'll consider it true.
-        /// </summary>
-        [TestMethod]
-        [DataRow("true", "true")]
-        [DataRow("false", "true")]
-        [DataRow(null, "true")]
-        [DataRow("true", "false")]
-        [DataRow("true", null)]
-        public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesX509Mix(string x509CertValue, string x509Value)
-        {
-            var connectionString = $"HostName={HostName};DeviceId={DeviceId}";
-            if (x509CertValue != null)
-            {
-                connectionString += $";X509Cert={x509CertValue}";
-            }
-            if (x509Value != null)
-            {
-                connectionString += $";x509={x509Value}";
-            }
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-
-            csBuilder.UsingX509Cert.Should().BeTrue();
-
-            csBuilder.SharedAccessKey.Should().BeNull();
-            csBuilder.SharedAccessKeyName.Should().BeNull();
-            csBuilder.SharedAccessSignature.Should().BeNull();
+            iotHubConnectionCredentials.SharedAccessKey.Should().BeNull("SharedAccessSignature and SharedAccessKey are mutually exclusive");
+            iotHubConnectionCredentials.Certificate.Should().BeNull("SharedAccessSignature and X.509 are mutually exclusive");
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamConnectionString_ParsesGatewayHostName()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};GatewayHostName={TransparentGatewayHostName};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
-            csBuilder.GatewayHostName.Should().Be(TransparentGatewayHostName);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.GatewayHostName.Should().Be(TransparentGatewayHostName);
         }
 
         [TestMethod]
@@ -192,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void IotHubConnectionStringBuilder_ParamConnectionString_MissingHostName_Throws()
         {
             var connectionString = $"DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
         }
 
         [TestMethod]
@@ -200,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void IotHubConnectionStringBuilder_ParamConnectionString_MissingDeviceId_Throws()
         {
             var connectionString = $"HostName={HostName};SharedAccessKey={SharedAccessKey}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
         }
 
         [TestMethod]
@@ -208,55 +162,55 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         public void IotHubConnectionStringBuilder_ParamConnectionString_NoAuthSpecied_Throws()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId}";
-            var csBuilder = new IotHubConnectionStringBuilder(connectionString);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameAuthMethod_SharedAccessKey()
         {
             var authMethod = new DeviceAuthenticationWithSharedAccessPolicyKey(DeviceId, SharedAccessKeyName, SharedAccessKey);
-            var csBuilder = new IotHubConnectionStringBuilder(authMethod, HostName);
-            csBuilder.HostName.Should().Be(HostName);
-            csBuilder.DeviceId.Should().Be(DeviceId);
-            csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName);
+            iotHubConnectionCredentials.HostName.Should().Be(HostName);
+            iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
+            iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
 
-            csBuilder.SharedAccessSignature.Should().BeNull();
+            iotHubConnectionCredentials.SharedAccessSignature.Should().BeNull();
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameAuthMethod_SharedAccessSignature()
         {
             IAuthenticationMethod authMethod = new DeviceAuthenticationWithToken(DeviceId, SharedAccessSignature);
-            var csBuilder = new IotHubConnectionStringBuilder(authMethod, HostName);
-            csBuilder.HostName.Should().Be(HostName);
-            csBuilder.DeviceId.Should().Be(DeviceId);
-            csBuilder.SharedAccessSignature.Should().Be(SharedAccessSignature);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName);
+            iotHubConnectionCredentials.HostName.Should().Be(HostName);
+            iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
+            iotHubConnectionCredentials.SharedAccessSignature.Should().Be(SharedAccessSignature);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
 
-            csBuilder.SharedAccessKey.Should().BeNull();
+            iotHubConnectionCredentials.SharedAccessKey.Should().BeNull();
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameAuthMethod_DeviceIdComplex()
         {
             var authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(DeviceIdSplChar, SharedAccessKey);
-            var csBuilder = new IotHubConnectionStringBuilder(authMethod, HostName);
-            csBuilder.DeviceId.Should().Be(DeviceIdSplChar);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName);
+            iotHubConnectionCredentials.DeviceId.Should().Be(DeviceIdSplChar);
         }
 
         [TestMethod]
         public void IotHubConnectionStringBuilder_ParamHostNameGatewayAuthMethod_Basic()
         {
             IAuthenticationMethod authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(DeviceId, SharedAccessKey);
-            var csBuilder = new IotHubConnectionStringBuilder(authMethod, HostName, GatewayHostName);
-            csBuilder.HostName.Should().Be(HostName);
-            csBuilder.DeviceId.Should().Be(DeviceId);
-            csBuilder.GatewayHostName.Should().Be(GatewayHostName);
-            csBuilder.SharedAccessKey.Should().Be(SharedAccessKey);
-            csBuilder.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName, GatewayHostName);
+            iotHubConnectionCredentials.HostName.Should().Be(HostName);
+            iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
+            iotHubConnectionCredentials.GatewayHostName.Should().Be(GatewayHostName);
+            iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
+            iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
 
-            csBuilder.SharedAccessSignature.Should().BeNull();
+            iotHubConnectionCredentials.SharedAccessSignature.Should().BeNull();
         }
     }
 }

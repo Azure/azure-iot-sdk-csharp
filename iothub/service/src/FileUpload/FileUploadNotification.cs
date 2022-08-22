@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains properties for file upload notifications
     /// </summary>
-    public class FileNotification
+    public class FileUploadNotification
     {
         /// <summary>
         /// Id of the device which uploaded the file.
@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "enqueuedTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DateTime EnqueuedTimeUtc { get; set; }
 
-        [JsonIgnore]
-        internal string LockToken { get; set; }
+        internal ArraySegment<byte> DeliveryTag { get; set; }
     }
 }

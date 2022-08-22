@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Azure.Devices.Provisioning.Client
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// The protocol over which a transport (i.e., MQTT, AMQP) communicates.

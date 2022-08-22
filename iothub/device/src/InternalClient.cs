@@ -176,6 +176,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+            
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
             await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -229,7 +231,6 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
 
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
-
             cancellationToken.ThrowIfCancellationRequested();
 
             await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -336,6 +337,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -353,6 +356,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         public async Task CloseAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
@@ -371,6 +376,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task SendEventAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {
@@ -398,6 +404,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
             {
@@ -427,6 +434,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The device twin object for the current device</returns>
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
             try
             {
@@ -447,6 +456,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
+            cancellationToken.ThrowIfCancellationRequested();
 
             // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
             try
@@ -469,6 +479,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -490,6 +501,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
+            cancellationToken.ThrowIfCancellationRequested();
 
             // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds
             // property expire or unrecoverable error(authentication, quota exceed) occurs.
@@ -511,6 +523,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
+            cancellationToken.ThrowIfCancellationRequested();
 
             // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property
             // expire or unrecoverable error(authentication, quota exceed) occurs.
@@ -532,6 +545,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -551,6 +565,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -570,6 +585,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task RejectMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {

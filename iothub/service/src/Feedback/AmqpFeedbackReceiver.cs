@@ -12,9 +12,8 @@ using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class AmqpFeedbackReceiver : FeedbackReceiver<FeedbackBatch>, IDisposable
+    internal sealed class AmqpFeedbackReceiver : IDisposable
     {
-        private readonly FaultTolerantAmqpObject<ReceivingAmqpLink> _faultTolerantReceivingLink;
         private readonly string _receivingPath;
 
         public AmqpFeedbackReceiver(IotHubConnection iotHubConnection)
@@ -23,7 +22,7 @@ namespace Microsoft.Azure.Devices
             OpenTimeout = IotHubConnection.DefaultOpenTimeout;
             OperationTimeout = IotHubConnection.DefaultOperationTimeout;
             _receivingPath = AmqpClientHelper.GetReceivingPath(EndpointKind.Feedback);
-            _faultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
+            FaultTolerantReceivingLink = new FaultTolerantAmqpObject<ReceivingAmqpLink>(CreateReceivingLinkAsync, Connection.CloseLink);
         }
 
         public TimeSpan OpenTimeout { get; private set; }
@@ -32,13 +31,15 @@ namespace Microsoft.Azure.Devices
 
         public IotHubConnection Connection { get; private set; }
 
+        public FaultTolerantAmqpObject<ReceivingAmqpLink> FaultTolerantReceivingLink { get; private set; }
+
         public Task OpenAsync()
         {
             Logging.Enter(this, nameof(OpenAsync));
 
             try
             {
-                return _faultTolerantReceivingLink.GetReceivingLinkAsync();
+                return FaultTolerantReceivingLink.GetReceivingLinkAsync();
             }
             finally
             {
@@ -52,7 +53,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                return _faultTolerantReceivingLink.CloseAsync();
+                return FaultTolerantReceivingLink.CloseAsync();
             }
             finally
             {
@@ -60,7 +61,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<FeedbackBatch> ReceiveAsync(CancellationToken cancellationToken)
         {
             Logging.Enter(this, nameof(ReceiveAsync));
 
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Devices
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                ReceivingAmqpLink receivingLink = await _faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
+                ReceivingAmqpLink receivingLink = await FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
                 AmqpMessage amqpMessage = await receivingLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
 
                 Logging.Info(this, $"Message received is [{amqpMessage}]", nameof(ReceiveAsync));
@@ -84,7 +85,7 @@ namespace Microsoft.Azure.Devices
                         return new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString(),
+                            DeliveryTag = amqpMessage.DeliveryTag,
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };
@@ -124,21 +125,21 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public override Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        public Task CompleteAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
-                feedback.LockToken,
+                FaultTolerantReceivingLink,
+                feedback.DeliveryTag,
                 AmqpConstants.AcceptedOutcome,
                 false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
         }
 
-        public override Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
+        public Task AbandonAsync(FeedbackBatch feedback, CancellationToken cancellationToken)
         {
             return AmqpClientHelper.DisposeMessageAsync(
-                _faultTolerantReceivingLink,
-                feedback.LockToken,
+                FaultTolerantReceivingLink,
+                feedback.DeliveryTag,
                 AmqpConstants.ReleasedOutcome,
                 false, // Feedback messages are sent by the service one at a time, so batching the acks is pointless
                 cancellationToken);
@@ -147,7 +148,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public void Dispose()
         {
-            _faultTolerantReceivingLink.Dispose();
+            FaultTolerantReceivingLink.Dispose();
         }
     }
 }

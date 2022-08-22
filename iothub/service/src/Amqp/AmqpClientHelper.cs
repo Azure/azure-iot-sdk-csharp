@@ -64,28 +64,26 @@ namespace Microsoft.Azure.Devices
 
         internal static async Task DisposeMessageAsync(
             FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
-            string lockToken,
+            ArraySegment<byte> deliveryTag,
             Outcome outcome,
             bool batchable)
         {
             using var cts = new CancellationTokenSource(IotHubConnection.DefaultOperationTimeout);
-            await DisposeMessageAsync(faultTolerantReceivingLink, lockToken, outcome, batchable, cts.Token).ConfigureAwait(false);
+            await DisposeMessageAsync(faultTolerantReceivingLink, deliveryTag, outcome, batchable, cts.Token).ConfigureAwait(false);
         }
 
         internal static async Task DisposeMessageAsync(
             FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
-            string lockToken,
+            ArraySegment<byte> deliveryTag,
             Outcome outcome,
             bool batchable,
             CancellationToken cancellationToken)
         {
-            Logging.Enter(faultTolerantReceivingLink, lockToken, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
+            Logging.Enter(faultTolerantReceivingLink, deliveryTag, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                ArraySegment<byte> deliveryTag = IotHubConnection.ConvertToDeliveryTag(lockToken);
 
                 Outcome disposeOutcome;
                 try
@@ -120,7 +118,7 @@ namespace Microsoft.Azure.Devices
             }
             finally
             {
-                Logging.Exit(faultTolerantReceivingLink, lockToken, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
+                Logging.Exit(faultTolerantReceivingLink, deliveryTag, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
             }
         }
 
