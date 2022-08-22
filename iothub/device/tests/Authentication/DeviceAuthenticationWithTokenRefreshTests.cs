@@ -33,9 +33,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(null));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation("   "));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, -1, 10));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, 60, -1));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, 60, 101));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(-1), 10));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(60), -1));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TimeSpan.FromSeconds(60), 101));
         }
 
         [TestMethod]
@@ -55,15 +55,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceAuthenticationWithTokenRefresh_InitializedToken_GetProperties_Ok()
         {
-            int ttl = 5;
+            TimeSpan ttl = TimeSpan.FromSeconds(5);
             int buffer = 20;  // Token should refresh after 4 seconds.
 
             var refresher = new TestImplementation(TestDeviceId, ttl, buffer);
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
             DateTime currentTime = DateTime.UtcNow;
-            DateTime expectedExpiryTime = currentTime.AddSeconds(ttl);
-            DateTime expectedRefreshTime = expectedExpiryTime.AddSeconds(-((double)buffer / 100) * ttl);
+            DateTime expectedExpiryTime = currentTime.AddSeconds(ttl.TotalSeconds);
+            DateTime expectedRefreshTime = expectedExpiryTime.AddSeconds(-((double)buffer / 100) * ttl.TotalSeconds);
 
             Assert.AreEqual(TestDeviceId, refresher.DeviceId);
 
@@ -146,12 +146,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task DeviceAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
         {
-            int ttl = 1;
+            TimeSpan ttl = TimeSpan.FromSeconds(1);
 
             var refresher = new TestImplementation(TestDeviceId, ttl, 90);
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
-            DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
+            DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
             int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"Expiration time delta is {timeDelta}");
 
@@ -162,12 +162,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             // Configure the test token refresher to ignore the suggested TTL.
-            ttl = 10;
-            refresher.ActualTimeToLive = ttl;
+            ttl = TimeSpan.FromSeconds(10);
+            refresher.ActualTimeToLive = (int)ttl.TotalSeconds;
 
             await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
 
-            expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
+            expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
             timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"Expiration time delta is {timeDelta}");
         }
@@ -230,20 +230,20 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             public TestImplementation(
                 string deviceId,
-                int suggestedTimeToLive,
+                TimeSpan suggestedTimeToLive,
                 int timeBufferPercentage)
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 
                 await Task.Delay(10).ConfigureAwait(false);
 
-                int ttl = suggestedTimeToLive;
+                int ttl = (int)suggestedTimeToLive.TotalSeconds;
                 if (ActualTimeToLive > 0)
                 {
                     ttl = ActualTimeToLive;
