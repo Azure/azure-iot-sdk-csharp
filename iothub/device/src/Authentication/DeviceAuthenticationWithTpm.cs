@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// set <paramref name="disposeWithClient"/> to <c>false</c>.
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
-        /// <param name="suggestedTimeToLiveSeconds">
+        /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
         /// </param>
@@ -40,20 +40,20 @@ namespace Microsoft.Azure.Devices.Client
         public DeviceAuthenticationWithTpm(
             string deviceId,
             AuthenticationProviderTpm authenticationProvider,
-            int suggestedTimeToLiveSeconds = default,
+            TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default,
             bool disposeWithClient = true)
-            : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, disposeWithClient)
+            : base(deviceId, suggestedTimeToLive, timeBufferPercentage, disposeWithClient)
         {
             _authProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
+        protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
         {
             var builder = new TpmSharedAccessSignatureBuilder(_authProvider)
             {
-                TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLiveSeconds),
+                TimeToLive = suggestedTimeToLive,
                 Target = "{0}/devices/{1}".FormatInvariant(
                     iotHub,
                     WebUtility.UrlEncode(DeviceId)),

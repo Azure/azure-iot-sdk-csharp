@@ -18,10 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         public const char KeyValueSeparator = '=';
         public const char PairSeparator = '&';
 
-        public const int DefaultSasRenewalBufferPercentage = 15;
-        public static readonly TimeSpan DefaultSasTimeToLive = TimeSpan.FromHours(1);
-
-        public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        public static readonly DateTime EpochTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
     }
 }

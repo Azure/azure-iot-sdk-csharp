@@ -19,18 +19,22 @@ namespace Microsoft.Azure.Devices.Client
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default,
             bool disposeWithClient = true)
-            : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
+            : base(deviceId,
+                  moduleId,
+                  sasTokenTimeToLive,
+                  sasTokenRenewalBuffer,
+                  disposeWithClient)
         {
             _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
         {
             var builder = new SharedAccessSignatureBuilder()
             {
                 Key = _clientConfiguration.SharedAccessKey,
-                TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
+                TimeToLive = suggestedTimeToLive,
             };
 
             if (_clientConfiguration.SharedAccessKeyName == null)

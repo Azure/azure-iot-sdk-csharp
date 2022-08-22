@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
         /// set <paramref name="disposeWithClient"/> to <c>false</c>.
         /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="suggestedTimeToLiveSeconds">
+        /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
         /// </param>
@@ -35,12 +35,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </param>
         public DeviceAuthenticationWithTokenRefresh(
             string deviceId,
-            int suggestedTimeToLiveSeconds = default,
+            TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default,
             bool disposeWithClient = true)
-            : base(
-                  SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds),
-                  SetSasTokenRenewalBufferPercentage(timeBufferPercentage),
+            : base(suggestedTimeToLive,
+                  timeBufferPercentage,
                   disposeWithClient)
         {
             if (deviceId.IsNullOrWhiteSpace())
@@ -66,20 +65,6 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials = base.Populate(iotHubConnectionCredentials);
             iotHubConnectionCredentials.DeviceId = DeviceId;
             return iotHubConnectionCredentials;
-        }
-
-        private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)
-        {
-            return (int)(suggestedTimeToLiveSeconds == 0
-                ? SharedAccessSignatureConstants.DefaultSasTimeToLive.TotalSeconds
-                : suggestedTimeToLiveSeconds);
-        }
-
-        private static int SetSasTokenRenewalBufferPercentage(int timeBufferPercentage)
-        {
-            return timeBufferPercentage == 0
-                ? SharedAccessSignatureConstants.DefaultSasRenewalBufferPercentage
-                : timeBufferPercentage;
         }
     }
 }

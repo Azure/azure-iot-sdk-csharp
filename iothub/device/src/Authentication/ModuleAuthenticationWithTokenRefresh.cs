@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
-        /// <param name="suggestedTimeToLiveSeconds">
+        /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
         /// </param>
@@ -37,12 +37,11 @@ namespace Microsoft.Azure.Devices.Client
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId,
-            int suggestedTimeToLiveSeconds = default,
+            TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default,
             bool disposeWithClient = true)
-            : base(
-                  SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds),
-                  SetSasTokenRenewalBufferPercentage(timeBufferPercentage),
+            : base(suggestedTimeToLive,
+                  timeBufferPercentage,
                   disposeWithClient)
         {
             if (moduleId.IsNullOrWhiteSpace())
@@ -80,20 +79,6 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.DeviceId = DeviceId;
             iotHubConnectionCredentials.ModuleId = ModuleId;
             return iotHubConnectionCredentials;
-        }
-
-        private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)
-        {
-            return (int)(suggestedTimeToLiveSeconds == 0
-                ? SharedAccessSignatureConstants.DefaultSasTimeToLive.TotalSeconds
-                : suggestedTimeToLiveSeconds);
-        }
-
-        private static int SetSasTokenRenewalBufferPercentage(int timeBufferPercentage)
-        {
-            return timeBufferPercentage == 0
-                ? SharedAccessSignatureConstants.DefaultSasRenewalBufferPercentage
-                : timeBufferPercentage;
         }
     }
 }
