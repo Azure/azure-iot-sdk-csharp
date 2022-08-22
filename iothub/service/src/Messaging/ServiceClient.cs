@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -17,22 +17,6 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Transport types supported by ServiceClient - Amqp and Amqp over WebSocket only
-    /// </summary>
-    public enum TransportType
-    {
-        /// <summary>
-        /// Advanced Message Queuing Protocol transport.
-        /// </summary>
-        Amqp,
-
-        /// <summary>
-        /// Advanced Message Queuing Protocol transport over WebSocket only.
-        /// </summary>
-        Amqp_WebSocket_Only
-    }
-
-    /// <summary>
     /// Contains methods that services can use to send messages to devices.
     /// </summary>
     /// <remarks>
@@ -47,21 +31,12 @@ namespace Microsoft.Azure.Devices
     /// </remarks>
     public class ServiceClient : IDisposable
     {
-        private const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
-
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
-        private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
-        private readonly string _sendingPath;
-        private readonly AmqpFeedbackReceiver _feedbackReceiver;
-        private readonly AmqpFileNotificationReceiver _fileNotificationReceiver;
         private readonly IHttpClientHelper _httpClientHelper;
         private readonly string _iotHubName;
         private readonly ServiceClientOptions _clientOptions;
-        private readonly TimeSpan _openTimeout;
-        private readonly TimeSpan _operationTimeout;
 
-        private int _sendingDeliveryTag;
 
         /// <summary>
         /// Creates an instance of <see cref="ServiceClient"/>, provided for unit testing purposes only.
@@ -78,15 +53,9 @@ namespace Microsoft.Azure.Devices
             ServiceClientOptions options,
             IotHubServiceClientOptions options2)
         {
-            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings, options2);
-            _openTimeout = IotHubConnection.DefaultOpenTimeout;
-            _operationTimeout = IotHubConnection.DefaultOperationTimeout;
-            _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
-            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
-            _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
+            Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, options2);
             _iotHubName = connectionProperties.IotHubName;
             _clientOptions = options;
-            _sendingPath = "/messages/deviceBound";
             _httpClientHelper = new HttpClientHelper(
                 connectionProperties.HttpsEndpoint,
                 connectionProperties,
@@ -104,9 +73,6 @@ namespace Microsoft.Azure.Devices
         {
             Connection = connection;
             _httpClientHelper = httpClientHelper;
-            _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
-            _fileNotificationReceiver = new AmqpFileNotificationReceiver(Connection);
-            _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
         }
 
         /// <summary>
@@ -155,7 +121,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
-            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket;
 
             return new ServiceClient(
                 tokenCredentialProperties,
@@ -199,7 +165,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
-            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket;
 
             return new ServiceClient(
                 sasCredentialProperties,
@@ -210,6 +176,20 @@ namespace Microsoft.Azure.Devices
         }
 
         internal IotHubConnection Connection { get; }
+
+        /// <summary>
+        /// Close the ServiceClient instance. This call is made over AMQP.
+        /// </summary>
+        public virtual async Task CloseAsync()
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
+
+            await Connection.CloseAsync().ConfigureAwait(false);
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
+        }
 
         /// <inheritdoc />
         public void Dispose()
@@ -226,9 +206,6 @@ namespace Microsoft.Azure.Devices
         {
             if (disposing)
             {
-                _faultTolerantSendingLink.Dispose();
-                _fileNotificationReceiver.Dispose();
-                _feedbackReceiver.Dispose();
                 Connection.Dispose();
                 _httpClientHelper.Dispose();
             }
@@ -263,7 +240,7 @@ namespace Microsoft.Azure.Devices
             }
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
+            bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket;
 
             return new ServiceClient(
                 iotHubConnectionString,
@@ -271,255 +248,6 @@ namespace Microsoft.Azure.Devices
                 transportSettings,
                 options,
                 options2);
-        }
-
-        /// <summary>
-        /// Open the ServiceClient instance. This call is made over AMQP.
-        /// </summary>
-        public virtual async Task OpenAsync()
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
-
-            using var ctx = new CancellationTokenSource(_openTimeout);
-
-            await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
-            await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
-        }
-
-        /// <summary>
-        /// Close the ServiceClient instance. This call is made over AMQP.
-        /// </summary>
-        public virtual async Task CloseAsync()
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
-
-            await _faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
-            await _feedbackReceiver.CloseAsync().ConfigureAwait(false);
-            await _fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
-            await Connection.CloseAsync().ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
-        }
-
-        /// <summary>
-        /// Send a cloud-to-device message to the specified device. This call is made over AMQP.
-        /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="message">The cloud-to-device message.</param>
-        /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
-        public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
-
-            if (string.IsNullOrWhiteSpace(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
-            {
-                message.MessageId = Guid.NewGuid().ToString();
-            }
-
-            timeout ??= _operationTimeout;
-
-            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
-            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
-
-            try
-            {
-                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                Outcome outcome = await sendingLink
-                    .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
-                    .ConfigureAwait(false);
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
-
-                if (outcome.DescriptorCode != Accepted.Code)
-                {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
-                }
-            }
-            catch (Exception ex) when (!(ex is TimeoutException) && !Fx.IsFatal(ex))
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                throw AmqpClientHelper.ToIotHubClientContract(ex);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Sending message [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
-            }
-        }
-
-        /// <summary>
-        /// Removes all cloud-to-device messages from a device's queue. This call is made over HTTP.
-        /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        public virtual Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
-
-            try
-            {
-                var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-                {
-                    { HttpStatusCode.NotFound, responseMessage => Task.FromResult((Exception)new DeviceNotFoundException(deviceId)) }
-                };
-
-                return _httpClientHelper.DeleteAsync<PurgeMessageQueueResult>(GetPurgeMessageQueueAsyncUri(deviceId), errorMappingOverrides, null, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
-            }
-        }
-
-        /// <summary>
-        /// Get the <see cref="FeedbackReceiver{FeedbackBatch}"/> which can deliver acknowledgments for messages sent to a device/module from IoT hub.
-        /// This call is made over AMQP.
-        /// For more information see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#message-feedback"/>.
-        /// </summary>
-        /// <returns>An instance of <see cref="FeedbackReceiver{FeedbackBatch}"/>.</returns>
-        public virtual FeedbackReceiver<FeedbackBatch> GetFeedbackReceiver()
-        {
-            return _feedbackReceiver;
-        }
-
-        /// <summary>
-        /// Get the <see cref="FileNotificationReceiver{FileNotification}"/> which can deliver notifications for file upload operations.
-        /// This call is made over AMQP.
-        /// For more information see <see href = "https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#file-upload-notifications"/>.
-        /// </summary>
-        /// <returns>An instance of <see cref="FileNotificationReceiver{FileNotification}"/>.</returns>
-        public virtual FileNotificationReceiver<FileNotification> GetFileNotificationReceiver()
-        {
-            return _fileNotificationReceiver;
-        }
-
-        /// <summary>
-        /// Send a cloud-to-device message to the specified module.
-        /// </summary>
-        /// <param name="deviceId">The device identifier for the target device.</param>
-        /// <param name="moduleId">The module identifier for the target module.</param>
-        /// <param name="message">The cloud-to-module message.</param>
-        ///  <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
-        public virtual async Task SendAsync(string deviceId, string moduleId, Message message, TimeSpan? timeout = null)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
-
-            if (string.IsNullOrWhiteSpace(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (string.IsNullOrWhiteSpace(moduleId))
-            {
-                throw new ArgumentNullException(nameof(moduleId));
-            }
-
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
-            {
-                message.MessageId = Guid.NewGuid().ToString();
-            }
-
-            timeout ??= _operationTimeout;
-
-            using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
-            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
-            try
-            {
-                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
-                Outcome outcome = await sendingLink
-                    .SendMessageAsync(
-                        amqpMessage,
-                        IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag),
-                        AmqpConstants.NullBinary,
-                        timeout.Value)
-                    .ConfigureAwait(false);
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
-
-                if (outcome.DescriptorCode != Accepted.Code)
-                {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
-                }
-            }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
-                throw AmqpClientHelper.ToIotHubClientContract(ex);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
-            }
-        }
-
-        private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)
-        {
-            return Connection.CreateSendingLinkAsync(_sendingPath, timeout);
-        }
-
-        private async Task<SendingAmqpLink> GetSendingLinkAsync()
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
-
-            try
-            {
-                if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
-                {
-                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(_openTimeout).ConfigureAwait(false);
-                }
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"Retrieved SendingAmqpLink [{sendingLink?.Name}]", nameof(GetSendingLinkAsync));
-
-                return sendingLink;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
-            }
-        }
-
-        private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
-        {
-            return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
     }
 }
