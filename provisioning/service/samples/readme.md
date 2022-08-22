@@ -1,4 +1,4 @@
-# Azure IoT SDK Node Samples
+# Azure IoT SDK .NET Samples
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut quis felis aliquam eros venenatis ultrices a eget tortor. Donec tristique ante nec libero vestibulum volutpat. Mauris malesuada sodales mauris sed consequat. Donec at accumsan metus. Suspendisse et justo diam. Integer porttitor vitae nibh a aliquam. Curabitur eu elit libero. Phasellus a ultrices nibh, ut gravida nunc. Aliquam hendrerit eros id dolor mollis pulvinar. In iaculis, velit nec ultrices fermentum, erat odio placerat est, non pulvinar justo justo ut felis. Vestibulum ultrices ipsum ac erat aliquam consequat. Morbi sollicitudin gravida leo quis congue. Maecenas blandit ornare enim, et sagittis nisi pretium ac.
 
