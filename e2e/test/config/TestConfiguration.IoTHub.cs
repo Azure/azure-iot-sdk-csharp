@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static partial class IoTHub
         {
-            public static string ConnectionString = "HostName=brycewang-hub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xjRvkbCnV/UDVmB1MbO152VUXpEmhNPrB9V3WEawlQM=";
+            public static string ConnectionString => GetValue("IOTHUB_CONNECTION_STRING");
             public static string X509ChainDeviceName => GetValue("IOTHUB_X509_CHAIN_DEVICE_NAME");
 
             public static string GetIotHubHostName()
