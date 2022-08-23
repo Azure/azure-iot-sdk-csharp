@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -22,96 +22,6 @@ namespace Microsoft.Azure.Devices
         public const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
         public const string UriName = AmqpConstants.Vendor + ":uri";
         public const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
-        private const string FailedToSerializeUnsupportedType = "Serialization operation failed due to unsupported type ";
-
-        /// <summary>
-        /// Copies the properties from the AMQP message to the message instance.
-        /// </summary>
-        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message data)
-        {
-            Fx.AssertAndThrow(amqpMessage.DeliveryTag != null, "AmqpMessage should always contain delivery tag.");
-            data.DeliveryTag = amqpMessage.DeliveryTag;
-
-            SectionFlag sections = amqpMessage.Sections;
-            if ((sections & SectionFlag.Properties) != 0)
-            {
-                // Extract only the Properties that we support
-                data.MessageId = amqpMessage.Properties.MessageId?.ToString();
-                data.To = amqpMessage.Properties.To?.ToString();
-
-                if (amqpMessage.Properties.AbsoluteExpiryTime.HasValue)
-                {
-                    data.ExpiryTimeUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
-                }
-
-                data.CorrelationId = amqpMessage.Properties.CorrelationId?.ToString();
-                data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array) : null;
-
-                if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
-                {
-                    data.ContentType = amqpMessage.Properties.ContentType.Value;
-                }
-
-                if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentEncoding.Value))
-                {
-                    data.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
-                }
-            }
-
-            if ((sections & SectionFlag.MessageAnnotations) != 0)
-            {
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(LockTokenName, out string lockToken))
-                {
-                    data.LockToken = lockToken;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(SequenceNumberName, out ulong sequenceNumber))
-                {
-                    data.SequenceNumber = sequenceNumber;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.EnqueuedTime, out DateTime enqueuedTime))
-                {
-                    data.EnqueuedTimeUtc = enqueuedTime;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.DeliveryCount, out byte deliveryCount))
-                {
-                    data.DeliveryCount = deliveryCount;
-                }
-            }
-
-            if ((sections & SectionFlag.ApplicationProperties) != 0)
-            {
-                foreach (KeyValuePair<MapKey, object> pair in amqpMessage.ApplicationProperties.Map)
-                {
-                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject))
-                    {
-                        if (netObject is string stringObject)
-                        {
-                            switch (pair.Key.ToString())
-                            {
-                                case MessageSystemPropertyNames.Operation:
-                                    data.SystemProperties[pair.Key.ToString()] = stringObject;
-                                    break;
-
-                                case MessageSystemPropertyNames.MessageSchema:
-                                    data.MessageSchema = stringObject;
-                                    break;
-
-                                case MessageSystemPropertyNames.CreationTimeUtc:
-                                    data.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
-                                    break;
-
-                                default:
-                                    data.Properties[pair.Key.ToString()] = stringObject;
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// Copies the message instance's properties to the AMQP message instance.
@@ -240,7 +150,7 @@ namespace Microsoft.Azure.Devices
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException($"{FailedToSerializeUnsupportedType} {netObject.GetType().FullName}."));
+                        throw FxTrace.Exception.AsError(new SerializationException(IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {
@@ -262,98 +172,6 @@ namespace Microsoft.Azure.Devices
             }
 
             return amqpObject != null;
-        }
-
-        public static bool TryGetNetObjectFromAmqpObject(object amqpObject, MappingType mappingType, out object netObject)
-        {
-            netObject = null;
-            if (amqpObject == null)
-            {
-                return false;
-            }
-
-            switch (SerializationUtilities.GetTypeId(amqpObject))
-            {
-                case PropertyValueType.Byte:
-                case PropertyValueType.SByte:
-                case PropertyValueType.Int16:
-                case PropertyValueType.Int32:
-                case PropertyValueType.Int64:
-                case PropertyValueType.UInt16:
-                case PropertyValueType.UInt32:
-                case PropertyValueType.UInt64:
-                case PropertyValueType.Single:
-                case PropertyValueType.Double:
-                case PropertyValueType.Boolean:
-                case PropertyValueType.Decimal:
-                case PropertyValueType.Char:
-                case PropertyValueType.Guid:
-                case PropertyValueType.DateTime:
-                case PropertyValueType.String:
-                    netObject = amqpObject;
-                    break;
-
-                case PropertyValueType.Unknown:
-                    if (amqpObject is AmqpSymbol)
-                    {
-                        netObject = ((AmqpSymbol)amqpObject).Value;
-                    }
-                    else if (amqpObject is ArraySegment<byte> binValue)
-                    {
-                        if (binValue.Count == binValue.Array.Length)
-                        {
-                            netObject = binValue.Array;
-                        }
-                        else
-                        {
-                            byte[] buffer = new byte[binValue.Count];
-                            Buffer.BlockCopy(binValue.Array, binValue.Offset, buffer, 0, binValue.Count);
-                            netObject = buffer;
-                        }
-                    }
-                    else if (amqpObject is DescribedType describedType)
-                    {
-                        if (describedType.Descriptor is AmqpSymbol symbol)
-                        {
-                            if (symbol.Equals((AmqpSymbol)UriName))
-                            {
-                                netObject = new Uri((string)describedType.Value);
-                            }
-                            else if (symbol.Equals((AmqpSymbol)TimeSpanName))
-                            {
-                                netObject = new TimeSpan((long)describedType.Value);
-                            }
-                            else if (symbol.Equals((AmqpSymbol)DateTimeOffsetName))
-                            {
-                                netObject = new DateTimeOffset(new DateTime((long)describedType.Value, DateTimeKind.Utc));
-                            }
-                        }
-                    }
-                    else if (mappingType == MappingType.ApplicationProperty)
-                    {
-                        throw FxTrace.Exception.AsError(new SerializationException($"{FailedToSerializeUnsupportedType} {amqpObject.GetType().FullName}."));
-                    }
-                    else if (amqpObject is AmqpMap map)
-                    {
-                        var dictionary = new Dictionary<string, object>();
-                        foreach (KeyValuePair<MapKey, object> pair in map)
-                        {
-                            dictionary.Add(pair.Key.ToString(), pair.Value);
-                        }
-
-                        netObject = dictionary;
-                    }
-                    else
-                    {
-                        netObject = amqpObject;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-            return netObject != null;
         }
 
         public static ArraySegment<byte> ReadStream(Stream stream)
