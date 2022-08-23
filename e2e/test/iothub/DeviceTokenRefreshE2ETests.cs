@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(IotHubClientException))]
         public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -35,11 +34,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            try
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // assert
+                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
+                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.DeviceNotFound);
+            }
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(IotHubClientException))]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -50,7 +58,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            try
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // assert
+                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
+                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
+            }
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

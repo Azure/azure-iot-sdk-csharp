@@ -30,9 +30,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             if (currentRetryCount < _maxRetryCount)
             {
-                if ((lastException is IotHubClientException iotHubException && iotHubException.IsTransient)
-                    || ExceptionHelper.IsNetworkExceptionChain(lastException)
-                    || (_exceptionsToBeIgnored != null && _exceptionsToBeIgnored.ContainsKey(((IotHubClientException)lastException).StatusCode)))
+                if ((lastException is IotHubClientException iotHubException
+                        && (iotHubException.IsTransient || _exceptionsToBeIgnored != null && _exceptionsToBeIgnored.ContainsKey(iotHubException.StatusCode)))
+                    || ExceptionHelper.IsNetworkExceptionChain(lastException))
                 {
                     double exponentialInterval =
                         (Math.Pow(2.0, currentRetryCount) - 1.0)
