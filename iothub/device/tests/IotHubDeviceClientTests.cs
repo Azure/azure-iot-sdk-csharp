@@ -24,6 +24,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string TestModelId = "dtmi:com:example:testModel;1";
         private const string FakeHostName = "acme.azure-devices.net";
 
+        private const int DefaultSasRenewalBufferPercentage = 15;
+        private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
+
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(FakeConnectionString);
 
         [TestMethod]
@@ -850,7 +853,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
             // Connection status change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionInfo.Status);
@@ -872,7 +875,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(null);
 
             // Connection status change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -891,7 +894,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
             // current status = disabled
 
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionInfo.Status);
@@ -899,7 +902,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -921,7 +924,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
             // current status = disabled
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionInfo.Status);
@@ -929,7 +932,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError, DateTimeOffset.UtcNow));
+            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.DisconnectedRetrying, connectionInfo.Status);
@@ -1299,8 +1302,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
             // These values are 1 hour for sas token expiration and renewed when 15% or less of its lifespan is left.
             var authMethod1 = new TestDeviceAuthenticationWithTokenRefresh();
-            int sasExpirationTimeInSecondsSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultTimeToLiveSeconds;
-            int sasRenewalBufferSdkDefault = DeviceAuthenticationWithTokenRefresh.DefaultBufferPercentage;
+            TimeSpan sasTokenTimeToLiveSdkDefault = s_defaultSasTimeToLive;
+            int sasTokenRenewalBufferSdkDefault = DefaultSasRenewalBufferPercentage;
 
             // act
             DateTime startTime = DateTime.UtcNow;
@@ -1321,19 +1324,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             // The initial expiration time calculated is (current UTC time - sas TTL supplied).
             // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
 
-            var sasExpirationTimeFromClientOptions = startTime.Add(-sasTokenTimeToLive);
+            DateTime sasExpirationTimeFromClientOptions = startTime.Add(-sasTokenTimeToLive);
             authMethod.ExpiresOn.Should().NotBeCloseTo(sasExpirationTimeFromClientOptions, (int)buffer.TotalMilliseconds);
 
-            var sasExpirationTimeFromSdkDefault = startTime.AddSeconds(-sasExpirationTimeInSecondsSdkDefault);
+            DateTime sasExpirationTimeFromSdkDefault = startTime.Add(-sasTokenTimeToLiveSdkDefault);
             authMethod.ExpiresOn.Should().BeCloseTo(sasExpirationTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
 
             // Validate the sas token renewal buffer
-            int expectedRenewalBufferSecondsFromClientOptions = (int)(sasExpirationTimeInSecondsSdkDefault * ((float)sasTokenRenewalBuffer / 100));
-            var expectedRefreshTimeFromClientOptions = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromClientOptions);
+            int expectedRenewalBufferSecondsFromClientOptions = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
+            DateTime expectedRefreshTimeFromClientOptions = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromClientOptions);
             authMethod.RefreshesOn.Should().NotBeCloseTo(expectedRefreshTimeFromClientOptions, (int)buffer.TotalMilliseconds);
 
-            int expectedRenewalBufferSecondsFromSdkDefault = (int)(sasExpirationTimeInSecondsSdkDefault * ((float)sasRenewalBufferSdkDefault / 100));
-            var expectedRefreshTimeFromSdkDefault = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromSdkDefault);
+            int expectedRenewalBufferSecondsFromSdkDefault = (int)(sasTokenTimeToLiveSdkDefault.TotalSeconds * ((float)sasTokenRenewalBufferSdkDefault / 100));
+            DateTime expectedRefreshTimeFromSdkDefault = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromSdkDefault);
             authMethod.RefreshesOn.Should().BeCloseTo(expectedRefreshTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
         }
 
@@ -1721,7 +1724,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             ///<inheritdoc/>
-            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 return Task.FromResult<string>("someToken");
             }

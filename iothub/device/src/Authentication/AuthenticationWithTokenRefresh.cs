@@ -13,7 +13,10 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod, IDisposable
     {
-        private readonly int _suggestedTimeToLiveSeconds;
+        private const int DefaultSasRenewalBufferPercentage = 15;
+        private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
+
+        private readonly TimeSpan _suggestedTimeToLive;
         private readonly int _timeBufferPercentage;
 
         private int _bufferSeconds;
@@ -22,42 +25,32 @@ namespace Microsoft.Azure.Devices.Client
         private bool _isDisposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
         /// associated device/ module client instance is disposed. To reuse the authentication method instance across
-        /// multiple client instance lifetimes, use the <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/>
-        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
+        /// multiple client instance lifetimes set <paramref name="disposeWithClient"/> to <c>false</c>.
         /// </remarks>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
-        public AuthenticationWithTokenRefresh(
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage)
-            : this(suggestedTimeToLiveSeconds, timeBufferPercentage, true)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
-        /// </summary>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
+        /// <param name="suggestedTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has <see cref="DefaultSasRenewalBufferPercentage"/> percent or less of its lifespan left.
+        ///</param>
         /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
+        /// Defaults to <c>true</c>.</param>
         public AuthenticationWithTokenRefresh(
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage,
-            bool disposeWithClient)
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default,
+            bool disposeWithClient = true)
         {
-            if (suggestedTimeToLiveSeconds < 0)
+            if (suggestedTimeToLive.Ticks < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLiveSeconds));
+                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
             }
 
             if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
@@ -65,11 +58,17 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
             }
 
-            _suggestedTimeToLiveSeconds = suggestedTimeToLiveSeconds;
-            _timeBufferPercentage = timeBufferPercentage;
-            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLiveSeconds);
+            _suggestedTimeToLive = suggestedTimeToLive == default
+                ? s_defaultSasTimeToLive
+                : suggestedTimeToLive;
+
+            _timeBufferPercentage = timeBufferPercentage == default
+                ? DefaultSasRenewalBufferPercentage
+                : timeBufferPercentage;
+
+            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLive.TotalSeconds);
             Debug.Assert(IsExpiring);
-            UpdateTimeBufferSeconds(_suggestedTimeToLiveSeconds);
+            UpdateTimeBufferSeconds(_suggestedTimeToLive.TotalSeconds);
 
             DisposalWithClient = disposeWithClient;
         }
@@ -127,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client
                     return _token;
                 }
 
-                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
+                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLive).ConfigureAwait(false);
 
                 SharedAccessSignature sas = SharedAccessSignatureParser.Parse(_token);
                 ExpiresOn = sas.ExpiresOn;
@@ -160,6 +159,8 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionCredentials.SharedAccessSignature = _token;
             iotHubConnectionCredentials.SharedAccessKey = null;
             iotHubConnectionCredentials.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
 
             return iotHubConnectionCredentials;
         }
@@ -171,9 +172,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
         /// <remarks>This is an asynchronous method and should be awaited.</remarks>
-        protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
+        protected abstract Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive);
 
-        private void UpdateTimeBufferSeconds(int ttl)
+        private void UpdateTimeBufferSeconds(double ttl)
         {
             _bufferSeconds = (int)(ttl * ((float)_timeBufferPercentage / 100));
         }

@@ -12,34 +12,30 @@ namespace Microsoft.Azure.Devices.Client
     {
         private readonly ClientConfiguration _clientConfiguration;
 
-        public ModuleAuthenticationWithSakRefresh(
-            string deviceId,
-            string moduleId,
-            ClientConfiguration clientConfiguration)
-            : base(deviceId, moduleId)
-        {
-            _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
-        }
-
         internal ModuleAuthenticationWithSakRefresh(
             string deviceId,
             string moduleId,
             ClientConfiguration clientConfiguration,
-            TimeSpan sasTokenTimeToLive,
-            int sasTokenRenewalBuffer,
-            bool disposeWithClient)
-            : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
+            TimeSpan sasTokenTimeToLive = default,
+            int sasTokenRenewalBuffer = default,
+            bool disposeWithClient = true)
+            : base(
+                deviceId,
+                moduleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer,
+                disposeWithClient)
         {
             _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
         {
             var builder = new SharedAccessSignatureBuilder()
             {
                 Key = _clientConfiguration.SharedAccessKey,
-                TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
+                TimeToLive = suggestedTimeToLive,
             };
 
             if (_clientConfiguration.SharedAccessKeyName == null)

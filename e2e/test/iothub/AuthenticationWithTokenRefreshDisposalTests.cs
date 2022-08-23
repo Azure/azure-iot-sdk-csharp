@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClients[0].CloseAsync().ConfigureAwait(false);
             deviceClients[0].Dispose();
 
-            deviceClients[0].ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled);
+            deviceClients[0].ConnectionInfo.Status.Should().Be(ConnectionStatus.Closed);
 
             Logger.Trace($"{nameof(ReuseAuthenticationMethod_MuxedDevices)}: Confirming the rest of the multiplexed devices are online and operational.");
 
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClients[i].Dispose();
                 authenticationMethods[i].Dispose();
 
-                deviceClients[i].ConnectionInfo.Status.Should().Be(ConnectionStatus.Disabled);
+                deviceClients[i].ConnectionInfo.Status.Should().Be(ConnectionStatus.Closed);
             }
         }
 
@@ -271,13 +271,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             private const string SasTokenTargetFormat = "{0}/devices/{1}";
             private readonly IotHubConnectionStringBuilder _connectionStringBuilder;
 
-            private static readonly int s_suggestedSasTimeToLiveInSeconds = (int)TimeSpan.FromMinutes(30).TotalSeconds;
-            private static readonly int s_sasRenewalBufferPercentage = 50;
+            private static readonly TimeSpan s_suggestedSasTimeToLive = TimeSpan.FromMinutes(30);
+            private const int s_sasRenewalBufferPercentage = 50;
 
             public DeviceAuthenticationSasToken(
                 string connectionString,
                 bool disposeWithClient)
-                : base(GetDeviceIdFromConnectionString(connectionString), s_suggestedSasTimeToLiveInSeconds, s_sasRenewalBufferPercentage, disposeWithClient)
+                : base(GetDeviceIdFromConnectionString(connectionString), s_suggestedSasTimeToLive, s_sasRenewalBufferPercentage, disposeWithClient)
             {
                 if (connectionString == null)
                 {
@@ -287,12 +287,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _connectionStringBuilder = IotHubConnectionStringBuilder.Create(connectionString);
             }
 
-            protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 var builder = new SharedAccessSignatureBuilder
                 {
                     Key = _connectionStringBuilder.SharedAccessKey,
-                    TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
+                    TimeToLive = suggestedTimeToLive,
                 };
 
                 if (_connectionStringBuilder.SharedAccessKeyName == null)

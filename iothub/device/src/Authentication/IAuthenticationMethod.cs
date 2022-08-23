@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     public interface IAuthenticationMethod
     {
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on the properties of the current instance.
+        /// Populates an <c>IotHubConnectionCredentials</c> instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>

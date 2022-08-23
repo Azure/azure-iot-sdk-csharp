@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
@@ -37,18 +36,23 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             TimeSpan sasTokenTimeToLive,
             int sasTokenRenewalBuffer,
             bool disposeWithClient)
-            : base(deviceId, moduleId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
+            : base(
+                deviceId,
+                moduleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer,
+                disposeWithClient)
         {
             _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
             _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
         }
 
         ///<inheritdoc/>
-        protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
         {
             DateTime startTime = DateTime.UtcNow;
             string audience = SasTokenBuilder.BuildAudience(iotHub, DeviceId, ModuleId);
-            string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, TimeSpan.FromSeconds(suggestedTimeToLive));
+            string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, suggestedTimeToLive);
             string data = string.Join("\n", new string[] { audience, expiresOn });
             string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);
 

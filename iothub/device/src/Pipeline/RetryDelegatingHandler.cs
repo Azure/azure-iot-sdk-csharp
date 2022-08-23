@@ -717,7 +717,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 // Will throw on error.
                                 await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                                connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                                connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                                 _onConnectionStatusChanged(connectionInfo);
                             }
                             catch (Exception ex) when (!Fx.IsFatal(ex))
@@ -743,7 +743,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Will throw on error.
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                    connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                    connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                     _onConnectionStatusChanged(connectionInfo);
                 }
                 catch (Exception ex) when (!Fx.IsFatal(ex))
@@ -783,7 +783,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                connectionInfo = new ConnectionInfo(ConnectionStatus.Disabled, ConnectionStatusChangeReason.ClientClose, DateTimeOffset.UtcNow);
+                connectionInfo = new ConnectionInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
                 _onConnectionStatusChanged(connectionInfo);
                 return;
             }
@@ -802,7 +802,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                    connectionInfo = new ConnectionInfo(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.RetryExpired, DateTimeOffset.UtcNow);
+                    connectionInfo = new ConnectionInfo(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.RetryExpired);
                     _onConnectionStatusChanged(connectionInfo);
                     return;
                 }
@@ -813,7 +813,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 // always reconnect.
-                connectionInfo = new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError, DateTimeOffset.UtcNow);
+                connectionInfo = new ConnectionInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError);
                 _onConnectionStatusChanged(connectionInfo);
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
@@ -866,7 +866,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _transportClosedTask = HandleDisconnectAsync();
 
                     _opened = true;
-                    connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk, DateTimeOffset.UtcNow);
+                    connectionInfo = new ConnectionInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                     _onConnectionStatusChanged(connectionInfo);
 
                     if (Logging.IsEnabled)
@@ -923,7 +923,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            _onConnectionStatusChanged(new ConnectionInfo(status, reason, DateTimeOffset.UtcNow));
+            _onConnectionStatusChanged(new ConnectionInfo(status, reason));
             if (Logging.IsEnabled)
                 Logging.Info(
                     this,
