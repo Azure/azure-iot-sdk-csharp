@@ -28,15 +28,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit CreateAmqpUnit(
             IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(clientConfiguration.GatewayHostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.GatewayHostName);
             return amqpConnectionPool.CreateAmqpUnit(
                 clientConfiguration,
+                connectionCredentials,
                 onMethodCallback,
                 twinMessageListener,
                 onModuleMessageReceivedCallback,

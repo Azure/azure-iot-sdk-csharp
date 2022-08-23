@@ -13,7 +13,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpConnectionHolder : IAmqpConnectionHolder, IAmqpUnitManager
     {
-        private readonly IClientConfiguration _clientConfiguration;
+        private readonly IConnectionCredentials _connectionCredentials;
+        private readonly IotHubClientAmqpSettings _amqpSettings;
         private readonly AmqpIotConnector _amqpIotConnector;
         private readonly SemaphoreSlim _lock = new(1, 1);
         private readonly HashSet<AmqpUnit> _amqpUnits = new();
@@ -22,19 +23,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
         private volatile bool _disposed;
 
-        public AmqpConnectionHolder(IClientConfiguration clientConfiguration)
+        public AmqpConnectionHolder(IConnectionCredentials connectionCredentials, IotHubClientAmqpSettings amqpSettings)
         {
-            _clientConfiguration = clientConfiguration;
-            var amqpSettings = clientConfiguration.ClientOptions.TransportSettings as IotHubClientAmqpSettings;
-
-            _amqpIotConnector = new AmqpIotConnector(amqpSettings, clientConfiguration.GatewayHostName);
+            _connectionCredentials = connectionCredentials;
+            _amqpSettings = amqpSettings;
+            _amqpIotConnector = new AmqpIotConnector(amqpSettings, connectionCredentials.GatewayHostName);
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _clientConfiguration, nameof(_clientConfiguration));
+                Logging.Associate(this, _connectionCredentials, nameof(_connectionCredentials));
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation additionalClientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             Func<MethodRequestInternal, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
@@ -42,10 +44,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Action onUnitDisconnected)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, clientConfiguration, nameof(CreateAmqpUnit));
+                Logging.Enter(this, connectionCredentials, nameof(CreateAmqpUnit));
 
             var amqpUnit = new AmqpUnit(
-                clientConfiguration,
+                connectionCredentials,
+                additionalClientInformation,
+                amqpSettings,
                 this,
                 onMethodCallback,
                 twinMessageListener,
@@ -58,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, clientConfiguration, nameof(CreateAmqpUnit));
+                Logging.Exit(this, connectionCredentials, nameof(CreateAmqpUnit));
 
             return amqpUnit;
         }
@@ -134,33 +138,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IClientConfiguration clientConfiguration, CancellationToken cancellationToken)
+        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, clientConfiguration, nameof(CreateRefresherAsync));
+                Logging.Enter(this, connectionCredentials, nameof(CreateRefresherAsync));
 
             AmqpIotConnection amqpIotConnection = await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             IAmqpAuthenticationRefresher amqpAuthenticator = await amqpIotConnection
-                .CreateRefresherAsync(clientConfiguration, cancellationToken)
+                .CreateRefresherAsync(connectionCredentials, cancellationToken)
                 .ConfigureAwait(false);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, clientConfiguration, nameof(CreateRefresherAsync));
+                Logging.Exit(this, connectionCredentials, nameof(CreateRefresherAsync));
 
             return amqpAuthenticator;
         }
 
-        public async Task<AmqpIotSession> OpenSessionAsync(IClientConfiguration clientConfiguration, CancellationToken cancellationToken)
+        public async Task<AmqpIotSession> OpenSessionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, clientConfiguration, nameof(OpenSessionAsync));
+                Logging.Enter(this, connectionCredentials, nameof(OpenSessionAsync));
 
             AmqpIotConnection amqpIotConnection = await EnsureConnectionAsync(cancellationToken).ConfigureAwait(false);
             AmqpIotSession amqpIotSession = await amqpIotConnection.OpenSessionAsync(cancellationToken).ConfigureAwait(false);
             if (Logging.IsEnabled)
             {
                 Logging.Associate(amqpIotConnection, amqpIotSession, nameof(OpenSessionAsync));
-                Logging.Exit(this, clientConfiguration, nameof(OpenSessionAsync));
+                Logging.Exit(this, connectionCredentials, nameof(OpenSessionAsync));
             }
 
             return amqpIotSession;
@@ -192,12 +196,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // Create AmqpConnection
                     amqpIotConnection = await _amqpIotConnector.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (_clientConfiguration.AuthenticationModel == AuthenticationModel.SasGrouped)
+                    // If the shared access key name is not null then this is a group SAS authenticated client.
+                    // Group-SAS authenticated clients have a connection-wide token refresh logic.
+                    if (_connectionCredentials.SharedAccessKeyName != null)
                     {
                         if (Logging.IsEnabled)
                             Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));
 
-                        amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_clientConfiguration, amqpIotConnection.GetCbsLink());
+                        amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_connectionCredentials, amqpIotConnection.GetCbsLink());
                         await amqpAuthenticationRefresher.InitLoopAsync(cancellationToken).ConfigureAwait(false);
                     }
 

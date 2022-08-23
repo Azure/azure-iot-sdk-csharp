@@ -22,11 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new AmqpTransportHandler(
                     context,
-                    iotHubClientAmqpSettings,
-                    onMethodCallback,
-                    onDesiredStatePatchReceived,
-                    onModuleEventReceivedCallback,
-                    onDeviceMessageReceivedCallback);
+                    iotHubClientAmqpSettings);
             }
 
             if (transportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)

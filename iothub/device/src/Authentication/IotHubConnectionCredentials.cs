@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -11,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Holder for client credentials that will be used for authenticating the client with IoT hub service.
     /// </summary>
-    public sealed class IotHubConnectionCredentials
+    public sealed class IotHubConnectionCredentials : IConnectionCredentials
     {
         /// <summary>
         /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
@@ -108,23 +109,90 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The suggested time to live value for tokens generated for SAS authenticated clients.
         /// </summary>
-        internal TimeSpan SasTokenTimeToLive { get; set; }
+        public TimeSpan SasTokenTimeToLive { get; internal set; }
 
         /// <summary>
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// </summary>
-        internal int SasTokenRenewalBuffer { get; set; }
+        public int SasTokenRenewalBuffer { get; internal set; }
 
         /// <summary>
         /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
         /// or through a shared access key value that can be used by the SDK to generate SAS tokens.
         /// </summary>
-        internal AuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
+        public AuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
 
         /// <summary>
         /// The authentication method to be used with the IoT hub service.
         /// </summary>
-        internal IAuthenticationMethod AuthenticationMethod { get; }
+        public IAuthenticationMethod AuthenticationMethod { get; private set; }
+
+        async Task<string> IAuthorizationProvider.GetPasswordAsync()
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"{nameof(ClientConfiguration)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+
+                Debug.Assert(
+                    !SharedAccessSignature.IsNullOrWhiteSpace()
+                        || SasTokenRefresher != null,
+                    "The token refresher and the shared access signature can't both be null");
+
+                if (!SharedAccessSignature.IsNullOrWhiteSpace())
+                {
+                    return SharedAccessSignature;
+                }
+
+                return SasTokenRefresher == null
+                    ? null
+                    : await SasTokenRefresher.GetTokenAsync(HostName);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(ClientConfiguration)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+            }
+        }
+
+        /// <summary>
+        /// This overridden Equals implementation is being referenced when fetching the client identity (AmqpUnit)
+        /// from an AMQP connection pool with multiplexed client connections.
+        /// This implementation only uses device Id, hostname and module Id when evaluating equality.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            return obj is ClientConfiguration clientConfiguration
+                && GetHashCode() == clientConfiguration.GetHashCode()
+                && Equals(DeviceId, clientConfiguration.DeviceId)
+                && Equals(GatewayHostName, clientConfiguration.GatewayHostName)
+                && Equals(ModuleId, clientConfiguration.ModuleId);
+        }
+
+        /// <summary>
+        /// This hashing algorithm is used in two places:
+        /// - when fetching the object hashcode for our logging implementation
+        /// - when fetching the client identity (AmqpUnit) from an AMQP connection pool with multiplexed client connections
+        /// This algorithm only uses device Id, hostname and module Id when evaluating the hash.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            int hashCode = UpdateHashCode(620602339, DeviceId);
+            hashCode = UpdateHashCode(hashCode, GatewayHostName);
+            hashCode = UpdateHashCode(hashCode, ModuleId);
+            return hashCode;
+        }
+
+        private static int UpdateHashCode(int hashCode, object field)
+        {
+            return field == null
+                ? hashCode
+                : hashCode * -1521134295 + field.GetHashCode();
+        }
 
         private void PopulatePropertiesFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {

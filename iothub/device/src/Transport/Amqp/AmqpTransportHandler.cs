@@ -38,22 +38,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         internal AmqpTransportHandler(
             PipelineContext context,
-            IotHubClientAmqpSettings transportSettings,
-            Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
-            Func<string, Message, Task> onModuleMessageReceivedCallback = null,
-            Func<Message, Task> onDeviceMessageReceivedCallback = null)
+            IotHubClientAmqpSettings transportSettings)
             : base(context, transportSettings)
         {
             _operationTimeout = transportSettings.OperationTimeout;
-            _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
+            _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
 
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 context.ClientConfiguration,
-                onMethodCallback,
+                context.IotHubConnectionCredentials,
+                context.MethodCallback,
                 TwinMessageListener,
-                onModuleMessageReceivedCallback,
-                onDeviceMessageReceivedCallback,
+                context.ModuleEventCallback,
+                context.DeviceEventCallback,
                 OnDisconnected);
 
             if (Logging.IsEnabled)
