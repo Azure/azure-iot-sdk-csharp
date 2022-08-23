@@ -115,13 +115,12 @@ namespace Microsoft.Azure.Devices.Client
                 iotHubConnectionCredentials.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
             }
 
-            var clientConfiguration = new ClientConfiguration(iotHubConnectionCredentials, options);
-            var client = new InternalClient(clientConfiguration, pipelineBuilder);
+            var client = new InternalClient(iotHubConnectionCredentials, options, pipelineBuilder);
 
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
-                    $"HostName={clientConfiguration.GatewayHostName};DeviceId={clientConfiguration.DeviceId};ModuleId={clientConfiguration.ModuleId}",
+                    $"HostName={iotHubConnectionCredentials.GatewayHostName};DeviceId={iotHubConnectionCredentials.DeviceId};ModuleId={iotHubConnectionCredentials.ModuleId}",
                     options);
 
             return client;

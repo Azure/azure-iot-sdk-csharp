@@ -1268,7 +1268,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 options);
 
             // assert
-            var authMethod = internalClient.IotHubConnectionInfo.TokenRefresher;
+            var authMethod = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
             authMethod.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
@@ -1315,7 +1315,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // assert
             // Clients created with their own specific AuthenticationWithTokenRefresh IAuthenticationMethod will ignore the sas token renewal options specified in ClientOptions.
             // Those options are configurable from the AuthenticationWithTokenRefresh implementation directly.
-            var authMethod = internalClient.IotHubConnectionInfo.TokenRefresher;
+            var authMethod = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.

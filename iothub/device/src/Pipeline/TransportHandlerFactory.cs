@@ -12,13 +12,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public IDelegatingHandler Create(PipelineContext context)
         {
-            ClientConfiguration clientConfiguration = context.ClientConfiguration;
+            IotHubClientTransportSettings transportSettings = context.IotHubClientTransportSettings;
             Func<MethodRequestInternal, Task> onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
             Func<string, Message, Task> onModuleEventReceivedCallback = context.ModuleEventCallback;
             Func<Message, Task> onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
-            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
+            if (transportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
                 return new AmqpTransportHandler(
                     context,
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     onDeviceMessageReceivedCallback);
             }
 
-            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
+            if (transportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
             {
                 return new MqttTransportHandler(
                     context,
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     onDeviceMessageReceivedCallback);
             }
 
-            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
+            if (transportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
             {
                 return new HttpTransportHandler(
                     context,
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     isClientPrimaryTransportHandler: true);
             }
 
-            throw new InvalidOperationException($"Unsupported transport setting {clientConfiguration.ClientOptions.TransportSettings.GetType()}");
+            throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}");
         }
     }
 }

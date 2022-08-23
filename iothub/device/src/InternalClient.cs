@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Utilities;
 
@@ -59,26 +60,29 @@ namespace Microsoft.Azure.Devices.Client
         private int _diagnosticSamplingPercentage;
 
         protected internal InternalClient(
-            ClientConfiguration clientConfiguration,
+            IotHubConnectionCredentials iotHubConnectionCredentials,
+            IotHubClientOptions iotHubClientOptions,
             IDeviceClientPipelineBuilder pipelineBuilder)
         {
+            Argument.AssertNotNull(iotHubClientOptions, nameof(iotHubClientOptions));
+
             if (Logging.IsEnabled)
-                Logging.Enter(this, clientConfiguration.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, iotHubClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            Argument.AssertNotNull(clientConfiguration.ClientOptions, nameof(clientConfiguration.ClientOptions));
+            IotHubConnectionCredentials = iotHubConnectionCredentials;
+            _clientOptions = iotHubClientOptions;
 
-            _clientOptions = clientConfiguration.ClientOptions;
-            IotHubConnectionInfo = clientConfiguration;
-
-            if (!string.IsNullOrWhiteSpace(clientConfiguration.ClientOptions.ModelId)
-                && clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings)
+            if (!iotHubClientOptions.ModelId.IsNullOrWhiteSpace()
+                && iotHubClientOptions.TransportSettings is IotHubClientHttpSettings)
             {
                 throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
             }
 
             var pipelineContext = new PipelineContext
             {
-                ClientConfiguration = clientConfiguration,
+                IotHubConnectionCredentials = iotHubConnectionCredentials,
+                ProductInfo = iotHubClientOptions.ProductInfo,
+                IotHubClientTransportSettings = iotHubClientOptions.TransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
@@ -95,12 +99,12 @@ namespace Microsoft.Azure.Devices.Client
             InnerHandler = innerHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, clientConfiguration.ClientOptions.TransportSettings, nameof(InternalClient));
+                Logging.Associate(this, iotHubClientOptions.TransportSettings, nameof(InternalClient));
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, clientConfiguration.ClientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(pipelineContext, iotHubClientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, clientConfiguration.ClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, iotHubClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
         private static IDeviceClientPipelineBuilder BuildPipeline()
@@ -143,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        internal ClientConfiguration IotHubConnectionInfo { get; private set; }
+        internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
         /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
@@ -1151,7 +1155,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private void ValidateModuleTransportHandler(string apiName)
         {
-            if (string.IsNullOrEmpty(IotHubConnectionInfo.ModuleId))
+            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 throw new InvalidOperationException("{0} is available for Modules only.".FormatInvariant(apiName));
             }
