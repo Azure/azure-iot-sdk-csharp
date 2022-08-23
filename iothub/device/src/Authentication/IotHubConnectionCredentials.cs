@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -15,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class IotHubConnectionCredentials
     {
         /// <summary>
-        /// Creates an instnace of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
+        /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
@@ -31,6 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
             AuthenticationMethod = authenticationMethod;
             AuthenticationMethod.Populate(this);
+            SetTokenRefresherIfApplicable();
 
             Validate();
         }
@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Devices.Client
             AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethodFromConnectionString(parsedConnectionString);
 
             PopulatePropertiesFromConnectionString(parsedConnectionString);
+            SetTokenRefresherIfApplicable();
 
             Validate();
         }
@@ -115,15 +116,15 @@ namespace Microsoft.Azure.Devices.Client
         internal int SasTokenRenewalBuffer { get; set; }
 
         /// <summary>
+        /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
+        /// or through a shared access key value that can be used by the SDK to generate SAS tokens.
+        /// </summary>
+        internal AuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
+
+        /// <summary>
         /// The authentication method to be used with the IoT hub service.
         /// </summary>
         internal IAuthenticationMethod AuthenticationMethod { get; }
-
-        /// <summary>
-        /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
-        /// or throw a shared access key value that can be used by the SDK to generate SAS tokens.
-        /// </summary>
-        internal AuthenticationWithTokenRefresh SasTokenRefresher { get; }
 
         private void PopulatePropertiesFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
@@ -134,6 +135,66 @@ namespace Microsoft.Azure.Devices.Client
             SharedAccessKeyName = iotHubConnectionString.SharedAccessKeyName;
             SharedAccessKey = iotHubConnectionString.SharedAccessKey;
             SharedAccessSignature = iotHubConnectionString.SharedAccessSignature;
+        }
+
+        private void SetTokenRefresherIfApplicable()
+        {
+            if (AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
+            {
+                SasTokenRefresher = authWithTokenRefresh;
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+
+                Debug.Assert(SasTokenRefresher != null);
+            }
+            else if (!SharedAccessKey.IsNullOrWhiteSpace())
+            {
+                if (ModuleId.IsNullOrWhiteSpace())
+                {
+                    // Since the SDK creates the instance of disposable DeviceAuthenticationWithSakRefresh, the SDK needs to
+                    // dispose it once the client is disposed.
+                    SasTokenRefresher = new DeviceAuthenticationWithSakRefresh(
+                        DeviceId,
+                        SharedAccessKey,
+                        SharedAccessKeyName,
+                        SasTokenTimeToLive,
+                        SasTokenRenewalBuffer,
+                        disposeWithClient: true);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                }
+                else
+                {
+                    // Since the SDK creates the instance of disposable ModuleAuthenticationWithSakRefresh, the SDK needs to
+                    // dispose it once the client is disposed.
+                    SasTokenRefresher = new ModuleAuthenticationWithSakRefresh(
+                        DeviceId,
+                        ModuleId,
+                        SharedAccessKey,
+                        SharedAccessKeyName,
+                        SasTokenTimeToLive,
+                        SasTokenRenewalBuffer,
+                        disposeWithClient: true);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                }
+
+                // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
+                // is used to reinitialize the client after close-dispose.
+                // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
+                // not of type AuthenticationWithTokenRefresh.
+                // Setting the SAS value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+                // This flow can be hit if the same authentication method is always used to initialize the client;
+                // as in, on disposal and reinitialization. This is because the value of the SAS token computed is stored within the authentication method,
+                // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
+                // instead of being identified as a sas-token-refresh-enabled-client.
+                SharedAccessSignature = null;
+
+                Debug.Assert(SasTokenRefresher != null);
+            }
         }
 
         internal void Validate()

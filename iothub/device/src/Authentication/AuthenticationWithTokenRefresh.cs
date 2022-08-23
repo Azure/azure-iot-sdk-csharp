@@ -32,6 +32,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has <see cref="DefaultSasRenewalBufferPercentage"/> percent or less of its lifespan left.
         ///</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
+        /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
         public AuthenticationWithTokenRefresh(
             TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default)
