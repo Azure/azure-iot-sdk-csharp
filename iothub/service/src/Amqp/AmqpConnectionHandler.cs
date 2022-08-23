@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Initialized {nameof(TransportBase)}, ws={_useWebSocketOnly}");
+                    Logging.Info(this, $"Initialized AMQP transport, ws={_useWebSocketOnly}");
 
                 var amqpConnectionSettings = new AmqpConnectionSettings
                 {

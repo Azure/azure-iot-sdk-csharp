@@ -178,18 +178,18 @@ namespace Microsoft.Azure.Devices.Amqp
             Error error = exception.Error;
             AmqpSymbol amqpSymbol = error.Condition;
             string message = error.ToString();
-            if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
-                || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol)
-                || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
-                || Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
-                || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
-                || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
-                || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol)
-                || Equals(AmqpErrorCode.DetachForced, amqpSymbol)
-                || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
-                || Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol)
-                || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
-                || Equals(AmqpErrorCode.Stolen, amqpSymbol))
+            if (AmqpErrorCode.ConnectionForced.Equals(amqpSymbol)
+                || AmqpErrorCode.ConnectionRedirect.Equals(amqpSymbol)
+                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
+                || AmqpErrorCode.WindowViolation.Equals(amqpSymbol)
+                || AmqpErrorCode.ErrantLink.Equals(amqpSymbol)
+                || AmqpErrorCode.HandleInUse.Equals(amqpSymbol)
+                || AmqpErrorCode.UnattachedHandle.Equals(amqpSymbol)
+                || AmqpErrorCode.DetachForced.Equals(amqpSymbol)
+                || AmqpErrorCode.TransferLimitExceeded.Equals(amqpSymbol)
+                || AmqpErrorCode.MessageSizeExceeded.Equals(amqpSymbol)
+                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
+                || AmqpErrorCode.Stolen.Equals(amqpSymbol))
             {
                 return new ErrorContext(new IotHubException(message, exception));
             }
