@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             {
                 await sc.Messaging.SendAsync(deviceId, testMessage);
             }
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sc.Messaging.CloseAsync().ConfigureAwait(false);
             result = await sc.Messaging.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false);
             result.DeviceId.Should().Be(deviceId);
             result.TotalMessagesPurged.Should().Be(expectedResult.TotalMessagesPurged);
