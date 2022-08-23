@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
-            // don't pass in cancellation token here, it isn't what is being tested
+            // don't pass in cancellation token here. This test is for seeing how SendAsync reacts with an valid or expired token.
             await sender.Messaging.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             var sw = new Stopwatch();
@@ -65,6 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
+                await sender.Messaging.CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 sw.Stop();
                 Logger.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
@@ -160,6 +161,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
             await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
+            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+
             // assert
             messageWithoutId.MessageId.Should().BeNull();
             messageWithId.MessageId.Should().Be(messageId);
@@ -190,6 +193,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
             await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
+            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+
             // assert
             messageWithoutId.MessageId.Should().BeNull();
             messageWithId.MessageId.Should().Be(messageId);
@@ -219,6 +224,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
             await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+
+            await sender.Messaging.CloseAsync().ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();

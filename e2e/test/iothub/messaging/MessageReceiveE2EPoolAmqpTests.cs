@@ -113,6 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // Initialize the service client
             var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
