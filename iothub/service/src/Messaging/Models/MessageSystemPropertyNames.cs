@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The names of the system properties in the message class.
     /// </summary>
-    public static class MessageSystemPropertyNames
+    internal static class MessageSystemPropertyNames
     {
         /// <summary>
         /// A user-settable identifier for the messages. If this value is not supplied by the user,
