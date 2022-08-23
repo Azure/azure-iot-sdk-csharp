@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices
         public const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
         public const string UriName = AmqpConstants.Vendor + ":uri";
         public const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
+        private const string FailedToSerializeUnsupportedType = "Serialization operation failed due to unsupported type ";
 
         /// <summary>
         /// Copies the message instance's properties to the AMQP message instance.
@@ -150,7 +151,7 @@ namespace Microsoft.Azure.Devices
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException(IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
+                        throw FxTrace.Exception.AsError(new SerializationException($"{FailedToSerializeUnsupportedType} {netObject.GetType().FullName}."));
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {
