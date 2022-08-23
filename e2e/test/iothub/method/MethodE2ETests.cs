@@ -103,9 +103,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
-            var serviceClientTransportSettings = new ServiceClientTransportSettings
+            var serviceClientTransportSettings = new IotHubServiceClientOptions
             {
-                HttpProxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
 
             await SendMethodAndRespondAsync(
@@ -118,9 +118,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
-            var serviceClientTransportSettings = new ServiceClientTransportSettings
+            var serviceClientTransportSettings = new IotHubServiceClientOptions
             {
-                HttpProxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
+                Proxy = new WebProxy(TestConfiguration.IoTHub.ProxyServerAddress)
             };
 
             await SendMethodAndRespondAsync(
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             string methodName,
             MsTestLogger logger,
             TimeSpan responseTimeout = default,
-            ServiceClientTransportSettings serviceClientTransportSettings = default)
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             string reqJson,
             MsTestLogger logger,
             TimeSpan responseTimeout = default,
-            ServiceClientTransportSettings serviceClientTransportSettings = default)
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             string reqJson,
             MsTestLogger logger,
             TimeSpan responseTimeout = default,
-            ServiceClientTransportSettings serviceClientTransportSettings = default)
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
@@ -520,7 +520,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 string, MsTestLogger,
                 Task<Task>> subscribeAndUnsubscribeMethod,
             TimeSpan responseTimeout = default,
-            ServiceClientTransportSettings serviceClientTransportSettings = default)
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
@@ -537,7 +537,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubClientTransportSettings transportSettings,
             Func<IotHubDeviceClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             TimeSpan responseTimeout = default,
-            ServiceClientTransportSettings serviceClientTransportSettings = default)
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
@@ -562,7 +562,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubClientTransportSettings transportSettings,
             Func<IotHubModuleClient, string, MsTestLogger, Task<Task>> setDeviceReceiveMethod,
             TimeSpan responseTimeout = default,
-            ServiceClientTransportSettings serviceClientTransportSettings = default)
+            IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
