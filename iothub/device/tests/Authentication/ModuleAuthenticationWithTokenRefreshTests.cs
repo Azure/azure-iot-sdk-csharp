@@ -36,9 +36,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(TestDeviceId, null));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation("   ", TestModuleId));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(TestDeviceId, "  "));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, -1, 10));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, 60, -1));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, 60, 101));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(-1), 10));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), -1));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), 101));
         }
 
         [TestMethod]
@@ -139,20 +139,20 @@ namespace Microsoft.Azure.Devices.Client.Test
             public TestImplementation(
                 string deviceId,
                 string moduleId,
-                int suggestedTimeToLive,
+                TimeSpan suggestedTimeToLive,
                 int timeBufferPercentage)
                 : base(deviceId, moduleId, suggestedTimeToLive, timeBufferPercentage)
             {
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 
                 await Task.Delay(10).ConfigureAwait(false);
 
-                int ttl = suggestedTimeToLive;
+                int ttl = (int)suggestedTimeToLive.TotalSeconds;
                 if (ActualTimeToLive > 0)
                 {
                     ttl = ActualTimeToLive;

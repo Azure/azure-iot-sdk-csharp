@@ -18,70 +18,42 @@ namespace Microsoft.Azure.Devices.Client
         private readonly AuthenticationProviderTpm _authProvider;
 
         /// <summary>
-        /// Initializes a new instance of this class with default
-        /// time to live of 1 hour and default buffer percentage value of 15.
+        /// Initializes a new instance of the class.
         /// </summary>
-        /// <remarks>
         /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated device client instance is disposed. To reuse the authentication method instance across
-        /// multiple client instance lifetimes,
-        /// use the <see cref="DeviceAuthenticationWithTpm(string, AuthenticationProviderTpm, int, int, bool)"/>
-        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
-        /// </remarks>
+        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes
+        /// set <paramref name="disposeWithClient"/> to <c>false</c>.
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
-        public DeviceAuthenticationWithTpm(
-            string deviceId,
-            AuthenticationProviderTpm authenticationProvider)
-            : base(deviceId)
-        {
-            _authProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
-        }
-
-        /// <summary>
-        /// Initializes a new instance of this class.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
-        /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
+        /// <param name="suggestedTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        ///</param>
+        ///<param name="disposeWithClient ">
+        ///<c>true</c> if the authentication method should be disposed of by the client
+        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
+        /// Defaults to <c>true</c>.</param>
         public DeviceAuthenticationWithTpm(
             string deviceId,
             AuthenticationProviderTpm authenticationProvider,
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage)
-            : this(deviceId, authenticationProvider, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of this class.
-        /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
-        /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as percentage of
-        /// the time to live. EX: If you want a SAS token to live for 85% of life before proactive renewal, this value should be 15.</param>
-        /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
-        public DeviceAuthenticationWithTpm(
-            string deviceId,
-            AuthenticationProviderTpm authenticationProvider,
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage,
-            bool disposeWithClient)
-            : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage, disposeWithClient)
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default,
+            bool disposeWithClient = true)
+            : base(deviceId, suggestedTimeToLive, timeBufferPercentage, disposeWithClient)
         {
             _authProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
+        protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
         {
             var builder = new TpmSharedAccessSignatureBuilder(_authProvider)
             {
-                TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLiveSeconds),
+                TimeToLive = suggestedTimeToLive,
                 Target = "{0}/devices/{1}".FormatInvariant(
                     iotHub,
                     WebUtility.UrlEncode(DeviceId)),

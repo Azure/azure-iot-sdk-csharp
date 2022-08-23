@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _deviceId;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithX509Certificate"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="certificate">X.509 Certificate.</param>

@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithSharedAccessPolicyKey"/> class.
+        /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="policyName">Name of the shared access policy to use.</param>
