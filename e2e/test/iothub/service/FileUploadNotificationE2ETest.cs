@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -18,14 +16,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 {
     /// <summary>
-    /// E2E test class for FileUploadNotification.
+    /// E2E test class for testing receiving file upload notifications.
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     public class FileUploadNotificationE2eTest : E2EMsTestBase
     {
-        public bool fileUploaded;
         private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2eTest)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -33,26 +30,89 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
-            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = fileUploadCallback;
+            int fileUploadNotificationReceivedCount = 0;
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                fileUploadNotificationReceivedCount++;
+                return AcknowledgementType.Complete;
+            };
+
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
+            WaitForFileUploadNotification(ref fileUploadNotificationReceivedCount, 1);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task FileUploadNotification_Operation_OpenCloseOpen()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+
+            int fileUploadNotificationReceivedCount = 0;
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                fileUploadNotificationReceivedCount++;
+                return AcknowledgementType.Complete;
+            };
+
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
+            // Close and re-open the client
+            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+
+            // Client should still be able to receive file upload notifications after being closed and re-opened.
+            await UploadFile().ConfigureAwait(false);
+            WaitForFileUploadNotification(ref fileUploadNotificationReceivedCount, 1);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+
+            int fileUploadNotificationReceivedCount = 0;
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                fileUploadNotificationReceivedCount++;
+                return AcknowledgementType.Complete;
+            };
+
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
+            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await UploadFile().ConfigureAwait(false);
+            await UploadFile().ConfigureAwait(false);
+
+            // The open file upload notification processor should be able to receive more than one
+            // file upload notification without closing and re-opening as long as there is more
+            // than one file upload notification to consume.
+            WaitForFileUploadNotification(ref fileUploadNotificationReceivedCount, 2);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Wait until the expected number of file upload notifications have been received. If the expected
+        /// number of notifications are not received in time, this method throws a AssertionFailedException.
+        /// </summary>
+        /// <param name="fileUploadNotificationReceivedCount">The current number of file upload notifications received.</param>
+        /// <param name="expectedFileUploadNotificationReceivedCount">The expected number of file upload notifications to receive in this test.</param>
+        private void WaitForFileUploadNotification(ref int fileUploadNotificationReceivedCount, int expectedFileUploadNotificationReceivedCount)
+        {
             var timer = Stopwatch.StartNew();
-            while (!fileUploaded && timer.ElapsedMilliseconds < 60000)
+            while (fileUploadNotificationReceivedCount < expectedFileUploadNotificationReceivedCount && timer.ElapsedMilliseconds < 60000)
             {
                 continue;
             }
+
             timer.Stop();
-            if (!fileUploaded)
+
+            if (fileUploadNotificationReceivedCount < expectedFileUploadNotificationReceivedCount)
                 throw new AssertionFailedException("Timed out waiting to receive file upload notification.");
-
-            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
-            fileUploaded.Should().BeTrue();
-        }
-
-        private AcknowledgementType fileUploadCallback(FileUploadNotification notification)
-        {
-            fileUploaded = true;
-            return AcknowledgementType.Complete;
         }
 
         private async Task UploadFile()

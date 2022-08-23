@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             var message = new Message(Encoding.UTF8.GetBytes("some payload"));
             message.Ack = DeliveryAcknowledgement.Full;
             messagedFeedbackReceived = false;
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messaging.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
 
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));

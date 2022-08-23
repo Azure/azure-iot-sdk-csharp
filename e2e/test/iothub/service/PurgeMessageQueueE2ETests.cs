@@ -34,6 +34,8 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 DeviceId = deviceId,
                 TotalMessagesPurged = 3
             };
+
+            await sc.Messaging.OpenAsync().ConfigureAwait(false);
             for (int i = 0; i < 3; ++i)
             {
                 await sc.Messaging.SendAsync(deviceId, testMessage);

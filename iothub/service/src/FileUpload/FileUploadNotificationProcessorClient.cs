@@ -3,15 +3,14 @@
 
 using System;
 using System.IO;
-using System.Net.Mail;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Amqp;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -19,12 +18,11 @@ namespace Microsoft.Azure.Devices
     /// Subclient of <see cref="IotHubServiceClient"/> for receiving file upload notifications.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#service-file-upload-notifications"/>.
-    public class FileUploadNotificationProcessorClient : IDisposable
+    public class FileUploadNotificationProcessorClient
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly IotHubConnection _connection;
-        private readonly AmqpFileNotificationReceiver _fileNotificationReceiver;
+        private readonly AmqpConnectionHandler _amqpConnection;
 
         /// <summary>
         /// The callback to be executed each time file upload notification is received from the service.
@@ -32,11 +30,35 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// May not be null.
         /// </remarks>
+        /// <example>
+        /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+        /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
+        ///
+        /// //...
+        ///
+        /// public AcknowledgementType OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification)
+        /// {
+        ///    Console.WriteLine($"Received file upload notification from device {fileUploadNotification.DeviceId}")
+        ///    return AcknowledgementType.Complete;
+        /// }
+        /// </example>
         public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor;
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
+        /// <example>
+        /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLost;
+        /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
+        ///
+        /// //...
+        ///
+        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// {
+        ///    // Add reconnection logic as needed
+        ///    Console.WriteLine("File upload notification processor connection lost")
+        /// }
+        /// </example>
         public Action<ErrorContext> ErrorProcessor;
 
         /// <summary>
@@ -53,8 +75,13 @@ namespace Microsoft.Azure.Devices
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
-            _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
-            _fileNotificationReceiver = new AmqpFileNotificationReceiver(_connection);
+            _amqpConnection = new AmqpConnectionHandler(
+                credentialProvider,
+                options.UseWebSocketOnly,
+                AmqpsConstants.FileUploadNotificationsAddress,
+                options,
+                OnConnectionClosed,
+                OnNotificationMessageReceivedAsync);
         }
 
         /// <summary>
@@ -72,7 +99,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        public virtual async Task OpenAsync()
+        public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening FileUploadNotificationProcessorClient", nameof(OpenAsync));
@@ -83,13 +110,13 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new Exception("Callback for file upload notifications must be set before opening the connection.");
                 }
-                await _fileNotificationReceiver.OpenAsync().ConfigureAwait(false);
-                ReceivingAmqpLink receivingAmqpLink = await _fileNotificationReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                receivingAmqpLink.RegisterMessageListener(OnNotificationMessageReceivedAsync);
-                receivingAmqpLink.Session.Connection.Closed += OnConnectionClosed;
-                receivingAmqpLink.Session.Closed += OnConnectionClosed;
-                receivingAmqpLink.Closed += OnConnectionClosed;
-                await _fileNotificationReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+
+                if (_amqpConnection.IsOpen())
+                {
+                    return;
+                }
+
+                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -108,7 +135,7 @@ namespace Microsoft.Azure.Devices
         /// Close the connection and stop receiving file upload notifications.
         /// </summary>
         /// <remarks>
-        /// The instance can be re-opened after closing and before disposing.
+        /// The instance can be re-opened after closing.
         /// </remarks>
         /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
@@ -119,15 +146,14 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        public virtual async Task CloseAsync()
+        public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
 
             try
             {
-                await _fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
-                await _connection.CloseAsync().ConfigureAwait(false);
+                await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -140,19 +166,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
             }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Disposing FileUploadNotificationProcessorClient", nameof(Dispose));
-
-            _fileNotificationReceiver.Dispose();
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, $"Disposing FileUploadNotificationProcessorClient", nameof(Dispose));
-            GC.SuppressFinalize(this);
         }
 
         private async void OnNotificationMessageReceivedAsync(AmqpMessage amqpMessage)
@@ -168,16 +181,15 @@ namespace Microsoft.Azure.Devices
                     {
                         AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.FileNotificationContentType);
                         FileUploadNotification fileUploadNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage).ConfigureAwait(false);
-                        fileUploadNotification.DeliveryTag = amqpMessage.DeliveryTag;
                         AcknowledgementType ack = FileUploadNotificationProcessor.Invoke(fileUploadNotification);
                         switch (ack)
                         {
                             case AcknowledgementType.Abandon:
-                                await _fileNotificationReceiver.AbandonAsync(fileUploadNotification, CancellationToken.None).ConfigureAwait(false);
+                                await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                                 break;
 
                             case AcknowledgementType.Complete:
-                                await _fileNotificationReceiver.CompleteAsync(fileUploadNotification, CancellationToken.None).ConfigureAwait(false);
+                                await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                                 break;
 
                             default:
@@ -209,7 +221,7 @@ namespace Microsoft.Azure.Devices
         {
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
-                ErrorContext errorContext = AmqpErrorMapper.GetErrorContextFromException(exception);
+                ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
                 Exception exceptionToLog = errorContext.IOException != null ? errorContext.IOException : errorContext.IotHubException;
                 if (Logging.IsEnabled)

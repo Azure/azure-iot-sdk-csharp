@@ -10,11 +10,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Encoding;
-using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Amqp;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace Microsoft.Azure.Devices
 {
@@ -22,12 +20,11 @@ namespace Microsoft.Azure.Devices
     /// Subclient of <see cref="IotHubServiceClient"/> for receiving cloud-to-device message feedback.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
-    public class MessageFeedbackProcessorClient : IDisposable
+    public class MessageFeedbackProcessorClient
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly IotHubConnection _connection;
-        private readonly AmqpFeedbackReceiver _feedbackReceiver;
+        private readonly AmqpConnectionHandler _amqpConnection;
 
         /// <summary>
         /// The callback to be executed each time message feedback is received from the service.
@@ -35,11 +32,39 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// May not be null.
         /// </remarks>
+        /// <example>
+        /// serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = OnFeedbackReceived;
+        /// serviceClient.MessageFeedbackProcessor.OpenAsync();
+        ///
+        /// //...
+        ///
+        /// public AcknowledgementType OnFeedbackReceived(FeedbackBatch feedbackBatch)
+        /// {
+        ///    foreach (FeedbackRecord record in feedback.Records)
+        ///    {
+        ///        Console.WriteLine($"Received feedback from device {record.DeviceId}")
+        ///    }
+        ///
+        ///    return AcknowledgementType.Complete;
+        /// }
+        /// </example>
         public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor;
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
+        /// <example>
+        /// serviceClient.MessageFeedbackProcessor.ErrorProcessor = OnConnectionLost;
+        /// serviceClient.MessageFeedbackProcessor.OpenAsync();
+        ///
+        /// //...
+        ///
+        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// {
+        ///    // Add reconnection logic as needed
+        ///    Console.WriteLine("Feedback message processor connection lost")
+        /// }
+        /// </example>
         public Action<ErrorContext> ErrorProcessor;
 
         /// <summary>
@@ -56,8 +81,13 @@ namespace Microsoft.Azure.Devices
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
-            _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
-            _feedbackReceiver = new AmqpFeedbackReceiver(_connection);
+            _amqpConnection = new AmqpConnectionHandler(
+                credentialProvider,
+                options.UseWebSocketOnly,
+                AmqpsConstants.FeedbackMessageAddress,
+                options,
+                OnConnectionClosed,
+                OnFeedbackMessageReceivedAsync);
         }
 
         /// <summary>
@@ -75,7 +105,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        public virtual async Task OpenAsync()
+        public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening MessageFeedbackProcessorClient", nameof(OpenAsync));
@@ -85,13 +115,13 @@ namespace Microsoft.Azure.Devices
                 {
                     throw new Exception("Callback for message feedback must be set before opening the connection.");
                 }
-                await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
-                ReceivingAmqpLink receivingAmqpLink = await _feedbackReceiver.FaultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                receivingAmqpLink.RegisterMessageListener(OnFeedbackMessageReceivedAsync);
-                receivingAmqpLink.Session.Connection.Closed += OnConnectionClosed;
-                receivingAmqpLink.Session.Closed += OnConnectionClosed;
-                receivingAmqpLink.Closed += OnConnectionClosed;
-                await _feedbackReceiver.ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+
+                if (_amqpConnection.IsOpen())
+                {
+                    return;
+                }
+
+                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -110,7 +140,7 @@ namespace Microsoft.Azure.Devices
         /// Close the connection and stop receiving acknowledgments for messages sent.
         /// </summary>
         /// <remarks>
-        /// The instance can be re-opened after closing and before disposing.
+        /// The instance can be re-opened after closing.
         /// </remarks>
         /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception. </exception>
         /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
@@ -121,15 +151,14 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        public virtual async Task CloseAsync()
+        public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing MessageFeedbackProcessorClient", nameof(CloseAsync));
 
             try
             {
-                await _feedbackReceiver.CloseAsync().ConfigureAwait(false);
-                await _connection.CloseAsync().ConfigureAwait(false);
+                await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -142,19 +171,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Closing MessageFeedbackProcessorClient", nameof(CloseAsync));
             }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Disposing MessageFeedbackProcessorClient", nameof(Dispose));
-
-            _feedbackReceiver.Dispose();
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, $"Disposing MessageFeedbackProcessorClient", nameof(Dispose));
-            GC.SuppressFinalize(this);
         }
 
         private async void OnFeedbackMessageReceivedAsync(AmqpMessage amqpMessage)
@@ -175,19 +191,19 @@ namespace Microsoft.Azure.Devices
                         FeedbackBatch feedbackBatch = new FeedbackBatch
                         {
                             EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
-                            DeliveryTag = amqpMessage.DeliveryTag,
                             Records = records,
                             UserId = Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, amqpMessage.Properties.UserId.Offset, amqpMessage.Properties.UserId.Count)
                         };
+
                         AcknowledgementType ack = MessageFeedbackProcessor.Invoke(feedbackBatch);
                         switch (ack)
                         {
                             case AcknowledgementType.Abandon:
-                                await _feedbackReceiver.AbandonAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
+                                await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                                 break;
 
                             case AcknowledgementType.Complete:
-                                await _feedbackReceiver.CompleteAsync(feedbackBatch, CancellationToken.None).ConfigureAwait(false);
+                                await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                                 break;
 
                             default:
@@ -219,7 +235,7 @@ namespace Microsoft.Azure.Devices
         {
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
-                ErrorContext errorContext = AmqpErrorMapper.GetErrorContextFromException(exception);
+                ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
                 Exception exceptionToLog = errorContext.IOException != null ? errorContext.IOException : errorContext.IotHubException;
                 if (Logging.IsEnabled)

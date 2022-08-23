@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices
     {
         /// <summary>
         /// A user-settable identifier for the messages. If this value is not supplied by the user,
-        /// the service client will set this to a new GUID only if you set <see cref="ServiceClientOptions.SdkAssignsMessageId"/>
-        /// property in <see cref="ServiceClientOptions"/>.
+        /// the service client will set this to a new GUID only if you set <see cref="IotHubServiceClientOptions.SdkAssignsMessageId"/>
+        /// property in <see cref="IotHubServiceClientOptions"/>.
         /// </summary>
         public const string MessageId = "message-id";
 

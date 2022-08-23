@@ -182,7 +182,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             async Task CleanupOperationAsync()
             {
                 await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
-                serviceClient.Messaging.Dispose();
             }
 
             await PoolingOverAmqp

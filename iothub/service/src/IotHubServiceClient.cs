@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using Azure;
 using Azure.Core;
+using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices
 {
@@ -203,9 +204,6 @@ namespace Microsoft.Azure.Devices
         public void Dispose()
         {
             _httpClient?.Dispose();
-            MessageFeedbackProcessor?.Dispose();
-            FileUploadNotificationProcessor?.Dispose();
-            Messaging?.Dispose();
         }
 
         private void InitializeSubclients(IotHubServiceClientOptions _options)
@@ -222,6 +220,9 @@ namespace Microsoft.Azure.Devices
 
             MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
             FileUploadNotificationProcessor = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
+
+            // Adds additional logging to the AMQP connections created by this client
+            AmqpTrace.Provider = new AmqpTransportLog();
         }
     }
 }
