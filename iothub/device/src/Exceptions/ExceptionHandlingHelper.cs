@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             return response.Content.ReadAsStringAsync();
         }
 
-        public static string CreateMessageWhenDeviceNotFound(string deviceId)
+        private static string CreateMessageWhenDeviceNotFound(string deviceId)
         {
             return "Device {0} not registered".FormatInvariant(deviceId);
         }
