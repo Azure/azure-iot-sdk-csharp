@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -22,6 +23,9 @@ namespace Microsoft.Azure.Devices
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
+
+        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -191,7 +195,7 @@ namespace Microsoft.Azure.Devices
 
                 if (string.IsNullOrWhiteSpace(module.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
@@ -274,7 +278,7 @@ namespace Microsoft.Azure.Devices
 
                 if (module.ETag == null)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

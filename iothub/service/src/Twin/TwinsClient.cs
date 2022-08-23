@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -28,6 +29,8 @@ namespace Microsoft.Azure.Devices
         private const string RequestUriFormat = "/devices/{0}";
         private const string TwinUriFormat = "/twins/{0}";
         private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}";
+        private const string ETagNotSetWhileUpdatingTwin = "ETagNotSetWhileUpdatingTwin";
+        private const string InvalidImportMode = "InvalidImportMode";
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an HTTP patch request.
@@ -675,12 +678,12 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateTwinIfMatchETag:
                         if (string.IsNullOrWhiteSpace(twin.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingTwin);
+                            throw new ArgumentException(ETagNotSetWhileUpdatingTwin);
                         }
                         break;
 
                     default:
-                        throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
+                        throw new ArgumentException($"{InvalidImportMode} {importMode}.");
                 }
 
                 var exportImportDevice = new ExportImportDevice

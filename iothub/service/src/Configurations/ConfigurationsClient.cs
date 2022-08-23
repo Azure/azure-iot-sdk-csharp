@@ -25,6 +25,10 @@ namespace Microsoft.Azure.Devices
 
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
         private const string ConfigurationsRequestUriFormat = "&top={0}";
+        private const string ETagSetWhileCreatingConfiguration = "ETagSetWhileCreatingConfiguration";
+        private const string ArgumentMustBeNonNegative = "ArgumentMustBeNonNegative";
+        private const string ETagNotSetWhileDeletingConfiguration = "ETagNotSetWhileDeletingConfiguration";
+        private const string ETagNotSetWhileUpdatingConfiguration = "ETagNotSetWhileUpdatingConfiguration";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -69,7 +73,7 @@ namespace Microsoft.Azure.Devices
                 Argument.RequireNotNull(configuration, nameof(configuration));
                 if (!string.IsNullOrEmpty(configuration.ETag))
                 {
-                    throw new ArgumentException(ApiResources.ETagSetWhileCreatingConfiguration);
+                    throw new ArgumentException(ETagSetWhileCreatingConfiguration);
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -160,7 +164,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (maxCount < 0)
                 {
-                    throw new ArgumentException(ApiResources.ArgumentMustBeNonNegative, nameof(maxCount));
+                    throw new ArgumentException(ArgumentMustBeNonNegative, nameof(maxCount));
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -232,7 +236,7 @@ namespace Microsoft.Azure.Devices
                 Argument.RequireNotNull(configuration, nameof(configuration));
                 if (string.IsNullOrWhiteSpace(configuration.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingConfiguration);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingConfiguration);
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -328,7 +332,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
                 if (string.IsNullOrWhiteSpace(configuration.ETag))
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration);
+                    throw new ArgumentException(ETagNotSetWhileDeletingConfiguration);
                 }
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
                 HttpMessageHelper.InsertETag(request, configuration.ETag);

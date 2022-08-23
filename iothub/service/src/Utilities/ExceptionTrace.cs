@@ -10,6 +10,8 @@ namespace Microsoft.Azure.Devices.Common
     internal class ExceptionTrace
     {
         private readonly string _eventSourceName;
+        private const string ArgumentNullOrWhiteSpace_ = "ArgumentNullOrWhiteSpace";
+        private const string ArgumentNullOrEmpty_ = "ArgumentNullOrEmpty";
 
         public ExceptionTrace(string eventSourceName)
         {
@@ -53,12 +55,12 @@ namespace Microsoft.Azure.Devices.Common
 
         public ArgumentException ArgumentNullOrEmpty(string paramName)
         {
-            return Argument(paramName, CommonResources.GetString(CommonResources.ArgumentNullOrEmpty, paramName));
+            return Argument(paramName, $"{ArgumentNullOrEmpty_} {paramName}");
         }
 
         public ArgumentException ArgumentNullOrWhiteSpace(string paramName)
         {
-            return Argument(paramName, CommonResources.GetString(CommonResources.ArgumentNullOrWhiteSpace, paramName));
+            return Argument(paramName, $"{ArgumentNullOrWhiteSpace_} {paramName}");
         }
 
         public ArgumentOutOfRangeException ArgumentOutOfRange(string paramName, object actualValue, string message)
