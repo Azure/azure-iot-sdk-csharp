@@ -27,10 +27,9 @@ namespace Microsoft.Azure.Devices.Amqp
         private AmqpConnection _connection;
         private AmqpCbsSessionHandler _cbsSession;
         private AmqpSessionHandler _workerSession;
-
+        private TransportBase _transport;
         private readonly bool _useWebSocketOnly;
         private readonly IotHubServiceClientOptions _options;
-        private ClientWebSocketTransport _clientWebSocketTransport;
         private IotHubConnectionProperties _credential;
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
 
@@ -74,12 +73,10 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 AmqpSettings amqpSettings = CreateAmqpSettings();
 
-                TransportBase transport = null;
                 if (_useWebSocketOnly)
                 {
                     // Try only AMQP transport over WebSocket
-                    transport = _clientWebSocketTransport =
-                        (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken).ConfigureAwait(false);
+                    _transport = await CreateClientWebSocketTransportAsync(cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -87,7 +84,7 @@ namespace Microsoft.Azure.Devices.Amqp
                     var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
                     try
                     {
-                        transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                        _transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception e) when (!(e is AuthenticationException))
                     {
@@ -109,7 +106,7 @@ namespace Microsoft.Azure.Devices.Amqp
                     IdleTimeOut = Convert.ToUInt32(_options.AmqpConnectionKeepAlive.TotalMilliseconds)
                 };
 
-                _connection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
+                _connection = new AmqpConnection(_transport, amqpSettings, amqpConnectionSettings);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"{nameof(AmqpConnection)} created.");
@@ -141,6 +138,14 @@ namespace Microsoft.Azure.Devices.Amqp
                 _cbsSession.Close(); // not async because the cbs link type only has a sync close API
                 await _workerSession.CloseAsync(cancellationToken).ConfigureAwait(false);
                 await _connection.CloseAsync(cancellationToken).ConfigureAwait(false);
+
+                if (_transport is ClientWebSocketTransport webSocketTransport)
+                {
+                    // This is the one disposable object in the entire AMQP stack. It is safe to dispose this
+                    // in the close operation since a new websocket transport is created upon each newly
+                    // opened AMQP connection.
+                    webSocketTransport.Dispose();
+                }
             }
             finally
             {
@@ -245,7 +250,7 @@ namespace Microsoft.Azure.Devices.Amqp
             return sslPolicyErrors == SslPolicyErrors.None;
         }
 
-        private async Task<TransportBase> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
+        private async Task<ClientWebSocketTransport> CreateClientWebSocketTransportAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(CreateClientWebSocketTransportAsync));

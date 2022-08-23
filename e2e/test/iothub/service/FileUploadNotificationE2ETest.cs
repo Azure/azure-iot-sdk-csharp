@@ -26,9 +26,16 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2eTest)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task FileUploadNotification_Operation()
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task FileUploadNotification_Operation(TransportType transportType)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
 
             int fileUploadNotificationReceivedCount = 0;
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
@@ -46,9 +53,16 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task FileUploadNotification_Operation_OpenCloseOpen()
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task FileUploadNotification_Operation_OpenCloseOpen(TransportType transportType)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
 
             int fileUploadNotificationReceivedCount = 0;
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
@@ -71,9 +85,16 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection()
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(TransportType transportType)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
 
             int fileUploadNotificationReceivedCount = 0;
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
@@ -106,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             var timer = Stopwatch.StartNew();
             while (fileUploadNotificationReceivedCount < expectedFileUploadNotificationReceivedCount && timer.ElapsedMilliseconds < 60000)
             {
-                continue;
+                Thread.Sleep(200);
             }
 
             timer.Stop();

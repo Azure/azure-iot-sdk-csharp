@@ -25,9 +25,17 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private bool messagedFeedbackReceived;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task MessageFeedbackReceiver_Operation()
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task MessageFeedbackReceiver_Operation(TransportType transportType)
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = OnFeedbackReceived;
             await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
