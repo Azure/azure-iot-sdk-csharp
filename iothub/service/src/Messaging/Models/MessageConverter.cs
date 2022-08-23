@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Copies the message instance's properties to the amqp message instance.
+        /// Copies the message instance's properties to the AMQP message instance.
         /// </summary>
         public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
         {

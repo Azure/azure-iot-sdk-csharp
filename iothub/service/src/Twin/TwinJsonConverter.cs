@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Converts a twin to Json.
+    /// Converts a twin to JSON.
     /// </summary>
     public sealed class TwinJsonConverter : JsonConverter
     {
@@ -41,11 +41,11 @@ namespace Microsoft.Azure.Devices
         private const string ParentScopes = "parentScopes";
 
         /// <summary>
-        /// Converts twin to its equivalent Json representation.
+        /// Converts twin to its equivalent JSON representation.
         /// </summary>
-        /// <param name="writer">the Json writer.</param>
+        /// <param name="writer">the JSON writer.</param>
         /// <param name="value">the <see cref="Twin"/> to convert.</param>
-        /// <param name="serializer">the Json serializer.</param>
+        /// <param name="serializer">the JSON serializer.</param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)

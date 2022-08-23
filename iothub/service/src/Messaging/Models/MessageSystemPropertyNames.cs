@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices
         public const string ExpiryTimeUtc = "absolute-expiry-time";
 
         /// <summary>
-        /// A string property in a response message that typically contains the Message Id of the request, in request-reply patterns.
+        /// A string property in a response message that typically contains the message Id of the request, in request/reply patterns.
         /// </summary>
         public const string CorrelationId = "correlation-id";
 

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the value for the given property name.
         /// </summary>
-        /// <param name="propertyName">Property Name to lookup.</param>
+        /// <param name="propertyName">Property name to look up.</param>
         /// <returns>Property value, if present.</returns>
         [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
             Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]

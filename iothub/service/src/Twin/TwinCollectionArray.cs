@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the value for the given property name.
         /// </summary>
-        /// <param name="propertyName">Property Name to lookup.</param>
+        /// <param name="propertyName">Property name to look up.</param>
         /// <returns>Property value, if present.</returns>
         public dynamic this[string propertyName]
         {
