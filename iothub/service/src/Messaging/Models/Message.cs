@@ -13,14 +13,14 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The data structure represent the message that is used for interacting with IotHub.
+    /// The data structure represent the message that is used for interacting with IoT hub.
     /// </summary>
     public sealed class Message
     {
         private readonly byte[] _payload;
 
         /// <summary>
-        /// Default constructor with no body data
+        /// Default constructor with no body data.
         /// </summary>
         public Message()
         {
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// [Required] Destination of the message
+        /// [Required] Destination of the message.
         /// </summary>
         public string To
         {
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// [Optional] The time when this message is considered expired
+        /// [Optional] The time when this message is considered expired.
         /// </summary>
         public DateTime ExpiryTimeUtc
         {
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// [Required] SequenceNumber of the received message
+        /// [Required] SequenceNumber of the received message.
         /// </summary>
         internal ulong SequenceNumber
         {
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// [Required] LockToken of the received message
+        /// [Required] LockToken of the received message.
         /// </summary>
         public string LockToken
         {
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Time when the message was received by the server
+        /// Time when the message was received by the server.
         /// </summary>
         internal DateTime EnqueuedTimeUtc
         {
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Number of times the message has been previously delivered
+        /// Number of times the message has been previously delivered.
         /// </summary>
         internal uint DeliveryCount
         {
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices
         public bool HasPayload => _payload != null;
 
         /// <summary>
-        /// Gets or sets the deliveryTag which is used for server side checkpointing.
+        /// Gets or sets the delivery tag which is used for server side checkpointing.
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
 

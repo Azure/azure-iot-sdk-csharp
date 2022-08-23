@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// A class for creating and serializing a <see cref="Configuration"/> for a bulk import
+    /// A class for creating and serializing a configuration for a bulk import
     /// job using <see cref="DevicesClient.CreateJobAsync(JobProperties, System.Threading.CancellationToken)"/>.
     /// </summary>
     public class ImportConfiguration : Configuration
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The type of registry operation and E Tag preferences.
+        /// The type of registry operation and ETag preferences.
         /// </summary>
         [JsonProperty(PropertyName = "importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public ConfigurationImportMode ImportMode { get; set; }

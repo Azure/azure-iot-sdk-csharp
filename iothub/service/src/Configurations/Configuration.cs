@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
     public class Configuration : IETagHolder
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Configuration"/> class.
+        /// Initializes an instance of this class.
         /// </summary>
         /// <param name="configurationId">
         /// The configuration Id.
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Initializes a new instance of the Configuration class.
+        /// Initializes a new instance of this class.
         /// </summary>
         internal Configuration()
         {
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
         public ConfigurationContent Content { get; set; }
 
         /// <summary>
-        /// Gets the content type for configuration
+        /// Gets the content type for configuration.
         /// </summary>
         [JsonProperty(PropertyName = "contentType")]
         public string ContentType { get; internal set; }

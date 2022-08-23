@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Details of the Configuration
+    /// Details of the configuration.
     /// </summary>
     public class ConfigurationInfo
     {

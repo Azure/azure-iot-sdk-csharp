@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
     public class ErrorContext
     {
         /// <summary>
-        /// The IoT Hub level exception, if any IoT Hub level exception caused this connection loss.
+        /// The IoT hub level exception, if any IoT hub level exception caused this connection loss.
         /// </summary>
         /// <remarks>
         /// For example, if the device does not exist.
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The IoT Hub level exception, if any IoT Hub level exception caused this connection loss.
+        /// The IoT hub level exception, if any IoT hub level exception caused this connection loss.
         /// </summary>
         /// <remarks>
         /// For example, if you attempt to send a cloud-to-device message to a device that does not exist. if this exception is null, then <see cref="IOException"/> will not be null.

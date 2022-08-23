@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
     [TestClass]
     [TestCategory("Unit")]
-    public class ServiceClientConnectionStringTests
+    public class ConnectionStringTests
     {
         private class TestAuthenticationMethod : IAuthenticationMethod
         {
@@ -23,77 +23,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         }
 
         [TestMethod]
-        public void ServiceClientConnectionStringDefaultScopeDefaultCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientConnectionStringIotHubScopeImplicitSharedAccessSignatureCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientConnectionStringIotHubScopeExplicitSharedAccessSignatureCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=AllAccessKey;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientConnectionStringIotHubScopeSharedAccessKeyCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientConnectionStringDeviceScopeImplicitSharedAccessSignatureCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=blah;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientConnectionStringDeviceScopeExplicitSharedAccessSignatureCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=blah;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeTest()
-        {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=blah;SharedAccessKey=dGVzdFN0cmluZzE=";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            Assert.IsNotNull(serviceClient.Connection.Credential);
-        }
-
-        [TestMethod]
-        public void ServiceClientIotHubConnectionStringBuilderTest()
+        public void IotHubConnectionStringBuilderTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(connectionString);
@@ -173,21 +103,6 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessKeyName == "AllAccess1");
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessSignature == "SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey");
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessKey == null);
-        }
-
-        [TestMethod]
-        public void ServiceClient_ConnectionString_ModuleIdentity_SharedAccessKeyCredentialType_Test()
-        {
-            string connectionString = "HostName=testhub.azure-devices-int.net;DeviceId=edgecapabledevice1;ModuleId=testModule;SharedAccessKey=dGVzdFN0cmluZzE=;GatewayHostName=edgehub1.ms.com";
-            var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
-            Assert.IsNotNull(serviceClient.Connection);
-            IotHubConnectionString iotHubConnectionString = (IotHubConnectionString)serviceClient.Connection.Credential;
-            Assert.IsNotNull(iotHubConnectionString);
-            Assert.AreEqual("testhub.azure-devices-int.net", iotHubConnectionString.Audience);
-            Assert.AreEqual("testhub.azure-devices-int.net", iotHubConnectionString.HostName);
-            Assert.AreEqual("dGVzdFN0cmluZzE=", iotHubConnectionString.SharedAccessKey);
-            Assert.IsNotNull(iotHubConnectionString.GetPassword());
         }
     }
 }

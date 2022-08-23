@@ -19,8 +19,7 @@ namespace Microsoft.Azure.Devices
         public string JobId { get; set; }
 
         /// <summary>
-        /// Required.
-        /// The type of job to execute.
+        /// [Required] The type of job to execute.
         /// </summary>
         [JsonProperty(PropertyName = "type", Required = Required.Always)]
         public JobType JobType { get; set; }
@@ -28,17 +27,17 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The method type and parameters.
         /// </summary>
-        /// /// <remarks>
-        /// Required if jobType is cloudToDeviceMethod.
+        /// <remarks>
+        /// Required if jobType is cloud-to-device method.
         /// </remarks>
         [JsonProperty(PropertyName = "cloudToDeviceMethod")]
         public DirectMethodRequest DirectMethodRequest { get; set; }
 
         /// <summary>
-        /// The Update Twin tags and desired properties.
+        /// The Update twin tags and desired properties.
         /// </summary>
         /// <remarks>
-        /// Required if the job type is UpdateTwin.
+        /// Required if the job type is update twin.
         /// </remarks>
         [JsonProperty(PropertyName = "updateTwin")]
         public Twin UpdateTwin { get; set; }
@@ -47,7 +46,7 @@ namespace Microsoft.Azure.Devices
         /// Condition for device query to get devices to execute the job on.
         /// </summary>
         /// <remarks>
-        /// Required if job type is UpdateTwin or CloudToDeviceMethod.
+        /// Required if job type is update twin or cloud-to-device method.
         /// </remarks>
         [JsonProperty(PropertyName = "queryCondition")]
         public string QueryCondition { get; set; }

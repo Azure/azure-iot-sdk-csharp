@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
 {
@@ -118,7 +117,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var page = new QueriedPage<T>(response, responsePayload);
                 return new QueryResponse<T>(this, query, page.Items, page.ContinuationToken, options?.PageSize);
@@ -188,7 +187,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 QueriedPage<ScheduledJob> page = new QueriedPage<ScheduledJob>(response, responsePayload);
                 return new QueryResponse<ScheduledJob>(this, jobType, jobStatus, page.Items, page.ContinuationToken, options?.PageSize);

@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Parameters to execute a direct method on the device
+    /// Parameters to execute a direct method on the device.
     /// </summary>
     public class DirectMethodRequest
     {

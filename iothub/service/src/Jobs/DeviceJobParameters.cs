@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,21 +9,21 @@ using Microsoft.Azure.Devices.Common;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    ///     Extend JobParameters with device Ids
+    /// Extend job parameters with device Ids.
     /// </summary>
     public class DeviceJobParameters : JobParameters
     {
         /// <summary>
-        ///     Parameters for parameterless device job on a single device
-        /// </summary>        
+        /// Parameters for parameterless device job on a single device.
+        /// </summary>
         public DeviceJobParameters(JobType jobType, string deviceId)
-            : this(jobType, new List<string>() { deviceId})
+            : this(jobType, new List<string>() { deviceId })
         {
         }
 
         /// <summary>
-        ///     Parameters for parameterless device job on multiple devices
-        /// </summary>        
+        /// Parameters for parameterless device job on multiple devices.
+        /// </summary>
         public DeviceJobParameters(JobType jobType, IEnumerable<string> deviceIds)
             : base(jobType)
         {
@@ -43,7 +42,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        ///     Ids of target devices
+        /// Ids of target devices.
         /// </summary>
         public IList<string> DeviceIds { get; private set; }
     }

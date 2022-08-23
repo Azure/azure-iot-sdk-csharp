@@ -6,12 +6,12 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains the DeviceJob outcome
+    /// Contains the device job outcome.
     /// </summary>
     public class DeviceJobOutcome
     {
         /// <summary>
-        /// Outcome for a device method job
+        /// Outcome for a device method job.
         /// </summary>
         [JsonProperty(PropertyName = "deviceMethodResponse")]
         public DirectMethodResponse DirectMethodResponse { get; set; }

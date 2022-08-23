@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>
         /// Type definition for the <see cref="Properties"/> property.
-        /// 
         /// The maximum depth of the object is 10.
         /// </remarks>
         public sealed class PropertyContainer
@@ -48,14 +47,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         public ExportImportDevice()
         {
         }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         /// <param name="device">Device properties</param>
         /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
@@ -175,7 +174,6 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For leaf devices, the value to set a parent edge device can be retrieved from the parent
         /// edge device's device scope property.
-        ///
         /// For more information, see
         /// <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>

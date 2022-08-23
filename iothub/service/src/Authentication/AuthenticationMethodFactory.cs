@@ -36,22 +36,22 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        ///  Factory method to create a ServiceAuthenticationWithSharedAccessPolicyKey object
+        /// Factory method to create a ServiceAuthenticationWithSharedAccessPolicyKey object.
         /// </summary>
         /// <param name="policyName"> PolicyName </param>
         /// <param name="key"> SharedAccessKeyValue </param>
-        /// <returns> an AuthenticationMethod object </returns>
+        /// <returns> an AuthenticationMethod object.</returns>
         public static IAuthenticationMethod CreateAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
         {
             return new ServiceAuthenticationWithSharedAccessPolicyKey(policyName, key);
         }
 
         /// <summary>
-        ///  Factory method to create a ServiceAuthenticationWithSharedAccessPolicyToken object
+        /// Factory method to create a ServiceAuthenticationWithSharedAccessPolicyToken object.
         /// </summary>
         /// <param name="policyName"> PolicyName </param>
         /// <param name="token"> SharedAccessSignatureToken </param>
-        /// <returns> an AuthenticationMethod object </returns>
+        /// <returns> an AuthenticationMethod object.</returns>
         public static IAuthenticationMethod CreateAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
         {
             return new ServiceAuthenticationWithSharedAccessPolicyToken(policyName, token);

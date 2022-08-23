@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         public const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
 
         /// <summary>
-        /// Copies the properties from the AMQP message to the Message instance.
+        /// Copies the properties from the AMQP message to the message instance.
         /// </summary>
         public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message data)
         {
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Copies the Message instance's properties to the AmqpMessage instance.
+        /// Copies the message instance's properties to the AMQP message instance.
         /// </summary>
         public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
         {
