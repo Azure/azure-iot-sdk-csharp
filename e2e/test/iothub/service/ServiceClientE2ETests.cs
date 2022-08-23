@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private async Task FastTimeout()
         {
             // pre-cancelled cancellation token
-            CancellationToken cancellationToken = new CancellationToken(true);
+            var cancellationToken = new CancellationToken(true);
             await TestTimeout(cancellationToken).ConfigureAwait(false);
         }
 
