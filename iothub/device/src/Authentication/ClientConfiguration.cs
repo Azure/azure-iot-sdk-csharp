@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Diagnostics;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -56,8 +54,7 @@ namespace Microsoft.Azure.Devices.Client
                         DeviceId,
                         this,
                         iotHubConnectionCredentials.SasTokenTimeToLive,
-                        iotHubConnectionCredentials.SasTokenRenewalBuffer,
-                        disposeWithClient: true);
+                        iotHubConnectionCredentials.SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
                         Logging.Info(
@@ -73,8 +70,7 @@ namespace Microsoft.Azure.Devices.Client
                         ModuleId,
                         this,
                         iotHubConnectionCredentials.SasTokenTimeToLive,
-                        iotHubConnectionCredentials.SasTokenRenewalBuffer,
-                        disposeWithClient: true);
+                        iotHubConnectionCredentials.SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
@@ -97,16 +93,11 @@ namespace Microsoft.Azure.Devices.Client
                 SharedAccessSignature = iotHubConnectionCredentials.SharedAccessSignature;
             }
 
-            if (ClientOptions.TransportSettings.ClientCertificate == null)
-            {
-                AuthenticationModel = SharedAccessKeyName == null
+            AuthenticationModel = ClientOptions.TransportSettings.ClientCertificate == null
+                ? SharedAccessKeyName == null
                     ? AuthenticationModel.SasIndividual
-                    : AuthenticationModel.SasGrouped;
-            }
-            else
-            {
-                AuthenticationModel = AuthenticationModel.X509;
-            }
+                    : AuthenticationModel.SasGrouped
+                : AuthenticationModel.X509;
         }
 
         public AuthenticationWithTokenRefresh TokenRefresher { get; }
@@ -157,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 return TokenRefresher == null
                     ? null
-                    : await TokenRefresher.GetTokenAsync(IotHubHostName);
+                    : await TokenRefresher.GetTokenAsync(IotHubHostName).ConfigureAwait(false);
             }
             finally
             {

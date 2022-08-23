@@ -128,22 +128,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_GetTokenAsync_ConcurrentUpdate_Ok()
-        {
-            var refresher = new TestImplementation(TestDeviceId);
-
-            var tasks = new Task[5];
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = refresher.GetTokenAsync(TestIotHubName);
-            }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount);
-        }
-
-        [TestMethod]
         public async Task DeviceAuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
         {
             TimeSpan ttl = TimeSpan.FromSeconds(1);
@@ -214,15 +198,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             private int _callCount = 0;
 
-            public int SafeCreateNewTokenCallCount
-            {
-                get
-                {
-                    return _callCount;
-                }
-            }
+            public int SafeCreateNewTokenCallCount => _callCount;
 
-            public int ActualTimeToLive { get; set; } = 0;
+            public int ActualTimeToLive { get; set; }
 
             public TestImplementation(string deviceId) : base(deviceId)
             {
@@ -237,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 

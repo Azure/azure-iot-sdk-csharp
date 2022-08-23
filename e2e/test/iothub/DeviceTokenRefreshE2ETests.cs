@@ -127,8 +127,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
             {
-                var status = connectionInfo.Status;
-                var reason = connectionInfo.ChangeReason;
+                ConnectionStatus status = connectionInfo.Status;
+                ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
                 Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                 if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                 {
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Device device = testDevice.Device;
             using var deviceDisconnected = new SemaphoreSlim(0);
 
-            using var refresher = new TestTokenRefresher(
+            var refresher = new TestTokenRefresher(
                 device.Id,
                 device.Authentication.SymmetricKey.PrimaryKey,
                 ttl,
@@ -181,8 +181,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
                 {
-                    var status = connectionInfo.Status;
-                    var reason = connectionInfo.ChangeReason;
+                    ConnectionStatus status = connectionInfo.Status;
+                    ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
                     Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                     if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                     {
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             ///<inheritdoc/>
-            protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _logger.Trace($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 

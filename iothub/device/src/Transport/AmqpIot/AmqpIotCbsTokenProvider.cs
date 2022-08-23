@@ -8,10 +8,9 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider, IDisposable
+    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider
     {
         private readonly IClientConfiguration _clientConfiguration;
-        private bool _isDisposed;
 
         public AmqpIotCbsTokenProvider(IClientConfiguration clientConfiguration)
         {
@@ -43,7 +42,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIotCbsTokenProvider.GetTokenAsync));
 
                     Debug.Assert(_clientConfiguration.TokenRefresher != null);
-                    tokenValue = await _clientConfiguration.TokenRefresher.GetTokenAsync(_clientConfiguration.IotHubHostName).ConfigureAwait(false);
+                    tokenValue = await _clientConfiguration.TokenRefresher
+                        .GetTokenAsync(_clientConfiguration.IotHubHostName)
+                        .ConfigureAwait(false);
                     expiresOn = _clientConfiguration.TokenRefresher.RefreshesOn;
                 }
 
@@ -57,51 +58,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         namespaceAddress,
                         appliesTo,
                         $"{nameof(ClientConfiguration)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
-            }
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Enter(
-                        this,
-                        $"Disposal with client={_clientConfiguration?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}" ,
-                        $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
-                }
-
-                if (!_isDisposed)
-                {
-                    if (disposing)
-                    {
-                        if (_clientConfiguration?.TokenRefresher != null
-                            && _clientConfiguration.TokenRefresher.DisposalWithClient)
-                        {
-                            _clientConfiguration.TokenRefresher.Dispose();
-                        }
-                    }
-
-                    _isDisposed = true;
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(
-                        this,
-                        $"Disposal with client={_clientConfiguration?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}",
-                        $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
-                }
             }
         }
     }

@@ -12,13 +12,8 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class ModuleAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Initializes a new instance of this class.
         /// </summary>
-        /// <remarks>
-        /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated module client instance is disposed. To reuse the authentication method instance across multiple
-        /// client instance lifetimes set <paramref name="disposeWithClient"/> to <c>false</c>.
-        /// </remarks>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
         /// <param name="suggestedTimeToLive">
@@ -29,20 +24,13 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         ///</param>
-        ///<param name="disposeWithClient ">
-        ///<c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
-        /// Defaults to <c>true</c>.
-        /// </param>
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId,
             TimeSpan suggestedTimeToLive = default,
-            int timeBufferPercentage = default,
-            bool disposeWithClient = true)
+            int timeBufferPercentage = default)
             : base(suggestedTimeToLive,
-                  timeBufferPercentage,
-                  disposeWithClient)
+                  timeBufferPercentage)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
@@ -72,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        /// <returns>A populated class instance.</returns>
         public override IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             iotHubConnectionCredentials = base.Populate(iotHubConnectionCredentials);

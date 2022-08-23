@@ -122,15 +122,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             private int _callCount = 0;
 
-            public int SafeCreateNewTokenCallCount
-            {
-                get
-                {
-                    return _callCount;
-                }
-            }
+            public int SafeCreateNewTokenCallCount => _callCount;
 
-            public int ActualTimeToLive { get; set; } = 0;
+            public int ActualTimeToLive { get; set; }
 
             public TestImplementation(string deviceId, string moduleId) : base(deviceId, moduleId)
             {
@@ -146,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 
