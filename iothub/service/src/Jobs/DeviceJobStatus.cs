@@ -8,7 +8,7 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// DeviceJob Status enumeration
+    /// Device job status enumeration
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum DeviceJobStatus

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
         public string ModuleId { get; internal set; }
 
         /// <summary>
-        /// ErrorCode associated with the error.
+        /// Error code associated with the error.
         /// </summary>
         [JsonProperty(PropertyName = "errorCode", NullValueHandling = NullValueHandling.Ignore)]
         public ErrorCode ErrorCode { get; internal set; }

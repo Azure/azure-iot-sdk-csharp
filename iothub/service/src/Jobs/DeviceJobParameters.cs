@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Common;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Extend JobParameters with device Ids.
+    /// Extend job parameters with device Ids.
     /// </summary>
     public class DeviceJobParameters : JobParameters
     {

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Configurations for devices, modules, the Module Management Agent, and Edge hub.
+    /// Configurations for devices, modules, the module management agent, and Edge hub.
     /// </summary>
     public class ConfigurationContent
     {

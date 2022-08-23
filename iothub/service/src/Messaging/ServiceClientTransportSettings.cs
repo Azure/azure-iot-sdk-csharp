@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public sealed class ServiceClientTransportSettings
     {
         /// <summary>
-        /// Creates an instance of <see cref="ServiceClientTransportSettings"/> with the default proxy settings.
+        /// Creates an instance of this class with the default proxy settings.
         /// </summary>
         public ServiceClientTransportSettings()
         {

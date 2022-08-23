@@ -6,12 +6,12 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents <see cref="Twin"/> properties.
+    /// Represents twin properties.
     /// </summary>
     public class TwinProperties
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="TwinProperties"/>
+        /// Initializes an instance of this class.
         /// </summary>
         public TwinProperties()
         {
@@ -20,16 +20,15 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> desired properties.
+        /// Gets and sets the twin desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinCollection Desired { get; set; }
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> reported properties.
+        /// Gets and sets the twin reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinCollection Reported { get; set; }
     }
 }
-

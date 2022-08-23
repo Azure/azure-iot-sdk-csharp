@@ -6,12 +6,12 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Status of Capabilities enabled on the device.
+    /// Status of capabilities enabled on the device.
     /// </summary>
     public class DeviceCapabilities
     {
         /// <summary>
-        /// IoT Edge capability.
+        /// IoT edge capability.
         /// </summary>
         [JsonProperty(PropertyName = "iotEdge")]
         public bool IotEdge { get; set; }

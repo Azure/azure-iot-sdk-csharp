@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Input specific to a job used in JobRequest.
+    /// Input specific to a job used in Job request.
     /// </summary>
     public class JobParameters
     {

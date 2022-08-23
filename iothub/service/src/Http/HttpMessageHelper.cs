@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -29,12 +30,20 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="payload">The payload object to serialize.</param>
         /// <returns>The serialized HttpContent.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="payload"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="payload"/> is empty or white space.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
         internal static HttpContent SerializePayload(object payload)
         {
-            if (payload == null)
-            {
-                return null;
-            }
+            Argument.RequireNotNull(payload, nameof(payload));
 
             string str = JsonConvert.SerializeObject(payload);
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
@@ -80,12 +89,21 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="requestMessage">The request to add the If-Match header to.</param>
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
+        /// <exception cref="IotHubException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
+        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
         public static void InsertETag(HttpRequestMessage requestMessage, string eTag)
         {
-            if (string.IsNullOrWhiteSpace(eTag))
-            {
-                throw new ArgumentException("The entity does not have its ETag set.");
-            }
+            Argument.RequireNotNullOrEmpty(eTag, nameof(eTag));
+            Argument.RequireNotNull(requestMessage, nameof(requestMessage));
 
             // All ETag values need to be wrapped in escaped quotes, but the "forced" value
             // is hardcoded with quotes so it can be skipped here

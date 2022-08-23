@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Converts a <see cref="Twin"/> to Json.
+    /// Converts a twin to Json.
     /// </summary>
     public sealed class TwinJsonConverter : JsonConverter
     {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         private const string ParentScopes = "parentScopes";
 
         /// <summary>
-        /// Converts <see cref="Twin"/> to its equivalent Json representation.
+        /// Converts twin to its equivalent Json representation.
         /// </summary>
         /// <param name="writer">the Json writer.</param>
         /// <param name="value">the <see cref="Twin"/> to convert.</param>
@@ -188,12 +188,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Converts Json to its equivalent <see cref="Twin"/> representation.
+        /// Converts JSON to its equivalent <see cref="Twin"/> representation.
         /// </summary>
-        /// <param name="reader">the Json reader.</param>
+        /// <param name="reader">the JSON reader.</param>
         /// <param name="objectType">object type</param>
         /// <param name="existingValue">exisiting value</param>
-        /// <param name="serializer">the Json serializer.</param>
+        /// <param name="serializer">the JSON serializer.</param>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader == null)
@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Converter Can Read flag
+        /// Converter can read flag
         /// </summary>
         public override bool CanRead => true;
 

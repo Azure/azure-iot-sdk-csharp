@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents a collection of properties for <see cref="Twin"/>.
+    /// Represents a collection of properties for the twin.
     /// </summary>
     [SuppressMessage(
         "Microsoft.Design",
@@ -27,8 +27,8 @@ namespace Microsoft.Azure.Devices
         private readonly JObject _metadata;
 
         /// <summary>
-        /// Creates instance of <see cref="TwinCollection"/>.
-        /// Shouldn't use this constructor since _metadata is null and calling GetLastUpdated can result in NullReferenceException.
+        /// Creates an instance of this class.
+        /// Shouldn't use this constructor since metadata object is null and calling GetLastUpdated can result in NullReferenceException.
         /// </summary>
         public TwinCollection()
             : this((JObject)null)
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
+        /// Creates an instance of this class using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         public TwinCollection(string twinJson)
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// Creates an instance of this class using the given JSON fragments for the body and metadata.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
+        /// Creates an instance of this class using a JSON fragment as the body.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         internal TwinCollection(JObject twinJson)
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// Creates an instance of this class using the given JSON fragments for the body and metadata.
         /// </summary>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         /// <param name="metadataJson">JSON fragment containing the metadata.</param>
@@ -80,14 +80,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the version of the <see cref="TwinCollection"/>.
+        /// Gets the version of the collection.
         /// </summary>
         public long Version => !JObject.TryGetValue(VersionName, out JToken versionToken)
                     ? default
                     : (long)versionToken;
 
         /// <summary>
-        /// Gets the count of properties in the Collection.
+        /// Gets the count of properties in the collection.
         /// </summary>
         public int Count
         {
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the Metadata for this property.
+        /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
         public Metadata GetMetadata()
@@ -161,27 +161,27 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the LastUpdated time for this property.
+        /// Gets the last updated time for this property.
         /// </summary>
-        /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
-        /// <exception cref="System.NullReferenceException">Thrown when the TwinCollection metadata is null.
-        /// An example would be when the TwinCollection class is created with the default constructor.</exception>
+        /// <returns>Date-time instance representing the last updated time for this property.</returns>
+        /// <exception cref="System.NullReferenceException">Thrown when the metadata object is null.
+        /// An example would be when the this class is created with the default constructor.</exception>
         public DateTime GetLastUpdated()
         {
             return (DateTime)_metadata[LastUpdatedName];
         }
 
         /// <summary>
-        /// Gets the LastUpdatedVersion for this property.
+        /// Gets the last updated version for this property.
         /// </summary>
-        /// <returns>LastUpdatdVersion if present, null otherwise.</returns>
+        /// <returns>Last updated version if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata?[LastUpdatedVersionName];
         }
 
         /// <summary>
-        /// Gets the TwinProperties as a JSON string.
+        /// Gets the properties as a JSON string.
         /// </summary>
         /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
         /// <returns>JSON string.</returns>

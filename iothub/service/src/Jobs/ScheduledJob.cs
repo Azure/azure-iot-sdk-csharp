@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     public class ScheduledJob
     {
         /// <summary>
-        /// System generated.  Ignored at creation.
+        /// System generated. Ignored at creation.
         /// </summary>
         [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
         public string JobId { get; internal set; }
@@ -70,8 +70,7 @@ namespace Microsoft.Azure.Devices
         public long MaxExecutionTimeInSeconds { get; internal set; }
 
         /// <summary>
-        /// Required.
-        /// The type of job to execute.
+        /// [Required] The type of job to execute.
         /// </summary>
         [JsonProperty(PropertyName = "jobType", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]
@@ -96,15 +95,15 @@ namespace Microsoft.Azure.Devices
         public JobStatus Status { get; internal set; }
 
         /// <summary>
-        /// Required if jobType is cloudToDeviceMethod.
+        /// Required if jobType is cloud-to-device method.
         /// The method type and parameters.
         /// </summary>
         [JsonProperty(PropertyName = "cloudToDeviceMethod", NullValueHandling = NullValueHandling.Ignore)]
         public DirectMethodRequest DirectMethodRequest { get; set; }
 
         /// <summary>
-        /// Required if jobType is updateTwin.
-        /// The Update Twin tags and desired properties.
+        /// Required if jobType is update twin.
+        /// The update twin tags and desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "updateTwin", NullValueHandling = NullValueHandling.Ignore)]
         public Twin UpdateTwin { get; internal set; }
@@ -165,7 +164,7 @@ namespace Microsoft.Azure.Devices
         public int FailedCount { get; internal set; }
 
         /// <summary>
-        /// The number of Successed jobs.
+        /// The number of successed jobs.
         /// </summary>
         [JsonProperty(PropertyName = "succeededCount")]
         public int SucceededCount { get; internal set; }

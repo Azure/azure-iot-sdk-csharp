@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the Metadata for this property.
+        /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
         public Metadata GetMetadata()
@@ -56,18 +56,18 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the LastUpdated time for this property.
+        /// Gets the last updated time for this property.
         /// </summary>
-        /// <returns>DateTime instance representing the LastUpdated time for this property.</returns>
+        /// <returns>Date-time instance representing the last updated time for this property.</returns>
         public DateTime GetLastUpdated()
         {
             return (DateTime)_metadata[TwinCollection.LastUpdatedName];
         }
 
         /// <summary>
-        /// Gets the LastUpdatedVersion for this property.
+        /// Gets the last updated version for this property.
         /// </summary>
-        /// <returns>LastUpdatdVersion if present, null otherwise.</returns>
+        /// <returns>Last updated version if present, null otherwise.</returns>
         public long? GetLastUpdatedVersion()
         {
             return (long?)_metadata[TwinCollection.LastUpdatedVersionName];

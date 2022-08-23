@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets the ContinuationToken to use for continuing the enumeration.
+        /// Gets the continuation token to use for continuing the enumeration.
         /// </summary>
         /// <remarks>
         /// This library will handle this value for you automatically when fetching the next

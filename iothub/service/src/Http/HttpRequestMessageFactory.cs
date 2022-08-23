@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Factory for creating HTTP requests to be sent by a service client. The requests created by
-    /// this client contain all the common headers and attributes
+    /// this client contain all the common headers and attributes.
     /// </summary>
     internal class HttpRequestMessageFactory
     {
@@ -43,9 +43,11 @@ namespace Microsoft.Azure.Devices
         /// <returns>The created HTTP request.</returns>
         internal HttpRequestMessage CreateRequest(HttpMethod method, Uri relativeUri, IotHubConnectionProperties authorizationProvider, object payload = null, string queryStringParameters = null)
         {
-            var message = new HttpRequestMessage();
-            message.Method = method;
-            message.RequestUri = new Uri(_baseUri, relativeUri.ToString() + _apiVersionQueryString + (string.IsNullOrWhiteSpace(queryStringParameters) ? "" : queryStringParameters));
+            var message = new HttpRequestMessage
+            {
+                Method = method,
+                RequestUri = new Uri(_baseUri, relativeUri.ToString() + _apiVersionQueryString + (string.IsNullOrWhiteSpace(queryStringParameters) ? "" : queryStringParameters))
+            };
             message.Headers.Add(HttpRequestHeader.Accept.ToString(), ApplicationJson);
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), authorizationProvider.GetAuthorizationHeader());
             message.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());

@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices
         public bool HasPayload => _payload != null;
 
         /// <summary>
-        /// Gets or sets the deliveryTag which is used for server side checkpointing.
+        /// Gets or sets the delivery tag which is used for server side checkpointing.
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
 

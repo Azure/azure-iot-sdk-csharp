@@ -47,14 +47,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         public ExportImportDevice()
         {
         }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         /// <param name="device">Device properties</param>
         /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>

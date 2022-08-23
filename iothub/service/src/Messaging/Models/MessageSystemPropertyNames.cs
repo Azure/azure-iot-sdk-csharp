@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The names of the system properties in the <see cref="Message"/> class.
+    /// The names of the system properties in the message class.
     /// </summary>
     public static class MessageSystemPropertyNames
     {
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices
         public const string To = "to";
 
         /// <summary>
-        /// The number of times a message can transition between the Enqueued and Invisible states.
+        /// The number of times a message can transition between the enqueued and invisible states.
         /// After the maximum number of transitions, the IoT hub sets the state of the message to dead-lettered.
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>
         /// </summary>
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices
         public const string ExpiryTimeUtc = "absolute-expiry-time";
 
         /// <summary>
-        /// A string property in a response message that typically contains the MessageId of the request, in request-reply patterns.
+        /// A string property in a response message that typically contains the Message Id of the request, in request-reply patterns.
         /// </summary>
         public const string CorrelationId = "correlation-id";
 
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices
 
         /// <summary>
         /// The device generation Id of the target device of the cloud-to-device message.
-        /// DeviceGenerationId is an IoT hub generated, case-sensitive string. This value is used to distinguish devices with the
+        /// Device generation id is an IoT hub generated, case-sensitive string. This value is used to distinguish devices with the
         /// same device Id when they have been deleted and re-created.
         /// </summary>
         public const string ConnectionDeviceGenerationId = "iothub-connection-auth-generation-id";
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices
         public const string ConnectionAuthMethod = "iothub-connection-auth-method";
 
         /// <summary>
-        /// The message schema is set internally by IoTHub when it generates Twin Change notification message.
+        /// The message schema is set internally by IoT hub when it generates twin change notification message.
         /// </summary>
         public const string MessageSchema = "iothub-message-schema";
 

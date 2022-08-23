@@ -10,13 +10,13 @@ using Newtonsoft.Json.Converters;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Twin Representation.
+    /// Twin representation.
     /// </summary>
     [JsonConverter(typeof(TwinJsonConverter))]
     public class Twin : IETagHolder
     {
         /// <summary>
-        /// Creates an instance of <see cref="Twin"/>.
+        /// Creates an instance of this class.
         /// </summary>
         public Twin()
         {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="Twin"/>.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         public Twin(string deviceId) : this()
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="Twin"/>.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="twinProperties"></param>
         public Twin(TwinProperties twinProperties)
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> Id.
+        /// Gets and sets the twin Id.
         /// </summary>
         public string DeviceId { get; set; }
 
@@ -58,22 +58,22 @@ namespace Microsoft.Azure.Devices
         public string ModelId { get; set; }
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin" /> Module Id.
+        /// Gets and sets the twin module Id.
         /// </summary>
         public string ModuleId { get; set; }
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> tags.
+        /// Gets and sets the twin tags.
         /// </summary>
         public TwinCollection Tags { get; set; }
 
         /// <summary>
-        /// Gets and sets the <see cref="Twin"/> properties.
+        /// Gets and sets the twin properties.
         /// </summary>
         public TwinProperties Properties { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Twin"/> configuration properties.
+        /// Gets the twin configuration properties.
         /// </summary>
         /// <remarks>
         /// Configuration properties are read only.
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices
         public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="Twin"/> capabilities.
+        /// Gets the twin capabilities.
         /// </summary>
         /// <remarks>
         /// Twin capabilities are read only.
@@ -94,35 +94,35 @@ namespace Microsoft.Azure.Devices
         public string ETag { get; set; }
 
         /// <summary>
-        /// Twin's Version.
+        /// Twin's version.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public long? Version { get; set; }
 
         /// <summary>
-        /// Gets the corresponding Device's Status.
+        /// Gets the corresponding device's status.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public DeviceStatus? Status { get; internal set; }
 
         /// <summary>
-        /// Reason, if any, for the corresponding Device to be in specified <see cref="Status"/>.
+        /// Reason, if any, for the corresponding device to be in specified status.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string StatusReason { get; internal set; }
 
         /// <summary>
-        /// Time when the corresponding Device's <see cref="Status"/> was last updated.
+        /// Time when the corresponding device's status was last updated.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public DateTime? StatusUpdatedTime { get; internal set; }
 
         /// <summary>
-        /// Corresponding Device's ConnectionState.
+        /// Corresponding device's connection state.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
@@ -130,28 +130,28 @@ namespace Microsoft.Azure.Devices
         public DeviceConnectionState? ConnectionState { get; internal set; }
 
         /// <summary>
-        /// Time when the corresponding Device was last active.
+        /// Time when the corresponding device was last active.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public DateTime? LastActivityTime { get; internal set; }
 
         /// <summary>
-        /// Number of messages sent to the corresponding Device from the Cloud.
+        /// Number of messages sent to the corresponding device from the cloud.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public int? CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>
-        /// Corresponding Device's authentication type.
+        /// Corresponding device's authentication type.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public AuthenticationType? AuthenticationType { get; internal set; }
 
         /// <summary>
-        /// Corresponding Device's X509 thumbprint.
+        /// Corresponding device's X509 thumbprint.
         /// </summary>
         [DefaultValue(null)]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]

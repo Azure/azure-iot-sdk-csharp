@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// ETag Holder Interface.
+    /// ETag holder interface.
     /// </summary>
     public interface IETagHolder
     {

@@ -9,7 +9,7 @@ using System;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains DeviceJob properties and their accessors.
+    /// Contains Device job properties and their accessors.
     /// </summary>
     public class DeviceJob
     {
@@ -26,39 +26,39 @@ namespace Microsoft.Azure.Devices
         public string JobId { get; set; }
 
         /// <summary>
-        /// Device Job type.
+        /// Device job type.
         /// </summary>
         [JsonProperty(PropertyName = "jobType", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(StringEnumConverter))]
         public DeviceJobType JobType { get; set; }
 
         /// <summary>
-        /// Device Job Status.
+        /// Device job status.
         /// </summary>
         [JsonProperty(PropertyName = "status", Required = Required.Always)]
         [JsonConverter(typeof(StringEnumConverter))]
         public DeviceJobStatus Status { get; set; }
 
         /// <summary>
-        /// Device Job Start Time.
+        /// Device job start time.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc")]
         public DateTime StartTimeUtc { get; set; }
 
         /// <summary>
-        /// Device Job End Time.
+        /// Device job end time.
         /// </summary>
         [JsonProperty(PropertyName = "endTimeUtc")]
         public DateTime EndTimeUtc { get; set; }
 
         /// <summary>
-        /// Device Job Creation time.
+        /// Device job creation time.
         /// </summary>
         [JsonProperty(PropertyName = "createdDateTimeUtc")]
         public DateTime CreatedDateTimeUtc { get; set; }
 
         /// <summary>
-        /// Device Job last updated time.
+        /// Device job last updated time.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedDateTimeUtc")]
         public DateTime LastUpdatedDateTimeUtc { get; set; }
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices
         public DeviceJobOutcome Outcome { get; set; }
 
         /// <summary>
-        /// Device Job Error.
+        /// Device job error.
         /// </summary>
         [JsonProperty(PropertyName = "error", NullValueHandling = NullValueHandling.Ignore)]
         public DeviceJobError Error { get; set; }
