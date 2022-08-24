@@ -86,18 +86,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_NonExpiredToken_GetTokenCached_Ok()
-        {
-            var refresher = new TestImplementation(TestDeviceId);
-
-            string token1 = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
-            string token2 = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
-            Assert.AreEqual(token1, token2);
-        }
-
-        [TestMethod]
         public async Task DeviceAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
