@@ -40,10 +40,18 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             uint poolSize = 10;
             IConnectionCredentials testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
+            var amqpSettings = new IotHubClientAmqpSettings
+            {
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                {
+                    MaxPoolSize = poolSize,
+                    Pooling = true,
+                },
+            };
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
 
-            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, null, null, null, null, null, null);
+            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, amqpSettings, null, null, null, null, null);
 
             injectedDictionary[sharedAccessKeyName].Count().Should().Be((int)poolSize);
 

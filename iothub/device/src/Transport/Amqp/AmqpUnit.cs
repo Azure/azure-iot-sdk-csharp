@@ -247,14 +247,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpIotSession?.SafeClose();
             _amqpAuthenticationRefresher?.StopLoop();
 
-            if (_amqpSettings.ConnectionPoolSettings == null
-                || _amqpSettings.ConnectionPoolSettings.Pooling == false)
+            if (!isPooled())
             {
                 _amqpConnectionHolder?.Shutdown();
             }
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(Cleanup));
+        }
+
+        private bool isPooled()
+        {
+            return _connectionCredentials.Certificate == null
+                && _amqpSettings.ConnectionPoolSettings != null
+                && _amqpSettings.ConnectionPoolSettings.Pooling;
         }
 
         #endregion Open-Close
@@ -1131,7 +1137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (Logging.IsEnabled)
                     Logging.Enter(
                         this,
-                        $"Device pooling={_amqpSettings.ConnectionPoolSettings.Pooling}; disposed={_disposed}; disposing={disposing}",
+                        $"Device pooling={isPooled()}; disposed={_disposed}; disposing={disposing}",
                         $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
 
                 if (!_disposed)
@@ -1139,8 +1145,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     if (disposing)
                     {
                         Cleanup();
-                        if (_amqpSettings.ConnectionPoolSettings == null
-                            || _amqpSettings.ConnectionPoolSettings.Pooling == false)
+                        if (!isPooled())
                         {
                             _amqpConnectionHolder?.Dispose();
                         }
@@ -1167,7 +1172,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (Logging.IsEnabled)
                     Logging.Exit(
                         this,
-                        $"Device pooling={_amqpSettings.ConnectionPoolSettings.Pooling}; disposed={_disposed}; disposing={disposing}",
+                        $"Device pooling={isPooled()}; disposed={_disposed}; disposing={disposing}",
                         $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
             }
         }

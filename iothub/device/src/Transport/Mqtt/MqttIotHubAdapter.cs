@@ -331,8 +331,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Debug.Assert(_mqttTransportSettings.ClientCertificate != null);
                 }
 
-                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}" +
-                    $"&{DeviceClientTypeParam}={Uri.EscapeDataString(_additionalClientInformation.ProductInfo.ToString())}";
+                string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}";
+                if (_additionalClientInformation.ProductInfo != null)
+                {
+                    usernameString += $"&{DeviceClientTypeParam}={Uri.EscapeDataString(_additionalClientInformation.ProductInfo?.ToString())}";
+                }
 
                 if (!_mqttTransportSettings.AuthenticationChain.IsNullOrWhiteSpace())
                 {
