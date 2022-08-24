@@ -52,11 +52,11 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             var timer = Stopwatch.StartNew();
             while (!messagedFeedbackReceived && timer.ElapsedMilliseconds < 60000)
             {
-                continue;
+                await Task.Delay(200);
             }
             timer.Stop();
-            if (!messagedFeedbackReceived)
-                throw new AssertionFailedException("Timed out waiting to receive message feedback.");
+
+            messagedFeedbackReceived.Should().BeTrue("Timed out waiting to receive message feedback.");
 
             await serviceClient.MessageFeedbackProcessor.CloseAsync().ConfigureAwait(false);
             messagedFeedbackReceived.Should().BeTrue();
