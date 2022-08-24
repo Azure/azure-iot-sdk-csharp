@@ -1093,9 +1093,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"Device pooling={_clientConfiguration?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
-                }
 
                 if (!_disposed)
                 {
@@ -1108,9 +1106,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         }
 
                         // For device SAS authenticated clients the authentication refresher is associated with the AMQP unit itself,
-                        // so it needs to be explicitly disposed.
+                        // so it needs to be explicitly stopped.
                         _amqpAuthenticationRefresher?.StopLoop();
-                        _amqpAuthenticationRefresher?.Dispose();
 
                         _sessionSemaphore?.Dispose();
                         _messageReceivingLinkSemaphore?.Dispose();
@@ -1128,9 +1125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"Device pooling={_clientConfiguration?.IsPooling()}; disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpUnit)}.{nameof(Dispose)}");
-                }
             }
         }
 

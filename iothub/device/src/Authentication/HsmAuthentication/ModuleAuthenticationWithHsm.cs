@@ -34,27 +34,21 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string moduleId,
             string generationId,
             TimeSpan sasTokenTimeToLive,
-            int sasTokenRenewalBuffer,
-            bool disposeWithClient)
-            : base(
-                deviceId,
-                moduleId,
-                sasTokenTimeToLive,
-                sasTokenRenewalBuffer,
-                disposeWithClient)
+            int sasTokenRenewalBuffer)
+            : base(deviceId, moduleId, sasTokenTimeToLive, sasTokenRenewalBuffer)
         {
             _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
             _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
         }
 
         ///<inheritdoc/>
-        protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+        protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
         {
             DateTime startTime = DateTime.UtcNow;
             string audience = SasTokenBuilder.BuildAudience(iotHub, DeviceId, ModuleId);
             string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, suggestedTimeToLive);
             string data = string.Join("\n", new string[] { audience, expiresOn });
-            string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);
+            string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data);
 
             return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
         }

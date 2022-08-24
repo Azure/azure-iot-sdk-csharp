@@ -510,20 +510,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _httpClientHandler = null;
                 }
 
-                // The associated TokenRefresher should be disposed by the http client helper only when the http client
-                // is the primary transport handler.
-                // For eg. we create HttpTransportHandler instances for file upload operations even though the client might be
-                // initialized via MQTT/ AMQP. In those scenarios, since the shared TokenRefresher resource would be primarily used by the
-                // corresponding transport layers (MQTT/ AMQP), the diposal should be delegated to them and it should not be disposed here.
-                // The only scenario where the TokenRefresher should be disposed here is when the client has been initialized using HTTP.
-                if (_isClientPrimaryTransportHandler
-                    && _authenticationHeaderProvider is ClientConfiguration clientConfiguration
-                    && clientConfiguration.TokenRefresher != null
-                    && clientConfiguration.TokenRefresher.DisposalWithClient)
-                {
-                    clientConfiguration.TokenRefresher.Dispose();
-                }
-
                 _isDisposed = true;
             }
         }

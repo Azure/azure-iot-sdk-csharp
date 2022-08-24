@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher, IDisposable
+    internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
     {
         private static readonly string[] s_accessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly Uri _amqpEndpoint;
@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly AmqpIotCbsTokenProvider _amqpIotCbsTokenProvider;
         private readonly string _audience;
         private Task _refreshLoop;
-        private bool _disposed;
 
         internal AmqpAuthenticationRefresher(IClientConfiguration clientConfiguration, AmqpIotCbsLink amqpCbsLink)
         {
@@ -126,42 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Logging.Info(this, nameof(StopLoop));
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
-                }
-
-                if (!_disposed)
-                {
-                    if (disposing)
-                    {
-                        StopLoop();
-                        _amqpIotCbsTokenProvider?.Dispose();
-                    }
-
-                    _disposed = true;
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpAuthenticationRefresher)}.{nameof(Dispose)}");
-                }
-            }
-        }
-
-        private string CreateAmqpCbsAudience(IClientConfiguration clientConfiguration)
+        private static string CreateAmqpCbsAudience(IClientConfiguration clientConfiguration)
         {
             // If the shared access key name is null then this is an individual SAS authenticated client.
             // SAS tokens granted to an individual SAS authenticated client will be scoped to an individual device; for example, myHub.azure-devices.net/devices/device1.
@@ -175,12 +139,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 return clientAudience;
             }
-            else
-            {
-                // If the shared access key name is not null then this is a group SAS authenticated client.
-                // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
-                return clientConfiguration.GatewayHostName;
-            }
+
+            // If the shared access key name is not null then this is a group SAS authenticated client.
+            // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
+            return clientConfiguration.GatewayHostName;
         }
     }
 }

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -110,9 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpConnectionHolder)}.{nameof(Dispose)}");
-                }
 
                 if (!_disposed)
                 {
@@ -125,7 +122,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         {
                             _amqpUnits.Clear();
                         }
-                        _amqpAuthenticationRefresher?.Dispose();
                     }
 
                     _disposed = true;
@@ -134,9 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Exit(this, $"Disposed={_disposed}; disposing={disposing}", $"{nameof(AmqpConnectionHolder)}.{nameof(Dispose)}");
-                }
             }
         }
 

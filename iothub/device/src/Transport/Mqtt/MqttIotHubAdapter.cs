@@ -1008,13 +1008,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                if (_passwordProvider is ClientConfiguration clientConfiguration
-                    && clientConfiguration.TokenRefresher != null
-                    && clientConfiguration.TokenRefresher.DisposalWithClient)
-                {
-                    clientConfiguration.TokenRefresher.Dispose();
-                }
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, context.Name, nameof(ShutdownAsync));
             }
