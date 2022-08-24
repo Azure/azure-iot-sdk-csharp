@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             // If the shared access key name is not null then this is a group SAS authenticated client.
             // SAS tokens granted to a group SAS authenticated client will scoped to the IoT hub-level; for example, myHub.azure-devices.net
-            return clientConfiguration.GatewayHostName;
+            return connectionCredentials.GatewayHostName;
         }
     }
 }

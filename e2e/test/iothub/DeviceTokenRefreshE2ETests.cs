@@ -115,14 +115,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceDisconnected = new SemaphoreSlim(0);
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            var auth = new DeviceAuthenticationWithConnectionString(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-            {
-                SasTokenTimeToLive = sasTokenTimeToLive,
-                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
-            };
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            using IotHubDeviceClient deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, auth, options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>

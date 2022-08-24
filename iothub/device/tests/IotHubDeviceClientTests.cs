@@ -1288,12 +1288,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-            {
-                // Pass these values, but expect them to be ignored, given the use of AuthenticationWithTokenRefresh below.
-                SasTokenTimeToLive = sasTokenTimeToLive,
-                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
-            };
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
 
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
