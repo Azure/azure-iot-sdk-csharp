@@ -7,9 +7,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
@@ -165,16 +167,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
             }
 
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.MessageTooLarge);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
         }
 
         [DataTestMethod]
@@ -204,20 +205,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendMessageOverAllowedSize_Amqp(IotHubClientTransportProtocol protocol)
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendSingleMessage(
                         TestDeviceType.Sasl,
                         new IotHubClientAmqpSettings(protocol),
                         ExceedAllowedMessageSizeInBytes)
                     .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.MessageTooLarge);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
@@ -242,20 +242,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendMessageWayOverAllowedSize_Amqp(IotHubClientTransportProtocol protocol)
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendSingleMessage(
                         TestDeviceType.Sasl,
                         new IotHubClientAmqpSettings(protocol),
                         OverlyExceedAllowedMessageSizeInBytes)
                     .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.MessageTooLarge);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than

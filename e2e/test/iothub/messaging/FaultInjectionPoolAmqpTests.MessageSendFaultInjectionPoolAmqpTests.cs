@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.E2ETests.Messaging;
+using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -352,7 +354,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
                         TestDeviceType.Sasl,
@@ -362,19 +365,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                         FaultInjection.FaultType_Auth,
                         FaultInjection.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceSak_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
                         TestDeviceType.Sasl,
@@ -384,19 +386,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                         FaultInjection.FaultType_Auth,
                         FaultInjection.FaultCloseReason_Boom)
                     .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AuthenticationNoRecovery_MultipleConnections_Amqp()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
                         TestDeviceType.Sasl,
@@ -407,19 +408,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                         FaultInjection.FaultCloseReason_Boom,
                         authScope: ConnectionStringAuthScope.IoTHub)
                     .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_AuthenticationNoRecovery_MultipleConnections_AmqpWs()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryPoolOverAmqpAsync(
                         TestDeviceType.Sasl,
@@ -430,13 +430,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                         FaultInjection.FaultCloseReason_Boom,
                         authScope: ConnectionStringAuthScope.IoTHub)
                     .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         // Test device client recovery when proxy settings are enabled

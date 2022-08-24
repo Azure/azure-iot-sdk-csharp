@@ -4,6 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -192,7 +194,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
@@ -202,19 +205,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
                     FaultInjection.ShortRetryDuration).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Throttled);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Throttled);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
@@ -224,20 +226,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
                     FaultInjection.ShortRetryDuration).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Throttled);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Throttled);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
@@ -246,13 +247,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -260,7 +259,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("LongRunning")]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
@@ -269,19 +269,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AuthenticationRecovery_Amqp()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
@@ -290,19 +289,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
                     TestDeviceType.Sasl,
@@ -311,13 +309,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         // Graceful disconnection recovery test is marked as a build verification test

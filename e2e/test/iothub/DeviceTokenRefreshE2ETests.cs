@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -35,16 +36,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
 
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.DeviceNotFound);
-            }
+            };
+
+            //assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -59,16 +59,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
 
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.Unauthorized);
-            }
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
