@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task CompleteMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
         {
-            await _workerSession.AcknowledgeMessage(deliveryTag, AmqpConstants.AcceptedOutcome, cancellationToken).ConfigureAwait(false);
+            await _workerSession.AcknowledgeMessageAsync(deliveryTag, AmqpConstants.AcceptedOutcome, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task AbandonMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
         {
-            await _workerSession.AcknowledgeMessage(deliveryTag, AmqpConstants.ReleasedOutcome, cancellationToken).ConfigureAwait(false);
+            await _workerSession.AcknowledgeMessageAsync(deliveryTag, AmqpConstants.ReleasedOutcome, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

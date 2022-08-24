@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -25,6 +26,12 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     {
         private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2eTest)}_";
 
+        // All file upload notifications will be acknowledged with this type. We are deliberately
+        // choosing to Abandon rather than Complete because each test process may receive file upload
+        // notifications that another test was looking for. By abandoning each received notification,
+        // the service makes it available for redelivery to other open receivers.
+        private readonly AcknowledgementType _acknowledgementType = AcknowledgementType.Abandon;
+
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(TransportType.Amqp)]
         [DataRow(TransportType.Amqp_WebSocket)]
@@ -41,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 fileUploadNotificationReceivedCount++;
-                return AcknowledgementType.Complete;
+                return _acknowledgementType;
             };
 
             serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
@@ -68,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 fileUploadNotificationReceivedCount++;
-                return AcknowledgementType.Complete;
+                return _acknowledgementType;
             };
 
             serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
@@ -100,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
             {
                 fileUploadNotificationReceivedCount++;
-                return AcknowledgementType.Complete;
+                return _acknowledgementType;
             };
 
             serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
@@ -132,8 +139,10 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
             timer.Stop();
 
-            if (fileUploadNotificationReceivedCount < expectedFileUploadNotificationReceivedCount)
-                throw new AssertionFailedException("Timed out waiting to receive file upload notification.");
+            // Note that this test may receive notifications from other file upload tests, so the received count may be higher
+            // than the expected count.
+            fileUploadNotificationReceivedCount.Should().BeGreaterOrEqualTo(expectedFileUploadNotificationReceivedCount,
+                "Timed out waiting to receive file upload notification.");
         }
 
         private async Task UploadFile()

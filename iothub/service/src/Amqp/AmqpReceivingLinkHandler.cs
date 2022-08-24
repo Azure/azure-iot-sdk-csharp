@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
@@ -32,6 +31,9 @@ namespace Microsoft.Azure.Devices.Amqp
 
         public async Task OpenAsync(AmqpSession session, CancellationToken cancellationToken)
         {
+            // By using a unique guid in the link's name, it becomes possible to correlate logs where a user
+            // may have multiple instances of this type of link open. It also makes it easier to correlate
+            // the state of this link with the service side logs if need be.
             _linkName = "ReceiverLink-" + Guid.NewGuid();
 
             if (Logging.IsEnabled)
@@ -83,7 +85,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
         }
 
-        public async Task AcknowledgeMessage(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
+        public async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}");

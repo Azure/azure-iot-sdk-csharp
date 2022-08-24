@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             s_listener = new HttpListener();
             s_listener.Prefixes.Add($"http://+:{Port}{AmqpsConstants.UriSuffix}/");
             s_listener.Start();
-            RunWebSocketServer().Fork();
+            RunWebSocketServerAsync().Fork();
         }
 
         [AssemblyCleanup()]
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             clientWebSocketTransport.WriteAsync(args);
         }
 
-        public static async Task RunWebSocketServer()
+        public static async Task RunWebSocketServerAsync()
         {
             try
             {

@@ -39,12 +39,12 @@ namespace Microsoft.Azure.Devices.Amqp
 
             _connectionLossHandler = connectionLossHandler;
 
-            if (_linkAddress.Equals(AmqpsConstants.FeedbackMessageAddress)
-                || _linkAddress.Equals(AmqpsConstants.FileUploadNotificationsAddress))
+            if (_linkAddress == AmqpsConstants.FeedbackMessageAddress
+                || _linkAddress == AmqpsConstants.FileUploadNotificationsAddress)
             {
                 _receivingLinkHandler = new AmqpReceivingLinkHandler(_linkAddress, messageHandler, _connectionLossHandler);
             }
-            else if (_linkAddress.Equals(AmqpsConstants.CloudToDeviceMessageAddress))
+            else if (_linkAddress == AmqpsConstants.CloudToDeviceMessageAddress)
             {
                 _sendingLinkHandler = new AmqpSendingLinkHandler(_linkAddress, _connectionLossHandler);
             }
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <param name="deliveryTag">The delivery tag of the message to acknowledge.</param>
         /// <param name="outcome">The acknowledgement type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task AcknowledgeMessage(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
+        public async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (_receivingLinkHandler == null)
             {
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 throw new IotHubException("Cannot acknowledge the message because no receiver links are open yet.");
             }
 
-            await _receivingLinkHandler.AcknowledgeMessage(deliveryTag, outcome, cancellationToken).ConfigureAwait(false);
+            await _receivingLinkHandler.AcknowledgeMessageAsync(deliveryTag, outcome, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

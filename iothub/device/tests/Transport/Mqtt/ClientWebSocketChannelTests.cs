@@ -21,24 +21,24 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
     [TestCategory("Unit")]
     public class ClientWebSocketChannelTests
     {
-        const string IotHubName = "localhost";
-        const int Port = 12346;
-        static HttpListener listener;
-        static ServerWebSocketChannel serverWebSocketChannel;
-        static ReadListeningHandler serverListener;
-        static volatile bool done;
+        private const string IotHubName = "localhost";
+        private const int Port = 12346;
+        private static HttpListener listener;
+        private static ServerWebSocketChannel serverWebSocketChannel;
+        private static ReadListeningHandler serverListener;
+        private static volatile bool done;
 
-        const string ClientId = "scenarioClient1";
-        const string SubscribeTopicFilter1 = "test/+";
-        const string SubscribeTopicFilter2 = "test2/#";
-        const string PublishC2STopic = "loopback/qosZero";
-        const string PublishC2SQos0Payload = "C->S, QoS 0 test.";
-        const string PublishC2SQos1Topic = "loopback2/qos/One";
-        const string PublishC2SQos1Payload = "C->S, QoS 1 test. Different data length.";
-        const string PublishS2CQos1Topic = "test2/scenarioClient1/special/qos/One";
-        const string PublishS2CQos1Payload = "S->C, QoS 1 test. Different data length #2.";
+        private const string ClientId = "scenarioClient1";
+        private const string SubscribeTopicFilter1 = "test/+";
+        private const string SubscribeTopicFilter2 = "test2/#";
+        private const string PublishC2STopic = "loopback/qosZero";
+        private const string PublishC2SQos0Payload = "C->S, QoS 0 test.";
+        private const string PublishC2SQos1Topic = "loopback2/qos/One";
+        private const string PublishC2SQos1Payload = "C->S, QoS 1 test. Different data length.";
+        private const string PublishS2CQos1Topic = "test2/scenarioClient1/special/qos/One";
+        private const string PublishS2CQos1Payload = "S->C, QoS 1 test. Different data length #2.";
 
-        static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
 
         [ClassInitialize()]
         public static void AssembyInitialize(TestContext testcontext)
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             listener.Prefixes.Add("http://+:" + Port + WebSocketConstants.UriSuffix + "/");
             listener.Start();
 
-            RunWebSocketServer().ContinueWith(t => t, TaskContinuationOptions.OnlyOnFaulted);
+            RunWebSocketServerAsync().ContinueWith(t => t, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         [ClassCleanup()]
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             done = true;
         }
 
-        static async Task RunMqttClientScenarioAsync(IChannel channel, ReadListeningHandler readListener)
+        private static async Task RunMqttClientScenarioAsync(IChannel channel, ReadListeningHandler readListener)
         {
             await channel.WriteAndFlushAsync(new ConnectPacket
             {
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 DisconnectPacket.Instance).ConfigureAwait(false);
         }
 
-        static async Task RunMqttServerScenarioAsync(IChannel channel, ReadListeningHandler readListener)
+        private static async Task RunMqttServerScenarioAsync(IChannel channel, ReadListeningHandler readListener)
         {
             var connectPacket = await readListener.ReceiveAsync(DefaultTimeout).ConfigureAwait(false) as ConnectPacket;
             Assert.IsNotNull(connectPacket, "Must be a Connect pkt");
@@ -291,9 +291,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Assert.IsNotNull(disconnectPacket);
         }
 
-        static int GetRandomPacketId() => Guid.NewGuid().GetHashCode() & ushort.MaxValue;
+        private static int GetRandomPacketId() => Guid.NewGuid().GetHashCode() & ushort.MaxValue;
 
-        static async Task RunWebSocketServer()
+        private static async Task RunWebSocketServerAsync()
         {
             HttpListenerContext context = await listener.GetContextAsync().ConfigureAwait(false);
             if (!context.Request.IsWebSocketRequest)
