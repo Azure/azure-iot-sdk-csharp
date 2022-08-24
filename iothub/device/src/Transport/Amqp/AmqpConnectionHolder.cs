@@ -196,9 +196,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // Create AmqpConnection
                     amqpIotConnection = await _amqpIotConnector.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-                    // If the shared access key name is not null then this is a group SAS authenticated client.
                     // Group-SAS authenticated clients have a connection-wide token refresh logic.
-                    if (_connectionCredentials.SharedAccessKeyName != null)
+                    if (_connectionCredentials.AuthenticationModel == AuthenticationModel.SasGrouped)
                     {
                         if (Logging.IsEnabled)
                             Logging.Info(this, "Creating connection wide AmqpAuthenticationRefresher", nameof(EnsureConnectionAsync));

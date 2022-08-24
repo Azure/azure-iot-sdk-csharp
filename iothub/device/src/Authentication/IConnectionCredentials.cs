@@ -40,6 +40,11 @@ namespace Microsoft.Azure.Devices.Client
         string ModuleId { get; }
 
         /// <summary>
+        /// The authentication model for the device; i.e. X.509 certificates, individual client scoped SAS tokens or IoT hub level scoped SAS tokens.
+        /// </summary>
+        AuthenticationModel AuthenticationModel { get; }
+
+        /// <summary>
         /// The shared access key name used to connect the device to the IoT hub service.
         /// </summary>
         string SharedAccessKeyName { get; }

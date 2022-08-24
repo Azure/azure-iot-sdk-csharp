@@ -68,6 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             Mock<IConnectionCredentials> clientIdentity = new Mock<IConnectionCredentials>();
 
             clientIdentity.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
+            clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
             return clientIdentity.Object;
         }
     }

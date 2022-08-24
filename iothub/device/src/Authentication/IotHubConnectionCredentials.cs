@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Client
 
             AuthenticationMethod = authenticationMethod;
             AuthenticationMethod.Populate(this);
+            SetAuthenticationModel();
             SetTokenRefresherIfApplicable();
 
             Validate();
@@ -53,6 +54,7 @@ namespace Microsoft.Azure.Devices.Client
             AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethodFromConnectionString(parsedConnectionString);
 
             PopulatePropertiesFromConnectionString(parsedConnectionString);
+            SetAuthenticationModel();
             SetTokenRefresherIfApplicable();
 
             Validate();
@@ -135,6 +137,11 @@ namespace Microsoft.Azure.Devices.Client
         /// The authentication method to be used with the IoT hub service.
         /// </summary>
         public IAuthenticationMethod AuthenticationMethod { get; private set; }
+
+        /// <summary>
+        /// The authentication model for the device; i.e. X.509 certificates, individual client scoped SAS tokens or IoT hub level scoped SAS tokens.
+        /// </summary>
+        public AuthenticationModel AuthenticationModel { get; private set; }
 
         async Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
@@ -269,6 +276,15 @@ namespace Microsoft.Azure.Devices.Client
 
                 Debug.Assert(SasTokenRefresher != null);
             }
+        }
+
+        private void SetAuthenticationModel()
+        {
+            AuthenticationModel = Certificate == null
+                ? SharedAccessKeyName == null
+                    ? AuthenticationModel.SasIndividual
+                    : AuthenticationModel.SasGrouped
+                : AuthenticationModel.X509;
         }
 
         private void Validate()

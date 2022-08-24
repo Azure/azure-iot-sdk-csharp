@@ -153,9 +153,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     if (Logging.IsEnabled)
                         Logging.Associate(this, _amqpIotSession, nameof(_amqpIotSession));
 
-                    // If the shared access key name is null then it is an individual SAS authenticated client
-                    // In this case each amqp connection will own its own AMQP token refresh logic
-                    if (_connectionCredentials.SharedAccessKeyName.IsNullOrWhiteSpace())
+                    // In the case of individual SAS authenticated clients, each amqp connection will own its own AMQP token refresh logic
+                    if (_connectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
                     {
                         _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresherAsync(_connectionCredentials, cancellationToken).ConfigureAwait(false);
 

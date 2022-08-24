@@ -115,8 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings();
             }
 
-            // If the shared access key name is null then it is an individual SAS authenticated client
-            if (connectionCredentials.SharedAccessKeyName.IsNullOrWhiteSpace())
+            if (connectionCredentials.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
                 if (_amqpSasIndividualPool == null)
                 {
