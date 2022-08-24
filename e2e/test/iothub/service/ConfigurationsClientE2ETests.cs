@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     Priority = 2,
                     Labels = { { "labelName", "labelValue" } },
-                    TargetCondition = "*",
+                    TargetCondition = "deviceId=fakeDevice",
                     Content = new ConfigurationContent
                     {
                         DeviceContent = { { "properties.desired.x", 4L } },
