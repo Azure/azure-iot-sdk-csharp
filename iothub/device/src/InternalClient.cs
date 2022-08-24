@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client
                 _desiredPropertyUpdateCallback = callback;
                 _twinPatchCallbackContext = userContext;
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.Client
                     await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -299,7 +299,7 @@ namespace Microsoft.Azure.Devices.Client
                     await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -343,7 +343,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -362,7 +362,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -390,7 +390,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await CompleteMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -531,7 +531,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -551,7 +551,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await AbandonMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -571,7 +571,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -591,7 +591,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -694,7 +694,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 await InnerHandler.SendMethodResponseAsync(methodResponse, cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -729,7 +729,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
@@ -777,7 +777,7 @@ namespace Microsoft.Azure.Devices.Client
                     await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;

@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Linq;
@@ -96,16 +96,24 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task MqttTransportHandler_OpenAsync_OpenHandlesConnectExceptionAndThrowsWhenChannelIsNotInitialized()
         {
             // arrange
             var transport = CreateTransportHandlerWithRealChannel(out IChannel channel);
 
-            // act
-            // Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
-            // However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            try
+            {
+                // act
+                // Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
+                // However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // assert
+                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
+                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.NetworkErrors);
+            }
         }
 
         [TestMethod]
@@ -365,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -434,7 +442,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
         }
 
         [TestMethod]

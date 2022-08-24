@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     if (Logging.IsEnabled)
                         Logging.Error(this, "When writing data to the MQTT transport layer, it had already been closed.", nameof(WriteAsync));
 
-                    throw new IotHubCommunicationException("MQTT is disconnected.");
+                    throw new IotHubClientException("MQTT is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 if (data is Message message)
@@ -517,7 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (packet.ReturnCode != ConnectReturnCode.Accepted)
             {
                 string reason = "CONNECT failed: " + packet.ReturnCode;
-                IotHubException iotHubException;
+                IotHubClientException iotHubException;
 
                 switch (packet.ReturnCode)
                 {
@@ -526,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Error(this, "The endpoint server was unavailable while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new IotHubCommunicationException(reason);
+                        iotHubException = new IotHubClientException(reason, null, true, IotHubStatusCode.NetworkErrors);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
@@ -536,17 +536,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Error(this, "Invalid credentials were provided while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new UnauthorizedException(reason);
+                        iotHubException = new IotHubClientException(reason, null, false, IotHubStatusCode.Unauthorized);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
 
-                    // These return codes are non-retryable, they are mapped to IotHubException.
+                    // These return codes are non-retryable, they are mapped to IotHubClientException.
                     case ConnectReturnCode.RefusedIdentifierRejected:
                     case ConnectReturnCode.RefusedUnacceptableProtocolVersion:
                         if (Logging.IsEnabled)
                             Logging.Error(this, "Invalid MQTT specification was provided while attempting a CONNECT, will shut down.", nameof(ProcessConnectAckAsync));
 
-                        iotHubException = new IotHubException(reason);
+                        iotHubException = new IotHubClientException(reason);
                         ShutdownOnErrorAsync(context, iotHubException);
                         return;
                 }
@@ -558,7 +558,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Error(this, "A CONNECT packet was received while the connection was already open, will shut down.", nameof(ProcessConnectAckAsync));
 
                 string reason = "CONNECT has been received, however a session has already been established. Only one CONNECT/CONNACK pair is expected per session.";
-                var iotHubException = new IotHubException(reason);
+                var iotHubException = new IotHubClientException(reason);
                 ShutdownOnErrorAsync(context, iotHubException);
                 return;
             }
@@ -808,7 +808,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Error(this, "When processing a PUBLISH packet, the MQTT transport layer had already been closed.", nameof(ProcessPublish));
 
-                throw new IotHubCommunicationException("MQTT is disconnected.");
+                throw new IotHubClientException("MQTT is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
             }
 
             switch (packet.QualityOfService)
@@ -1377,10 +1377,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 : topicName;
             if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
             {
-                throw new MessageTooLargeException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
+                throw new IotHubClientException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
                     $"current length is {Encoding.UTF8.GetByteCount(msg)}." +
                     $" The probable cause is the list of message.Properties and/or message.systemProperties is too long. " +
-                    $"Please use AMQP or HTTP.");
+                    $"Please use AMQP or HTTP.",
+                    isTransient: false,
+                    IotHubStatusCode.MessageTooLarge);
             }
 
             return msg;

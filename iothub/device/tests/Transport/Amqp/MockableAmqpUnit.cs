@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         public MockableAmqpUnit(IClientConfiguration clientConfiguration,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener = null,
+            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)

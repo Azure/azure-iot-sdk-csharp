@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -25,7 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -35,11 +35,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            };
+
+            //assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -50,7 +58,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

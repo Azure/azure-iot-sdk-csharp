@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             public bool IsTransient(Exception ex)
             {
-                return ex is IotHubException exception && exception.IsTransient;
+                return ex is IotHubClientException exception && exception.IsTransient;
             }
         }
 
@@ -797,7 +797,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
-                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
+                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubClientException(true, IotHubStatusCode.NetworkErrors), out TimeSpan delay))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
@@ -900,7 +900,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ConnectionStatusChangeReason reason = ConnectionStatusChangeReason.CommunicationError;
             ConnectionStatus status = ConnectionStatus.Disconnected;
 
-            if (exception is IotHubException hubException)
+            if (exception is IotHubClientException hubException)
             {
                 if (hubException.IsTransient)
                 {
@@ -913,11 +913,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         status = ConnectionStatus.DisconnectedRetrying;
                     }
                 }
-                else if (hubException is UnauthorizedException)
+                else if (hubException.StatusCode is IotHubStatusCode.Unauthorized)
                 {
                     reason = ConnectionStatusChangeReason.BadCredential;
                 }
-                else if (hubException is DeviceNotFoundException)
+                else if (hubException.StatusCode is IotHubStatusCode.DeviceNotFound)
                 {
                     reason = ConnectionStatusChangeReason.DeviceDisabled;
                 }

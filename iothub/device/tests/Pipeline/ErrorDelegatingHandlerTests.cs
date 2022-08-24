@@ -24,32 +24,19 @@ namespace Microsoft.Azure.Devices.Client.Test
     {
         internal static readonly HashSet<Type> NonTransientExceptions = new HashSet<Type>
         {
-            typeof(MessageTooLargeException),
-            typeof(DeviceMessageLockLostException),
-            typeof(UnauthorizedException),
-            typeof(DeviceNotFoundException),
-            typeof(QuotaExceededException),
-            typeof(IotHubException),
+            typeof(IotHubClientException),
         };
 
         private const string ErrorMessage = "Error occurred.";
 
         private static readonly Dictionary<Type, Func<Exception>> ExceptionFactory = new Dictionary<Type, Func<Exception>>
         {
-            { typeof(UnauthorizedException), () => new UnauthorizedException(ErrorMessage) },
-            { typeof(DeviceNotFoundException), () => new DeviceNotFoundException(ErrorMessage) },
-            { typeof(QuotaExceededException), () => new QuotaExceededException(ErrorMessage) },
-            { typeof(IotHubCommunicationException), () => new IotHubCommunicationException(ErrorMessage) },
-            { typeof(MessageTooLargeException), () => new MessageTooLargeException(ErrorMessage) },
-            { typeof(DeviceMessageLockLostException), () => new DeviceMessageLockLostException(ErrorMessage) },
-            { typeof(ServerBusyException), () => new ServerBusyException(ErrorMessage) },
-            { typeof(IotHubException), () => new IotHubException(ErrorMessage) },
+            { typeof(IotHubClientException), () => new IotHubClientException(ErrorMessage) },
             { typeof(IOException), () => new IOException(ErrorMessage) },
             { typeof(TimeoutException), () => new TimeoutException(ErrorMessage) },
             { typeof(ObjectDisposedException), () => new ObjectDisposedException(ErrorMessage) },
             { typeof(OperationCanceledException), () => new OperationCanceledException(ErrorMessage) },
             { typeof(TaskCanceledException), () => new TaskCanceledException(ErrorMessage) },
-            { typeof(IotHubThrottledException), () => new IotHubThrottledException(ErrorMessage, null) },
             { typeof(SocketException), () => new SocketException(1) },
             { typeof(HttpRequestException), () => new HttpRequestException() },
             { typeof(WebException), () => new WebException() },
@@ -72,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(IotHubCommunicationException),
+            typeof(IotHubClientException),
             typeof(WebSocketException),
             typeof(TestDerivedException),
         };
@@ -118,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             foreach (Type exceptionType in s_networkExceptions)
             {
-                await TestExceptionThrown(exceptionType, typeof(IotHubCommunicationException)).ConfigureAwait(false);
+                await TestExceptionThrown(exceptionType, typeof(IotHubClientException)).ConfigureAwait(false);
             }
         }
 

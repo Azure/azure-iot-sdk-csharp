@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.SendEventAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is IotHubCommunicationException || ex is TimeoutException)
+            catch (Exception ex) when (ex is IotHubClientException hubEx && hubEx.StatusCode is IotHubStatusCode.NetworkErrors || ex is TimeoutException)
             {
                 logger.Trace($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 

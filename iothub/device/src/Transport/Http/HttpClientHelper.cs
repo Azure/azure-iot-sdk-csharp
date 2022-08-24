@@ -443,22 +443,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // TODO: pradeepc - need to confirm this with ASP.NET team
                 if (innerExceptions.Any(e => e is TimeoutException))
                 {
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
                 }
 
-                throw new IotHubException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex);
             }
             catch (TimeoutException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (IOException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (HttpRequestException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (OperationCanceledException)
             {
@@ -466,7 +466,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                throw new IotHubException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex);
             }
 
             if (!isSuccessful(responseMsg))
@@ -482,7 +482,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (!errorMapping.TryGetValue(response.StatusCode, out Func<HttpResponseMessage, Task<Exception>> func))
             {
-                return new IotHubException(
+                return new IotHubClientException(
                     await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }

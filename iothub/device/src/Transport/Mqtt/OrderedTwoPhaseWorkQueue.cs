@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!_incompleteQueue.Any())
             {
-                throw new IotHubException("Nothing to complete.", isTransient: false);
+                throw new IotHubClientException("Nothing to complete.", isTransient: false);
             }
 
             if (_incompleteQueue.TryDequeue(out IncompleteWorkItem incompleteWorkItem))
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     return _completeWorkAsync(context, incompleteWorkItem.WorkItem);
                 }
 
-                throw new IotHubException(
+                throw new IotHubClientException(
                     $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
                     isTransient: false);
             }

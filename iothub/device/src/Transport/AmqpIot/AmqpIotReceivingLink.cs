@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private Action<Message> _onEventsReceived;
         private Action<Message> _onDeviceMessageReceived;
         private Action<MethodRequestInternal> _onMethodReceived;
-        private Action<Twin, string, TwinCollection, IotHubException> _onTwinMessageReceived;
+        private Action<Twin, string, TwinCollection, IotHubClientException> _onTwinMessageReceived;
 
         public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (iotEx is AmqpIotResourceException)
                 {
                     _receivingAmqpLink.SafeClose();
-                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
+                    throw new IotHubClientException(iotEx.Message, iotEx, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 throw iotEx;
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Twin handling
 
-        internal void RegisterTwinListener(Action<Twin, string, TwinCollection, IotHubException> onDesiredPropertyReceived)
+        internal void RegisterTwinListener(Action<Twin, string, TwinCollection, IotHubClientException> onDesiredPropertyReceived)
         {
             _onTwinMessageReceived = onDesiredPropertyReceived;
             _receivingAmqpLink.RegisterMessageListener(OnTwinChangesReceived);
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         error = reader.ReadToEnd();
 
                         // Retry for Http status code request timeout, Too many requests and server errors
-                        var exception = new IotHubException(error, status >= 500 || status == 429 || status == 408);
+                        var exception = new IotHubClientException(error, status >= 500 || status == 429 || status == 408);
                         _onTwinMessageReceived.Invoke(null, correlationId, null, exception);
                     }
                 }
