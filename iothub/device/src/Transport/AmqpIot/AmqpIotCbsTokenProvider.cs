@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         this,
                         namespaceAddress,
                         appliesTo,
-                        $"{nameof(ClientConfiguration)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
+                        $"{nameof(IotHubConnectionCredentials)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
 
                 string tokenValue;
                 DateTime expiresOn;
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         this,
                         namespaceAddress,
                         appliesTo,
-                        $"{nameof(ClientConfiguration)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
+                        $"{nameof(IotHubConnectionCredentials)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
             }
         }
     }

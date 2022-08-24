@@ -10,7 +10,6 @@ namespace Microsoft.Azure.Devices.Client
     // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
     internal class ModuleAuthenticationWithSakRefresh : ModuleAuthenticationWithTokenRefresh
     {
-        private readonly ClientConfiguration _clientConfiguration;
         private readonly string _sharedAccessKey;
         private readonly string _sharedAccessKeyName;
 
@@ -31,21 +30,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             _sharedAccessKey = sharedAccessKey ?? throw new ArgumentNullException(nameof(sharedAccessKey));
             _sharedAccessKeyName = sharedAccessKeyName;
-        }
-
-        internal ModuleAuthenticationWithSakRefresh(
-            string deviceId,
-            string moduleId,
-            ClientConfiguration clientConfiguration,
-            TimeSpan sasTokenTimeToLive = default,
-            int sasTokenRenewalBuffer = default)
-            : base(
-                deviceId,
-                moduleId,
-                sasTokenTimeToLive,
-                sasTokenRenewalBuffer)
-        {
-            _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
         }
 
         ///<inheritdoc/>
