@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // If the connection holder does not have any more units, the entry needs to be nullified.
                     if (amqpConnectionHolder.IsEmpty())
                     {
-                        int index = GetClientIndex(clientConfiguration, amqpConnectionHolders.Length);
+                        int index = GetClientIndex(connectionCredentials, amqpConnectionHolders.Length);
                         amqpConnectionHolders[index] = null;
                         amqpConnectionHolder?.Dispose();
                     }

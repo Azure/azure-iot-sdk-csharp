@@ -18,13 +18,17 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         public MockableAmqpUnit()
             : this(
-                  new ClientConfiguration(new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings)),
-                  new AmqpConnectionHolder(
-                      new ClientConfiguration(new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings))))
+                  new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString),
+                  new AdditionalClientInformation(),
+                  s_transportSettings,
+                  new AmqpConnectionHolder(new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString), s_transportSettings))
         {
         }
 
-        public MockableAmqpUnit(IClientConfiguration clientConfiguration,
+        public MockableAmqpUnit(
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation additionalClientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubException> twinMessageListener = null,
@@ -32,7 +36,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
             : base(
-                  clientConfiguration,
+                  connectionCredentials,
+                  additionalClientInformation,
+                  amqpSettings,
                   amqpConnectionHolder,
                   onMethodCallback,
                   twinMessageListener,

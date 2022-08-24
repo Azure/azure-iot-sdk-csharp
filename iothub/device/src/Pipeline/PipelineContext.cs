@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; set; }
         internal ProductInfo ProductInfo { get; set; }
         internal IotHubClientTransportSettings IotHubClientTransportSettings { get; set; }
+        internal string ModelId { get; set; }
 
         internal ClientConfiguration ClientConfiguration { get; set; }
 

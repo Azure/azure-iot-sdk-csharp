@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Devices.Client
                 IotHubConnectionCredentials = iotHubConnectionCredentials,
                 ProductInfo = iotHubClientOptions.ProductInfo,
                 IotHubClientTransportSettings = iotHubClientOptions.TransportSettings,
+                ModelId = iotHubClientOptions.ModelId,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,

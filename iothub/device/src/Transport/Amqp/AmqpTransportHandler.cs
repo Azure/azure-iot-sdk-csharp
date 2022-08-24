@@ -44,9 +44,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _operationTimeout = transportSettings.OperationTimeout;
             _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
 
+            var additionalClientInformation = new AdditionalClientInformation
+            {
+                ProductInfo = context.ProductInfo,
+                ModelId = context.ModelId,
+            };
+
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
-                context.ClientConfiguration,
                 context.IotHubConnectionCredentials,
+                additionalClientInformation,
+                transportSettings,
                 context.MethodCallback,
                 TwinMessageListener,
                 context.ModuleEventCallback,
