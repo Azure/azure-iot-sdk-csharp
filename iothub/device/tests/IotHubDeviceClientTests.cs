@@ -1226,55 +1226,42 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_CreateFromConnectionString_InvalidSasTimeToLive_ThrowsException()
+        public void IotHubDeviceClient_CreateWithConnectionString_InvalidSasTimeToLive_ThrowsException()
         {
             // arrange
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-            {
-                SasTokenTimeToLive = TimeSpan.FromSeconds(-60),
-            };
-
             // act
-            Action createDeviceClient = () => { IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, options); };
+            Action createDeviceClientAuth = () => { new DeviceAuthenticationWithConnectionString(FakeConnectionString, TimeSpan.FromSeconds(-60)); };
 
             // assert
-            createDeviceClient.Should().Throw<ArgumentOutOfRangeException>();
+            createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_CreateFromConnectionString_InvalidSasRenewalBuffer_ThrowsException()
+        public void IotHubDeviceClient_CreateWithConnectionString_InvalidSasRenewalBuffer_ThrowsException()
         {
             // arrange
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-            {
-                SasTokenRenewalBuffer = 200,
-            };
-
             // act
-            Action createDeviceClient = () => { IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString, options); };
+            Action createDeviceClientAuth = () => { new DeviceAuthenticationWithConnectionString(FakeConnectionString, timeBufferPercentage: 200); };
 
             // assert
-            createDeviceClient.Should().Throw<ArgumentOutOfRangeException>();
+            createDeviceClientAuth.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_CreateFromConnectionString_SasTokenTimeToLiveRenewalConfigurable()
+        public void IotHubDeviceClient_CreateWithConnectionString_SasTokenTimeToLiveRenewalConfigurable()
         {
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-            {
-                SasTokenTimeToLive = sasTokenTimeToLive,
-                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
-            };
+            var auth = new DeviceAuthenticationWithConnectionString(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
 
             // act
             DateTime startTime = DateTime.UtcNow;
             InternalClient internalClient = ClientFactory.CreateInternal(
                 pipelineBuilderSubstitute,
-                new IotHubConnectionCredentials(FakeConnectionString),
+                new IotHubConnectionCredentials(auth, FakeHostName),
                 options);
 
             // assert

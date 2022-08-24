@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                     Debug.Assert(_connectionCredentials.SasTokenRefresher != null);
                     tokenValue = await _connectionCredentials.SasTokenRefresher
-                        .GetTokenAsync(_connectionCredentials.HostName)
+                        .GetTokenAsync(_connectionCredentials.IotHubHostName)
                         .ConfigureAwait(false);
                     expiresOn = _connectionCredentials.SasTokenRefresher.RefreshesOn;
                 }

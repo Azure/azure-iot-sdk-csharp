@@ -105,16 +105,6 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));
             Argument.AssertNotNull(options, nameof(options));
 
-            // Clients that derive their authentication method from AuthenticationWithTokenRefresh will need to specify
-            // the token time to live and renewal buffer values through the corresponding AuthenticationWithTokenRefresh
-            // implementation constructors instead.
-            if (iotHubConnectionCredentials.AuthenticationMethod is not AuthenticationWithTokenRefresh
-                && iotHubConnectionCredentials.AuthenticationMethod is not DeviceAuthenticationWithX509Certificate)
-            {
-                iotHubConnectionCredentials.SasTokenTimeToLive = options?.SasTokenTimeToLive ?? default;
-                iotHubConnectionCredentials.SasTokenRenewalBuffer = options?.SasTokenRenewalBuffer ?? default;
-            }
-
             var client = new InternalClient(iotHubConnectionCredentials, options, pipelineBuilder);
 
             if (Logging.IsEnabled)

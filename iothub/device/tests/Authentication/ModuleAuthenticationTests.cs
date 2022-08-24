@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(fakeConnectionString);
 
             //Assert
-            Assert.IsNotNull(iotHubConnectionCredentials.HostName);
+            Assert.IsNotNull(iotHubConnectionCredentials.IotHubHostName);
             Assert.IsNotNull(iotHubConnectionCredentials.DeviceId);
             Assert.IsNotNull(iotHubConnectionCredentials.ModuleId);
             Assert.IsNull(iotHubConnectionCredentials.GatewayHostName);
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(fakeToken);
 
             //Assert
-            Assert.IsNotNull(iotHubConnectionCredentials.HostName);
+            Assert.IsNotNull(iotHubConnectionCredentials.IotHubHostName);
             Assert.IsNotNull(iotHubConnectionCredentials.DeviceId);
             Assert.IsNull(iotHubConnectionCredentials.GatewayHostName);
             Assert.IsNotNull(iotHubConnectionCredentials.AuthenticationMethod);

@@ -26,8 +26,11 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
 
-            HostName = hostName;
-            GatewayHostName = gatewayHostName;
+            IotHubHostName = hostName;
+            IsUsingGateway = !gatewayHostName.IsNullOrWhiteSpace();
+            GatewayHostName = IsUsingGateway
+                ? gatewayHostName
+                : IotHubHostName;
 
             AuthenticationMethod = authenticationMethod;
             AuthenticationMethod.Populate(this);
@@ -58,12 +61,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
-        public string HostName { get; private set; }
+        public string IotHubHostName { get; private set; }
 
         /// <summary>
-        /// The optional name of the gateway to connect to
+        /// The host service that this client connects to.
+        /// This can either be the IoT hub name or a gateway service name.
         /// </summary>
         public string GatewayHostName { get; private set; }
+
+        /// <summary>
+        /// Indicates if the client is connecting to IoT hub service through a gateway service.
+        /// </summary>
+        public bool IsUsingGateway { get; private set; }
 
         /// <summary>
         /// The device identifier of the device connecting to the service.
@@ -132,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(ClientConfiguration)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+                    Logging.Enter(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
 
                 Debug.Assert(
                     !SharedAccessSignature.IsNullOrWhiteSpace()
@@ -146,12 +155,12 @@ namespace Microsoft.Azure.Devices.Client
 
                 return SasTokenRefresher == null
                     ? null
-                    : await SasTokenRefresher.GetTokenAsync(HostName);
+                    : await SasTokenRefresher.GetTokenAsync(IotHubHostName);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(ClientConfiguration)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+                    Logging.Exit(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
             }
         }
 
@@ -164,11 +173,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public override bool Equals(object obj)
         {
-            return obj is ClientConfiguration clientConfiguration
-                && GetHashCode() == clientConfiguration.GetHashCode()
-                && Equals(DeviceId, clientConfiguration.DeviceId)
-                && Equals(GatewayHostName, clientConfiguration.GatewayHostName)
-                && Equals(ModuleId, clientConfiguration.ModuleId);
+            return obj is IotHubConnectionCredentials connectionCredentials
+                && GetHashCode() == connectionCredentials.GetHashCode()
+                && Equals(DeviceId, connectionCredentials.DeviceId)
+                && Equals(GatewayHostName, connectionCredentials.GatewayHostName)
+                && Equals(ModuleId, connectionCredentials.ModuleId);
         }
 
         /// <summary>
@@ -196,8 +205,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private void PopulatePropertiesFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
-            HostName = iotHubConnectionString.HostName;
-            GatewayHostName = iotHubConnectionString.GatewayHostName;
+            IotHubHostName = iotHubConnectionString.HostName;
+            IsUsingGateway = !iotHubConnectionString.GatewayHostName.IsNullOrWhiteSpace();
+            GatewayHostName = IsUsingGateway
+                ? iotHubConnectionString.GatewayHostName
+                : IotHubHostName;
             DeviceId = iotHubConnectionString.DeviceId;
             ModuleId = iotHubConnectionString.ModuleId;
             SharedAccessKeyName = iotHubConnectionString.SharedAccessKeyName;
@@ -265,12 +277,18 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal void Validate()
+        private void Validate()
         {
-            // Host name
-            if (HostName.IsNullOrWhiteSpace())
+            // IoT Hub host name
+            if (IotHubHostName.IsNullOrWhiteSpace())
             {
-                throw new FormatException("IoT hub hostname must be specified.");
+                throw new FormatException("IoT hub service hostname to connect to must be specified.");
+            }
+
+            // Gateway host name
+            if (GatewayHostName.IsNullOrWhiteSpace())
+            {
+                throw new FormatException("Gateway service hostname to connect to must be specified.");
             }
 
             // Device Id

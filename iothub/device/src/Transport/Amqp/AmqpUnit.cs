@@ -247,7 +247,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpIotSession?.SafeClose();
             _amqpAuthenticationRefresher?.StopLoop();
 
-            if (_amqpSettings.ConnectionPoolSettings.Pooling == false)
+            if (_amqpSettings.ConnectionPoolSettings == null
+                || _amqpSettings.ConnectionPoolSettings.Pooling == false)
             {
                 _amqpConnectionHolder?.Shutdown();
             }
@@ -1138,7 +1139,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     if (disposing)
                     {
                         Cleanup();
-                        if (_amqpSettings.ConnectionPoolSettings.Pooling == false)
+                        if (_amqpSettings.ConnectionPoolSettings == null
+                            || _amqpSettings.ConnectionPoolSettings.Pooling == false)
                         {
                             _amqpConnectionHolder?.Dispose();
                         }
