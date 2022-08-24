@@ -10,21 +10,24 @@ namespace Microsoft.Azure.Devices.Client
     // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
     internal class ModuleAuthenticationWithSakRefresh : ModuleAuthenticationWithTokenRefresh
     {
-        private readonly ClientConfiguration _clientConfiguration;
+        private readonly string _sharedAccessKey;
+        private readonly string _sharedAccessKeyName;
 
         internal ModuleAuthenticationWithSakRefresh(
             string deviceId,
             string moduleId,
-            ClientConfiguration clientConfiguration,
+            string sharedAccessKey,
+            string sharedAccessKeyName = default,
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default)
             : base(
-                deviceId,
-                moduleId,
-                sasTokenTimeToLive,
-                sasTokenRenewalBuffer)
+                  deviceId,
+                  moduleId,
+                  sasTokenTimeToLive,
+                  sasTokenRenewalBuffer)
         {
-            _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
+            _sharedAccessKey = sharedAccessKey ?? throw new ArgumentNullException(nameof(sharedAccessKey));
+            _sharedAccessKeyName = sharedAccessKeyName;
         }
 
         ///<inheritdoc/>
@@ -32,11 +35,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             var builder = new SharedAccessSignatureBuilder()
             {
-                Key = _clientConfiguration.SharedAccessKey,
+                Key = _sharedAccessKey,
                 TimeToLive = suggestedTimeToLive,
             };
 
-            if (_clientConfiguration.SharedAccessKeyName == null)
+            if (_sharedAccessKeyName == null)
             {
                 builder.Target = "{0}/devices/{1}/modules/{2}".FormatInvariant(
                     iotHub,
@@ -45,8 +48,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-                builder.KeyName = _clientConfiguration.SharedAccessKeyName;
-                builder.Target = _clientConfiguration.IotHubHostName;
+                builder.KeyName = _sharedAccessKeyName;
+                builder.Target = iotHub;
             }
 
             return Task.FromResult(builder.ToSignature());

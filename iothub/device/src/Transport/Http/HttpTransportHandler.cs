@@ -67,18 +67,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
-            ProductInfo productInfo = context.ClientConfiguration.ClientOptions.ProductInfo;
-            _deviceId = context.ClientConfiguration.DeviceId;
-            _moduleId = context.ClientConfiguration.ModuleId;
-            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.ClientConfiguration.GatewayHostName).Uri;
+            var additionalClientInformation = new AdditionalClientInformation
+            {
+                ProductInfo = context.ProductInfo,
+                ModelId = context.ModelId,
+            };
+
+            _deviceId = context.IotHubConnectionCredentials.DeviceId;
+            _moduleId = context.IotHubConnectionCredentials.ModuleId;
+            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.IotHubConnectionCredentials.GatewayHostName).Uri;
             _httpClientHelper = new HttpClientHelper(
                 httpsEndpoint,
-                context.ClientConfiguration,
+                context.IotHubConnectionCredentials,
+                additionalClientInformation,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 null,
                 httpClientHandler,
-                productInfo,
                 transportSettings,
                 isClientPrimaryTransportHandler);
         }

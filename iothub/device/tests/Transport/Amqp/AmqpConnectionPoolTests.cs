@@ -38,12 +38,20 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
         {
             string sharedAccessKeyName = "HubOwner";
             uint poolSize = 10;
-            IClientConfiguration testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName, poolSize);
+            IConnectionCredentials testDevice = CreatePooledSasGroupedClientIdentity(sharedAccessKeyName);
             IDictionary<string, AmqpConnectionHolder[]> injectedDictionary = new Dictionary<string, AmqpConnectionHolder[]>();
+            var amqpSettings = new IotHubClientAmqpSettings
+            {
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                {
+                    MaxPoolSize = poolSize,
+                    Pooling = true,
+                },
+            };
 
             AmqpConnectionPoolTest pool = new AmqpConnectionPoolTest(injectedDictionary);
 
-            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, null, null, null, null);
+            AmqpUnit addedUnit = pool.CreateAmqpUnit(testDevice, null, amqpSettings, null, null, null, null, null);
 
             injectedDictionary[sharedAccessKeyName].Count().Should().Be((int)poolSize);
 
@@ -55,25 +63,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Amqp
             }
         }
 
-        private IClientConfiguration CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName, uint poolSize)
+        private IConnectionCredentials CreatePooledSasGroupedClientIdentity(string sharedAccessKeyName)
         {
-            Mock<IClientConfiguration> clientIdentity = new Mock<IClientConfiguration>();
+            Mock<IConnectionCredentials> clientIdentity = new Mock<IConnectionCredentials>();
 
-            clientIdentity.Setup(m => m.IsPooling()).Returns(true);
-            clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
             clientIdentity.Setup(m => m.SharedAccessKeyName).Returns(sharedAccessKeyName);
-            clientIdentity.Setup(m => m.ClientOptions).Returns(
-                new IotHubClientOptions(
-                    new IotHubClientAmqpSettings()
-                    {
-                        ConnectionPoolSettings = new AmqpConnectionPoolSettings
-                        {
-                            Pooling = true,
-                            MaxPoolSize = poolSize,
-                        }
-                    })
-                );
-
+            clientIdentity.Setup(m => m.AuthenticationModel).Returns(AuthenticationModel.SasGrouped);
             return clientIdentity.Object;
         }
     }

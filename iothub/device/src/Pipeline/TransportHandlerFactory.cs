@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
@@ -12,35 +11,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public IDelegatingHandler Create(PipelineContext context)
         {
-            ClientConfiguration clientConfiguration = context.ClientConfiguration;
-            Func<MethodRequestInternal, Task> onMethodCallback = context.MethodCallback;
-            Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
-            Func<string, Message, Task> onModuleEventReceivedCallback = context.ModuleEventCallback;
-            Func<Message, Task> onDeviceMessageReceivedCallback = context.DeviceEventCallback;
+            IotHubClientTransportSettings transportSettings = context.IotHubClientTransportSettings;
 
-            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
+            if (transportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
                 return new AmqpTransportHandler(
                     context,
-                    iotHubClientAmqpSettings,
-                    onMethodCallback,
-                    onDesiredStatePatchReceived,
-                    onModuleEventReceivedCallback,
-                    onDeviceMessageReceivedCallback);
+                    iotHubClientAmqpSettings);
             }
 
-            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
+            if (transportSettings is IotHubClientMqttSettings iotHubClientMqttSettings)
             {
                 return new MqttTransportHandler(
                     context,
-                    iotHubClientMqttSettings,
-                    onMethodCallback,
-                    onDesiredStatePatchReceived,
-                    onModuleEventReceivedCallback,
-                    onDeviceMessageReceivedCallback);
+                    iotHubClientMqttSettings);
             }
 
-            if (clientConfiguration.ClientOptions.TransportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
+            if (transportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
             {
                 return new HttpTransportHandler(
                     context,
@@ -48,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     isClientPrimaryTransportHandler: true);
             }
 
-            throw new InvalidOperationException($"Unsupported transport setting {clientConfiguration.ClientOptions.TransportSettings.GetType()}");
+            throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}");
         }
     }
 }

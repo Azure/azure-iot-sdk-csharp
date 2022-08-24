@@ -28,17 +28,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private HttpClient _httpClientObj;
         private HttpClientHandler _httpClientHandler;
         private bool _isDisposed;
-        private readonly ProductInfo _productInfo;
+        private readonly AdditionalClientInformation _additionalClientInformation;
         private readonly bool _isClientPrimaryTransportHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationProvider authenticationHeaderProvider,
+            AdditionalClientInformation additionalClientInformation,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
             HttpClientHandler httpClientHandler,
-            ProductInfo productInfo,
             IotHubClientHttpSettings iotHubClientHttpSettings,
             bool isClientPrimaryTransportHandler = false)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 
             preRequestActionForAllRequests?.Invoke(_httpClientObj);
-            _productInfo = productInfo;
+            _additionalClientInformation = additionalClientInformation;
             _isClientPrimaryTransportHandler = isClientPrimaryTransportHandler;
         }
 
@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            msg.Headers.UserAgent.ParseAdd(_productInfo.ToString(UserAgentFormats.Http));
+            msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo?.ToString(UserAgentFormats.Http));
 
             if (modifyRequestMessageAsync != null)
             {

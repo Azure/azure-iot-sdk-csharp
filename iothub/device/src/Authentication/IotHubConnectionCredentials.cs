@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -12,20 +12,10 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Holder for client credentials that will be used for authenticating the client with IoT hub service.
     /// </summary>
-    public sealed class IotHubConnectionCredentials
+    public sealed class IotHubConnectionCredentials : IConnectionCredentials
     {
-        private const char ValuePairDelimiter = ';';
-        private const char ValuePairSeparator = '=';
-        private const string HostNamePropertyName = "HostName";
-        private const string DeviceIdPropertyName = "DeviceId";
-        private const string ModuleIdPropertyName = "ModuleId";
-        private const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
-        private const string SharedAccessKeyPropertyName = "SharedAccessKey";
-        private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
-        private const string GatewayHostNamePropertyName = "GatewayHostName";
-
         /// <summary>
-        /// Creates an instnace of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
+        /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
@@ -36,11 +26,16 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
 
-            HostName = hostName;
-            GatewayHostName = gatewayHostName;
+            IotHubHostName = hostName;
+            IsUsingGateway = !gatewayHostName.IsNullOrWhiteSpace();
+            GatewayHostName = IsUsingGateway
+                ? gatewayHostName
+                : IotHubHostName;
 
             AuthenticationMethod = authenticationMethod;
             AuthenticationMethod.Populate(this);
+            SetAuthenticationModel();
+            SetTokenRefresherIfApplicable();
 
             Validate();
         }
@@ -55,8 +50,12 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionString, nameof(iotHubConnectionString));
 
             // We'll parse the connection string and use that to build an auth method
-            ExtractPropertiesFromConnectionString(iotHubConnectionString);
-            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethodFromConnectionString(this);
+            IotHubConnectionString parsedConnectionString = IotHubConnectionStringParser.Parse(iotHubConnectionString);
+            AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethodFromConnectionString(parsedConnectionString);
+
+            PopulatePropertiesFromConnectionString(parsedConnectionString);
+            SetAuthenticationModel();
+            SetTokenRefresherIfApplicable();
 
             Validate();
         }
@@ -64,12 +63,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
-        public string HostName { get; private set; }
+        public string IotHubHostName { get; private set; }
 
         /// <summary>
-        /// The optional name of the gateway to connect to
+        /// The host service that this client connects to.
+        /// This can either be the IoT hub name or a gateway service name.
         /// </summary>
         public string GatewayHostName { get; private set; }
+
+        /// <summary>
+        /// Indicates if the client is connecting to IoT hub service through a gateway service.
+        /// </summary>
+        public bool IsUsingGateway { get; private set; }
 
         /// <summary>
         /// The device identifier of the device connecting to the service.
@@ -113,60 +118,187 @@ namespace Microsoft.Azure.Devices.Client
         public X509Certificate2Collection ChainCertificates { get; set; }
 
         /// <summary>
-        /// The authentication method to be used with the IoT hub service.
+        /// The suggested time to live value for tokens generated for SAS authenticated clients.
         /// </summary>
-        internal IAuthenticationMethod AuthenticationMethod { get; }
-
-        // The suggested time to live value for tokens generated for SAS authenticated clients.
-        internal TimeSpan SasTokenTimeToLive { get; set; }
-
-        // The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
-        // This setting is valid only for SAS authenticated clients.
-        internal int SasTokenRenewalBuffer { get; set; }
+        public TimeSpan SasTokenTimeToLive { get; internal set; }
 
         /// <summary>
-        /// Produces the connection string based on the values of the <see cref="IotHubConnectionCredentials"/> instance properties.
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// </summary>
-        /// <returns>A properly formatted connection string.</returns>
-        public override sealed string ToString()
-        {
-            Validate();
+        public int SasTokenRenewalBuffer { get; internal set; }
 
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, HostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, DeviceId);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, ModuleId);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, GatewayHostName);
-            if (stringBuilder.Length > 0)
+        /// <summary>
+        /// The token refresh logic to be used for clients authenticating with either an AuthenticationWithTokenRefresh IAuthenticationMethod mechanism
+        /// or through a shared access key value that can be used by the SDK to generate SAS tokens.
+        /// </summary>
+        public AuthenticationWithTokenRefresh SasTokenRefresher { get; private set; }
+
+        /// <summary>
+        /// The authentication method to be used with the IoT hub service.
+        /// </summary>
+        public IAuthenticationMethod AuthenticationMethod { get; private set; }
+
+        /// <summary>
+        /// The authentication model for the device; i.e. X.509 certificates, individual client scoped SAS tokens or IoT hub level scoped SAS tokens.
+        /// </summary>
+        public AuthenticationModel AuthenticationModel { get; private set; }
+
+        async Task<string> IAuthorizationProvider.GetPasswordAsync()
+        {
+            try
             {
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+
+                Debug.Assert(
+                    !SharedAccessSignature.IsNullOrWhiteSpace()
+                        || SasTokenRefresher != null,
+                    "The token refresher and the shared access signature can't both be null");
+
+                if (!SharedAccessSignature.IsNullOrWhiteSpace())
+                {
+                    return SharedAccessSignature;
+                }
+
+                return SasTokenRefresher == null
+                    ? null
+                    : await SasTokenRefresher.GetTokenAsync(IotHubHostName);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+            }
+        }
+
+        /// <summary>
+        /// This overridden Equals implementation is being referenced when fetching the client identity (AmqpUnit)
+        /// from an AMQP connection pool with multiplexed client connections.
+        /// This implementation only uses device Id, hostname and module Id when evaluating equality.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            return obj is IotHubConnectionCredentials connectionCredentials
+                && GetHashCode() == connectionCredentials.GetHashCode()
+                && Equals(DeviceId, connectionCredentials.DeviceId)
+                && Equals(GatewayHostName, connectionCredentials.GatewayHostName)
+                && Equals(ModuleId, connectionCredentials.ModuleId);
+        }
+
+        /// <summary>
+        /// This hashing algorithm is used in two places:
+        /// - when fetching the object hashcode for our logging implementation
+        /// - when fetching the client identity (AmqpUnit) from an AMQP connection pool with multiplexed client connections
+        /// This algorithm only uses device Id, hostname and module Id when evaluating the hash.
+        /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
+        /// so the algorithm has been retained as-is.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            int hashCode = UpdateHashCode(620602339, DeviceId);
+            hashCode = UpdateHashCode(hashCode, GatewayHostName);
+            hashCode = UpdateHashCode(hashCode, ModuleId);
+            return hashCode;
+        }
+
+        private static int UpdateHashCode(int hashCode, object field)
+        {
+            return field == null
+                ? hashCode
+                : hashCode * -1521134295 + field.GetHashCode();
+        }
+
+        private void PopulatePropertiesFromConnectionString(IotHubConnectionString iotHubConnectionString)
+        {
+            IotHubHostName = iotHubConnectionString.HostName;
+            IsUsingGateway = !iotHubConnectionString.GatewayHostName.IsNullOrWhiteSpace();
+            GatewayHostName = IsUsingGateway
+                ? iotHubConnectionString.GatewayHostName
+                : IotHubHostName;
+            DeviceId = iotHubConnectionString.DeviceId;
+            ModuleId = iotHubConnectionString.ModuleId;
+            SharedAccessKeyName = iotHubConnectionString.SharedAccessKeyName;
+            SharedAccessKey = iotHubConnectionString.SharedAccessKey;
+            SharedAccessSignature = iotHubConnectionString.SharedAccessSignature;
+        }
+
+        private void SetTokenRefresherIfApplicable()
+        {
+            if (AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
+            {
+                SasTokenRefresher = authWithTokenRefresh;
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+
+                Debug.Assert(SasTokenRefresher != null);
+            }
+            else if (!SharedAccessKey.IsNullOrWhiteSpace())
+            {
+                if (ModuleId.IsNullOrWhiteSpace())
+                {
+                    SasTokenRefresher = new DeviceAuthenticationWithSakRefresh(
+                        DeviceId,
+                        SharedAccessKey,
+                        SharedAccessKeyName,
+                        SasTokenTimeToLive,
+                        SasTokenRenewalBuffer);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                }
+                else
+                {
+                    SasTokenRefresher = new ModuleAuthenticationWithSakRefresh(
+                        DeviceId,
+                        ModuleId,
+                        SharedAccessKey,
+                        SharedAccessKeyName,
+                        SasTokenTimeToLive,
+                        SasTokenRenewalBuffer);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
+                }
+
+                // This assignment resets any previously set SharedAccessSignature value. This is possible in flows where the same authentication method instance
+                // is used to reinitialize the client after close-dispose.
+                // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
+                // not of type AuthenticationWithTokenRefresh.
+                // Setting the SAS value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+                // This flow can be hit if the same authentication method is always used to initialize the client;
+                // as in, on disposal and reinitialization. This is because the value of the SAS token computed is stored within the authentication method,
+                // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
+                // instead of being identified as a sas-token-refresh-enabled-client.
+                SharedAccessSignature = null;
+
+                Debug.Assert(SasTokenRefresher != null);
+            }
+        }
+
+        private void SetAuthenticationModel()
+        {
+            AuthenticationModel = Certificate == null
+                ? SharedAccessKeyName == null
+                    ? AuthenticationModel.SasIndividual
+                    : AuthenticationModel.SasGrouped
+                : AuthenticationModel.X509;
+        }
+
+        private void Validate()
+        {
+            // IoT Hub host name
+            if (IotHubHostName.IsNullOrWhiteSpace())
+            {
+                throw new FormatException("IoT hub service hostname to connect to must be specified.");
             }
 
-            return stringBuilder.ToString();
-        }
-
-        private void ExtractPropertiesFromConnectionString(string iotHubConnectionString)
-        {
-            IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
-
-            HostName = GetConnectionStringValue(map, HostNamePropertyName);
-            GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
-            DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
-            ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
-            SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
-            SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
-            SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-        }
-
-        internal void Validate()
-        {
-            // Host name
-            if (HostName.IsNullOrWhiteSpace())
+            // Gateway host name
+            if (GatewayHostName.IsNullOrWhiteSpace())
             {
-                throw new FormatException("IoT hub hostname must be specified.");
+                throw new FormatException("Gateway service hostname to connect to must be specified.");
             }
 
             // Device Id
@@ -210,22 +342,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException(
                     "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used for authenticating the client with IoT hub.");
             }
-        }
-
-        private static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
-        {
-            if (!map.TryGetValue(propertyName, out string value))
-            {
-                throw new ArgumentException($"The connection string is missing the property: {propertyName}.");
-            }
-
-            return value;
-        }
-
-        private static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
-        {
-            map.TryGetValue(propertyName, out string value);
-            return value;
         }
     }
 }

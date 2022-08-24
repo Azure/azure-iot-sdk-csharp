@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
             _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
 
-            if (string.IsNullOrWhiteSpace(InternalClient.IotHubConnectionInfo?.ModuleId))
+            if (InternalClient.IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
             }
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
             // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = internalClient.IotHubConnectionInfo.IsUsingGateway;
+            _isAnEdgeModule = internalClient.IotHubConnectionCredentials.IsUsingGateway;
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
@@ -453,7 +453,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 var pipelineContext = new PipelineContext
                 {
-                    ClientConfiguration = InternalClient.IotHubConnectionInfo
+                    IotHubConnectionCredentials = InternalClient.IotHubConnectionCredentials,
                 };
 
                 // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
