@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public static string GetIotHubConnectionString(this IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, iotHubConnectionCredentials.HostName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, iotHubConnectionCredentials.IotHubHostName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.DeviceIdPropertyName, iotHubConnectionCredentials.DeviceId);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.ModuleIdPropertyName, iotHubConnectionCredentials.ModuleId);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName, iotHubConnectionCredentials.SharedAccessKeyName);
