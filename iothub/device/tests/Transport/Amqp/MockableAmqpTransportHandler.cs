@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             : this(
                 new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString),
+                    IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
                 },
                 new IotHubClientAmqpSettings())
         {

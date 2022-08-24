@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
@@ -13,10 +12,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public IDelegatingHandler Create(PipelineContext context)
         {
             IotHubClientTransportSettings transportSettings = context.IotHubClientTransportSettings;
-            Func<MethodRequestInternal, Task> onMethodCallback = context.MethodCallback;
-            Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
-            Func<string, Message, Task> onModuleEventReceivedCallback = context.ModuleEventCallback;
-            Func<Message, Task> onDeviceMessageReceivedCallback = context.DeviceEventCallback;
 
             if (transportSettings is IotHubClientAmqpSettings iotHubClientAmqpSettings)
             {
@@ -29,11 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new MqttTransportHandler(
                     context,
-                    iotHubClientMqttSettings,
-                    onMethodCallback,
-                    onDesiredStatePatchReceived,
-                    onModuleEventReceivedCallback,
-                    onDeviceMessageReceivedCallback);
+                    iotHubClientMqttSettings);
             }
 
             if (transportSettings is IotHubClientHttpSettings iotHubClientHttpSettings)
