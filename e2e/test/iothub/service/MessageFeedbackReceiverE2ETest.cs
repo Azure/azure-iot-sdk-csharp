@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         [DataRow(TransportType.Amqp_WebSocket)]
         public async Task MessageFeedbackReceiver_Operation(TransportType transportType)
         {
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            var options = new IotHubServiceClientOptions
             {
                 UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
             };
