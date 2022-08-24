@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
-                var linkSettings = new AmqpLinkSettings
+                var receiverSettings = new AmqpLinkSettings
                 {
                     Role = true, // "true" here means it is a receiver. If false, it would be a sender.
                     TotalLinkCredit = 1024,
@@ -53,9 +53,9 @@ namespace Microsoft.Azure.Devices.Amqp
                 };
 
                 string clientVersion = Utils.GetClientVersion();
-                linkSettings.AddProperty(AmqpsConstants.ClientVersion, clientVersion);
+                receiverSettings.AddProperty(AmqpsConstants.ClientVersion, clientVersion);
 
-                _receivingLink = new ReceivingAmqpLink(linkSettings);
+                _receivingLink = new ReceivingAmqpLink(receiverSettings);
                 _receivingLink.Closed += _connectionLossHandler;
                 _receivingLink.AttachTo(session);
 
