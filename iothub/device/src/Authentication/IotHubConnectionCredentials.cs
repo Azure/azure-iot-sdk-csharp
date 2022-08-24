@@ -232,31 +232,25 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (ModuleId.IsNullOrWhiteSpace())
                 {
-                    // Since the SDK creates the instance of disposable DeviceAuthenticationWithSakRefresh, the SDK needs to
-                    // dispose it once the client is disposed.
                     SasTokenRefresher = new DeviceAuthenticationWithSakRefresh(
                         DeviceId,
                         SharedAccessKey,
                         SharedAccessKeyName,
                         SasTokenTimeToLive,
-                        SasTokenRenewalBuffer,
-                        disposeWithClient: true);
+                        SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
                 }
                 else
                 {
-                    // Since the SDK creates the instance of disposable ModuleAuthenticationWithSakRefresh, the SDK needs to
-                    // dispose it once the client is disposed.
                     SasTokenRefresher = new ModuleAuthenticationWithSakRefresh(
                         DeviceId,
                         ModuleId,
                         SharedAccessKey,
                         SharedAccessKeyName,
                         SasTokenTimeToLive,
-                        SasTokenRenewalBuffer,
-                        disposeWithClient: true);
+                        SasTokenRenewalBuffer);
 
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(SasTokenRefresher)}");
