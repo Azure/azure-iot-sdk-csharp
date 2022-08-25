@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _deviceId = context.IotHubConnectionCredentials.DeviceId;
             _moduleId = context.IotHubConnectionCredentials.ModuleId;
-            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.IotHubConnectionCredentials.GatewayHostName).Uri;
+            Uri httpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, context.IotHubConnectionCredentials.HostName).Uri;
             _httpClientHelper = new HttpClientHelper(
                 httpsEndpoint,
                 context.IotHubConnectionCredentials,

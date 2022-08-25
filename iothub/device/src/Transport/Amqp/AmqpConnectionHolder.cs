@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _connectionCredentials = connectionCredentials;
             _amqpSettings = amqpSettings;
-            _amqpIotConnector = new AmqpIotConnector(amqpSettings, connectionCredentials.GatewayHostName);
+            _amqpIotConnector = new AmqpIotConnector(amqpSettings, connectionCredentials.HostName);
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _connectionCredentials, nameof(_connectionCredentials));

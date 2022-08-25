@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName, iotHubConnectionCredentials.SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyPropertyName, iotHubConnectionCredentials.SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessSignaturePropertyName, iotHubConnectionCredentials.SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.GatewayHostNamePropertyName, iotHubConnectionCredentials.GatewayHostName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.GatewayHostNamePropertyName, iotHubConnectionCredentials.HostName);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);

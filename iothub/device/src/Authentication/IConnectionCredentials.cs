@@ -19,15 +19,15 @@ namespace Microsoft.Azure.Devices.Client
         string IotHubHostName { get; }
 
         /// <summary>
-        /// The host service that this client connects to.
-        /// This can either be the IoT hub name or a gateway service name.
+        /// The optional name of the gateway service to connect to.
         /// </summary>
         string GatewayHostName { get; }
 
         /// <summary>
-        /// Indicates if the client is connecting to IoT hub service through a gateway service.
+        /// The host service that this client connects to.
+        /// This can either be the IoT hub name or a gateway service name.
         /// </summary>
-        bool IsUsingGateway { get; }
+        string HostName { get; }
 
         /// <summary>
         /// The device identifier of the device connecting to the service.

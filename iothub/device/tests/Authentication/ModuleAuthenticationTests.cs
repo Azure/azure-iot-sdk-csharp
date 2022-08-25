@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             Assert.IsNotNull(iotHubConnectionCredentials.IotHubHostName);
             Assert.IsNotNull(iotHubConnectionCredentials.DeviceId);
             Assert.IsNotNull(iotHubConnectionCredentials.ModuleId);
-            Assert.IsNotNull(iotHubConnectionCredentials.GatewayHostName);
-            Assert.IsFalse(iotHubConnectionCredentials.IsUsingGateway);
+            Assert.IsNull(iotHubConnectionCredentials.GatewayHostName);
+            Assert.IsNotNull(iotHubConnectionCredentials.HostName);
             Assert.IsNotNull(iotHubConnectionCredentials.AuthenticationMethod);
             Assert.IsNotNull(iotHubConnectionCredentials.SharedAccessKey);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
             //Assert
             Assert.IsNotNull(iotHubConnectionCredentials.IotHubHostName);
             Assert.IsNotNull(iotHubConnectionCredentials.DeviceId);
-            Assert.IsNotNull(iotHubConnectionCredentials.GatewayHostName);
-            Assert.IsFalse(iotHubConnectionCredentials.IsUsingGateway);
+            Assert.IsNull(iotHubConnectionCredentials.GatewayHostName);
+            Assert.IsNotNull(iotHubConnectionCredentials.HostName);
             Assert.IsNotNull(iotHubConnectionCredentials.AuthenticationMethod);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessKey);
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessKeyName);

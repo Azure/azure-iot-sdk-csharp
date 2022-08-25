@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return new MqttIotHubAdapter(
                 connectionCredentials.DeviceId,
                 connectionCredentials.ModuleId,
-                connectionCredentials.GatewayHostName,
+                connectionCredentials.HostName,
                 connectionCredentials,
                 mqttTransportSettings,
                 willMessage,

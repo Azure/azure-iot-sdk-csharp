@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
 
             _serverAddresses = null; // this will be resolved asynchronously in OpenAsync
-            _hostName = connectionCredentials.GatewayHostName;
+            _hostName = connectionCredentials.HostName;
             _receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePatternFilter, connectionCredentials.DeviceId, connectionCredentials.ModuleId);
             _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, connectionCredentials.DeviceId, connectionCredentials.ModuleId);
 
@@ -1094,7 +1094,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                      settings.SslProtocols,
                      settings.CertificateRevocationCheck,
                      certs,
-                     connectionCredentials.GatewayHostName);
+                     connectionCredentials.HostName);
 
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
@@ -1158,7 +1158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{connectionCredentials.GatewayHostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{connectionCredentials.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
