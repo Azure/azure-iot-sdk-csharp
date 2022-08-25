@@ -372,15 +372,12 @@ namespace Microsoft.Azure.Devices
                     websocket.Options.KeepAliveInterval = _options.AmqpWebSocketKeepAlive.Value;
                 }
 
-                // Check if we're configured to use a proxy server
-                IWebProxy webProxy = _options.Proxy;
-
                 try
                 {
-                    if (webProxy != DefaultWebProxySettings.Instance)
+                    if (_options.Proxy != null)
                     {
                         // Configure proxy server
-                        websocket.Options.Proxy = webProxy;
+                        websocket.Options.Proxy = _options.Proxy;
                         if (Logging.IsEnabled)
                             Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
                     }
@@ -508,17 +505,17 @@ namespace Microsoft.Azure.Devices
                 {
                     await link.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(link, exception, nameof(OpenLinkAsync));
+                        Logging.Error(link, ex, nameof(OpenLinkAsync));
 
-                    if (exception.IsFatal())
+                    if (Fx.IsFatal(ex))
                     {
                         throw;
                     }
 
-                    link.SafeClose(exception);
+                    link.SafeClose(ex);
 
                     throw;
                 }

@@ -94,16 +94,16 @@ namespace Microsoft.Azure.Devices
 
                 return null;
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                Logging.Error(this, exception, nameof(ReceiveAsync));
+                Logging.Error(this, ex, nameof(ReceiveAsync));
 
-                if (exception.IsFatal())
+                if (Fx.IsFatal(ex))
                 {
                     throw;
                 }
 
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
             {

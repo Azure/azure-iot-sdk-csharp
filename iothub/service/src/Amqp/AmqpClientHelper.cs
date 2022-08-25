@@ -97,16 +97,16 @@ namespace Microsoft.Azure.Devices
                             cancellationToken)
                         .ConfigureAwait(false);
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    Logging.Error(faultTolerantReceivingLink, exception, nameof(DisposeMessageAsync));
+                    Logging.Error(faultTolerantReceivingLink, ex, nameof(DisposeMessageAsync));
 
-                    if (exception.IsFatal())
+                    if (Fx.IsFatal(ex))
                     {
                         throw;
                     }
 
-                    throw ToIotHubClientContract(exception);
+                    throw ToIotHubClientContract(ex);
                 }
 
                 Logging.Info(faultTolerantReceivingLink, disposeOutcome.DescriptorCode, nameof(DisposeMessageAsync));

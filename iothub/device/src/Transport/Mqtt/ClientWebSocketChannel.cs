@@ -98,7 +98,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public void Dispose()
         {
             _webSocket?.Dispose();
-            _webSocket = null;
 
             _writeCancellationTokenSource?.Dispose();
             _writeCancellationTokenSource = null;

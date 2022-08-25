@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
+                Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
+                Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri(CancelJobUriFormat.FormatInvariant(jobId), UriKind.Relative), _credentialProvider);
@@ -196,10 +196,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             try
             {
-                Argument.RequireNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
-                Argument.RequireNotNullOrEmpty(scheduledDirectMethod.QueryCondition, nameof(scheduledDirectMethod.QueryCondition));
-                Argument.RequireNotNull(scheduledDirectMethod.DirectMethodRequest, nameof(scheduledDirectMethod.DirectMethodRequest));
-                Argument.RequireNotNull(scheduledDirectMethod.StartTimeUtc, nameof(scheduledDirectMethod.StartTimeUtc));
+                Argument.AssertNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
+                Argument.AssertNotNullOrWhiteSpace(scheduledDirectMethod.QueryCondition, nameof(scheduledDirectMethod.QueryCondition));
+                Argument.AssertNotNull(scheduledDirectMethod.DirectMethodRequest, nameof(scheduledDirectMethod.DirectMethodRequest));
+                Argument.AssertNotNull(scheduledDirectMethod.StartTimeUtc, nameof(scheduledDirectMethod.StartTimeUtc));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
@@ -255,10 +255,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             try
             {
-                Argument.RequireNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
-                Argument.RequireNotNullOrEmpty(scheduledTwinUpdate.QueryCondition, nameof(scheduledTwinUpdate.QueryCondition));
-                Argument.RequireNotNull(scheduledTwinUpdate.Twin, nameof(scheduledTwinUpdate.Twin));
-                Argument.RequireNotNull(scheduledTwinUpdate.StartTimeUtc, nameof(scheduledTwinUpdate.StartTimeUtc));
+                Argument.AssertNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
+                Argument.AssertNotNullOrWhiteSpace(scheduledTwinUpdate.QueryCondition, nameof(scheduledTwinUpdate.QueryCondition));
+                Argument.AssertNotNull(scheduledTwinUpdate.Twin, nameof(scheduledTwinUpdate.Twin));
+                Argument.AssertNotNull(scheduledTwinUpdate.StartTimeUtc, nameof(scheduledTwinUpdate.StartTimeUtc));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
