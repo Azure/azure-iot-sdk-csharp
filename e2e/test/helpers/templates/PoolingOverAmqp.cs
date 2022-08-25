@@ -101,12 +101,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             // The connection status should be "Disabled", with connection status change reason "ClientClose"
                             Assert.AreEqual(
                                 ConnectionStatus.Closed,
-                                deviceClients[i].ConnectionInfo.Status,
-                                $"The actual connection status is = {deviceClients[i].ConnectionInfo.Status}");
+                                deviceClients[i].ConnectionStatusInfo.Status,
+                                $"The actual connection status is = {deviceClients[i].ConnectionStatusInfo.Status}");
                             Assert.AreEqual(
                                 ConnectionStatusChangeReason.ClientClosed,
-                                deviceClients[i].ConnectionInfo.ChangeReason,
-                                $"The actual connection status change reason is = {deviceClients[i].ConnectionInfo.ChangeReason}");
+                                deviceClients[i].ConnectionStatusInfo.ChangeReason,
+                                $"The actual connection status change reason is = {deviceClients[i].ConnectionStatusInfo.ChangeReason}");
                         }
                     }
                     if (deviceConnectionStatusAsExpected)
@@ -148,10 +148,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 _logger = logger;
             }
 
-            public void ConnectionStatusChangeHandler(ConnectionInfo connectionInfo)
+            public void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
             {
                 ConnectionStatusChangeHandlerCount++;
-                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangeHandler)}: status={connectionInfo.Status} statusChangeReason={connectionInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
+                _logger.Trace($"{nameof(PoolingOverAmqp)}.{nameof(ConnectionStatusChangeHandler)}: status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
             }
 
             public int ConnectionStatusChangeHandlerCount { get; set; }

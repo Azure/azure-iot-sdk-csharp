@@ -142,10 +142,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
-            deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
+            deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
             {
-                ConnectionStatus status = connectionInfo.Status;
-                ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
+                ConnectionStatus status = connectionStatusInfo.Status;
+                ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
                 Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                 if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                 {
@@ -196,10 +196,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
+                deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
                 {
-                    ConnectionStatus status = connectionInfo.Status;
-                    ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
+                    ConnectionStatus status = connectionStatusInfo.Status;
+                    ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
                     Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                     if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                     {
