@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
             Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
 
-            var auth = (IAuthorizationProvider)iotHubConnectionCredentials;
+            var auth = iotHubConnectionCredentials;
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
             string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);

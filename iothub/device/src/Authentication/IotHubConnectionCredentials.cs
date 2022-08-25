@@ -143,12 +143,15 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public AuthenticationModel AuthenticationModel { get; private set; }
 
-        async Task<string> IAuthorizationProvider.GetPasswordAsync()
+        /// <summary>
+        /// Gets the SAS token credential required for authenticating the client with IoT hub service.
+        /// </summary>
+        public async Task<string> GetPasswordAsync()
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+                    Logging.Enter(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IConnectionCredentials.GetPasswordAsync)}");
 
                 Debug.Assert(
                     !SharedAccessSignature.IsNullOrWhiteSpace()
@@ -167,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
+                    Logging.Exit(this, $"{nameof(IotHubConnectionCredentials)}.{nameof(IConnectionCredentials.GetPasswordAsync)}");
             }
         }
 

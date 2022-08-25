@@ -3,7 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client.Transport;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Interface for client connection credentials.
     /// This has been included for our own unit testing.
     /// </summary>
-    internal interface IConnectionCredentials : IAuthorizationProvider
+    internal interface IConnectionCredentials
     {
         /// <summary>
         /// The fully-qualified DNS hostname of the IoT hub service.
@@ -95,5 +95,10 @@ namespace Microsoft.Azure.Devices.Client
         /// The authentication method to be used with the IoT hub service.
         /// </summary>
         IAuthenticationMethod AuthenticationMethod { get; }
+
+        /// <summary>
+        /// Gets the SAS token credential required for authenticating the client with IoT hub service.
+        /// </summary>
+        public Task<string> GetPasswordAsync();
     }
 }
