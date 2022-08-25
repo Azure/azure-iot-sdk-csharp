@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateFromConnectionString(
                     client,
-                    $"HostName={iotHubConnectionCredentials.GatewayHostName};DeviceId={iotHubConnectionCredentials.DeviceId};ModuleId={iotHubConnectionCredentials.ModuleId}",
+                    $"HostName={iotHubConnectionCredentials.HostName};DeviceId={iotHubConnectionCredentials.DeviceId};ModuleId={iotHubConnectionCredentials.ModuleId}",
                     options);
 
             return client;
