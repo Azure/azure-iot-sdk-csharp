@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="iotHubName">IoT hub name that could not be found.</param>
         public IotHubSuspendedException(string iotHubName)
-            : base("Iothub {0} is suspended".FormatInvariant(iotHubName), isTransient: false)
+            : base("IoT hub {0} is suspended".FormatInvariant(iotHubName), isTransient: false)
         {
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="iotHubName">IoT hub name that could not be found.</param>
         /// <param name="trackingId">Tracking identifier for telemetry purposes.</param>
         public IotHubSuspendedException(string iotHubName, string trackingId)
-            : base("Iothub {0} is suspended".FormatInvariant(iotHubName), isTransient: false, trackingId: trackingId)
+            : base("IoT hub {0} is suspended".FormatInvariant(iotHubName), isTransient: false, trackingId: trackingId)
         {
         }
 
