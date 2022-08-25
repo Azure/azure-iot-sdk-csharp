@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _clientOptions.SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset;
         }
 
-        private static bool IsDeviceConnected => s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Connected;
+        private static bool IsDeviceConnected => s_deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Connected;
 
         public async Task RunSampleAsync(TimeSpan sampleRunningTime)
         {
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         var status = ConnectionStatus.Disconnected;
                         if (s_deviceClient != null)
                         {
-                            status = s_deviceClient.ConnectionInfo.Status;
+                            status = s_deviceClient.ConnectionStatusInfo.Status;
                         }
 
                         Console.WriteLine($"Attempting to initialize the client instance, current status={status}");
@@ -181,11 +181,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has a void return type. As a result, any operation within this block will be executed unmonitored on another thread.
         // To prevent multi-threaded synchronization issues, the async method InitializeClientAsync being called in here first grabs a lock before attempting to
         // initialize or dispose the device client instance; the async method GetTwinAndDetectChangesAsync is implemented similarly for the same purpose.
-        private async void ConnectionStatusChangeHandlerAsync(ConnectionInfo connectionInfo)
+        private async void ConnectionStatusChangeHandlerAsync(ConnectionStatusInfo connectionStatusInfo)
         {
-            ConnectionStatus status = connectionInfo.Status;
-            ConnectionStatusChangeReason reason = connectionInfo.ChangeReason;
-            Console.WriteLine($"Connection status changed: status={status}, reason={reason}, recommendation={connectionInfo.RecommendedAction}");
+            ConnectionStatus status = connectionStatusInfo.Status;
+            ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
+            Console.WriteLine($"Connection status changed: status={status}, reason={reason}, recommendation={connectionStatusInfo.RecommendedAction}");
 
             // In our case, we can operate with more than 1 shared access key and attempt to fall back to a secondary.
             // We'll disregard the SDK's recommendation and attempt to connect with the second one.
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Otherwise, we follow the SDK's recommendation.
-            switch (connectionInfo.RecommendedAction)
+            switch (connectionStatusInfo.RecommendedAction)
             {
                 case RecommendedAction.OpenConnection:
                     Console.WriteLine($"Following recommended action of reinitializing the client.");
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private bool ShouldClientBeInitialized()
         {
             return (s_deviceClient == null)
-                || (s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionInfo.Status == ConnectionStatus.Closed)
+                || (s_deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Closed)
                 && _deviceConnectionStrings.Any();
         }
     }
