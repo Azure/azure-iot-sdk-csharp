@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
                         iotHubConnectionString.SharedAccessSignature);
             }
 
-            throw new InvalidOperationException($"Unsupported authentication method in '{iotHubConnectionString}'.");
+            throw new ArgumentException($"Unsupported authentication method in '{iotHubConnectionString}'.");
         }
     }
 }

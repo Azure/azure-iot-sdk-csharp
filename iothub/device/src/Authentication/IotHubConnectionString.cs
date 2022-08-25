@@ -6,6 +6,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
+    /// <summary>
+    /// A data object that holds the different components that make up a device/module specific connection string.
+    /// </summary>
     internal class IotHubConnectionString
     {
         internal IotHubConnectionString(

@@ -21,10 +21,10 @@ namespace Microsoft.Azure.Devices.Client
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default)
             : base(
-                  deviceId,
-                  moduleId,
-                  sasTokenTimeToLive,
-                  sasTokenRenewalBuffer)
+                deviceId,
+                moduleId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer)
         {
             _sharedAccessKey = sharedAccessKey ?? throw new ArgumentNullException(nameof(sharedAccessKey));
             _sharedAccessKeyName = sharedAccessKeyName;

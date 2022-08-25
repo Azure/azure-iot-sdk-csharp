@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
             TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default)
         {
-            if (suggestedTimeToLive.Ticks < 0)
+            if (suggestedTimeToLive < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
             }

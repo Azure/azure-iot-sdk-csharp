@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void IotHubConnectionStringBuilder_ParamConnectionString_NoAuthSpecied_Throws()
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId}";
