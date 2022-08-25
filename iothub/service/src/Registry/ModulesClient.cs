@@ -23,6 +23,9 @@ namespace Microsoft.Azure.Devices
 
         private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
 
+        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
+
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
@@ -191,7 +194,7 @@ namespace Microsoft.Azure.Devices
 
                 if (string.IsNullOrWhiteSpace(module.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
@@ -274,7 +277,7 @@ namespace Microsoft.Azure.Devices
 
                 if (module.ETag == null)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

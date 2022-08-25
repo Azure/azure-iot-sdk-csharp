@@ -32,6 +32,10 @@ namespace Microsoft.Azure.Devices
         private const string DeviceStatisticsUriFormat = "/statistics/devices";
         private const string ServiceStatisticsUriFormat = "/statistics/service";
         private const string AdminUriFormat = "/$admin/{0}";
+        private const string ETagSetWhileRegisteringDevice = "ETagSetWhileRegisteringDevice";
+        private const string InvalidImportMode = "InvalidImportMode";
+        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -199,7 +203,7 @@ namespace Microsoft.Azure.Devices
 
                 if (string.IsNullOrWhiteSpace(device.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
@@ -281,7 +285,7 @@ namespace Microsoft.Azure.Devices
 
                 if (device.ETag == null)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -1191,7 +1195,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.Create:
                         if (!string.IsNullOrWhiteSpace(device.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagSetWhileRegisteringDevice);
+                            throw new ArgumentException(ETagSetWhileRegisteringDevice);
                         }
                         break;
 
@@ -1202,7 +1206,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateIfMatchETag:
                         if (string.IsNullOrWhiteSpace(device.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                            throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                         }
                         break;
 
@@ -1213,12 +1217,12 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.DeleteIfMatchETag:
                         if (string.IsNullOrWhiteSpace(device.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                            throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                         }
                         break;
 
                     default:
-                        throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
+                        throw new ArgumentException($"{InvalidImportMode} {importMode}.");
                 }
 
                 var exportImportDevice = new ExportImportDevice(device, importMode);

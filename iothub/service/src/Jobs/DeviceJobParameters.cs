@@ -13,6 +13,9 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DeviceJobParameters : JobParameters
     {
+        private const string DeviceJobParametersNullOrEmptyDeviceList = "DeviceJobParametersNullOrEmptyDeviceList";
+        private const string DeviceJobParametersNullOrEmptyDeviceListEntries = "DeviceJobParametersNullOrEmptyDeviceListEntries";
+
         /// <summary>
         /// Parameters for parameterless device job on a single device.
         /// </summary>
@@ -30,12 +33,12 @@ namespace Microsoft.Azure.Devices
             IList<string> deviceList = deviceIds?.ToListSlim();
             if (deviceList == null || deviceList.Count == 0)
             {
-                throw new ArgumentException(ApiResources.DeviceJobParametersNullOrEmptyDeviceList, nameof(deviceIds));
+                throw new ArgumentException(DeviceJobParametersNullOrEmptyDeviceList, nameof(deviceIds));
             }
 
             if ((from deviceId in deviceList where string.IsNullOrWhiteSpace(deviceId) select deviceId).Any())
             {
-                throw new ArgumentException(ApiResources.DeviceJobParametersNullOrEmptyDeviceListEntries, nameof(deviceIds));
+                throw new ArgumentException(DeviceJobParametersNullOrEmptyDeviceListEntries, nameof(deviceIds));
             }
 
             DeviceIds = deviceList;
