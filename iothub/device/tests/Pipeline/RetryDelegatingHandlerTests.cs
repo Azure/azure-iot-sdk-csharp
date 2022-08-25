@@ -220,19 +220,18 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
-            // act
-            Func<Task> act = async () =>
-            {
-                await sut
-                .OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            };
+            // act and assert for exception type
+            IotHubClientException exception = await sut
+                .OpenAsync(CancellationToken.None)
+                .ExpectedAsync<IotHubClientException>()
+                .ConfigureAwait(false);
+
+            // assert for exception status code
+            exception.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
 
             // assert for connection status
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Disconnected);
             connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.DeviceDisabled);
-            // assert for exception
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
         }
 
         [TestMethod]
