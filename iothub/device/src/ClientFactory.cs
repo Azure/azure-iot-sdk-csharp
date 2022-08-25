@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Create an instance of InternalClient with the given parameters.
         /// </summary>
-        /// <param name="hostName">The fully-qualified DNS hostname of IoT hub</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method.</param>
         /// <param name="options">The optional client settings.</param>
         /// <returns>InternalClient</returns>
@@ -44,8 +44,11 @@ namespace Microsoft.Azure.Devices.Client
 
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName);
 
-            // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(ref options);
+            // Make sure client options is initialized.
+            if (options == null)
+            {
+                options = new();
+            }
 
             // Validate certs.
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -114,22 +117,6 @@ namespace Microsoft.Azure.Devices.Client
                     options);
 
             return client;
-        }
-
-        /// <summary>
-        /// Ensures that the client options are configured and initialized.
-        /// </summary>
-        private static void EnsureOptionsIsSetup(ref IotHubClientOptions options)
-        {
-            if (options == null)
-            {
-                options = new();
-            }
-
-            if (options.FileUploadTransportSettings == null)
-            {
-                options.FileUploadTransportSettings = new();
-            }
         }
     }
 }

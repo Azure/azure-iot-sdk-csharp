@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The fully-qualified DNS hostname of the IoT hub service.
+        /// The fully-qualified DNS host name of the IoT hub service.
         /// </summary>
         public string IotHubHostName { get; private set; }
 
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// This overridden Equals implementation is being referenced when fetching the client identity (AmqpUnit)
         /// from an AMQP connection pool with multiplexed client connections.
-        /// This implementation only uses device Id, hostname, module Id and the authentication model when evaluating equality.
+        /// This implementation only uses device Id, host name, module Id and the authentication model when evaluating equality.
         /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
         /// so the algorithm has been retained as-is.
         /// </summary>
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This hashing algorithm is used in two places:
         /// - when fetching the object hashcode for our logging implementation
         /// - when fetching the client identity (AmqpUnit) from an AMQP connection pool with multiplexed client connections
-        /// This algorithm only uses device Id, hostname, module Id and the authentication model when evaluating the hash.
+        /// This algorithm only uses device Id, host name, module Id and the authentication model when evaluating the hash.
         /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
         /// so the algorithm has been retained as-is.
         /// </summary>

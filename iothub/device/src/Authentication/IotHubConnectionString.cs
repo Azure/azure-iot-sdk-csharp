@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The value of the fully-qualified DNS hostname of the IoT hub service.
+        /// The value of the fully-qualified DNS host name of the IoT hub service.
         /// </summary>
         public string IotHubHostName { get; }
 

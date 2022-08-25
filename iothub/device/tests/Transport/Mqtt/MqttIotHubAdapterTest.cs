@@ -109,14 +109,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         {
             const string authChain = "leaf;edge1;edge2";
             var connectionCredentials = new Mock<IConnectionCredentials>();
+            connectionCredentials.Setup(m => m.DeviceId).Returns("deviceId");
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var additionalClientInformation = new AdditionalClientInformation();
             var mqttTransportSetting = new IotHubClientMqttSettings { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
             var mqttIotHubAdapter = new MqttIotHubAdapter(
-                "deviceId",
-                string.Empty,
-                string.Empty,
                 connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
@@ -144,15 +142,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         private async Task SendRequestAndAcksInSpecificOrderAsync<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)
         {
             var connectionCredentials = new Mock<IConnectionCredentials>();
+            connectionCredentials.Setup(m => m.DeviceId).Returns("deviceId");
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var additionalClientInformation = new AdditionalClientInformation();
             var mqttTransportSetting = new IotHubClientMqttSettings { HasWill = false };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
 
             var mqttIotHubAdapter = new MqttIotHubAdapter(
-                "deviceId",
-                string.Empty,
-                string.Empty,
                 connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
@@ -200,14 +196,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             // arrange
             string ModelIdParam = "model-id";
             var connectionCredentials = new Mock<IConnectionCredentials>();
+            connectionCredentials.Setup(m => m.DeviceId).Returns("deviceId");
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new IotHubClientMqttSettings();
             var additionalClientInformation = new AdditionalClientInformation { ModelId = "someModel" };
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
             var mqttIotHubAdapter = new MqttIotHubAdapter(
-                "deviceId",
-                string.Empty,
-                string.Empty,
                 connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
@@ -237,14 +231,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             // arrange
             string ModelIdParam = "model-id";
             var connectionCredentials = new Mock<IConnectionCredentials>();
+            connectionCredentials.Setup(m => m.DeviceId).Returns("deviceId");
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new IotHubClientMqttSettings();
             var additionalClientInformation = new AdditionalClientInformation();
             var channelHandlerContext = new Mock<IChannelHandlerContext>();
             var mqttIotHubAdapter = new MqttIotHubAdapter(
-                "deviceId",
-                string.Empty,
-                string.Empty,
                 connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
