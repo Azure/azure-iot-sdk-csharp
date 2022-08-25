@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Creating query", nameof(CreateAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(query, nameof(query));
+                Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
                 cancellationToken.ThrowIfCancellationRequested();
 

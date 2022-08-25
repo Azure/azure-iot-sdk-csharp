@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Extensions
         /// <param name="propertyKeyValuePairs">The dictionary of property key values pairs to update to.</param>
         internal static void AddComponentUpdateIdentifier(this Dictionary<string, object> propertyKeyValuePairs)
         {
-            Argument.RequireNotNull(propertyKeyValuePairs, nameof(propertyKeyValuePairs));
+            Argument.AssertNotNull(propertyKeyValuePairs, nameof(propertyKeyValuePairs));
 
             const string metadataKey = "$metadata";
             propertyKeyValuePairs.Add(metadataKey, new object());

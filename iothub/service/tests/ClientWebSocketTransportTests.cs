@@ -29,17 +29,17 @@ namespace Microsoft.Azure.Devices.Api.Test
         private static HttpListener s_listener;
         private static byte[] s_byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
 
-        [AssemblyInitialize()]
-        public static void AssembyInitialize(TestContext testcontext)
+        [ClassInitialize]
+        public static async Task ClassInitialize(TestContext testcontext)
         {
             s_listener = new HttpListener();
             s_listener.Prefixes.Add($"http://+:{Port}{WebSocketConstants.UriSuffix}/");
             s_listener.Start();
-            RunWebSocketServer().Fork();
+            await RunWebSocketServer();
         }
 
-        [AssemblyCleanup()]
-        public static void AssemblyCleanup()
+        [ClassCleanup]
+        public static void ClassCleanup()
         {
             s_listener.Stop();
         }
@@ -73,14 +73,14 @@ namespace Microsoft.Azure.Devices.Api.Test
                 // Verify that data matches what was sent
                 if (s_byteArray.Length != args.Count)
                 {
-                    throw new InvalidOperationException("Expected " + s_byteArray.Length + " bytes in response");
+                    throw new InvalidOperationException($"Expected {s_byteArray.Length} bytes in response.");
                 }
 
                 for (int i = 0; i < args.Count; i++)
                 {
                     if (s_byteArray[i] != args.Buffer[i])
                     {
-                        throw new InvalidOperationException("Response contents do not match what was sent");
+                        throw new InvalidOperationException("Response contents do not match what was sent.");
                     }
                 }
 
@@ -271,6 +271,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             clientWebSocketTransport.WriteAsync(args);
         }
+
         static public async Task RunWebSocketServer()
         {
             try
@@ -296,7 +297,6 @@ namespace Microsoft.Azure.Devices.Api.Test
                         .ConfigureAwait(false);
 
                     // Echo the data back to the client
-                    var responseCancellationToken = new CancellationToken();
                     var responseBuffer = new byte[receiveResult.Count];
                     for (int i = 0; i < receiveResult.Count; i++)
                     {
@@ -305,13 +305,13 @@ namespace Microsoft.Azure.Devices.Api.Test
 
                     var responseSegment = new ArraySegment<byte>(responseBuffer);
                     await webSocketContext.WebSocket
-                        .SendAsync(responseSegment, WebSocketMessageType.Binary, true, responseCancellationToken)
+                        .SendAsync(responseSegment, WebSocketMessageType.Binary, true, CancellationToken.None)
                         .ConfigureAwait(false);
 
                     // Have a pending read
-                    using var source = new CancellationTokenSource(s_oneMinute);
+                    using var cts = new CancellationTokenSource(s_oneMinute);
                     WebSocketReceiveResult result = await webSocketContext.WebSocket
-                        .ReceiveAsync(arraySegment, source.Token)
+                        .ReceiveAsync(arraySegment, cts.Token)
                         .ConfigureAwait(false);
                     int bytes = result.Count;
                 }

@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(configuration, nameof(configuration));
+                Argument.AssertNotNull(configuration, nameof(configuration));
                 if (!string.IsNullOrEmpty(configuration.ETag))
                 {
                     throw new ArgumentException(ETagSetWhileCreatingConfiguration);
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(configurationId, nameof(configurationId));
+                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(configuration, nameof(configuration));
+                Argument.AssertNotNull(configuration, nameof(configuration));
                 if (string.IsNullOrWhiteSpace(configuration.ETag) && !forceUpdate)
                 {
                     throw new ArgumentException(ETagNotSetWhileUpdatingConfiguration);
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(configurationId, nameof(configurationId));
+                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // use wild-card ETag
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
             try
             {
-                Argument.RequireNotNull(configuration, nameof(configuration));
+                Argument.AssertNotNull(configuration, nameof(configuration));
                 cancellationToken.ThrowIfCancellationRequested();
                 if (string.IsNullOrWhiteSpace(configuration.ETag))
                 {
@@ -383,8 +383,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNull(content, nameof(content));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNull(content, nameof(content));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);

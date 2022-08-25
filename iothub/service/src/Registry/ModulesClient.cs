@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(module, nameof(module));
+                Argument.AssertNotNull(module, nameof(module));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -113,8 +113,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(module, nameof(module));
+                Argument.AssertNotNull(module, nameof(module));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -236,8 +236,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-            Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
             var module = new Module(deviceId, moduleId);
             module.ETag = HttpMessageHelper.ETagForce;
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(module, nameof(module));
+                Argument.AssertNotNull(module, nameof(module));
 
                 if (module.ETag == null)
                 {

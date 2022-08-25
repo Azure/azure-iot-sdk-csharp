@@ -40,18 +40,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
 
-        [ClassInitialize()]
-        public static void AssembyInitialize(TestContext testcontext)
+        [ClassInitialize]
+        public static async Task ClassInitialize(TestContext testcontext)
         {
             listener = new HttpListener();
             listener.Prefixes.Add("http://+:" + Port + WebSocketConstants.UriSuffix + "/");
             listener.Start();
 
-            RunWebSocketServer().ContinueWith(t => t, TaskContinuationOptions.OnlyOnFaulted);
+            await RunWebSocketServer();
         }
 
-        [ClassCleanup()]
-        public static void AssemblyCleanup()
+        [ClassCleanup]
+        public static void ClassCleanup()
         {
             listener.Stop();
         }

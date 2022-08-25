@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <param name="propertyValues">The dictionary of property key values pairs to update to.</param>
         public void AppendAddComponentOp(string path, Dictionary<string, object> propertyValues)
         {
-            Argument.RequireNotNull(propertyValues, nameof(propertyValues));
+            Argument.AssertNotNull(propertyValues, nameof(propertyValues));
             propertyValues.AddComponentUpdateIdentifier();
 
             var op = new Dictionary<string, object>
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <param name="propertyValues">The dictionary of property key values pairs to update to.</param>
         public void AppendReplaceComponentOp(string path, Dictionary<string, object> propertyValues)
         {
-            Argument.RequireNotNull(propertyValues, nameof(propertyValues));
+            Argument.AssertNotNull(propertyValues, nameof(propertyValues));
             propertyValues.AddComponentUpdateIdentifier();
 
             var op = new Dictionary<string, object>

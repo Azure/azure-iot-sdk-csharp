@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         internal static HttpContent SerializePayload(object payload)
         {
-            Argument.RequireNotNull(payload, nameof(payload));
+            Argument.AssertNotNull(payload, nameof(payload));
 
             string str = JsonConvert.SerializeObject(payload);
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         public static void InsertETag(HttpRequestMessage requestMessage, string eTag)
         {
-            Argument.RequireNotNullOrEmpty(eTag, nameof(eTag));
-            Argument.RequireNotNull(requestMessage, nameof(requestMessage));
+            Argument.AssertNotNullOrWhiteSpace(eTag, nameof(eTag));
+            Argument.AssertNotNull(requestMessage, nameof(requestMessage));
 
             // All ETag values need to be wrapped in escaped quotes, but the "forced" value
             // is hardcoded with quotes so it can be skipped here

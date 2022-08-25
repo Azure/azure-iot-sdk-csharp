@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -132,8 +132,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
-                Argument.RequireNotNullOrEmpty(digitalTwinUpdateOperations, nameof(digitalTwinUpdateOperations));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinUpdateOperations, nameof(digitalTwinUpdateOperations));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -203,8 +203,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
-                Argument.RequireNotNullOrEmpty(commandName, nameof(commandName));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -277,9 +277,9 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
-                Argument.RequireNotNullOrEmpty(componentName, nameof(componentName));
-                Argument.RequireNotNullOrEmpty(commandName, nameof(commandName));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(componentName, nameof(componentName));
+                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
