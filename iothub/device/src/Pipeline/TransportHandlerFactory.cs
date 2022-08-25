@@ -31,8 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return new HttpTransportHandler(
                     context,
-                    iotHubClientHttpSettings,
-                    isClientPrimaryTransportHandler: true);
+                    iotHubClientHttpSettings);
             }
 
             throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}");

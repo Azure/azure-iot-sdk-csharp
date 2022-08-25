@@ -42,8 +42,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The transport settings to use for all file upload operations, regardless of what protocol the device
         /// client is configured with. All file upload operations take place over https.
-        /// If FileUploadTransportSettings is not provided, then file upload operations will use the same client certificates
-        /// configured in the transport settings set for client connect.
         /// </summary>
         public IotHubClientHttpSettings FileUploadTransportSettings { get; set; } = new IotHubClientHttpSettings();
 

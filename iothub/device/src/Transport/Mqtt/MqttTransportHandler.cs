@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
 
             _serverAddresses = null; // this will be resolved asynchronously in OpenAsync
-            _hostName = connectionCredentials.GatewayHostName;
+            _hostName = connectionCredentials.HostName;
             _receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePatternFilter, connectionCredentials.DeviceId, connectionCredentials.ModuleId);
             _receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, ReceiveEventMessagePrefixPattern, connectionCredentials.DeviceId, connectionCredentials.ModuleId);
 
@@ -1086,15 +1086,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 SslStream StreamFactory(Stream stream) => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
 
-                List<X509Certificate> certs = settings.ClientCertificate == null
+                List<X509Certificate> certs = connectionCredentials.Certificate == null
                     ? new List<X509Certificate>(0)
-                    : new List<X509Certificate> { settings.ClientCertificate };
+                    : new List<X509Certificate> { connectionCredentials.Certificate };
 
                 var clientTlsSettings = new ClientTlsSettings(
                      settings.SslProtocols,
                      settings.CertificateRevocationCheck,
                      certs,
-                     connectionCredentials.GatewayHostName);
+                     connectionCredentials.HostName);
 
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
@@ -1158,7 +1158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 string additionalQueryParams = "";
 
-                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{connectionCredentials.GatewayHostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{connectionCredentials.HostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
@@ -1186,9 +1186,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set websocket keep-alive to {settings.WebSocketKeepAlive}");
                 }
 
-                if (settings.ClientCertificate != null)
+                if (connectionCredentials.Certificate != null)
                 {
-                    websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
+                    websocket.Options.ClientCertificates.Add(connectionCredentials.Certificate);
                 }
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));

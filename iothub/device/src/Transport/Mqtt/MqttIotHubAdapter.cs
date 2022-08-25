@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly string _iotHubHostName;
         private readonly IotHubClientMqttSettings _mqttTransportSettings;
         private readonly TimeSpan _pingRequestInterval;
-        private readonly IAuthorizationProvider _passwordProvider;
+        private readonly IConnectionCredentials _connectionCredentials;
         private readonly SimpleWorkQueue<PublishWorkItem> _serviceBoundOneWayProcessor;
         private readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> _serviceBoundTwoWayProcessor;
         private readonly IWillMessage _willMessage;
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string deviceId,
             string moduleId,
             string iotHubHostName,
-            IAuthorizationProvider passwordProvider,
+            IConnectionCredentials connectionCredentials,
             IotHubClientMqttSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             Contract.Requires(deviceId != null);
             Contract.Requires(iotHubHostName != null);
-            Contract.Requires(passwordProvider != null);
+            Contract.Requires(connectionCredentials != null);
             Contract.Requires(mqttTransportSettings != null);
             Contract.Requires(!mqttTransportSettings.HasWill || willMessage != null);
             Contract.Requires(additionalClientInformation.ProductInfo != null);
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _deviceId = deviceId;
             _moduleId = moduleId;
             _iotHubHostName = iotHubHostName;
-            _passwordProvider = passwordProvider;
+            _connectionCredentials = connectionCredentials;
             _mqttTransportSettings = mqttTransportSettings;
             _willMessage = willMessage;
             _mqttIotHubEventHandler = mqttIotHubEventHandler;
@@ -322,13 +322,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 string id = string.IsNullOrWhiteSpace(_moduleId) ? _deviceId : $"{_deviceId}/{_moduleId}";
                 string password = null;
-                if (_passwordProvider != null)
+                if (_connectionCredentials.Certificate == null)
                 {
-                    password = await _passwordProvider.GetPasswordAsync().ConfigureAwait(true);
+                    password = await _connectionCredentials.GetPasswordAsync().ConfigureAwait(true);
                 }
                 else
                 {
-                    Debug.Assert(_mqttTransportSettings.ClientCertificate != null);
+                    Debug.Assert(_connectionCredentials.Certificate != null);
                 }
 
                 string usernameString = $"{_iotHubHostName}/{id}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}";

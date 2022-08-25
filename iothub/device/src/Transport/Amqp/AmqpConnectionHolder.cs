@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _connectionCredentials = connectionCredentials;
             _amqpSettings = amqpSettings;
-            _amqpIotConnector = new AmqpIotConnector(amqpSettings, connectionCredentials.GatewayHostName);
+            _amqpIotConnector = new AmqpIotConnector(amqpSettings, connectionCredentials.HostName);
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, _connectionCredentials, nameof(_connectionCredentials));
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         Logging.Info(this, "Creating new AmqpConnection", nameof(EnsureConnectionAsync));
 
                     // Create AmqpConnection
-                    amqpIotConnection = await _amqpIotConnector.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+                    amqpIotConnection = await _amqpIotConnector.OpenConnectionAsync(_connectionCredentials, cancellationToken).ConfigureAwait(false);
 
                     // Group-SAS authenticated clients have a connection-wide token refresh logic.
                     if (_connectionCredentials.AuthenticationModel == AuthenticationModel.SasGrouped)

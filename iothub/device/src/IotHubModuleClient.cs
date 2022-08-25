@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
             // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = internalClient.IotHubConnectionCredentials.IsUsingGateway;
+            _isAnEdgeModule = !internalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
@@ -455,12 +455,6 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     IotHubConnectionCredentials = InternalClient.IotHubConnectionCredentials,
                 };
-
-                // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
-                if (InternalClient.Certificate != null)
-                {
-                    transportSettings.ClientCertificate = InternalClient.Certificate;
-                }
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);

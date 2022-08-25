@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         public void TestAuthenticationChain()
         {
             const string authChain = "leaf;edge1;edge2";
-            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var connectionCredentials = new Mock<IConnectionCredentials>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var additionalClientInformation = new AdditionalClientInformation();
             var mqttTransportSetting = new IotHubClientMqttSettings { HasWill = false };
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 "deviceId",
                 string.Empty,
                 string.Empty,
-                passwordProvider.Object,
+                connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
                 mqttIotHubEventHandler.Object,
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         private async Task SendRequestAndAcksInSpecificOrderAsync<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)
         {
-            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var connectionCredentials = new Mock<IConnectionCredentials>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var additionalClientInformation = new AdditionalClientInformation();
             var mqttTransportSetting = new IotHubClientMqttSettings { HasWill = false };
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 "deviceId",
                 string.Empty,
                 string.Empty,
-                passwordProvider.Object,
+                connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
                 mqttIotHubEventHandler.Object,
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         {
             // arrange
             string ModelIdParam = "model-id";
-            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var connectionCredentials = new Mock<IConnectionCredentials>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new IotHubClientMqttSettings();
             var additionalClientInformation = new AdditionalClientInformation { ModelId = "someModel" };
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 "deviceId",
                 string.Empty,
                 string.Empty,
-                passwordProvider.Object,
+                connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
                 mqttIotHubEventHandler.Object,
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         {
             // arrange
             string ModelIdParam = "model-id";
-            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var connectionCredentials = new Mock<IConnectionCredentials>();
             var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
             var mqttTransportSetting = new IotHubClientMqttSettings();
             var additionalClientInformation = new AdditionalClientInformation();
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 "deviceId",
                 string.Empty,
                 string.Empty,
-                passwordProvider.Object,
+                connectionCredentials.Object,
                 mqttTransportSetting,
                 null,
                 mqttIotHubEventHandler.Object,

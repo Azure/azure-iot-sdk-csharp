@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.GatewayHostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.HostName);
             return amqpConnectionPool.CreateAmqpUnit(
                 connectionCredentials,
                 additionalClientInformation,
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
             (IConnectionCredentials connectionCredentials, IotHubClientAmqpSettings _) = amqpUnit.GetConnectionCredentialsAndAmqpSettings();
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.GatewayHostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.HostName);
             amqpConnectionPool.RemoveAmqpUnit(amqpUnit);
             amqpUnit.Dispose();
         }

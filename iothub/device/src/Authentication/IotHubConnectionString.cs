@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     internal class IotHubConnectionString
     {
         internal IotHubConnectionString(
-            string hostName,
+            string iotHubHostName,
             string gatewayHostName,
             string deviceId,
             string moduleId,
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
             string sharedAccessKey,
             string sharedAccessSignature)
         {
-            HostName = hostName;
+            IotHubHostName = iotHubHostName;
             GatewayHostName = gatewayHostName;
             DeviceId = deviceId;
             ModuleId = moduleId;
@@ -29,10 +29,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The value of the fully-qualified DNS hostname of the IoT hub service.
         /// </summary>
-        public string HostName { get; }
+        public string IotHubHostName { get; }
 
         /// <summary>
-        /// The optional name of the gateway to connect to
+        /// The optional name of the gateway service to connect to.
         /// </summary>
         public string GatewayHostName { get; }
 
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         public override sealed string ToString()
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, HostName);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, IotHubHostName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.DeviceIdPropertyName, DeviceId);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.ModuleIdPropertyName, ModuleId);
             stringBuilder.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName, SharedAccessKeyName);
