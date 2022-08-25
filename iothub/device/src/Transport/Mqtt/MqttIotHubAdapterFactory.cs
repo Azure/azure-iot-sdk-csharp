@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 connectionCredentials.DeviceId,
                 connectionCredentials.ModuleId,
                 connectionCredentials.GatewayHostName,
-                connectionCredentials.Certificate == null ? connectionCredentials : null,
+                connectionCredentials,
                 mqttTransportSettings,
                 willMessage,
                 mqttIotHubEventHandler,

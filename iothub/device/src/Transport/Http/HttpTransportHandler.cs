@@ -63,8 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal HttpTransportHandler(
             PipelineContext context,
             IotHubClientHttpSettings transportSettings,
-            HttpClientHandler httpClientHandler = null,
-            bool isClientPrimaryTransportHandler = false)
+            HttpClientHandler httpClientHandler = null)
             : base(context, transportSettings)
         {
             var additionalClientInformation = new AdditionalClientInformation
@@ -84,8 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 s_defaultOperationTimeout,
                 null,
                 httpClientHandler,
-                transportSettings,
-                isClientPrimaryTransportHandler);
+                transportSettings);
         }
 
         public override Task OpenAsync(CancellationToken cancellationToken)

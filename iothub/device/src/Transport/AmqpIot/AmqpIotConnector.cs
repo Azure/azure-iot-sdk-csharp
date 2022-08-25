@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _hostName = hostName;
         }
 
-        public async Task<AmqpIotConnection> OpenConnectionAsync(CancellationToken cancellationToken)
+        public async Task<AmqpIotConnection> OpenConnectionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(OpenConnectionAsync));
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
 
-            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
+            _amqpIotTransport = new AmqpIotTransport(connectionCredentials, amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try

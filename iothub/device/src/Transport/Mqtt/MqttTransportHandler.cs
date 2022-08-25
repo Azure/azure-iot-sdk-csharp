@@ -1086,9 +1086,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 SslStream StreamFactory(Stream stream) => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
 
-                List<X509Certificate> certs = settings.ClientCertificate == null
+                List<X509Certificate> certs = connectionCredentials.Certificate == null
                     ? new List<X509Certificate>(0)
-                    : new List<X509Certificate> { settings.ClientCertificate };
+                    : new List<X509Certificate> { connectionCredentials.Certificate };
 
                 var clientTlsSettings = new ClientTlsSettings(
                      settings.SslProtocols,
@@ -1186,9 +1186,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Set websocket keep-alive to {settings.WebSocketKeepAlive}");
                 }
 
-                if (settings.ClientCertificate != null)
+                if (connectionCredentials.Certificate != null)
                 {
-                    websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
+                    websocket.Options.ClientCertificates.Add(connectionCredentials.Certificate);
                 }
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));

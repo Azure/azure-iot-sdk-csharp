@@ -22,34 +22,32 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
         private readonly Uri _baseAddress;
-        private readonly IAuthorizationProvider _authenticationHeaderProvider;
+        private readonly IConnectionCredentials _connectionCredentials;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
         private HttpClientHandler _httpClientHandler;
         private bool _isDisposed;
         private readonly AdditionalClientInformation _additionalClientInformation;
-        private readonly bool _isClientPrimaryTransportHandler;
 
         public HttpClientHelper(
             Uri baseAddress,
-            IAuthorizationProvider authenticationHeaderProvider,
+            IConnectionCredentials connectionCredentials,
             AdditionalClientInformation additionalClientInformation,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
             HttpClientHandler httpClientHandler,
-            IotHubClientHttpSettings iotHubClientHttpSettings,
-            bool isClientPrimaryTransportHandler = false)
+            IotHubClientHttpSettings iotHubClientHttpSettings)
         {
             _baseAddress = baseAddress;
-            _authenticationHeaderProvider = authenticationHeaderProvider;
+            _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
             _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
             _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
 
-            X509Certificate2 clientCert = iotHubClientHttpSettings.ClientCertificate;
+            X509Certificate2 clientCert = _connectionCredentials.Certificate;
             IWebProxy proxy = iotHubClientHttpSettings.Proxy;
 
             if (clientCert != null)
@@ -78,7 +76,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             preRequestActionForAllRequests?.Invoke(_httpClientObj);
             _additionalClientInformation = additionalClientInformation;
-            _isClientPrimaryTransportHandler = isClientPrimaryTransportHandler;
         }
 
         public Task<T> GetAsync<T>(
@@ -398,7 +395,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             using var msg = new HttpRequestMessage(httpMethod, requestUri);
             if (!_usingX509ClientCert)
             {
-                string authHeader = await _authenticationHeaderProvider.GetPasswordAsync().ConfigureAwait(false);
+                string authHeader = await _connectionCredentials.GetPasswordAsync().ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(authHeader))
                 {
                     msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);

@@ -456,12 +456,6 @@ namespace Microsoft.Azure.Devices.Client
                     IotHubConnectionCredentials = InternalClient.IotHubConnectionCredentials,
                 };
 
-                // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
-                if (InternalClient.Certificate != null)
-                {
-                    transportSettings.ClientCertificate = InternalClient.Certificate;
-                }
-
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
                 MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);

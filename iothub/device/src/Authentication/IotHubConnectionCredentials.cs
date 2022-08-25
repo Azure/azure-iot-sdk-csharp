@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// This overridden Equals implementation is being referenced when fetching the client identity (AmqpUnit)
         /// from an AMQP connection pool with multiplexed client connections.
-        /// This implementation only uses device Id, hostname and module Id when evaluating equality.
+        /// This implementation only uses device Id, hostname, module Id and the authentication model when evaluating equality.
         /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
         /// so the algorithm has been retained as-is.
         /// </summary>
@@ -184,14 +184,15 @@ namespace Microsoft.Azure.Devices.Client
                 && GetHashCode() == connectionCredentials.GetHashCode()
                 && Equals(DeviceId, connectionCredentials.DeviceId)
                 && Equals(GatewayHostName, connectionCredentials.GatewayHostName)
-                && Equals(ModuleId, connectionCredentials.ModuleId);
+                && Equals(ModuleId, connectionCredentials.ModuleId)
+                && Equals(AuthenticationModel, connectionCredentials.AuthenticationModel);
         }
 
         /// <summary>
         /// This hashing algorithm is used in two places:
         /// - when fetching the object hashcode for our logging implementation
         /// - when fetching the client identity (AmqpUnit) from an AMQP connection pool with multiplexed client connections
-        /// This algorithm only uses device Id, hostname and module Id when evaluating the hash.
+        /// This algorithm only uses device Id, hostname, module Id and the authentication model when evaluating the hash.
         /// This is the algorithm that was implemented when AMQP connection pooling was first implemented,
         /// so the algorithm has been retained as-is.
         /// </summary>
@@ -200,6 +201,7 @@ namespace Microsoft.Azure.Devices.Client
             int hashCode = UpdateHashCode(620602339, DeviceId);
             hashCode = UpdateHashCode(hashCode, GatewayHostName);
             hashCode = UpdateHashCode(hashCode, ModuleId);
+            hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;
         }
 
