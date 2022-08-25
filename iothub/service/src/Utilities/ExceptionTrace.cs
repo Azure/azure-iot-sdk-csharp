@@ -51,16 +51,6 @@ namespace Microsoft.Azure.Devices.Common
             return TraceException(new ArgumentNullException(paramName, message), TraceEventType.Error);
         }
 
-        public ArgumentException ArgumentNullOrEmpty(string paramName)
-        {
-            return Argument(paramName, CommonResources.GetString(CommonResources.ArgumentNullOrEmpty, paramName));
-        }
-
-        public ArgumentException ArgumentNullOrWhiteSpace(string paramName)
-        {
-            return Argument(paramName, CommonResources.GetString(CommonResources.ArgumentNullOrWhiteSpace, paramName));
-        }
-
         public ArgumentOutOfRangeException ArgumentOutOfRange(string paramName, object actualValue, string message)
         {
             return TraceException(new ArgumentOutOfRangeException(paramName, actualValue, message), TraceEventType.Error);

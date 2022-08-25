@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         notRecovered = false;
                         for (j = 0; j < devicesCount; j++)
                         {
-                            if (deviceClients[j].ConnectionInfo.Status != ConnectionStatus.Connected)
+                            if (deviceClients[j].ConnectionStatusInfo.Status != ConnectionStatus.Connected)
                             {
                                 await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                                 notRecovered = true;
@@ -194,8 +194,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangeCount >= 2, $"The expected connection status change count for {testDevices[i].Id}  should be 2 but was {amqpConnectionStatuses[i].ConnectionStatusChangeCount}");
                         }
                     }
-                    Assert.AreEqual(ConnectionStatus.Closed, deviceClients[i].ConnectionInfo.Status, $"The expected connection status should be {ConnectionStatus.Closed} but was {deviceClients[i].ConnectionInfo.Status}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.ClientClosed, deviceClients[i].ConnectionInfo.ChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.ClientClosed} but was {deviceClients[i].ConnectionInfo.ChangeReason}");
+                    Assert.AreEqual(ConnectionStatus.Closed, deviceClients[i].ConnectionStatusInfo.Status, $"The expected connection status should be {ConnectionStatus.Closed} but was {deviceClients[i].ConnectionStatusInfo.Status}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.ClientClosed, deviceClients[i].ConnectionStatusInfo.ChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.ClientClosed} but was {deviceClients[i].ConnectionStatusInfo.ChangeReason}");
                 }
             }
             finally

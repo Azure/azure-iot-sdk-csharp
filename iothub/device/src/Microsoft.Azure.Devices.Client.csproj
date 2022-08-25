@@ -49,6 +49,7 @@
   <!--Project reference dependencies-->
   <ItemGroup>
     <ProjectReference Include="..\..\..\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
+    <ProjectReference Include="..\..\service\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
   <!--Nuget package dependencies-->
