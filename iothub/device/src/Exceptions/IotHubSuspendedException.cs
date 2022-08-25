@@ -3,7 +3,7 @@
 
 using System;
 using System.Runtime.Serialization;
-using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
@@ -14,13 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     [Serializable]
     public class IotHubSuspendedException : IotHubException
     {
-        /// <summary>
-        /// Initializes a new instance of the class.
-        /// </summary>
-        public IotHubSuspendedException()
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
