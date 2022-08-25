@@ -699,7 +699,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 else
                 {
-                    throw new InvalidOperationException($"The object is closed state, call to {nameof(OpenAsync)} is required before this operation.");
+                    throw new InvalidOperationException($"Transport disconnected, call to {nameof(OpenAsync)} is required before this operation.");
                 }
             }
         }
