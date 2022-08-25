@@ -76,6 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await retryDelegatingHandler.SendEventAsync(message, CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -103,6 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             NotSupportedException exception = await retryDelegatingHandler
                 .SendEventAsync(message, CancellationToken.None)
                 .ExpectedAsync<NotSupportedException>()
@@ -137,6 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await sut.SendEventAsync(messages, CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -167,6 +170,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await sut.SendEventAsync(message, CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -208,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException() { StatusCode = IotHubStatusCode.DeviceNotFound});
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException() { StatusCode = IotHubStatusCode.DeviceNotFound });
 
             ConnectionInfo connectionInfo = new ConnectionInfo();
             Action<ConnectionInfo> statusChangeHandler = (c) =>
@@ -280,6 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
@@ -296,6 +301,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
@@ -317,6 +323,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock.ReceiveMessageAsync(cts.Token).Returns(new Task<Message>(() => new Message(new byte[0])));
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // act and assert
             await sut.ReceiveMessageAsync(cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
@@ -367,6 +374,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // act and assert
             await sut.CompleteMessageAsync(lockToken, cts.Token).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
@@ -381,6 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
@@ -400,6 +409,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
