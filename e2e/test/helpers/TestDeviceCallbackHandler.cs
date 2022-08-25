@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetMethodHandlerAsync(methodName,
                 (request, context) =>
                 {
@@ -86,6 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             string userContext = "myContext";
 
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch, context) =>
                 {
@@ -122,11 +124,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetMessageReceiveCallbackHandlerAsync()
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null).ConfigureAwait(false);
         }
 
         public async Task UnSetMessageReceiveCallbackHandlerAsync()
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
         }
 
@@ -159,6 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private async Task CompleteMessageAsync(Client.Message message)
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.CompleteMessageAsync(message).ConfigureAwait(false);
         }
 

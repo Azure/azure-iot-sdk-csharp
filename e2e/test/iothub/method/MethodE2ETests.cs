@@ -10,6 +10,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
+using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
@@ -378,7 +379,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public static async Task<Task> SubscribeAndUnsubscribeMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
-
+            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
                 methodName,
@@ -399,7 +400,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public static async Task<Task> SetDeviceReceiveMethodAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
-
+            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient
                 .SetMethodHandlerAsync(
                     methodName,
@@ -431,7 +432,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public static async Task<Task> SetDeviceReceiveMethodDefaultHandlerAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
-
+            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SetMethodDefaultHandlerAsync(
                 (request, context) =>
                 {
@@ -459,7 +460,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public static async Task<Task> SetModuleReceiveMethodAsync(IotHubModuleClient moduleClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
-
+            await moduleClient.OpenAsync().ConfigureAwait(false);
             await moduleClient.SetMethodHandlerAsync(
                 methodName,
                 (request, context) =>
@@ -489,7 +490,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public static async Task<Task> SetModuleReceiveMethodDefaultHandlerAsync(IotHubModuleClient moduleClient, string methodName, MsTestLogger logger)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
-
+            await moduleClient.OpenAsync().ConfigureAwait(false);
             await moduleClient.SetMethodDefaultHandlerAsync(
                 (request, context) =>
                 {
@@ -525,6 +526,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
 
             await subscribeAndUnsubscribeMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
 
@@ -542,6 +544,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName, Logger).ConfigureAwait(false);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
@@ -567,6 +570,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            await moduleClient.OpenAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName, Logger).ConfigureAwait(false);
 
