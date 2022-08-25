@@ -6,43 +6,43 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Creates an instance of an implementation of <see cref="IAuthenticationMethod"/> based on known authentication parameters.
+    /// Creates an instance of an implementation of <c>IAuthenticationMethod</c> based on known authentication parameters.
     /// </summary>
-    public sealed class AuthenticationMethodFactory
+    internal sealed class AuthenticationMethodFactory
     {
-        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionCredentials iotHubConnectionCredentials)
+        internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
-            if (iotHubConnectionCredentials.SharedAccessKeyName != null)
+            if (iotHubConnectionString.SharedAccessKeyName != null)
             {
                 return new DeviceAuthenticationWithSharedAccessPolicyKey(
-                    iotHubConnectionCredentials.DeviceId,
-                    iotHubConnectionCredentials.SharedAccessKeyName,
-                    iotHubConnectionCredentials.SharedAccessKey);
+                    iotHubConnectionString.DeviceId,
+                    iotHubConnectionString.SharedAccessKeyName,
+                    iotHubConnectionString.SharedAccessKey);
             }
-            else if (iotHubConnectionCredentials.SharedAccessKey != null)
+            else if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return iotHubConnectionCredentials.ModuleId == null
+                return iotHubConnectionString.ModuleId == null
                     ? new DeviceAuthenticationWithRegistrySymmetricKey(
-                        iotHubConnectionCredentials.DeviceId,
-                        iotHubConnectionCredentials.SharedAccessKey)
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.SharedAccessKey)
                     : new ModuleAuthenticationWithRegistrySymmetricKey(
-                        iotHubConnectionCredentials.DeviceId,
-                        iotHubConnectionCredentials.ModuleId,
-                        iotHubConnectionCredentials.SharedAccessKey);
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.ModuleId,
+                        iotHubConnectionString.SharedAccessKey);
             }
-            else if (iotHubConnectionCredentials.SharedAccessSignature != null)
+            else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                return iotHubConnectionCredentials.ModuleId == null
+                return iotHubConnectionString.ModuleId == null
                     ? new DeviceAuthenticationWithToken(
-                        iotHubConnectionCredentials.DeviceId,
-                        iotHubConnectionCredentials.SharedAccessSignature)
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.SharedAccessSignature)
                     : new ModuleAuthenticationWithToken(
-                        iotHubConnectionCredentials.DeviceId,
-                        iotHubConnectionCredentials.ModuleId,
-                        iotHubConnectionCredentials.SharedAccessSignature);
+                        iotHubConnectionString.DeviceId,
+                        iotHubConnectionString.ModuleId,
+                        iotHubConnectionString.SharedAccessSignature);
             }
 
-            throw new InvalidOperationException($"Unsupported authentication method in '{iotHubConnectionCredentials}'.");
+            throw new InvalidOperationException($"Unsupported authentication method in '{iotHubConnectionString}'.");
         }
     }
 }

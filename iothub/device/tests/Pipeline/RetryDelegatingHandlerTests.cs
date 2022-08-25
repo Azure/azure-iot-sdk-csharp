@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Returns(t =>
                     {
                         return ++callCounter == 1
-                            ? throw new IotHubException("Test transient exception", isTransient: true)
+                            ? throw new IotHubClientException("Test transient exception", isTransient: true)
                             : TaskHelpers.CompletedTask;
                     });
             nextHandlerMock.WaitForTransportClosedAsync().Returns(Task.Delay(TimeSpan.FromSeconds(10)));
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
                         return TaskHelpers.CompletedTask;
                     });
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
                         return TaskHelpers.CompletedTask;
                     });
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
                         return TaskHelpers.CompletedTask;
                     });
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new DeviceNotFoundException());
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException() { StatusCode = IotHubStatusCode.DeviceNotFound});
 
             ConnectionInfo connectionInfo = new ConnectionInfo();
             Action<ConnectionInfo> statusChangeHandler = (c) =>
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act
             await ((Func<Task>)(() => sut
                 .OpenAsync(CancellationToken.None)))
-                .ExpectedAsync<DeviceNotFoundException>()
+                .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
             // assert
@@ -241,12 +241,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
                 .OpenAsync(cts.Token)
-                .Returns(t => throw new IotHubException(TestExceptionMessage, isTransient: true));
+                .Returns(t => throw new IotHubClientException(TestExceptionMessage, isTransient: true));
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            IotHubException exception = await sut
+            IotHubClientException exception = await sut
                 .OpenAsync(cts.Token)
-                .ExpectedAsync<IotHubException>()
+                .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
             // act
@@ -339,17 +339,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t =>
                {
                    nextHandlerCallCounter++;
-                   throw new IotHubCommunicationException();
+                   throw new IotHubClientException(true, IotHubStatusCode.NetworkErrors);
                });
 
             // act and assert
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
+            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
 
             var noretry = new NoRetry();
             sut.SetRetryPolicy(noretry);
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
+            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
 
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 Counter++;
-                lastException.Should().BeOfType(typeof(IotHubCommunicationException));
+                lastException.Should().BeOfType(typeof(IotHubClientException));
 
                 retryInterval = TimeSpan.MinValue;
                 return Counter < 2;

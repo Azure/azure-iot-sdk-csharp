@@ -193,11 +193,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 Assert.Fail("Should throw UnauthorizedException but didn't.");
             }
-            catch (UnauthorizedException)
+            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
             {
                 // It should always throw UnauthorizedException
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is TaskCanceledException)
+            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.NetworkErrors && ex.InnerException is TaskCanceledException)
             {
                 Assert.Fail("Call to OpenAsync timed out.");
             }
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.OpenAsync().ConfigureAwait(false);
                     Assert.Fail("Should throw UnauthorizedException but didn't.");
                 }
-                catch (UnauthorizedException)
+                catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
                 {
                     // It should always throw UnauthorizedException
                 }

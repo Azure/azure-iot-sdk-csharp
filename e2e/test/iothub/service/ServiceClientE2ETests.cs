@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string DevicePrefix = $"{nameof(ServiceClientE2ETests)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(TimeoutException))]
+        [ExpectedException(typeof(TaskCanceledException))]
         [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
         {
@@ -34,17 +35,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task FastTimeout()
         {
-            TimeSpan? timeout = TimeSpan.FromTicks(10).Negate();
-            await TestTimeout(timeout).ConfigureAwait(false);
+            TimeSpan timeout = TimeSpan.FromTicks(10).Negate();
+            using var cts = new CancellationTokenSource(timeout);
+            await TestTimeout(cts.Token).ConfigureAwait(false);
         }
 
         private async Task DefaultTimeout()
         {
-            TimeSpan? timeout = null;
-            await TestTimeout(timeout).ConfigureAwait(false);
+            await TestTimeout().ConfigureAwait(false);
         }
 
-        private async Task TestTimeout(TimeSpan? timeout)
+        private async Task TestTimeout(CancellationToken token = default)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
@@ -52,11 +53,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var sw = new Stopwatch();
             sw.Start();
 
-            Logger.Trace($"Testing ServiceClient SendAsync() timeout in ticks={timeout?.Ticks}");
+            Logger.Trace($"Testing ServiceClient SendAsync() cancellation.");
             try
             {
                 var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
-                await sender.Messaging.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+                await sender.Messaging.SendAsync(testDevice.Id, testMessage, token).ConfigureAwait(false);
 
             }
             finally

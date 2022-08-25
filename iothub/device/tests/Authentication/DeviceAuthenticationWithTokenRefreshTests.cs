@@ -86,18 +86,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_NonExpiredToken_GetTokenCached_Ok()
-        {
-            var refresher = new TestImplementation(TestDeviceId);
-
-            string token1 = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
-            string token2 = await refresher.GetTokenAsync(TestIotHubName).ConfigureAwait(false);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
-            Assert.AreEqual(token1, token2);
-        }
-
-        [TestMethod]
         public async Task DeviceAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
@@ -125,22 +113,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var refresher = new TestImplementation(TestDeviceId);
             TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(null));
-        }
-
-        [TestMethod]
-        public async Task DeviceAuthenticationWithTokenRefresh_GetTokenAsync_ConcurrentUpdate_Ok()
-        {
-            var refresher = new TestImplementation(TestDeviceId);
-
-            var tasks = new Task[5];
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = refresher.GetTokenAsync(TestIotHubName);
-            }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount);
         }
 
         [TestMethod]
@@ -179,20 +151,17 @@ namespace Microsoft.Azure.Devices.Client.Test
                 new DeviceAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestSharedAccessKey),
                 TestIotHubName);
 
-            var clientOptions = new IotHubClientOptions();
-            ClientConfiguration connInfo = new ClientConfiguration(iotHubConnectionCredentials, clientOptions);
+            Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));
 
-            Assert.IsNotNull(connInfo.TokenRefresher);
-            Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));
-
-            var auth = (IAuthorizationProvider)connInfo;
-            var cbsAuth = new AmqpIotCbsTokenProvider(connInfo);
+            var auth = iotHubConnectionCredentials;
+            var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
             string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
             CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIotHubName), "testAppliesTo", null).ConfigureAwait(false);
 
-            Assert.IsNull(connInfo.SharedAccessSignature);
-            Assert.AreEqual(TestDeviceId, connInfo.DeviceId);
+            Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
 
             Assert.IsNotNull(token1);
             Assert.IsNotNull(token2);
@@ -214,15 +183,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             private int _callCount = 0;
 
-            public int SafeCreateNewTokenCallCount
-            {
-                get
-                {
-                    return _callCount;
-                }
-            }
+            public int SafeCreateNewTokenCallCount => _callCount;
 
-            public int ActualTimeToLive { get; set; } = 0;
+            public int ActualTimeToLive { get; set; }
 
             public TestImplementation(string deviceId) : base(deviceId)
             {
@@ -237,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 

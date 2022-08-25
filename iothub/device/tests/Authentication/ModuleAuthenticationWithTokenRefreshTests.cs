@@ -87,20 +87,17 @@ namespace Microsoft.Azure.Devices.Client.Test
                 new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey),
                 TestIotHubName);
 
-            var clientOptions = new IotHubClientOptions();
-            ClientConfiguration connInfo = new ClientConfiguration(iotHubConnectionCredentials, clientOptions);
+            Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
 
-            Assert.IsNotNull(connInfo.TokenRefresher);
-            Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
-
-            var auth = (IAuthorizationProvider)connInfo;
-            var cbsAuth = new AmqpIotCbsTokenProvider(connInfo);
+            var auth = iotHubConnectionCredentials;
+            var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
             string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
             CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIotHubName), "testAppliesTo", null).ConfigureAwait(false);
 
-            Assert.IsNull(connInfo.SharedAccessSignature);
-            Assert.AreEqual(TestDeviceId, connInfo.DeviceId);
+            Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
 
             Assert.IsNotNull(token1);
             Assert.IsNotNull(token2);
@@ -122,15 +119,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             private int _callCount = 0;
 
-            public int SafeCreateNewTokenCallCount
-            {
-                get
-                {
-                    return _callCount;
-                }
-            }
+            public int SafeCreateNewTokenCallCount => _callCount;
 
-            public int ActualTimeToLive { get; set; } = 0;
+            public int ActualTimeToLive { get; set; }
 
             public TestImplementation(string deviceId, string moduleId) : base(deviceId, moduleId)
             {
@@ -146,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 

@@ -14,11 +14,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        /// <remarks>
-        /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated device client instance is disposed. To reuse the authentication method instance across multiple client instance lifetimes
-        /// set <paramref name="disposeWithClient"/> to <c>false</c>.
-        /// </remarks>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
@@ -28,19 +23,12 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         ///</param>
-        ///<param name="disposeWithClient ">
-        ///<c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
-        /// Defaults to <c>true</c>.
-        /// </param>
         public DeviceAuthenticationWithTokenRefresh(
             string deviceId,
             TimeSpan suggestedTimeToLive = default,
-            int timeBufferPercentage = default,
-            bool disposeWithClient = true)
+            int timeBufferPercentage = default)
             : base(suggestedTimeToLive,
-                  timeBufferPercentage,
-                  disposeWithClient)
+                  timeBufferPercentage)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {

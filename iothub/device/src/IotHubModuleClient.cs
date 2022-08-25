@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
             _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
 
-            if (string.IsNullOrWhiteSpace(InternalClient.IotHubConnectionInfo?.ModuleId))
+            if (InternalClient.IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
             }
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
             // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = internalClient.IotHubConnectionInfo.IsUsingGateway;
+            _isAnEdgeModule = !internalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
@@ -253,23 +253,25 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sends an event to IoT hub.
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <remarks>
+        /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
+        /// the error details and take steps accordingly.
+        /// Please note that the list of exceptions is not exhaustive.
+        /// </remarks>
+        /// <param name="message">The message to send. Should be disposed after sending.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        /// <remarks>
-        /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
-        /// Please note that the list of exceptions is not exhaustive.
-        /// </remarks>
-        /// <returns>The message containing the event</returns>
+        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken = default) => InternalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
@@ -293,15 +295,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken = default) =>
             InternalClient.SendEventAsync(outputName, message, cancellationToken);
@@ -449,14 +453,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 var pipelineContext = new PipelineContext
                 {
-                    ClientConfiguration = InternalClient.IotHubConnectionInfo
+                    IotHubConnectionCredentials = InternalClient.IotHubConnectionCredentials,
                 };
-
-                // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
-                if (InternalClient.Certificate != null)
-                {
-                    transportSettings.ClientCertificate = InternalClient.Certificate;
-                }
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
