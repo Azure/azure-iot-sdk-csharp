@@ -393,7 +393,6 @@ namespace Microsoft.Azure.Devices.Client
             // expire or unrecoverable error(authentication or quota exceed) occurs.
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -424,7 +423,6 @@ namespace Microsoft.Azure.Devices.Client
             // expire or unrecoverable error (authentication or quota exceed) occurs.
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -446,7 +444,6 @@ namespace Microsoft.Azure.Devices.Client
             // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -469,7 +466,6 @@ namespace Microsoft.Azure.Devices.Client
             // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -492,7 +488,6 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -539,7 +534,6 @@ namespace Microsoft.Azure.Devices.Client
             // expire or unrecoverable error(authentication, quota exceed) occurs.
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -580,7 +574,6 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -704,7 +697,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.SendMethodResponseAsync(methodResponse, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -721,7 +713,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return;
             }
-            await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
+
             await InnerHandler.EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
             _isDeviceMethodEnabled = true;
         }
@@ -740,7 +732,6 @@ namespace Microsoft.Azure.Devices.Client
             // unrecoverable (authentication, quota exceed) error occurs.
             try
             {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
@@ -802,7 +793,6 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (_deviceReceiveMessageCallback != null)
                 {
-                    await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                     // Any previously received C2D messages will also need to be delivered.
                     await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -891,7 +881,6 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
             await InnerHandler.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
             _isDeviceMethodEnabled = false;
         }
@@ -921,7 +910,6 @@ namespace Microsoft.Azure.Devices.Client
 
                 message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
 
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -953,7 +941,6 @@ namespace Microsoft.Azure.Devices.Client
 
                 messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
 
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
                 await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
             }
             finally
