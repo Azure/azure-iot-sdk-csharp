@@ -88,12 +88,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
-            return TaskHelpers.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override Task CloseAsync(CancellationToken cancellationToken)
         {
-            return TaskHelpers.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override Task SendEventAsync(Message message, CancellationToken cancellationToken)

@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
                 return false;
             }
 
-            taskResult.ToAsyncResult(s_onWriteComplete, args);
+            ToAsyncResult(taskResult, s_onWriteComplete, args);
             return true;
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices
                 return false;
             }
 
-            taskResult.ToAsyncResult(s_onReadComplete, args);
+            ToAsyncResult(taskResult, s_onReadComplete, args);
             return true;
         }
 
@@ -327,6 +327,89 @@ namespace Microsoft.Azure.Devices
             }
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);
+        }
+
+        private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)
+        {
+            if (task.AsyncState == state)
+            {
+                if (callback != null)
+                {
+                    task.ContinueWith(
+                        t => callback(task),
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
+                }
+
+                return task;
+            }
+
+            var tcs = new TaskCompletionSource<object>(state);
+            task.ContinueWith(
+                _ =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        tcs.TrySetException(task.Exception.InnerExceptions);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        tcs.TrySetCanceled();
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(null);
+                    }
+
+                    callback?.Invoke(tcs.Task);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+            return tcs.Task;
+        }
+        private static IAsyncResult ToAsyncResult<TResult>(Task<TResult> task, AsyncCallback callback, object state)
+        {
+            if (task.AsyncState == state)
+            {
+                if (callback != null)
+                {
+                    task.ContinueWith(
+                        t => callback(task),
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
+                }
+
+                return task;
+            }
+
+            var tcs = new TaskCompletionSource<TResult>(state);
+            task.ContinueWith(
+                _ =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        tcs.TrySetException(task.Exception.InnerExceptions);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        tcs.TrySetCanceled();
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(task.Result);
+                    }
+
+                    callback?.Invoke(tcs.Task);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+            return tcs.Task;
         }
     }
 }

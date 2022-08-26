@@ -42,12 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(WebException), () => new WebException() },
             { typeof(AmqpException), () => new AmqpException(new Amqp.Framing.Error()) },
             { typeof(WebSocketException), () => new WebSocketException(1) },
-            { typeof(TestSecurityException), () => new Exception(
-                                                            "Test top level",
-                                                            new Exception(
-                                                                "Inner exception",
-                                                                new AuthenticationException()))
-            },
+            { typeof(TestSecurityException), () => new Exception("Test top level", new Exception("Inner exception", new AuthenticationException())) },
             { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
@@ -88,8 +83,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             var cancellationToken = new CancellationToken();
@@ -189,7 +184,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
 
             //set initial operation result that throws
@@ -228,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             //initial OpenAsync to emulate Gatekeeper behavior
@@ -242,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 if (setup[0])
                 {
-                    return TaskHelpers.CompletedTask; ;
+                    return Task.CompletedTask; ;
                 }
                 throw ExceptionFactory[thrownExceptionType]();
             });
@@ -252,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //override outcome
             setup[0] = true;//otherwise previously setup call will happen and throw;
-            mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
+            mockSetup(innerHandler).Returns(Task.CompletedTask);
 
             //act
             await act(sut).ConfigureAwait(false);
@@ -290,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //override outcome
             setup[0] = true;//otherwise previously setup call will happen and throw;
-            mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
+            mockSetup(innerHandler).Returns(Task.CompletedTask);
 
             //act
             await act(sut).ConfigureAwait(false);
