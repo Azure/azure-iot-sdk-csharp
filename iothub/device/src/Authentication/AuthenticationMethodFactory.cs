@@ -12,16 +12,18 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
+            IAuthenticationMethod authMethod = default;
+
             if (iotHubConnectionString.SharedAccessKeyName != null)
             {
-                return new DeviceAuthenticationWithSharedAccessPolicyKey(
+                authMethod = new DeviceAuthenticationWithSharedAccessPolicyKey(
                     iotHubConnectionString.DeviceId,
                     iotHubConnectionString.SharedAccessKeyName,
                     iotHubConnectionString.SharedAccessKey);
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
-                return iotHubConnectionString.ModuleId == null
+                authMethod = iotHubConnectionString.ModuleId == null
                     ? new DeviceAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.SharedAccessKey)
@@ -32,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                return iotHubConnectionString.ModuleId == null
+                authMethod = iotHubConnectionString.ModuleId == null
                     ? new DeviceAuthenticationWithToken(
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.SharedAccessSignature)
@@ -42,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
                         iotHubConnectionString.SharedAccessSignature);
             }
 
-            throw new ArgumentException($"Unsupported authentication method in '{iotHubConnectionString}'.");
+            return authMethod;
         }
     }
 }

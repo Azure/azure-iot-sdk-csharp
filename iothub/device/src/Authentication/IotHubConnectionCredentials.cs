@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the SAS token credential required for authenticating the client with IoT hub service.
         /// </summary>
-        public async Task<string> GetPasswordAsync()
+        async Task<string> IConnectionCredentials.GetPasswordAsync()
         {
             try
             {
