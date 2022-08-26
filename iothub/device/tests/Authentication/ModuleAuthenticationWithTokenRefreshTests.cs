@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var iotHubConnectionCredentials = new IotHubConnectionCredentials(
+            IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
                 new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey),
                 TestIotHubName);
 
