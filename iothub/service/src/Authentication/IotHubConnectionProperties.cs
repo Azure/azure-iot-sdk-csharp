@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,6 +16,7 @@ namespace Microsoft.Azure.Devices
     {
         private const string HostNameSeparator = ".";
         private const string HttpsEndpointPrefix = "https";
+        private const string AmqpsScheme = "amqps";
 
         /// <summary>
         /// Constructor for mocking purposes only.
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
 
             HostName = hostName;
             IotHubName = GetIotHubName(hostName);
-            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
+            AmqpEndpoint = new UriBuilder(AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
             HttpsEndpoint = new UriBuilder(HttpsEndpointPrefix, HostName).Uri;
         }
 
