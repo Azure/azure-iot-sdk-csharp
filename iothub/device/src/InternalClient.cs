@@ -822,7 +822,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
             return _deviceReceiveMessageCallback == null
                 ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         // Disable telemetry downlink for devices
@@ -831,7 +831,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
             return _deviceReceiveMessageCallback == null
                 ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         /// <summary>
@@ -1142,7 +1142,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
                 ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         // Disable telemetry downlink for modules
@@ -1151,7 +1151,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
                 ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         private void ValidateModuleTransportHandler(string apiName)

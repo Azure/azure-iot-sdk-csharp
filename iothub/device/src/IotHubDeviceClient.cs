@@ -19,9 +19,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public class IotHubDeviceClient : IDisposable
-#if NETSTANDARD2_1_OR_GREATER
-        , IAsyncDisposable
-#endif
     {
         /// <summary>
         /// Default operation timeout.

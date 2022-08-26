@@ -53,22 +53,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             return tcs.Task;
         }
-
-        public static void EndAsyncResult(IAsyncResult asyncResult)
-        {
-            if (!(asyncResult is Task task))
-            {
-                throw new ArgumentException($"Given {nameof(asyncResult)} is not subclass of Task.");
-            }
-
-            try
-            {
-                task.Wait();
-            }
-            catch (AggregateException ae)
-            {
-                throw ae.GetBaseException();
-            }
-        }
     }
 }

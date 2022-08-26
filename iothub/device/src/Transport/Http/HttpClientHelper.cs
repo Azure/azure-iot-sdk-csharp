@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         InsertEtag(requestMsg, entity, operationType);
                         requestMsg.Content = CreateContent(entity);
-                        return TaskHelpers.CompletedTask;
+                        return Task.CompletedTask;
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            return TaskHelpers.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 ReadResponseMessageAsync<HttpResponseMessage>,
                 errorMappingOverrides,
@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 processResponseMessageAsync,
                 errorMappingOverrides,
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     InsertEtag(requestMsg, entity);
                     AddCustomHeaders(requestMsg, customHeaders);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 null,
                 errorMappingOverrides,

@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     var response = new Message(twinByteStream);
                     response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusSuccess);
                     transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                        var response = new Message();
                        response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
                        transport.OnMessageReceived(response);
-                       return TaskHelpers.CompletedTask;
+                       return Task.CompletedTask;
                    });
 
             // act & assert
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     };
                     transport.OnMessageReceived(response);
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     var response = new Message();
                     response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusFailure);
                     transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act & assert

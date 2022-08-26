@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         // This behavior is available by default over AMQP, so no additional implementation is required here.
         public override Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
-            return TaskHelpers.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
