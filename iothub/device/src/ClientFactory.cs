@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -94,10 +93,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            InternalClient internalClient = CreateInternal(null, iotHubConnectionCredentials, options);
-            internalClient.Certificate = iotHubConnectionCredentials.Certificate;
-
-            return internalClient;
+            return CreateInternal(null, iotHubConnectionCredentials, options);
         }
 
         /// <summary>

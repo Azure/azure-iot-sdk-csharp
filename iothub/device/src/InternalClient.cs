@@ -144,8 +144,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal X509Certificate2 Certificate { get; set; }
-
         internal IDelegatingHandler InnerHandler { get; set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }

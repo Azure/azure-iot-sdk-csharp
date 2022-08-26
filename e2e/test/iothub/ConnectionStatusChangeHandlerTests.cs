@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int deviceDisabledReceivedCount = 0;
 
             var options = new IotHubClientOptions(transportSettings);
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(deviceConnectionString, options);
+            using var deviceClient = new IotHubDeviceClient(deviceConnectionString, options);
             void statusChangeHandler(ConnectionStatusInfo c)
             {
                 if (c.ChangeReason == ConnectionStatusChangeReason.DeviceDisabled)

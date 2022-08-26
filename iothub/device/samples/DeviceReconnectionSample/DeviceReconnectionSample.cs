@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             s_deviceClient.Dispose();
                         }
 
-                        s_deviceClient = IotHubDeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _clientOptions);
+                        s_deviceClient = new IotHubDeviceClient(_deviceConnectionStrings.First(), _clientOptions);
                         s_deviceClient.SetConnectionStatusChangeHandler(ConnectionStatusChangeHandlerAsync);
                         await s_deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null, s_cancellationTokenSource.Token);
                         Console.WriteLine("Initialized the client instance.");

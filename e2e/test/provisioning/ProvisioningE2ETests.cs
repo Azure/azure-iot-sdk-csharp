@@ -1161,7 +1161,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             IotHubClientTransportSettings transportSettings,
             bool sendReportedPropertiesUpdate)
         {
-            using var iotClient = IotHubDeviceClient.Create(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
+            using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
             Logger.Trace("DeviceClient OpenAsync.");
             await iotClient.OpenAsync().ConfigureAwait(false);
             Logger.Trace("DeviceClient SendEventAsync.");
