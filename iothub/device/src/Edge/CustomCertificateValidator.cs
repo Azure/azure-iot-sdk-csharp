@@ -41,15 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         {
             Debug.WriteLine("CustomCertificateValidator.SetupCertificateValidation()");
 
-            if (_transportSettings is IotHubClientAmqpSettings amqpTransportSettings)
-            {
-                if (amqpTransportSettings.RemoteCertificateValidationCallback == null)
-                {
-                    amqpTransportSettings.RemoteCertificateValidationCallback =
-                        (sender, certificate, chain, sslPolicyErrors) => ValidateCertificate(_certs.First(), certificate, chain, sslPolicyErrors);
-                }
-            }
-            else if (_transportSettings is IotHubClientMqttSettings mqttTransportSettings)
+            if (_transportSettings is IotHubClientMqttSettings mqttTransportSettings)
             {
                 if (mqttTransportSettings.RemoteCertificateValidationCallback == null)
                 {

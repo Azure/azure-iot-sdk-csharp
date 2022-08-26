@@ -358,7 +358,6 @@ namespace Microsoft.Azure.Amqp.Transport
             }
         }
 
-
         private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)
         {
             if (task.AsyncState == state)

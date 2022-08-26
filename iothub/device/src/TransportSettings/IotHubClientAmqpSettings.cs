@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Security;
+using System.Net.WebSockets;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
+        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         internal string AuthenticationChain { get; set; }
 
@@ -72,25 +73,19 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.
-        /// </summary>
-        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.keepaliveinterval"/>
-        public TimeSpan? WebSocketKeepAlive { get; set; }
-
-        /// <summary>
-        /// The pre-fetch count
+        /// The pre-fetch count.
         /// </summary>
         public uint PrefetchCount { get; set; } = DefaultPrefetchCount;
 
         /// <summary>
-        /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
-        /// </summary>
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        /// <summary>
-        /// The connection pool settings for AMQP
+        /// The connection pool settings for AMQP.
         /// </summary>
         public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
+
+        /// <summary>
+        /// The custom web socket instance to be used instead of one created by default.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket"/>
+        public ClientWebSocket ClientWebSocket { get; set; }
     }
 }

@@ -36,16 +36,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public void TestSetupCertificateValidation_Amqp_ShouldSucceed()
-        {
-            var transportSettings = new IotHubClientAmqpSettings();
-            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
-            var customCertificateValidator = CustomCertificateValidator.Create(certs, transportSettings);
-
-            transportSettings.RemoteCertificateValidationCallback.Should().NotBeNull();
-        }
-
-        [TestMethod]
         public void TestSetupCertificateValidation_Mqtt_CallbackAlreadySet_ShouldSucceed()
         {
             var certs = TrustBundleProvider.ParseCertificates(certificatesString);
@@ -59,22 +49,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var customCertificateValidator = CustomCertificateValidator.Create(certs, setting);
 
             setting.RemoteCertificateValidationCallback.Should().Be(callback);
-        }
-
-        [TestMethod]
-        public void TestSetupCertificateValidation_Amqp_CallbackAlreadySet_ShouldSucceed()
-        {
-            var certs = TrustBundleProvider.ParseCertificates(certificatesString);
-
-            var setting = new IotHubClientAmqpSettings();
-            RemoteCertificateValidationCallback callback = (sender, certificate, chain, sslPolicyErrors) =>
-            {
-                return true;
-            };
-            setting.RemoteCertificateValidationCallback = callback;
-            var customCertificateValidator = CustomCertificateValidator.Create(certs, setting);
-
-            setting.RemoteCertificateValidationCallback.Should().NotBeNull();
         }
     }
 }

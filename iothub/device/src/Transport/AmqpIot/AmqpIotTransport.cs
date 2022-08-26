@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,8 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 TargetHost = hostName,
                 Certificate = null,
-                CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback
-                    ?? OnRemoteCertificateValidation,
+                CertificateValidationCallback = OnRemoteCertificateValidation,
                 Protocols = amqpTransportSettings.SslProtocols,
             };
 
@@ -124,37 +122,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (Logging.IsEnabled)
                     Logging.Enter(this, nameof(CreateClientWebSocketAsync));
 
-                var websocket = new ClientWebSocket();
+                bool customWebSocket = _amqpTransportSettings.ClientWebSocket != null;
+                ClientWebSocket websocket = customWebSocket ? _amqpTransportSettings.ClientWebSocket : new ClientWebSocket();
+                IWebProxy webProxy = customWebSocket ? websocket.Options.Proxy : _amqpTransportSettings.Proxy;
 
                 // Set SubProtocol to AMQPWSB10
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
-
-                // Check if we're configured to use a proxy server
-                IWebProxy webProxy = _amqpTransportSettings.Proxy;
-
-                try
-                {
-                    if (webProxy != DefaultWebProxySettings.Instance)
-                    {
-                        // Configure proxy server
-                        websocket.Options.Proxy = webProxy;
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set ClientWebSocket.Options.Proxy to {webProxy}");
-                    }
-                }
-                catch (PlatformNotSupportedException)
-                {
-                    // .NET Core 2.0 doesn't support proxy. Ignore this setting.
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
-                }
-
-                if (_amqpTransportSettings.WebSocketKeepAlive.HasValue)
-                {
-                    websocket.Options.KeepAliveInterval = _amqpTransportSettings.WebSocketKeepAlive.Value;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
-                }
 
                 if (_connectionCredentials.Certificate != null)
                 {
