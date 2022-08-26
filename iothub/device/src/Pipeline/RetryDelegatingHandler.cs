@@ -602,10 +602,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
-            await OpenAsync(cancellationToken, true).ConfigureAwait(false);
+            await OpenAsync(true, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task OpenAsync(CancellationToken cancellationToken, bool withRetry = true)
+        public async Task OpenAsync(bool withRetry, CancellationToken cancellationToken)
         {
             // If this object has already been disposed, we will throw an exception indicating that.
             // This is the entry point for interacting with the client and this safety check should be done here.
@@ -698,11 +698,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (!_openCalled)
                     {
-                        throw new InvalidOperationException($"Explicit call to {nameof(OpenAsync)} is missing before this operation.");
+                        throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Transport disconnected, call to {nameof(OpenAsync)} is required before this operation.");
+                        throw new InvalidOperationException($"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect.");
                     }
                 }
             }

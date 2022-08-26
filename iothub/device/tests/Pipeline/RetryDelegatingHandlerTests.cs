@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
-                .OpenAsync(Arg.Any<CancellationToken>())
+                .OpenAsync(CancellationToken.None)
                 .Returns(t =>
                 {
                     if (++callCounter == 1)
@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(TaskHelpers.CompletedTask);
             using var cts = new CancellationTokenSource();
 
             cts.Cancel();
