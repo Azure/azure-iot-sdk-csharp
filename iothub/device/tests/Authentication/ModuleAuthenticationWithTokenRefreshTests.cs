@@ -90,9 +90,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
             Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
 
+            var auth = (IConnectionCredentials)iotHubConnectionCredentials;
             var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
-            string token1 = await iotHubConnectionCredentials.GetPasswordAsync().ConfigureAwait(false);
+            string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
             CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIotHubName), "testAppliesTo", null).ConfigureAwait(false);
 
             Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
