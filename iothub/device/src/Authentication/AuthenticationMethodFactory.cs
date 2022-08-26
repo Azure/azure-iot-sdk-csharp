@@ -12,18 +12,16 @@ namespace Microsoft.Azure.Devices.Client
     {
         internal static IAuthenticationMethod GetAuthenticationMethodFromConnectionString(IotHubConnectionString iotHubConnectionString)
         {
-            IAuthenticationMethod authMethod = default;
-
             if (iotHubConnectionString.SharedAccessKeyName != null)
             {
-                authMethod = new DeviceAuthenticationWithSharedAccessPolicyKey(
+                return new DeviceAuthenticationWithSharedAccessPolicyKey(
                     iotHubConnectionString.DeviceId,
                     iotHubConnectionString.SharedAccessKeyName,
                     iotHubConnectionString.SharedAccessKey);
             }
             else if (iotHubConnectionString.SharedAccessKey != null)
             {
-                authMethod = iotHubConnectionString.ModuleId == null
+                return iotHubConnectionString.ModuleId == null
                     ? new DeviceAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.SharedAccessKey)
@@ -34,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionString.SharedAccessSignature != null)
             {
-                authMethod = iotHubConnectionString.ModuleId == null
+                return iotHubConnectionString.ModuleId == null
                     ? new DeviceAuthenticationWithToken(
                         iotHubConnectionString.DeviceId,
                         iotHubConnectionString.SharedAccessSignature)
@@ -44,7 +42,8 @@ namespace Microsoft.Azure.Devices.Client
                         iotHubConnectionString.SharedAccessSignature);
             }
 
-            return authMethod;
+            throw new ArgumentException($"Should specify either SharedAccessKey or SharedAccessSignature" +
+                $" if connection string is used for authenticating the client with IoT hub.");
         }
     }
 }
