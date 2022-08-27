@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices
                 {
                     using (amqpMessage)
                     {
-                        AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.FileNotificationContentType);
+                        AmqpClientHelper.ValidateContentType(amqpMessage, AmqpsConstants.FileNotificationContentType);
 
                         FileUploadNotification fileNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage).ConfigureAwait(false);
                         fileNotification.DeliveryTag = amqpMessage.DeliveryTag;

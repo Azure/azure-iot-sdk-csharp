@@ -11,11 +11,13 @@ namespace Microsoft.Azure.Devices.Common
         /// considered close to expiry if it has less than 10 minutes relative to the current time.
         /// </summary>
         /// <param name="expiry">The token expiration date and time.</param>
+        /// <param name="buffer">The default buffer to determnine if we're "near" expiry. Defaults to 10 minutes.</param>
         /// <returns>True if the token expiry has less than 10 minutes relative to the current time, otherwise false.</returns>
-        public static bool IsCloseToExpiry(DateTimeOffset expiry)
+        internal static bool IsCloseToExpiry(DateTimeOffset expiry, TimeSpan? buffer = default)
         {
+            buffer ??= TimeSpan.FromMinutes(10);
             TimeSpan timeToExpiry = expiry - DateTimeOffset.UtcNow;
-            return timeToExpiry.TotalMinutes < 10;
+            return timeToExpiry < buffer;
         }
     }
 }

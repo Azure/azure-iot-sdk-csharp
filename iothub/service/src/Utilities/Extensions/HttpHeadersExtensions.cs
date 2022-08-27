@@ -1,17 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 
-namespace Microsoft.Azure.Devices.Utilities
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Extension helper methods.
+    /// Extension helper methods for HttpHeaders.
     /// </summary>
-    public static class OtherExtensions
+    internal static class HttpHeadersExtensions
     {
         /// <summary>
         /// Gets the first value associated with the supplied header name.

@@ -9,13 +9,15 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
     internal class ExceptionHandlingHelper
     {
+        private const string MessageFieldErrorCode = "errorCode";
+        private const string HttpErrorCodeName = "iothub-errorcode";
+
         private static readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> s_mappings =
             new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
         {
@@ -121,7 +123,7 @@ namespace Microsoft.Azure.Devices
                     Dictionary<string, string> messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
 
                     if (messageFields != null
-                        && messageFields.TryGetValue(CommonConstants.ErrorCode, out string errorCodeObj))
+                        && messageFields.TryGetValue(MessageFieldErrorCode, out string errorCodeObj))
                     {
                         // The result of TryParse is not being tracked since errorCodeValue has already been initialized to a default value of InvalidErrorCode.
                         _ = int.TryParse(errorCodeObj, NumberStyles.Any, CultureInfo.InvariantCulture, out errorCodeValue);
@@ -140,7 +142,7 @@ namespace Microsoft.Azure.Devices
                     {
                         foreach (string messageField in messageFields)
                         {
-                            if (messageField.IndexOf(CommonConstants.ErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
+                            if (messageField.IndexOf(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
                             {
                                 const char errorCodeDelimiter = ':';
 
@@ -175,7 +177,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // Now that we retrieved the integer error code from the response content, we will retrieve the error description from the header.
-            string headerErrorCodeString = response.Headers.GetFirstValueOrNull(CommonConstants.HttpErrorCodeName);
+            string headerErrorCodeString = response.Headers.GetFirstValueOrNull(HttpErrorCodeName);
             if (headerErrorCodeString != null
                 && Enum.TryParse(headerErrorCodeString, out ErrorCode headerErrorCode))
             {
