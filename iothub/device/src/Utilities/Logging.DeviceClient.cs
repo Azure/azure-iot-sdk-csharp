@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         private const int GenerateTokenId = 21;
 
         [NonEvent]
-        public static void CreateFromConnectionString(
+        public static void CreateClient(
             object thisOrContextObject,
             string iotHubConnectionStringWithNoKey,
             IotHubClientOptions options)
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
                     sb.Append(options.ModelId);
                 }
 
-                Log.CreateFromConnectionString(
+                Log.CreateClient(
                     IdOf(thisOrContextObject),
                     iotHubConnectionStringWithNoKey,
                     sb.ToString());
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         [Event(CreateId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
-        private void CreateFromConnectionString(
+        private void CreateClient(
             string thisOrContextObject,
             string iotHubConnectionString,
             string transportSettingsString) =>

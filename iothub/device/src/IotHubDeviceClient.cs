@@ -26,49 +26,27 @@ namespace Microsoft.Azure.Devices.Client
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
         /// <summary>
-        /// Creates a disposable DeviceClient using MQTT transport from the specified connection string
+        /// Creates a disposable <c>IotHubDeviceClient</c> from the specified connection string.
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
+        /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the device to communicate with IoT Hub.</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable <c>IotHubDeviceClient</c> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name or device Id is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
-        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         /// <exception cref="ArgumentException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
         public IotHubDeviceClient(string connectionString, IotHubClientOptions options = default)
+            : this(new IotHubConnectionCredentials(connectionString), options)
         {
-            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
-
-            // Make sure client options is initialized.
-            if (options == default)
-            {
-                options = new();
-            }
-
-            var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
-
-            if (iotHubConnectionCredentials.ModuleId != null)
-            {
-                throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
-            }
-
-            InternalClient = new InternalClient(iotHubConnectionCredentials, options, null);
-
-            if (Logging.IsEnabled)
-                Logging.CreateFromConnectionString(
-                    InternalClient,
-                    $"HostName={iotHubConnectionCredentials.HostName};DeviceId={iotHubConnectionCredentials.DeviceId}",
-                    options);
         }
 
         /// <summary>
-        /// Creates a disposable DeviceClient from the specified parameters, that uses MQTT transport protocol.
+        /// Creates a disposable <c>IotHubDeviceClient</c> from the specified parameters.
         /// </summary>
-        /// <param name="hostName">The fully-qualified DNS host name of IoT hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable <c>IotHubDeviceClient</c> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
@@ -78,26 +56,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
         /// <exception cref="ArgumentException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
         public IotHubDeviceClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+            : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options)
         {
-            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
-            Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
+        }
 
-            // Make sure client options is initialized.
-            if (options == default)
-            {
-                options = new();
-            }
-
-            var iotHubConnectionCredentials = new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName);
-
+        private IotHubDeviceClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options)
+        {
             if (iotHubConnectionCredentials.ModuleId != null)
             {
                 throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
             }
 
             // Validate certs.
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate
-                && iotHubConnectionCredentials.ChainCertificates != null)
+            if (iotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
+                && x509CertificateAuth.ChainCertificates != null)
             {
                 if (options.TransportSettings is not IotHubClientAmqpSettings
                         && options.TransportSettings is not IotHubClientMqttSettings
@@ -107,12 +79,18 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
+            // Make sure client options is initialized.
+            if (options == default)
+            {
+                options = new();
+            }
+
             InternalClient = new InternalClient(iotHubConnectionCredentials, options, null);
 
             if (Logging.IsEnabled)
-                Logging.CreateFromConnectionString(
+                Logging.CreateClient(
                     InternalClient,
-                    $"HostName={iotHubConnectionCredentials.HostName};DeviceId={iotHubConnectionCredentials.DeviceId}",
+                    $"HostName={InternalClient.IotHubConnectionCredentials.HostName};DeviceId={InternalClient.IotHubConnectionCredentials.DeviceId}",
                     options);
         }
 

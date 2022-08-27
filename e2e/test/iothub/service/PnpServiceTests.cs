@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 ModelId = TestModelId,
             };
-            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             // Act

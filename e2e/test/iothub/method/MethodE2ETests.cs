@@ -601,7 +601,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
-            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName, Logger).ConfigureAwait(false);

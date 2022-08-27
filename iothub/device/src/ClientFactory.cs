@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
             var client = new InternalClient(iotHubConnectionCredentials, options, pipelineBuilder);
 
             if (Logging.IsEnabled)
-                Logging.CreateFromConnectionString(
+                Logging.CreateClient(
                     client,
                     $"HostName={iotHubConnectionCredentials.HostName};DeviceId={iotHubConnectionCredentials.DeviceId};ModuleId={iotHubConnectionCredentials.ModuleId}",
                     options);
