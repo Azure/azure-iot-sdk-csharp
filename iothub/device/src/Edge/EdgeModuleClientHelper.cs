@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using static System.Runtime.InteropServices.RuntimeInformation;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Helper to create an Edge <see cref="IotHubModuleClient"/> based on the IoT Edge environment.
     /// </summary>
-    internal static class EdgeModuleInternalClientHelper
+    internal static class EdgeModuleClientHelper
     {
         private const string DefaultApiVersion = "2018-06-28";
         private const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";

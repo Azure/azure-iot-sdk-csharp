@@ -88,60 +88,21 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Constructor for a module client to be created from an <see cref="InternalClient"/>. With a specific certificate validator.
-        /// </summary>
-        /// <param name="internalClient">The internal client to use for the commands.</param>
-        /// <param name="certValidator">The custom certificate validator to use for connection.</param>
-        internal IotHubModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
-        {
-            InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
-            _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
-
-            if (InternalClient.IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
-            }
-
-            // There is a distinction between a Module Twin and and Edge module. We set this flag in order
-            // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
-            // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = !internalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
-
-            if (Logging.IsEnabled)
-                Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
-        }
-
-        /// <summary>
         /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
-        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync2(IotHubClientOptions options = default)
+        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
             if (options == default)
             {
                 options = new();
             }
 
-            IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleInternalClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
-            ICertificateValidator certificateValidator = await EdgeModuleInternalClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), options);
+            IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), options);
 
             return new IotHubModuleClient(iotHubConnectionCredentials, options, certificateValidator);
-        }
-
-        /// <summary>
-        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
-        /// </summary>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient instance</returns>
-        public static Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
-        {
-            if (options == default)
-            {
-                options = new();
-            }
-
-            return new EdgeModuleClientFactory(new TrustBundleProvider(), options).CreateAsync();
         }
 
         internal InternalClient InternalClient { get; private set; }

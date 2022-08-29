@@ -1413,14 +1413,14 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = ClientFactory.CreateInternal(
-                pipelineBuilderSubstitute,
+            InternalClient internalClient = new InternalClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
-                options);
+                options,
+                pipelineBuilderSubstitute);
 
             // assert
-            var authMethod = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
-            authMethod.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
+            var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
+            sasTokenRefresher.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
@@ -1428,12 +1428,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // The initial expiration time calculated is (current UTC time - sas TTL supplied).
             // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
+
             var expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
-            authMethod.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
+            sasTokenRefresher.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
 
             int expectedBufferSeconds = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
             var expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
-            authMethod.RefreshesOn.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
+            sasTokenRefresher.RefreshesOn.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
         }
 
         [TestMethod]
@@ -1442,26 +1443,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var sasTokenTimeToLive = TimeSpan.FromMinutes(20);
             int sasTokenRenewalBuffer = 50;
+            var auth = new TestDeviceAuthenticationWithTokenRefresh(sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
             var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
 
-            // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
-            // These values are 1 hour for sas token expiration and renewed when 15% or less of its lifespan is left.
-            var authMethod1 = new TestDeviceAuthenticationWithTokenRefresh();
-            TimeSpan sasTokenTimeToLiveSdkDefault = s_defaultSasTimeToLive;
-            int sasTokenRenewalBufferSdkDefault = DefaultSasRenewalBufferPercentage;
-
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = ClientFactory.CreateInternal(
-                pipelineBuilderSubstitute,
-                new IotHubConnectionCredentials(authMethod1, FakeHostName),
-                options);
+            InternalClient internalClient = new InternalClient(
+                new IotHubConnectionCredentials(auth, FakeHostName),
+                options,
+                pipelineBuilderSubstitute);
 
             // assert
-            // Clients created with their own specific AuthenticationWithTokenRefresh IAuthenticationMethod will ignore the sas token renewal options specified in ClientOptions.
-            // Those options are configurable from the AuthenticationWithTokenRefresh implementation directly.
-            var authMethod = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
+            var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.
@@ -1470,20 +1464,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             // The initial expiration time calculated is (current UTC time - sas TTL supplied).
             // The actual expiration time associated with a sas token is recalculated during token generation, but relies on the same sas TTL supplied.
 
-            DateTime sasExpirationTimeFromClientOptions = startTime.Add(-sasTokenTimeToLive);
-            authMethod.ExpiresOn.Should().NotBeCloseTo(sasExpirationTimeFromClientOptions, (int)buffer.TotalMilliseconds);
+            DateTime expectedExpirationTime = startTime.Add(-sasTokenTimeToLive);
+            sasTokenRefresher.ExpiresOn.Should().BeCloseTo(expectedExpirationTime, (int)buffer.TotalMilliseconds);
 
-            DateTime sasExpirationTimeFromSdkDefault = startTime.Add(-sasTokenTimeToLiveSdkDefault);
-            authMethod.ExpiresOn.Should().BeCloseTo(sasExpirationTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
-
-            // Validate the sas token renewal buffer
-            int expectedRenewalBufferSecondsFromClientOptions = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
-            DateTime expectedRefreshTimeFromClientOptions = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromClientOptions);
-            authMethod.RefreshesOn.Should().NotBeCloseTo(expectedRefreshTimeFromClientOptions, (int)buffer.TotalMilliseconds);
-
-            int expectedRenewalBufferSecondsFromSdkDefault = (int)(sasTokenTimeToLiveSdkDefault.TotalSeconds * ((float)sasTokenRenewalBufferSdkDefault / 100));
-            DateTime expectedRefreshTimeFromSdkDefault = sasExpirationTimeFromSdkDefault.AddSeconds(-expectedRenewalBufferSecondsFromSdkDefault);
-            authMethod.RefreshesOn.Should().BeCloseTo(expectedRefreshTimeFromSdkDefault, (int)buffer.TotalMilliseconds);
+            int expectedBufferSeconds = (int)(sasTokenTimeToLive.TotalSeconds * ((float)sasTokenRenewalBuffer / 100));
+            DateTime expectedRefreshTime = expectedExpirationTime.AddSeconds(-expectedBufferSeconds);
+            sasTokenRefresher.RefreshesOn.Should().BeCloseTo(expectedRefreshTime, (int)buffer.TotalMilliseconds);
         }
 
         [TestMethod]
@@ -1894,7 +1880,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
         {
             // This authentication method relies on the default sas token time to live and renewal buffer set by the SDK.
-            public TestDeviceAuthenticationWithTokenRefresh() : base("someTestDevice")
+            public TestDeviceAuthenticationWithTokenRefresh(TimeSpan ttl, int refreshBuffer) : base("someTestDevice", ttl, refreshBuffer)
             {
             }
 
