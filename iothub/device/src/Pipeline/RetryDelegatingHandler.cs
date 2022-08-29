@@ -689,9 +689,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-                throw new InvalidOperationException(_openCalled
+                if (!_opened)
+                {
+                    throw new InvalidOperationException(_openCalled
                         ? $"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect."
                         : $"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                }
             }
             finally
             {
