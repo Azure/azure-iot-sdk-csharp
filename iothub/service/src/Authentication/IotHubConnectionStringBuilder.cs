@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SharedAccessSignatureParser = Microsoft.Azure.Devices.Common.Security.SharedAccessSignature;
+using SharedAccessSignatureParser = Microsoft.Azure.Devices.SharedAccessSignature;
 
 namespace Microsoft.Azure.Devices
 {

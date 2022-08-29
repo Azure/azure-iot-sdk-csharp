@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A class for creating and serializing a configuration for a bulk import
-    /// job using <see cref="DevicesClient.CreateJobAsync(JobProperties, System.Threading.CancellationToken)"/>.
+    /// job using <see cref="DevicesClient.CreateJobAsync(JobProperties, CancellationToken)"/>.
     /// </summary>
     public class ImportConfiguration : Configuration
     {

@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices
 {

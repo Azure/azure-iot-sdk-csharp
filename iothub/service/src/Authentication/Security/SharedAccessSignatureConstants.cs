@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Common.Security
+namespace Microsoft.Azure.Devices
 {
     internal static class SharedAccessSignatureConstants
     {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         public const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
         public const string KeyValueSeparator = "=";
         public const string PairSeparator = "&";
-        public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        public static readonly DateTime EpochTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
     }
 }

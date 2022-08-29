@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
