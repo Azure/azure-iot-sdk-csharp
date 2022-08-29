@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         private byte[] _activationSecret;
 
         /// <summary>
-        /// Initializes a new instance of this class using the system TPM.
+        /// Creates an instance of this class using the system TPM.
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             : this(registrationId, CreateDefaultTpm2Device()) { }
 
         /// <summary>
-        /// Initializes a new instance of this class using the specified TPM module.
+        /// Creates an instance of this class using the specified TPM module.
         /// </summary>
         /// <remarks>
         /// Calls to the TPM library can potentially return a <see cref="TssException"/> or a <see cref="TpmException"/>

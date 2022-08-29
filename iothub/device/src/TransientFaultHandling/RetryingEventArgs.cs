@@ -20,7 +20,7 @@ using System;
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Contains information that is required for the <see cref="RetryPolicy.Retrying" /> event.
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         public Exception LastException { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RetryingEventArgs" /> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="currentRetryCount">The current retry attempt count.</param>
         /// <param name="delay">The delay that indicates how long the current thread will be suspended before the next iteration is invoked.</param>

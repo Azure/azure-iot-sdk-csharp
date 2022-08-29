@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.

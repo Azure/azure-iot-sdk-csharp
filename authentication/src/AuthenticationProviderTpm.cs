@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Authentication
         private readonly string _registrationId;
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="registrationId">The Provisioning service Registration Id for this device.</param>
         public AuthenticationProviderTpm(string registrationId)

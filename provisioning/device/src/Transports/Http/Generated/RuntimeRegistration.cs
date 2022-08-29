@@ -19,11 +19,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// RuntimeRegistration operations.
     /// </summary>
-    internal partial class RuntimeRegistration
-        : IServiceOperations<DeviceProvisioningServiceRuntimeClient>, IRuntimeRegistration
+    internal partial class RuntimeRegistration: IServiceOperations<DeviceProvisioningServiceRuntimeClient>, IRuntimeRegistration
     {
         /// <summary>
-        /// Initializes a new instance of the RuntimeRegistration class.
+        /// Creates an instance of the RuntimeRegistration class.
         /// </summary>
         /// <param name='client'>
         /// Reference to the service client.
@@ -78,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string operationId,
             string idScope,
             Dictionary<string, List<string>> customHeaders = null,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             if (registrationId == null)
             {
@@ -93,11 +92,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 throw new ValidationException(ValidationRules.CannotBeNull, "idScope");
             }
             // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
+            bool shouldTrace = ServiceClientTracing.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
             {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
+                invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
                 var tracingParameters = new Dictionary<string, object>
                 {
                     { "registrationId", registrationId },
@@ -105,130 +104,126 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     { "idScope", idScope },
                     { "cancellationToken", cancellationToken }
                 };
-                ServiceClientTracing.Enter(_invocationId, this, "OperationStatusLookup", tracingParameters);
+                ServiceClientTracing.Enter(invocationId, this, "OperationStatusLookup", tracingParameters);
             }
             // Construct URL
-            string _baseUrl = Client.BaseUri.AbsoluteUri;
-            string _url = new Uri(
-                new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
+            string baseUrl = Client.BaseUri.AbsoluteUri;
+            string url = new Uri(
+                new Uri(baseUrl + (baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
                 "{idScope}/registrations/{registrationId}/operations/{operationId}").ToString();
 
-            _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
-            _url = _url.Replace("{operationId}", Uri.EscapeDataString(operationId));
-            _url = _url.Replace("{idScope}", Uri.EscapeDataString(idScope));
+            url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
+            url = url.Replace("{operationId}", Uri.EscapeDataString(operationId));
+            url = url.Replace("{idScope}", Uri.EscapeDataString(idScope));
 
             // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("GET");
-            _httpRequest.RequestUri = new Uri(_url);
-            // Set Headers
+            var httpRequest = new HttpRequestMessage
+            {
+                Method = new HttpMethod("GET"),
+                RequestUri = new Uri(url)
+            };
 
+            // Set Headers
             if (customHeaders != null)
             {
-                foreach (KeyValuePair<string, List<string>> _header in customHeaders)
+                foreach (KeyValuePair<string, List<string>> header in customHeaders)
                 {
-                    if (_httpRequest.Headers.Contains(_header.Key))
+                    if (httpRequest.Headers.Contains(header.Key))
                     {
-                        _httpRequest.Headers.Remove(_header.Key);
+                        httpRequest.Headers.Remove(header.Key);
                     }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
+                    httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
             }
 
             // Serialize Request
-            string _requestContent = null;
+            string requestContent = null;
             // Set Credentials
             if (Client.Credentials != null)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Client.Credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+                await Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
             }
             // Send Request
-            if (_shouldTrace)
+            if (shouldTrace)
             {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
+                ServiceClientTracing.SendRequest(invocationId, httpRequest);
             }
             cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
+            HttpResponseMessage httpResponse = await Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            if (shouldTrace)
             {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
+                ServiceClientTracing.ReceiveResponse(invocationId, httpResponse);
             }
-            HttpStatusCode _statusCode = _httpResponse.StatusCode;
+            HttpStatusCode statusCode = httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
-            string _responseContent = null;
-            if ((int)_statusCode != 200 && (int)_statusCode != 202)
+            string responseContent;
+            if ((int)statusCode != 200 && (int)statusCode != 202)
             {
-                var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", _statusCode));
-                if (_httpResponse.Content != null)
+                var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", statusCode));
+                responseContent = httpResponse.Content == null
+                    ? string.Empty
+                    : await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
+                ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+                if (shouldTrace)
                 {
-                    _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    ServiceClientTracing.Error(invocationId, ex);
                 }
-                else
+                httpRequest.Dispose();
+                if (httpResponse != null)
                 {
-                    _responseContent = string.Empty;
-                }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
-                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
-                {
-                    ServiceClientTracing.Error(_invocationId, ex);
-                }
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
+                    httpResponse.Dispose();
                 }
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<RegistrationOperationStatus>
+            var result = new HttpOperationResponse<RegistrationOperationStatus>
             {
-                Request = _httpRequest,
-                Response = _httpResponse
+                Request = httpRequest,
+                Response = httpResponse
             };
             // Deserialize Response
-            if ((int)_statusCode == 200)
+            if ((int)statusCode == 200)
             {
-                _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    _result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(_responseContent, Client.DeserializationSettings);
+                    result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(responseContent, Client.DeserializationSettings);
                 }
                 catch (JsonException ex)
                 {
-                    _httpRequest.Dispose();
-                    if (_httpResponse != null)
+                    httpRequest.Dispose();
+                    if (httpResponse != null)
                     {
-                        _httpResponse.Dispose();
+                        httpResponse.Dispose();
                     }
-                    throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
                 }
             }
             // Deserialize Response
-            if ((int)_statusCode == 202)
+            if ((int)statusCode == 202)
             {
-                _responseContent = await _httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    _result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(_responseContent, Client.DeserializationSettings);
+                    result.Body = SafeJsonConvert.DeserializeObject<RegistrationOperationStatus>(responseContent, Client.DeserializationSettings);
                 }
                 catch (JsonException ex)
                 {
-                    _httpRequest.Dispose();
-                    if (_httpResponse != null)
+                    httpRequest.Dispose();
+                    if (httpResponse != null)
                     {
-                        _httpResponse.Dispose();
+                        httpResponse.Dispose();
                     }
-                    throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
                 }
             }
-            if (_shouldTrace)
+            if (shouldTrace)
             {
-                ServiceClientTracing.Exit(_invocationId, _result);
+                ServiceClientTracing.Exit(invocationId, result);
             }
-            return _result;
+            return result;
         }
 
         /// <summary>
@@ -266,9 +261,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public async Task<HttpOperationResponse<DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
             string registrationId,
             string idScope,
-            DeviceRegistration deviceRegistration = default(DeviceRegistration),
+            DeviceRegistration deviceRegistration = default,
             Dictionary<string, List<string>> customHeaders = null,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             if (registrationId == null)
             {
@@ -279,11 +274,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 throw new ValidationException(ValidationRules.CannotBeNull, "idScope");
             }
             // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
+            bool shouldTrace = ServiceClientTracing.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
             {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
+                invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
                 var tracingParameters = new Dictionary<string, object>
                 {
                     { "registrationId", registrationId },
@@ -291,7 +286,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     { "idScope", idScope },
                     { "cancellationToken", cancellationToken }
                 };
-                ServiceClientTracing.Enter(_invocationId, this, "DeviceRegistrationStatusLookup", tracingParameters);
+                ServiceClientTracing.Enter(invocationId, this, "DeviceRegistrationStatusLookup", tracingParameters);
             }
             // Construct URL
             string baseUrl = Client.BaseUri.AbsoluteUri;
@@ -302,50 +297,51 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             url = url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
             url = url.Replace("{idScope}", Uri.EscapeDataString(idScope));
-            
+
             // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("POST");
-            _httpRequest.RequestUri = new Uri(url);
+            var httpRequest = new HttpRequestMessage
+            {
+                Method = new HttpMethod("POST"),
+                RequestUri = new Uri(url)
+            };
             // Set Headers
 
             if (customHeaders != null)
             {
                 foreach (KeyValuePair<string, List<string>> _header in customHeaders)
                 {
-                    if (_httpRequest.Headers.Contains(_header.Key))
+                    if (httpRequest.Headers.Contains(_header.Key))
                     {
-                        _httpRequest.Headers.Remove(_header.Key);
+                        httpRequest.Headers.Remove(_header.Key);
                     }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
+                    httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
                 }
             }
 
             // Serialize Request
-            string _requestContent = null;
+            string requestContent = null;
             if (deviceRegistration != null)
             {
-                _requestContent = SafeJsonConvert.SerializeObject(deviceRegistration, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                requestContent = SafeJsonConvert.SerializeObject(deviceRegistration, Client.SerializationSettings);
+                httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
+                httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
             // Set Credentials
             if (Client.Credentials != null)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Client.Credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+                await Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
             }
             // Send Request
-            if (_shouldTrace)
+            if (shouldTrace)
             {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
+                ServiceClientTracing.SendRequest(invocationId, httpRequest);
             }
             cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
+            HttpResponseMessage _httpResponse = await Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            if (shouldTrace)
             {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
+                ServiceClientTracing.ReceiveResponse(invocationId, _httpResponse);
             }
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
@@ -361,13 +357,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     _responseContent = string.Empty;
                 }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
+                ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
+                if (shouldTrace)
                 {
-                    ServiceClientTracing.Error(_invocationId, ex);
+                    ServiceClientTracing.Error(invocationId, ex);
                 }
-                _httpRequest.Dispose();
+                httpRequest.Dispose();
                 if (_httpResponse != null)
                 {
                     _httpResponse.Dispose();
@@ -377,7 +373,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // Create Result
             var _result = new HttpOperationResponse<DeviceRegistrationResult>
             {
-                Request = _httpRequest,
+                Request = httpRequest,
                 Response = _httpResponse
             };
             // Deserialize Response
@@ -390,7 +386,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 }
                 catch (JsonException ex)
                 {
-                    _httpRequest.Dispose();
+                    httpRequest.Dispose();
                     if (_httpResponse != null)
                     {
                         _httpResponse.Dispose();
@@ -398,9 +394,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
                 }
             }
-            if (_shouldTrace)
+            if (shouldTrace)
             {
-                ServiceClientTracing.Exit(_invocationId, _result);
+                ServiceClientTracing.Exit(invocationId, _result);
             }
             return _result;
         }

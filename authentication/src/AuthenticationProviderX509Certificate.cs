@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Authentication
         private readonly X509Certificate2Collection _certificateChain;
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="clientCertificate">
         /// The client certificate used for authentication. The private key should be available in the <see cref="X509Certificate2"/> object,

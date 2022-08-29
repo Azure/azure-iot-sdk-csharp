@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     public abstract class DeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="suggestedTimeToLive">

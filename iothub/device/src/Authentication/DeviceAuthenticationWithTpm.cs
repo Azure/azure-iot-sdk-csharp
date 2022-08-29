@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly AuthenticationProviderTpm _authProvider;
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="authenticationProvider">Device authentication provider settings for TPM hardware security modules.</param>

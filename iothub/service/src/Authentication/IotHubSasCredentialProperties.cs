@@ -49,11 +49,10 @@ namespace Microsoft.Azure.Devices
             var timeToLiveFromEpochTime = TimeSpan.FromSeconds(secondsFromEpochTime);
             DateTime expiresAt = epochTime.Add(timeToLiveFromEpochTime);
 
-            var token = new CbsToken(
+            return Task.FromResult(new CbsToken(
                 _credential.Signature,
                 CbsConstants.IotHubSasTokenType,
-                expiresAt);
-            return Task.FromResult(token);
+                expiresAt));
         }
     }
 }

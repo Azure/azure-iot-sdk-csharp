@@ -4,17 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace Microsoft.Azure.Devices.Common
+namespace Microsoft.Azure.Devices
 {
     internal delegate bool TryParse<TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
 
     internal static class CommonExtensionMethods
     {
-        private const char ValuePairDelimiter = ';';
-        private const char ValuePairSeparator = '=';
-
         public static IDictionary<string, string> ToDictionary(this string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
             if (string.IsNullOrWhiteSpace(valuePairString))

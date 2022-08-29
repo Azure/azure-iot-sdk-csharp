@@ -5,7 +5,7 @@ using System;
 using System.Runtime.Serialization;
 using Microsoft.Azure.Devices.Common.Exceptions;
 
-namespace Microsoft.Azure.Devices.Client.Exceptions
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// This exception is thrown when the IoT hub has been suspended. This is likely due to exceeding Azure
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public class IotHubSuspendedException : IotHubException
     {
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="iotHubName">IoT hub name that could not be found.</param>
         public IotHubSuspendedException(string iotHubName)
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="iotHubName">IoT hub name that could not be found.</param>
         /// <param name="trackingId">Tracking identifier for telemetry purposes.</param>
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         }
 
         /// <summary>
-        /// Initializes a new instance of the class with the message string set to the message parameter
+        /// Creates an instance of this class with the message string set to the message parameter
         /// and a reference to the inner exception that is the cause of this exception.
         /// </summary>
         /// <param name="message">A description of the error.</param>

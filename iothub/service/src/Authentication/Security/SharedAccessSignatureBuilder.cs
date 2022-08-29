@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         public SharedAccessSignatureBuilder()
         {

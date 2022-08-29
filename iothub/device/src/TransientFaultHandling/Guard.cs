@@ -22,7 +22,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Implements the common guard methods.

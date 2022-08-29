@@ -9,7 +9,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
     internal class CustomCertificateValidator : ICertificateValidator
     {

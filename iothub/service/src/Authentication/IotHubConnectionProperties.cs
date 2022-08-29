@@ -11,8 +11,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub that are independent of the authentication type.
     /// </summary>
-    internal abstract class IotHubConnectionProperties
-        : IAuthorizationHeaderProvider, ICbsTokenProvider
+    internal abstract class IotHubConnectionProperties : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
         private const string HostNameSeparator = ".";
         private const string HttpsEndpointPrefix = "https";
@@ -70,7 +69,9 @@ namespace Microsoft.Azure.Devices
             }
 
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-            string iotHubName = index >= 0 ? hostName.Substring(0, index) : hostName;
+            string iotHubName = index >= 0
+                ? hostName.Substring(0, index)
+                : hostName;
             return iotHubName;
         }
     }

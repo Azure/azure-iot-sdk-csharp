@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     [Flags]
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum AccessRights
+    internal enum AccessRights
     {
         /// <summary>
         /// Grants read access to the identity registry.

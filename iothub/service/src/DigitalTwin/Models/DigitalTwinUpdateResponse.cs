@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public class DigitalTwinUpdateResponse
     {
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="location">URI of the digital twin.</param>

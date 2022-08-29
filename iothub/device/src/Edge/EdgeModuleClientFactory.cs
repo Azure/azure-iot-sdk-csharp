@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using static System.Runtime.InteropServices.RuntimeInformation;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Factory that creates ModuleClient based on the IoT Edge environment.
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private readonly IotHubClientOptions _options;
 
         /// <summary>
-        /// Initializes a new instance of the class with transport settings.
+        /// Creates an instance of this class with transport settings.
         /// </summary>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>

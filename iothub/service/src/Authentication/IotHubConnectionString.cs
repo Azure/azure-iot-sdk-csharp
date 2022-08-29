@@ -11,8 +11,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// The properties required for authentication to IoT hub using a connection string.
     /// </summary>
-    internal sealed class IotHubConnectionString
-        : IotHubConnectionProperties
+    internal sealed class IotHubConnectionString : IotHubConnectionProperties
     {
         private static readonly TimeSpan s_tokenTimeToLive = TimeSpan.FromHours(1);
 
@@ -39,13 +38,12 @@ namespace Microsoft.Azure.Devices
 
         public string GetPassword()
         {
-            return string.IsNullOrWhiteSpace(SharedAccessSignature) ? BuildToken(out _) : SharedAccessSignature;
+            return string.IsNullOrWhiteSpace(SharedAccessSignature)
+                ? BuildToken(out _)
+                : SharedAccessSignature;
         }
 
-        public override string GetAuthorizationHeader()
-        {
-            return GetPassword();
-        }
+        public override string GetAuthorizationHeader() => GetPassword();
 
         public override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     public class ServiceAuthenticationWithDeviceSharedAccessPolicyToken : IAuthenticationMethod
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceAuthenticationWithDeviceSharedAccessPolicyToken"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="sharedAccessSignature">The shared access signature.</param>

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     internal class DeviceRegistrationHttp : DeviceRegistration
     {
         /// <summary>
-        /// Initializes a new instance of the DeviceRegistration class.
+        /// Creates an instance of the DeviceRegistration class.
         /// </summary>
         public DeviceRegistrationHttp(JRaw payload = default, string registrationId = default, TpmAttestation tpm = default)
             : base(payload)

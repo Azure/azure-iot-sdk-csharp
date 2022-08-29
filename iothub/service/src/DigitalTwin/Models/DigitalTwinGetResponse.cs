@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices
     public class DigitalTwinGetResponse<T>
     {
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="digitalTwin">The deserialized digital twin.</param>
