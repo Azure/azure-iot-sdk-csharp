@@ -41,13 +41,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters, that uses AMQP transport protocol.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static IotHubDeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate"/> is used but <see cref="DeviceAuthenticationWithX509Certificate.Certificate"/> is null.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
+        /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
+        public static IotHubDeviceClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
+            return Create(() => ClientFactory.Create(hostName, authenticationMethod, options));
         }
 
         /// <summary>
@@ -56,6 +63,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name or device Id is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         public static IotHubDeviceClient CreateFromConnectionString(string connectionString, IotHubClientOptions options = default)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));

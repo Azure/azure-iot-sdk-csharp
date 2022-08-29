@@ -69,13 +69,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an AMQP ModuleClient from individual parameters.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
-        public static IotHubModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id, module Id or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="hostName"/>, device Id or module Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
+        public static IotHubModuleClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
+            return Create(() => ClientFactory.Create(hostName, authenticationMethod, options));
         }
 
         /// <summary>
@@ -84,6 +88,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>ModuleClient</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         public static IotHubModuleClient CreateFromConnectionString(string connectionString, IotHubClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));

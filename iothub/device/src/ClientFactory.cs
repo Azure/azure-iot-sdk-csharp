@@ -15,6 +15,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">The device connection string.</param>
         /// <param name="options">The optional client settings.</param>
         /// <returns>An instance of InternalClient.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name or device Id is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         internal static InternalClient CreateFromConnectionString(
             string connectionString,
             IotHubClientOptions options)
@@ -31,12 +35,19 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Create an instance of InternalClient with the given parameters.
+        /// Create an instance of <c>InternalClient</c> with the given parameters.
         /// </summary>
-        /// <param name="hostName">The fully-qualified DNS hostname of IoT hub</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method.</param>
         /// <param name="options">The optional client settings.</param>
         /// <returns>InternalClient</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate"/> is used but <see cref="DeviceAuthenticationWithX509Certificate.Certificate"/> is null.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
+        /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
         internal static InternalClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options)
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
@@ -44,8 +55,11 @@ namespace Microsoft.Azure.Devices.Client
 
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName);
 
-            // Make sure client options is initialized with the correct transport setting.
-            EnsureOptionsIsSetup(ref options);
+            // Make sure client options is initialized.
+            if (options == null)
+            {
+                options = new();
+            }
 
             // Validate certs.
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -114,22 +128,6 @@ namespace Microsoft.Azure.Devices.Client
                     options);
 
             return client;
-        }
-
-        /// <summary>
-        /// Ensures that the client options are configured and initialized.
-        /// </summary>
-        private static void EnsureOptionsIsSetup(ref IotHubClientOptions options)
-        {
-            if (options == null)
-            {
-                options = new();
-            }
-
-            if (options.FileUploadTransportSettings == null)
-            {
-                options.FileUploadTransportSettings = new();
-            }
         }
     }
 }

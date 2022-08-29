@@ -99,25 +99,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private SpinLock _packetIdLock;
 
         public MqttIotHubAdapter(
-            string deviceId,
-            string moduleId,
-            string iotHubHostName,
             IConnectionCredentials connectionCredentials,
             IotHubClientMqttSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
             AdditionalClientInformation additionalClientInformation)
         {
-            Contract.Requires(deviceId != null);
-            Contract.Requires(iotHubHostName != null);
             Contract.Requires(connectionCredentials != null);
+            Contract.Requires(connectionCredentials.DeviceId != null);
+            Contract.Requires(connectionCredentials.IotHubHostName != null);
             Contract.Requires(mqttTransportSettings != null);
             Contract.Requires(!mqttTransportSettings.HasWill || willMessage != null);
             Contract.Requires(additionalClientInformation.ProductInfo != null);
 
-            _deviceId = deviceId;
-            _moduleId = moduleId;
-            _iotHubHostName = iotHubHostName;
+            _deviceId = connectionCredentials.DeviceId;
+            _moduleId = connectionCredentials.ModuleId;
+            _iotHubHostName = connectionCredentials.IotHubHostName;
             _connectionCredentials = connectionCredentials;
             _mqttTransportSettings = mqttTransportSettings;
             _willMessage = willMessage;

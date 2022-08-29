@@ -42,7 +42,8 @@ namespace Microsoft.Azure.Devices.Client
                         iotHubConnectionString.SharedAccessSignature);
             }
 
-            throw new InvalidOperationException($"Unsupported authentication method in '{iotHubConnectionString}'.");
+            throw new ArgumentException($"Should specify either SharedAccessKey or SharedAccessSignature" +
+                $" if connection string is used for authenticating the client with IoT hub.");
         }
     }
 }

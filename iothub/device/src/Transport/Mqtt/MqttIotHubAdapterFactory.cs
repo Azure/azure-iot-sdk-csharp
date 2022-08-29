@@ -21,9 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IWillMessage willMessage = mqttTransportSettings.HasWill ? _settings.WillMessage : null;
 
             return new MqttIotHubAdapter(
-                connectionCredentials.DeviceId,
-                connectionCredentials.ModuleId,
-                connectionCredentials.HostName,
                 connectionCredentials,
                 mqttTransportSettings,
                 willMessage,
