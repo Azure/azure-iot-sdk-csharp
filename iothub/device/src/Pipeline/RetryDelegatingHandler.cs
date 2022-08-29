@@ -662,13 +662,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                if (!_openCalled)
-                {
-                    return;
-                }
-
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+
+                if (!_openCalled)
+                {
+                    // Already closed so gracefully exit, instead of throw.
+                    return;
+                }
 
                 _handleDisconnectCts.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
@@ -688,17 +689,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await _handlerSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-                if (!_opened)
-                {
-                    if (!_openCalled)
-                    {
-                        throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect.");
-                    }
-                }
+                throw new InvalidOperationException(_openCalled
+                        ? $"The transport has disconnected; call '{nameof(OpenAsync)}' to reconnect."
+                        : $"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
             }
             finally
             {
