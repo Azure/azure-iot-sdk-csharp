@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             nextHandlerMock
                 .SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>())
                 .Returns(t =>
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             nextHandlerMock
                 .SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>())
                 .Returns(t =>
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
             IEnumerable<Message> messages = new[] { message };
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             nextHandlerMock
                 .SendEventAsync(Arg.Is(messages), Arg.Any<CancellationToken>())
                 .Returns(t =>
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             nextHandlerMock
                 .SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>())
                 .Returns(t =>
@@ -289,8 +289,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            nextHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            nextHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -308,8 +308,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            nextHandlerMock.SendEventAsync((IEnumerable<Message>)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            nextHandlerMock.SendEventAsync((IEnumerable<Message>)null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(Task.CompletedTask);
             using var cts = new CancellationTokenSource();
 
             cts.Cancel();
@@ -385,8 +385,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             const string lockToken = "fakeLockToken";
             using var cts = new CancellationTokenSource();
             cts.Cancel();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            nextHandlerMock.CompleteMessageAsync(lockToken, cts.Token).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            nextHandlerMock.CompleteMessageAsync(lockToken, cts.Token).Returns(Task.CompletedTask);
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -402,8 +402,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(TaskHelpers.CompletedTask);
-            nextHandlerMock.AbandonMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(CancellationToken.None).Returns(Task.CompletedTask);
+            nextHandlerMock.AbandonMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -424,8 +424,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<PipelineContext>();
             contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            nextHandlerMock.RejectMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            nextHandlerMock.RejectMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
