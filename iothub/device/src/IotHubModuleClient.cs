@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
-            : this(new IotHubConnectionCredentials(connectionString), options)
+            : this(new IotHubConnectionCredentials(connectionString), options, null)
         {
         }
 
@@ -57,11 +57,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         public IotHubModuleClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
-            : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options)
+            : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options, null)
         {
         }
 
-        internal IotHubModuleClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options)
+        internal IotHubModuleClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options, ICertificateValidator certificateValidator)
         {
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionCredentials.ModuleId, nameof(iotHubConnectionCredentials.ModuleId));
 
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
             // We can determine that this is an edge module if the connection string is using a gateway host.
             _isAnEdgeModule = !InternalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
 
-            _certValidator = NullCertificateValidator.Instance;
+            _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
 
             if (Logging.IsEnabled)
                 Logging.CreateClient(
@@ -109,6 +109,24 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled)
                 Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
+        }
+
+        /// <summary>
+        /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
+        /// </summary>
+        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
+        /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
+        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync2(IotHubClientOptions options = default)
+        {
+            if (options == default)
+            {
+                options = new();
+            }
+
+            IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleInternalClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certificateValidator = await EdgeModuleInternalClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), options);
+
+            return new IotHubModuleClient(iotHubConnectionCredentials, options, certificateValidator);
         }
 
         /// <summary>
