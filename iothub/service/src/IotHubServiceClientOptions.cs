@@ -20,18 +20,18 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public IotHubServiceClientOptions()
         {
-            Proxy = DefaultWebProxySettings.Instance;
-            UseWebSocketOnly = false;
         }
 
         /// <summary>
         /// The web proxy that will be used to connect to IoT hub when using the HTTP protocol.
         /// </summary>
-        /// <value>
-        /// An instance of a class that implements <see cref="IWebProxy"/>.
-        /// </value>
+        /// <remarks>
+        /// If you wish to bypass OS-specified proxy settings, set this to <see cref="GlobalProxySelection.GetEmptyWebProxy()"/>.
+        /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.http.httpclienthandler.proxy?view=net-6.0"/>
         /// <example>
-        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
+        /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
         /// static ServiceClient GetServiceClient()
         /// {

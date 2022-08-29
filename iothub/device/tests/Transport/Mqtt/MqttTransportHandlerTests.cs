@@ -101,19 +101,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // arrange
             var transport = CreateTransportHandlerWithRealChannel(out IChannel channel);
 
-            try
+            // act
+            Func<Task> act = async () =>
             {
                 // act
                 // Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
                 // However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
                 await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // assert
-                Assert.AreEqual<Type>(ex.GetType(), typeof(IotHubClientException));
-                Assert.AreEqual<IotHubStatusCode>(((IotHubClientException)ex).StatusCode, IotHubStatusCode.NetworkErrors);
-            }
+            };
+
+            //assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -345,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     var response = new Message(twinByteStream);
                     response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusSuccess);
                     transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act
@@ -368,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                        var response = new Message();
                        response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
                        transport.OnMessageReceived(response);
-                       return TaskHelpers.CompletedTask;
+                       return Task.CompletedTask;
                    });
 
             // act & assert
@@ -412,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     };
                     transport.OnMessageReceived(response);
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act
@@ -437,7 +436,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     var response = new Message();
                     response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusFailure);
                     transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act & assert

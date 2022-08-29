@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices
                 {
                     using (amqpMessage)
                     {
-                        AmqpClientHelper.ValidateContentType(amqpMessage, CommonConstants.BatchedFeedbackContentType);
+                        AmqpClientHelper.ValidateContentType(amqpMessage, AmqpsConstants.BatchedFeedbackContentType);
                         IEnumerable<FeedbackRecord> records = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<IEnumerable<FeedbackRecord>>(amqpMessage).ConfigureAwait(false);
 

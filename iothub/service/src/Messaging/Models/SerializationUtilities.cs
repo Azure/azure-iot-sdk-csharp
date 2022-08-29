@@ -5,21 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Common
 {
-    // WARNING: Consult filter engine owner before modifying this enum.
-    // Introducing a new member here has impact to filtering engine in data type precedence and data conversion.
-    // ALWASYS insert new types before Unknown!
-    internal enum PropertyValueType
-    {
-        Null,
-        Byte, SByte, Char, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Decimal, // Numeric types
-        Boolean, Guid, String, Uri, DateTime, DateTimeOffset, TimeSpan,
-        Stream,
-        Unknown,
-    }
-
     internal static class SerializationUtilities
     {
-        private static readonly Dictionary<Type, PropertyValueType> s_typeToIntMap = new Dictionary<Type, PropertyValueType>()
+        private static readonly Dictionary<Type, PropertyValueType> s_typeToIntMap = new()
         {
             { typeof(byte), PropertyValueType.Byte },
             { typeof(sbyte), PropertyValueType.SByte },

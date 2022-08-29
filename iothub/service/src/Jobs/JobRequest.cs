@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "startTime")]
         [JsonConverter(typeof(IsoDateTimeConverter))]
-        public DateTime StartTimeUtc { get; set; }
+        public DateTimeOffset StartOn { get; set; }
 
         /// <summary>
         /// Max execution time in seconds (TTL duration).

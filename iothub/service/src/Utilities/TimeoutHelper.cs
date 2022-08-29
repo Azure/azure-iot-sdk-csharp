@@ -41,15 +41,10 @@ namespace Microsoft.Azure.Devices.Common
             {
                 return Timeout.Infinite;
             }
-            else
-            {
-                long ticks = Ticks.FromTimeSpan(timeout);
-                if (ticks / TimeSpan.TicksPerMillisecond > int.MaxValue)
-                {
-                    return int.MaxValue;
-                }
-                return Ticks.ToMilliseconds(ticks);
-            }
+
+            return timeout.Ticks / TimeSpan.TicksPerMillisecond > int.MaxValue
+                ? int.MaxValue
+                : (int)timeout.TotalMilliseconds;
         }
 
         public TimeSpan RemainingTime()

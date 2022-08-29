@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        /// <param name="deviceId">Device Identifier.</param>
+        /// <param name="deviceId">Device identifier.</param>
         /// <param name="key">Symmetric key associated with the device.</param>
         /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
             TimeSpan suggestedTimeToLive = default,
             int timeBufferPercentage = default)
         {
-            if (suggestedTimeToLive.Ticks < 0)
+            if (suggestedTimeToLive < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
             }

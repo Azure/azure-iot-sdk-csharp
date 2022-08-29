@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Azure.Devices.Common;
 using SharedAccessSignatureParser = Microsoft.Azure.Devices.Common.Security.SharedAccessSignature;
 
 namespace Microsoft.Azure.Devices
@@ -141,24 +141,24 @@ namespace Microsoft.Azure.Devices
             Validate();
 
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, HostName);
+            AppendKeyValuePairIfNotEmpty(stringBuilder, HostNamePropertyName, HostName);
             if (SharedAccessKeyName != null)
             {
-                stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
+                AppendKeyValuePairIfNotEmpty(stringBuilder, SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             }
             else
             {
                 if (ModuleId != null)
                 {
-                    stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, ModuleId);
+                    AppendKeyValuePairIfNotEmpty(stringBuilder, ModuleIdPropertyName, ModuleId);
                 }
 
-                stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, DeviceId);
-                stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, GatewayHostName);
+                AppendKeyValuePairIfNotEmpty(stringBuilder, DeviceIdPropertyName, DeviceId);
+                AppendKeyValuePairIfNotEmpty(stringBuilder, GatewayHostNamePropertyName, GatewayHostName);
             }
 
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
+            AppendKeyValuePairIfNotEmpty(stringBuilder, SharedAccessKeyPropertyName, SharedAccessKey);
+            AppendKeyValuePairIfNotEmpty(stringBuilder, SharedAccessSignaturePropertyName, SharedAccessSignature);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices
 
         internal void Parse(string iotHubConnectionString)
         {
-            IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
+            IDictionary<string, string> map = ToDictionary(iotHubConnectionString, ValuePairDelimiter, ValuePairSeparator);
 
             HostName = GetConnectionStringValue(map, HostNamePropertyName);
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
@@ -298,6 +298,54 @@ namespace Microsoft.Azure.Devices
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
             string iotHubName = index >= 0 ? hostName.Substring(0, index) : hostName;
             return iotHubName;
+        }
+
+        /// <summary>
+        /// Takes a string representation of key/value pairs and produces a dictionary
+        /// </summary>
+        /// <param name="valuePairString">The string containing key/value pairs</param>
+        /// <param name="kvpDelimiter">The delimeter between key/value pairs</param>
+        /// <param name="kvpSeparator">The character separating each key and value</param>
+        /// <returns>A dictionary of the key/value pairs</returns>
+        private static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
+        {
+            if (string.IsNullOrWhiteSpace(valuePairString))
+            {
+                throw new ArgumentException("Malformed token");
+            }
+
+            IEnumerable<string[]> parts = valuePairString
+                .Split(kvpDelimiter)
+                .Select((part) => part.Split(new char[] { kvpSeparator }, 2));
+
+            if (parts.Any((part) => part.Length != 2))
+            {
+                throw new FormatException("Malformed Token");
+            }
+
+            IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Append a key value pair to a non-null <see cref="StringBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The StringBuilder to append the key value pair to.</param>
+        /// <param name="name">The key to be appended to the StringBuilder.</param>
+        /// <param name="value">The value to be appended to the StringBuilder.</param>
+        private static void AppendKeyValuePairIfNotEmpty(StringBuilder builder, string name, object value)
+        {
+            const char valuePairDelimiter = ';';
+            const char valuePairSeparator = '=';
+
+            if (value != null)
+            {
+                builder.Append(name);
+                builder.Append(valuePairSeparator);
+                builder.Append(value);
+                builder.Append(valuePairDelimiter);
+            }
         }
     }
 }

@@ -508,7 +508,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // We are intentionally not awaiting _deviceMessageReceivedListener callback.
             // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
             _ = _deviceMessageReceivedListener?.Invoke(message);
-            await TaskHelpers.CompletedTask.ConfigureAwait(false);
+            await Task.CompletedTask.ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, "Process C2D message via callback", nameof(HandleIncomingMessagesAsync));
@@ -596,7 +596,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
             }
             message.LockToken = _generationId + message.LockToken;
-            await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(false);
+            await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? Task.CompletedTask).ConfigureAwait(false);
         }
 
         public async void OnError(Exception exception)
@@ -1241,7 +1241,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private Task CleanUpImplAsync()
         {
             return _cleanupFunc == null
-                ? TaskHelpers.CompletedTask
+                ? Task.CompletedTask
                 : _cleanupFunc();
         }
 

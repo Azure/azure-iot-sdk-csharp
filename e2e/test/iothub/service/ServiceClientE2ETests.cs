@@ -35,9 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task FastTimeout()
         {
-            TimeSpan timeout = TimeSpan.FromTicks(10).Negate();
-            using var cts = new CancellationTokenSource(timeout);
-            await TestTimeout(cts.Token).ConfigureAwait(false);
+            var cancellationToken = new CancellationToken(true);
+            await TestTimeout(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task DefaultTimeout()

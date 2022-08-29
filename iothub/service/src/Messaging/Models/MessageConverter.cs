@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices
 
         internal static AmqpMessage MessageToAmqpMessage(Message message)
         {
-            Argument.RequireNotNull(message, nameof(message));
+            Argument.AssertNotNull(message, nameof(message));
             AmqpMessage amqpMessage = message.HasPayload
                 ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
                 : AmqpMessage.Create();

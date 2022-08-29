@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     Twin = twin,
                     QueryCondition = query,
-                    StartTimeUtc = DateTime.UtcNow
+                    StartOn = DateTime.UtcNow
                 };
                 ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
                 {

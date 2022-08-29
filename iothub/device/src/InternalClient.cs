@@ -28,9 +28,9 @@ namespace Microsoft.Azure.Devices.Client
         private readonly IotHubClientOptions _clientOptions;
 
         // Connection status change information
-        private volatile Action<ConnectionInfo> _connectionStatusChangeHandler;
+        private volatile Action<ConnectionStatusInfo> _connectionStatusChangeHandler;
 
-        internal ConnectionInfo _connectionInfo { get; private set; } = new ConnectionInfo();
+        internal ConnectionStatusInfo _connectionStatusInfo { get; private set; } = new ConnectionStatusInfo();
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate.
         /// </summary>
         /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStatusChangeHandler(Action<ConnectionInfo> statusChangeHandler)
+        public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
         {
             if (Logging.IsEnabled)
                 Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeHandler));
@@ -822,7 +822,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink needs to be enabled only for the first time that the _receiveMessageCallback delegate is set.
             return _deviceReceiveMessageCallback == null
                 ? InnerHandler.EnableReceiveMessageAsync(cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         // Disable telemetry downlink for devices
@@ -831,7 +831,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink should be disabled only after _receiveMessageCallback delegate has been removed.
             return _deviceReceiveMessageCallback == null
                 ? InnerHandler.DisableReceiveMessageAsync(cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         /// <summary>
@@ -1142,7 +1142,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
                 ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         // Disable telemetry downlink for modules
@@ -1151,7 +1151,7 @@ namespace Microsoft.Azure.Devices.Client
             // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
             return _receiveEventEndpoints == null && _defaultEventCallback == null
                 ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : TaskHelpers.CompletedTask;
+                : Task.CompletedTask;
         }
 
         private void ValidateModuleTransportHandler(string apiName)
@@ -1177,21 +1177,21 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal void OnConnectionStatusChanged(ConnectionInfo connectionInfo)
+        internal void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
         {
-            var status = connectionInfo.Status;
-            var reason = connectionInfo.ChangeReason;
+            var status = connectionStatusInfo.Status;
+            var reason = connectionStatusInfo.ChangeReason;
 
             try
             {
                 if (Logging.IsEnabled)
                     Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
 
-                if (_connectionInfo.Status != status
-                    || _connectionInfo.ChangeReason != reason)
+                if (_connectionStatusInfo.Status != status
+                    || _connectionStatusInfo.ChangeReason != reason)
                 {
-                    _connectionInfo = new ConnectionInfo(status, reason);
-                    _connectionStatusChangeHandler?.Invoke(_connectionInfo);
+                    _connectionStatusInfo = new ConnectionStatusInfo(status, reason);
+                    _connectionStatusChangeHandler?.Invoke(_connectionStatusInfo);
                 }
             }
             finally

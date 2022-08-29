@@ -17,6 +17,8 @@ namespace Microsoft.Azure.Devices
         : IotHubConnectionProperties
     {
         private const string TokenType = "Bearer";
+        private static readonly string[] s_iotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
+
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
@@ -36,7 +38,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                        new TokenRequestContext(s_iotHubAadTokenScopes),
                         new CancellationToken());
                 }
             }
@@ -48,7 +50,7 @@ namespace Microsoft.Azure.Devices
         public async override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
             AccessToken token = await _credential.GetTokenAsync(
-                new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                new TokenRequestContext(s_iotHubAadTokenScopes),
                 new CancellationToken()).ConfigureAwait(false);
             return new CbsToken(
                $"{TokenType} {token.Token}",

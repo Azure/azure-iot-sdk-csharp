@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string audience = SasTokenBuilder.BuildAudience(iotHub, DeviceId, ModuleId);
             string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, suggestedTimeToLive);
             string data = string.Join("\n", new string[] { audience, expiresOn });
-            string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data);
+            string signature = await _signatureProvider.SignAsync(ModuleId, _generationId, data).ConfigureAwait(false);
 
             return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
         }

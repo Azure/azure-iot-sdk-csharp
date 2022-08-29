@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,15 +10,13 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DeviceJobParameters : JobParameters
     {
-        private const string DeviceJobParametersNullOrEmptyDeviceList = "DeviceJobParametersNullOrEmptyDeviceList";
-        private const string DeviceJobParametersNullOrEmptyDeviceListEntries = "DeviceJobParametersNullOrEmptyDeviceListEntries";
-
         /// <summary>
         /// Parameters for parameterless device job on a single device.
         /// </summary>
         public DeviceJobParameters(JobType jobType, string deviceId)
             : this(jobType, new List<string>() { deviceId })
         {
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
         }
 
         /// <summary>
@@ -30,23 +25,13 @@ namespace Microsoft.Azure.Devices
         public DeviceJobParameters(JobType jobType, IEnumerable<string> deviceIds)
             : base(jobType)
         {
-            IList<string> deviceList = deviceIds?.ToListSlim();
-            if (deviceList == null || deviceList.Count == 0)
-            {
-                throw new ArgumentException(DeviceJobParametersNullOrEmptyDeviceList, nameof(deviceIds));
-            }
-
-            if ((from deviceId in deviceList where string.IsNullOrWhiteSpace(deviceId) select deviceId).Any())
-            {
-                throw new ArgumentException(DeviceJobParametersNullOrEmptyDeviceListEntries, nameof(deviceIds));
-            }
-
-            DeviceIds = deviceList;
+            Argument.AssertNotNull(deviceIds, nameof(deviceIds));
+            DeviceIds = deviceIds;
         }
 
         /// <summary>
         /// Ids of target devices.
         /// </summary>
-        public IList<string> DeviceIds { get; private set; }
+        public IEnumerable<string> DeviceIds { get; private set; }
     }
 }

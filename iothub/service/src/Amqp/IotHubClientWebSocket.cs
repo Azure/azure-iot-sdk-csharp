@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices
                 string upgradeRequest = BuildUpgradeRequest();
                 byte[] upgradeRequestBytes = Encoding.ASCII.GetBytes(upgradeRequest);
 
-                TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
+                TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliseconds(timeout);
 
                 // Send WebSocket Upgrade request
                 await WriteToStreamAsync(WebSocketStream, upgradeRequestBytes).ConfigureAwait(false);
@@ -453,7 +453,7 @@ namespace Microsoft.Azure.Devices
         // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
         // if the remaining time reaches TimeSpan.Zero we don't want to turn off timeouts on the socket, instead
         // we want to use a very small timeout.
-        private static int GetSocketTimeoutInMilliSeconds(TimeSpan timeout)
+        private static int GetSocketTimeoutInMilliseconds(TimeSpan timeout)
         {
             if (timeout == TimeSpan.MaxValue)
             {
@@ -467,10 +467,9 @@ namespace Microsoft.Azure.Devices
                 return 1;
             }
 
-            long ticks = Ticks.FromTimeSpan(timeout);
-            return ticks / TimeSpan.TicksPerMillisecond > int.MaxValue
+            return timeout.Ticks / TimeSpan.TicksPerMillisecond > int.MaxValue
                 ? int.MaxValue
-                : Ticks.ToMilliseconds(ticks);
+                : (int)timeout.TotalMilliseconds;
         }
 
         private static byte[] PrepareWebSocketHeader(int bufferLength, WebSocketMessageType webSocketMessageType)
@@ -811,7 +810,7 @@ namespace Microsoft.Azure.Devices
                 var timeoutHelper = new TimeoutHelper(timeout);
                 do
                 {
-                    TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
+                    TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliseconds(timeoutHelper.RemainingTime());
                     _bytesRead = 0;
 
                     _bytesRead = await ReadFromStreamAsync(Stream, Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);

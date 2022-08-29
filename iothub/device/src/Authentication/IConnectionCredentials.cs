@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     internal interface IConnectionCredentials
     {
         /// <summary>
-        /// The fully-qualified DNS hostname of the IoT hub service.
+        /// The fully-qualified DNS host name of the IoT hub service.
         /// </summary>
         string IotHubHostName { get; }
 
@@ -99,6 +99,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the SAS token credential required for authenticating the client with IoT hub service.
         /// </summary>
-        public Task<string> GetPasswordAsync();
+        Task<string> GetPasswordAsync();
     }
 }

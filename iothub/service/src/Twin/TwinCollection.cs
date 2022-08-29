@@ -83,8 +83,8 @@ namespace Microsoft.Azure.Devices
         /// Gets the version of the collection.
         /// </summary>
         public long Version => !JObject.TryGetValue(VersionName, out JToken versionToken)
-                    ? default
-                    : (long)versionToken;
+            ? default
+            : (long)versionToken;
 
         /// <summary>
         /// Gets the count of properties in the collection.

@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
+                Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(jobId, nameof(jobId));
+                Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri(CancelJobUriFormat.FormatInvariant(jobId), UriKind.Relative), _credentialProvider);
@@ -196,10 +196,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"jobId=[{scheduledJobsOptions.JobId}], queryCondition=[{scheduledDirectMethod.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             try
             {
-                Argument.RequireNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
-                Argument.RequireNotNullOrEmpty(scheduledDirectMethod.QueryCondition, nameof(scheduledDirectMethod.QueryCondition));
-                Argument.RequireNotNull(scheduledDirectMethod.DirectMethodRequest, nameof(scheduledDirectMethod.DirectMethodRequest));
-                Argument.RequireNotNull(scheduledDirectMethod.StartTimeUtc, nameof(scheduledDirectMethod.StartTimeUtc));
+                Argument.AssertNotNull(scheduledDirectMethod, nameof(scheduledDirectMethod));
+                Argument.AssertNotNullOrWhiteSpace(scheduledDirectMethod.QueryCondition, nameof(scheduledDirectMethod.QueryCondition));
+                Argument.AssertNotNull(scheduledDirectMethod.DirectMethodRequest, nameof(scheduledDirectMethod.DirectMethodRequest));
+                Argument.AssertNotNull(scheduledDirectMethod.StartTimeUtc, nameof(scheduledDirectMethod.StartTimeUtc));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices
                     JobType = JobType.ScheduleDeviceMethod,
                     DirectMethodRequest = scheduledDirectMethod.DirectMethodRequest,
                     QueryCondition = scheduledDirectMethod.QueryCondition,
-                    StartTimeUtc = scheduledDirectMethod.StartTimeUtc,
+                    StartOn = scheduledDirectMethod.StartTimeUtc,
                     MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime
                 };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
@@ -248,17 +248,19 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<ScheduledJob> ScheduleTwinUpdateAsync(ScheduledTwinUpdate scheduledTwinUpdate,
-            ScheduledJobsOptions scheduledJobsOptions = default, CancellationToken cancellationToken = default)
+        public virtual async Task<ScheduledJob> ScheduleTwinUpdateAsync(
+            ScheduledTwinUpdate scheduledTwinUpdate,
+            ScheduledJobsOptions scheduledJobsOptions = default,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"queryCondition=[{scheduledTwinUpdate.QueryCondition}]", nameof(ScheduleDirectMethodAsync));
             try
             {
-                Argument.RequireNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
-                Argument.RequireNotNullOrEmpty(scheduledTwinUpdate.QueryCondition, nameof(scheduledTwinUpdate.QueryCondition));
-                Argument.RequireNotNull(scheduledTwinUpdate.Twin, nameof(scheduledTwinUpdate.Twin));
-                Argument.RequireNotNull(scheduledTwinUpdate.StartTimeUtc, nameof(scheduledTwinUpdate.StartTimeUtc));
+                Argument.AssertNotNull(scheduledTwinUpdate, nameof(scheduledTwinUpdate));
+                Argument.AssertNotNullOrWhiteSpace(scheduledTwinUpdate.QueryCondition, nameof(scheduledTwinUpdate.QueryCondition));
+                Argument.AssertNotNull(scheduledTwinUpdate.Twin, nameof(scheduledTwinUpdate.Twin));
+                Argument.AssertNotNull(scheduledTwinUpdate.StartOn, nameof(scheduledTwinUpdate.StartOn));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var jobRequest = new JobRequest
@@ -267,8 +269,8 @@ namespace Microsoft.Azure.Devices
                     JobType = JobType.ScheduleUpdateTwin,
                     UpdateTwin = scheduledTwinUpdate.Twin,
                     QueryCondition = scheduledTwinUpdate.QueryCondition,
-                    StartTimeUtc = scheduledTwinUpdate.StartTimeUtc,
-                    MaxExecutionTime = scheduledJobsOptions?.MaxExecutionTime
+                    StartOn = scheduledTwinUpdate.StartOn,
+                    MaxExecutionTime = scheduledJobsOptions?.MaxExecutionTime,
                 };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);

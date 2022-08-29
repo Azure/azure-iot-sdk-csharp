@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="moduleId">Module identifier</param>
         public Module(string deviceId, string moduleId)
         {
-            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-            Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
             Id = moduleId;
             DeviceId = deviceId;

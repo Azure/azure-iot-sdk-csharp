@@ -6,6 +6,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
+    /// <summary>
+    /// A data object that holds the different components that make up a device/module specific connection string.
+    /// </summary>
     internal class IotHubConnectionString
     {
         internal IotHubConnectionString(
@@ -27,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The value of the fully-qualified DNS hostname of the IoT hub service.
+        /// The value of the fully-qualified DNS host name of the IoT hub service.
         /// </summary>
         public string IotHubHostName { get; }
 

@@ -31,7 +31,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public void EndOpenLink(IAsyncResult result)
         {
-            TaskHelpers.EndAsyncResult(result);
+            if (result is not Task task)
+            {
+                throw new ArgumentException($"Given {nameof(result)} is not subclass of Task.");
+            }
+
+            try
+            {
+                task.GetAwaiter().GetResult();
+            }
+            catch (AggregateException ae)
+            {
+                throw ae.GetBaseException();
+            }
         }
 
         public event EventHandler<LinkCreatedEventArgs> LinkCreated;

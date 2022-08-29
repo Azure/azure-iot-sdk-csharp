@@ -25,10 +25,10 @@ namespace Microsoft.Azure.Devices
         public IEnumerable<FeedbackRecord> Records { get; set; }
 
         /// <summary>
-        /// The IoT hub hostname.
+        /// The IoT hub host name.
         /// </summary>
         /// <remarks>
-        /// Despite the name of this member, the value will be the IoT hub hostname.
+        /// Despite the name of this member, the value will be the IoT hub host name.
         /// </remarks>
         public string UserId { get; set; }
 

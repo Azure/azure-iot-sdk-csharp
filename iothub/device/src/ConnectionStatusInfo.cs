@@ -6,17 +6,17 @@ using System;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The connection information since the last status change.
+    /// The connection status information since the last status change.
     /// </summary>
-    public class ConnectionInfo
+    public class ConnectionStatusInfo
     {
-        internal ConnectionInfo()
+        internal ConnectionStatusInfo()
             : this(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.ClientClosed)
         {
             RecommendedAction = RecommendedAction.OpenConnection;
         }
 
-        internal ConnectionInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
+        internal ConnectionStatusInfo(ConnectionStatus status, ConnectionStatusChangeReason changeReason)
         {
             Status = status;
             ChangeReason = changeReason;
