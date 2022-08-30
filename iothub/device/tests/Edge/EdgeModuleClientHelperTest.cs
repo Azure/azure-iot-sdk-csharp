@@ -219,7 +219,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
-            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+
+            // This client is being used by the test methods. It will be disposed by the respective tests.
+            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
         }
@@ -239,7 +241,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
-            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+
+            // // This client is being used by the test methods. It will be disposed by the respective tests.
+            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
         }

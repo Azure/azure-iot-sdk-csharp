@@ -50,10 +50,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
         {
-            string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
+            Action act = () => new DeviceAuthenticationWithX509Certificate("device1", null);
 
-            Action act = () => new IotHubDeviceClient(hostName, authMethod, new IotHubClientOptions(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)));
             act.Should().Throw<ArgumentException>();
         }
 
