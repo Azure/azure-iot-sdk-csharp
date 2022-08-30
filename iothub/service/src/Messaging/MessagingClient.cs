@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
             _clientOptions = options;
-            _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
+            _connection = new IotHubConnection(credentialProvider, options.Transport == TransportType.WebSocket, options);
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, _connection.CloseLink);
         }
 

@@ -7,24 +7,18 @@ namespace Microsoft.Azure.Devices
     /// Transport types supported by MessagingClient, FileUploadNotificationProcessorClient and MessageFeedbackProcessorClient.
     /// </summary>
     /// <remarks>
-    /// Amqp and Amqp over WebSocket.
+    /// Only supports Amqp and Amqp over WebSocket.
     /// </remarks>
     public enum TransportType
     {
         /// <summary>
-        /// Advanced Message Queuing Protocol transport.
+        /// Communicate over TCP using the port 5671.
         /// </summary>
-        /// <remarks>
-        /// Communicate over port 5671.
-        /// </remarks>
-        Amqp,
+        Tcp,
 
         /// <summary>
-        /// Advanced Message Queuing Protocol transport over WebSocket.
-        /// </summary>
-        /// <remarks>
         /// Communicate over web socket using port 443.
-        /// </remarks>
-        Amqp_WebSocket
+        /// </summary>
+        WebSocket
     }
 }

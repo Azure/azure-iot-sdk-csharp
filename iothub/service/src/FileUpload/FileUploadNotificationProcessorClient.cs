@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         {
             _hostName = hostName;
             _credentialProvider = credentialProvider;
-            _connection = new IotHubConnection(credentialProvider, options.UseWebSocketOnly, options);
+            _connection = new IotHubConnection(credentialProvider, options.Transport == TransportType.WebSocket, options);
             _fileNotificationReceiver = new AmqpFileNotificationReceiver(_connection);
         }
 
