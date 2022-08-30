@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
-            _ = new IotHubDeviceClient(hostName, authMethod, options);
+            using var dc = new IotHubDeviceClient(hostName, authMethod, options);
         }
     }
 }

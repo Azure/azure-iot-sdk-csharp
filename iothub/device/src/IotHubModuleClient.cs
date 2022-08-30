@@ -37,8 +37,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the module to communicate with IoT Hub.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable client instance.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentNullException">Either <paramref name="connectionString"/> is null,
+        /// or the IoT hub host name, device Id or module Id in the connection string is null.</exception>
+        /// <exception cref="ArgumentException">Either <paramref name="connectionString"/> is an empty string or consists only of white-space characters,
+        /// or the IoT hub host name, device Id or module Id in the connection string are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(connectionString), options, null)

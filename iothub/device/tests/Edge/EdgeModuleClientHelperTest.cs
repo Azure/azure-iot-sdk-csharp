@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync();
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync();
 
             Assert.IsNotNull(dc);
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
 
             // act
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(clientOptions);
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(clientOptions);
 
             Assert.IsNotNull(dc);
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
-            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             Assert.IsNotNull(dc);
 
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
-            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             Assert.IsNotNull(dc);
 
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
-            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
         }
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             var trustBundle = Substitute.For<ITrustBundleProvider>();
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
-            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
+            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
         }
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -323,7 +323,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -337,7 +337,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -362,7 +362,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 

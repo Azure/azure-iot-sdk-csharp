@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 s_iotHubConnectionCredentials.SharedAccessKey,
                 s_iotHubConnectionCredentials.SharedAccessKeyName);
 
-            var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
+            using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options);
         }
 
         [TestMethod]
@@ -1106,7 +1106,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CompleteAsyncThrowsForNullMessage()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.CompleteMessageAsync((Message)null);
 
@@ -1116,7 +1116,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CompleteAsyncWithCancellationTokenThrowsForNullMessage()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.CompleteMessageAsync((Message)null, CancellationToken.None);
 
@@ -1126,7 +1126,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CompleteAsyncThrowsForNullLockToken()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.CompleteMessageAsync((string)null);
             act.Should().Throw<ArgumentNullException>();
@@ -1135,7 +1135,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CompleteAsyncWithCancellationTokenThrowsForNullLockToken()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.CompleteMessageAsync((string)null, CancellationToken.None);
             act.Should().Throw<ArgumentNullException>();
@@ -1144,7 +1144,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void RejectAsyncThrowsForNullMessage()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.RejectMessageAsync((Message)null);
             act.Should().Throw<ArgumentNullException>();
@@ -1153,7 +1153,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void RejectAsyncWithCancellationTokenThrowsForNullMessage()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.RejectMessageAsync((Message)null, CancellationToken.None);
             act.Should().Throw<ArgumentNullException>();
@@ -1162,7 +1162,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void RejectAsyncThrowsForNullLockToken()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.RejectMessageAsync((string)null);
             act.Should().Throw<ArgumentNullException>();
@@ -1171,7 +1171,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void RejectAsyncWithCancellationTokenThrowsForNullLockToken()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.RejectMessageAsync((string)null, CancellationToken.None);
             act.Should().Throw<ArgumentNullException>();
@@ -1180,7 +1180,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void AbandonAsyncThrowsForNullMessage()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.AbandonMessageAsync((Message)null);
             act.Should().Throw<ArgumentNullException>();
@@ -1189,7 +1189,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void AbandonAsyncWithCancellationTokenThrowsForNullMessage()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.AbandonMessageAsync((Message)null, CancellationToken.None);
             act.Should().Throw<ArgumentNullException>();
@@ -1198,7 +1198,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void AbandonAsyncThrowsForNullLockToken()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.AbandonMessageAsync((string)null);
             act.Should().Throw<ArgumentNullException>();
@@ -1207,7 +1207,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void AbandonAsyncWithCancellationTokenThrowsForNullLockToken()
         {
-            IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
+            using IotHubDeviceClient client = new IotHubDeviceClient(FakeConnectionString);
 
             Func<Task> act = async () => await client.AbandonMessageAsync((string)null, CancellationToken.None);
             act.Should().Throw<ArgumentNullException>();
@@ -1413,7 +1413,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = new InternalClient(
+            using InternalClient internalClient = new InternalClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
                 options,
                 pipelineBuilderSubstitute);
@@ -1449,7 +1449,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            InternalClient internalClient = new InternalClient(
+            using InternalClient internalClient = new InternalClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
                 options,
                 pipelineBuilderSubstitute);
