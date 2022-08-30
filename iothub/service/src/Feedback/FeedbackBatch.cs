@@ -31,7 +31,5 @@ namespace Microsoft.Azure.Devices
         /// Despite the name of this member, the value will be the IoT hub host name.
         /// </remarks>
         public string UserId { get; set; }
-
-        internal ArraySegment<byte> DeliveryTag { get; set; }
     }
 }
