@@ -159,9 +159,6 @@
   <data name="InvalidAsyncResultImplementation" xml:space="preserve">
     <value>An incorrect implementation of the IAsyncResult interface may be returning incorrect values from the CompletedSynchronously property or calling the AsyncCallback more than once. The type {0} could be the incorrect implementation.</value>
   </data>
-  <data name="InvalidAsyncResultImplementationGeneric" xml:space="preserve">
-    <value>An incorrect implementation of the IAsyncResult interface may be returning incorrect values from the CompletedSynchronously property or calling the AsyncCallback more than once.</value>
-  </data>
   <data name="InvalidBufferSize" xml:space="preserve">
     <value>The buffer size is invalid.</value>
   </data>

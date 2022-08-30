@@ -22,34 +22,32 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
         private readonly Uri _baseAddress;
-        private readonly IAuthorizationProvider _authenticationHeaderProvider;
+        private readonly IConnectionCredentials _connectionCredentials;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
         private HttpClientHandler _httpClientHandler;
         private bool _isDisposed;
-        private readonly ProductInfo _productInfo;
-        private readonly bool _isClientPrimaryTransportHandler;
+        private readonly AdditionalClientInformation _additionalClientInformation;
 
         public HttpClientHelper(
             Uri baseAddress,
-            IAuthorizationProvider authenticationHeaderProvider,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation additionalClientInformation,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
             HttpClientHandler httpClientHandler,
-            ProductInfo productInfo,
-            IotHubClientHttpSettings iotHubClientHttpSettings,
-            bool isClientPrimaryTransportHandler = false)
+            IotHubClientHttpSettings iotHubClientHttpSettings)
         {
             _baseAddress = baseAddress;
-            _authenticationHeaderProvider = authenticationHeaderProvider;
+            _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
             _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
             _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
 
-            X509Certificate2 clientCert = iotHubClientHttpSettings.ClientCertificate;
+            X509Certificate2 clientCert = _connectionCredentials.Certificate;
             IWebProxy proxy = iotHubClientHttpSettings.Proxy;
 
             if (clientCert != null)
@@ -77,8 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 
             preRequestActionForAllRequests?.Invoke(_httpClientObj);
-            _productInfo = productInfo;
-            _isClientPrimaryTransportHandler = isClientPrimaryTransportHandler;
+            _additionalClientInformation = additionalClientInformation;
         }
 
         public Task<T> GetAsync<T>(
@@ -144,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         InsertEtag(requestMsg, entity, operationType);
                         requestMsg.Content = CreateContent(entity);
-                        return TaskHelpers.CompletedTask;
+                        return Task.CompletedTask;
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
@@ -186,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            return TaskHelpers.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
@@ -276,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 ReadResponseMessageAsync<HttpResponseMessage>,
                 errorMappingOverrides,
@@ -335,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 processResponseMessageAsync,
                 errorMappingOverrides,
@@ -356,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     InsertEtag(requestMsg, entity);
                     AddCustomHeaders(requestMsg, customHeaders);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 null,
                 errorMappingOverrides,
@@ -398,14 +395,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             using var msg = new HttpRequestMessage(httpMethod, requestUri);
             if (!_usingX509ClientCert)
             {
-                string authHeader = await _authenticationHeaderProvider.GetPasswordAsync().ConfigureAwait(false);
+                string authHeader = await _connectionCredentials.GetPasswordAsync().ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(authHeader))
                 {
                     msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
                 }
             }
 
-            msg.Headers.UserAgent.ParseAdd(_productInfo.ToString(UserAgentFormats.Http));
+            msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo?.ToString(UserAgentFormats.Http));
 
             if (modifyRequestMessageAsync != null)
             {
@@ -443,22 +440,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // TODO: pradeepc - need to confirm this with ASP.NET team
                 if (innerExceptions.Any(e => e is TimeoutException))
                 {
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
                 }
 
-                throw new IotHubException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex);
             }
             catch (TimeoutException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (IOException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (HttpRequestException ex)
             {
-                throw new IotHubCommunicationException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
             }
             catch (OperationCanceledException)
             {
@@ -466,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
-                throw new IotHubException(ex.Message, ex);
+                throw new IotHubClientException(ex.Message, ex);
             }
 
             if (!isSuccessful(responseMsg))
@@ -482,7 +479,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (!errorMapping.TryGetValue(response.StatusCode, out Func<HttpResponseMessage, Task<Exception>> func))
             {
-                return new IotHubException(
+                return new IotHubClientException(
                     await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }
@@ -508,20 +505,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     _httpClientHandler?.Dispose();
                     _httpClientHandler = null;
-                }
-
-                // The associated TokenRefresher should be disposed by the http client helper only when the http client
-                // is the primary transport handler.
-                // For eg. we create HttpTransportHandler instances for file upload operations even though the client might be
-                // initialized via MQTT/ AMQP. In those scenarios, since the shared TokenRefresher resource would be primarily used by the
-                // corresponding transport layers (MQTT/ AMQP), the diposal should be delegated to them and it should not be disposed here.
-                // The only scenario where the TokenRefresher should be disposed here is when the client has been initialized using HTTP.
-                if (_isClientPrimaryTransportHandler
-                    && _authenticationHeaderProvider is ClientConfiguration clientConfiguration
-                    && clientConfiguration.TokenRefresher != null
-                    && clientConfiguration.TokenRefresher.DisposalWithClient)
-                {
-                    clientConfiguration.TokenRefresher.Dispose();
                 }
 
                 _isDisposed = true;

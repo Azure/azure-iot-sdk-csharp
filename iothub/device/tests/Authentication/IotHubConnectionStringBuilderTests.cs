@@ -32,6 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         {
             var connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}";
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.IotHubHostName.Should().Be(HostName);
             iotHubConnectionCredentials.HostName.Should().Be(HostName);
         }
 
@@ -138,7 +139,9 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         {
             var connectionString = $"HostName={HostName};DeviceId={DeviceId};GatewayHostName={TransparentGatewayHostName};SharedAccessKey={SharedAccessKey}";
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString);
+            iotHubConnectionCredentials.IotHubHostName.Should().Be(HostName);
             iotHubConnectionCredentials.GatewayHostName.Should().Be(TransparentGatewayHostName);
+            iotHubConnectionCredentials.HostName.Should().Be(TransparentGatewayHostName);
         }
 
         [TestMethod]
@@ -170,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         {
             var authMethod = new DeviceAuthenticationWithSharedAccessPolicyKey(DeviceId, SharedAccessKeyName, SharedAccessKey);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName);
-            iotHubConnectionCredentials.HostName.Should().Be(HostName);
+            iotHubConnectionCredentials.IotHubHostName.Should().Be(HostName);
             iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
             iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithSharedAccessPolicyKey>();
@@ -183,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         {
             IAuthenticationMethod authMethod = new DeviceAuthenticationWithToken(DeviceId, SharedAccessSignature);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName);
-            iotHubConnectionCredentials.HostName.Should().Be(HostName);
+            iotHubConnectionCredentials.IotHubHostName.Should().Be(HostName);
             iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
             iotHubConnectionCredentials.SharedAccessSignature.Should().Be(SharedAccessSignature);
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithToken>();
@@ -204,9 +207,10 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         {
             IAuthenticationMethod authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(DeviceId, SharedAccessKey);
             var iotHubConnectionCredentials = new IotHubConnectionCredentials(authMethod, HostName, GatewayHostName);
-            iotHubConnectionCredentials.HostName.Should().Be(HostName);
+            iotHubConnectionCredentials.IotHubHostName.Should().Be(HostName);
             iotHubConnectionCredentials.DeviceId.Should().Be(DeviceId);
             iotHubConnectionCredentials.GatewayHostName.Should().Be(GatewayHostName);
+            iotHubConnectionCredentials.HostName.Should().Be(GatewayHostName);
             iotHubConnectionCredentials.SharedAccessKey.Should().Be(SharedAccessKey);
             iotHubConnectionCredentials.AuthenticationMethod.Should().BeOfType<DeviceAuthenticationWithRegistrySymmetricKey>();
 

@@ -28,6 +28,8 @@ namespace Microsoft.Azure.Devices
         private const string RequestUriFormat = "/devices/{0}";
         private const string TwinUriFormat = "/twins/{0}";
         private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}";
+        private const string ETagNotSetWhileUpdatingTwin = "ETagNotSetWhileUpdatingTwin";
+        private const string InvalidImportMode = "InvalidImportMode";
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
 
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an HTTP patch request.
@@ -76,7 +78,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting device twin on device: {deviceId}", nameof(GetAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetTwinUri(deviceId), _credentialProvider);
@@ -123,8 +125,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModuleTwinRequestUri(deviceId, moduleId), _credentialProvider);
@@ -171,9 +173,9 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Updating device twin on device: {deviceId}", nameof(UpdateAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
-                Argument.RequireNotNull(twinPatch, nameof(twinPatch));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
+                Argument.AssertNotNull(twinPatch, nameof(twinPatch));
                 cancellationToken.ThrowIfCancellationRequested();
                 return await UpdateInternalAsync(deviceId, twinPatch, etag, false, cancellationToken).ConfigureAwait(false);
             }
@@ -217,9 +219,9 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(jsonTwinPatch, nameof(jsonTwinPatch));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(jsonTwinPatch, nameof(jsonTwinPatch));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
@@ -266,10 +268,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Updating device twin on device: {deviceId}", nameof(UpdateAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
-                Argument.RequireNotNull(twinPatch, nameof(twinPatch));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
+                Argument.AssertNotNull(twinPatch, nameof(twinPatch));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 return await UpdateInternalAsync(deviceId, moduleId, twinPatch, etag, false, cancellationToken).ConfigureAwait(false);
@@ -314,10 +316,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Updating device twin on device: {deviceId} and module: {moduleId}", nameof(UpdateAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
-                Argument.RequireNotNull(jsonTwinPatch, nameof(jsonTwinPatch));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
+                Argument.AssertNotNull(jsonTwinPatch, nameof(jsonTwinPatch));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
@@ -361,7 +363,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Updating device twins.", nameof(UpdateAsync));
             try
             {
-                Argument.RequireNotNull(twins, nameof(twins));
+                Argument.AssertNotNull(twins, nameof(twins));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 return await BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
@@ -408,9 +410,9 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Replacing device twin on device: {deviceId}", nameof(ReplaceAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
-                Argument.RequireNotNull(newTwin, nameof(newTwin));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
+                Argument.AssertNotNull(newTwin, nameof(newTwin));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 return await UpdateInternalAsync(deviceId, newTwin, etag, true, cancellationToken).ConfigureAwait(false);
@@ -454,9 +456,9 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Replacing device twin on device: {deviceId}", nameof(ReplaceAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(newTwinJson, nameof(newTwinJson));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(newTwinJson, nameof(newTwinJson));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
@@ -503,10 +505,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Replacing device twin on device: {deviceId} and module: {moduleId}", nameof(ReplaceAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
-                Argument.RequireNotNull(newTwin, nameof(newTwin));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
+                Argument.AssertNotNull(newTwin, nameof(newTwin));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 return await UpdateInternalAsync(deviceId, moduleId, newTwin, etag, true, cancellationToken).ConfigureAwait(false);
@@ -551,10 +553,10 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Replacing device twin on device: {deviceId} and module: {moduleId}", nameof(ReplaceAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
-                Argument.RequireNotNullOrEmpty(etag, nameof(etag));
-                Argument.RequireNotNullOrEmpty(newTwinJson, nameof(newTwinJson));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(etag, nameof(etag));
+                Argument.AssertNotNullOrWhiteSpace(newTwinJson, nameof(newTwinJson));
                 cancellationToken.ThrowIfCancellationRequested();
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
                 Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
@@ -675,12 +677,12 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateTwinIfMatchETag:
                         if (string.IsNullOrWhiteSpace(twin.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingTwin);
+                            throw new ArgumentException(ETagNotSetWhileUpdatingTwin);
                         }
                         break;
 
                     default:
-                        throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
+                        throw new ArgumentException($"{InvalidImportMode} {importMode}.");
                 }
 
                 var exportImportDevice = new ExportImportDevice

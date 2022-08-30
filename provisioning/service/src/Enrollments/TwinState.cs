@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// The TwinState can contain one <see cref="TwinCollection"/> of <b>Tags</b>, and one
-    ///     <see cref="TwinCollection"/> of <b>properties.desired</b>.
+    /// <see cref="TwinCollection"/> of <b>properties.desired</b>.
     ///
     /// Each entity in the collections can contain a associated <see cref="Metadata"/>.
     ///
@@ -18,8 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     updated date time, and version.
     /// </remarks>
     /// <example>
-    /// For instance, the following is a valid TwinState, represented as
-    ///     <c>initialTwin</c> in the rest API.
+    /// For instance, the following is a valid TwinState, represented as <c>initialTwin</c> in the rest API.
     /// <c>
     /// {
     ///     "initialTwin": {

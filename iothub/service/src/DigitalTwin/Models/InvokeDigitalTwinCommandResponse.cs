@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
         public string Payload { get; internal set; }
 
         /// <summary>
-        /// Server generated request Id (GUID), to uniquely identify this request in the service.
+        /// Server generated request Id to uniquely identify this request in the service.
         /// </summary>
         public string RequestId { get; internal set; }
     }

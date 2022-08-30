@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -25,6 +24,10 @@ namespace Microsoft.Azure.Devices
 
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
         private const string ConfigurationsRequestUriFormat = "&top={0}";
+        private const string ETagSetWhileCreatingConfiguration = "ETagSetWhileCreatingConfiguration";
+        private const string ArgumentMustBeNonNegative = "ArgumentMustBeNonNegative";
+        private const string ETagNotSetWhileDeletingConfiguration = "ETagNotSetWhileDeletingConfiguration";
+        private const string ETagNotSetWhileUpdatingConfiguration = "ETagNotSetWhileUpdatingConfiguration";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -66,10 +69,10 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(configuration, nameof(configuration));
+                Argument.AssertNotNull(configuration, nameof(configuration));
                 if (!string.IsNullOrEmpty(configuration.ETag))
                 {
-                    throw new ArgumentException(ApiResources.ETagSetWhileCreatingConfiguration);
+                    throw new ArgumentException(ETagSetWhileCreatingConfiguration);
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -115,7 +118,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(configurationId, nameof(configurationId));
+                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
@@ -160,7 +163,7 @@ namespace Microsoft.Azure.Devices
             {
                 if (maxCount < 0)
                 {
-                    throw new ArgumentException(ApiResources.ArgumentMustBeNonNegative, nameof(maxCount));
+                    throw new ArgumentException(ArgumentMustBeNonNegative, nameof(maxCount));
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -208,7 +211,8 @@ namespace Microsoft.Azure.Devices
         /// replace the mutable fields of the configuration registration.
         /// </summary>
         /// <param name="configuration">The configuration object with replaced fields.</param>
-        /// <param name="forceUpdate">Forces the configuration object to be replaced even if it was replaced since it was retrieved last time.</param>
+        /// <param name="forceUpdate">Forces the configuration object to be replaced even if it was replaced since it was retrieved last time
+        /// (i.e., the <see cref="Configuration.ETag"/> does not match the service's.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
@@ -229,10 +233,10 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(configuration, nameof(configuration));
+                Argument.AssertNotNull(configuration, nameof(configuration));
                 if (string.IsNullOrWhiteSpace(configuration.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingConfiguration);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingConfiguration);
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -279,7 +283,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(configurationId, nameof(configurationId));
+                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // use wild-card ETag
@@ -324,11 +328,11 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
             try
             {
-                Argument.RequireNotNull(configuration, nameof(configuration));
+                Argument.AssertNotNull(configuration, nameof(configuration));
                 cancellationToken.ThrowIfCancellationRequested();
                 if (string.IsNullOrWhiteSpace(configuration.ETag))
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingConfiguration);
+                    throw new ArgumentException(ETagNotSetWhileDeletingConfiguration);
                 }
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
                 HttpMessageHelper.InsertETag(request, configuration.ETag);
@@ -380,8 +384,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNull(content, nameof(content));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNull(content, nameof(content));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);

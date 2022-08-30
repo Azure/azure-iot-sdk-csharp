@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 using System.Text.RegularExpressions;
-using SharedAccessSignatureParser = Microsoft.Azure.Devices.Common.Service.Auth.SharedAccessSignature;
+using SharedAccessSignatureParser = Microsoft.Azure.Devices.SharedAccessSignature;
 
-namespace Microsoft.Azure.Devices.Common.Service.Auth
+namespace Microsoft.Azure.Devices
 {
     internal class ServiceConnectionStringBuilder
     {

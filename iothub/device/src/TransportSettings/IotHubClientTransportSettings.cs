@@ -20,11 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientTransportProtocol Protocol { get; protected set; }
 
         /// <summary>
-        /// The client certificate to use for authenticating.
-        /// </summary>
-        public X509Certificate2 ClientCertificate { get; set; }
-
-        /// <summary>
         /// The time to wait for a receive operation.
         /// </summary>
         public TimeSpan DefaultReceiveTimeout { get; protected set; }

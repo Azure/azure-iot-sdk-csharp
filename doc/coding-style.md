@@ -57,6 +57,13 @@ To enforce this, we make use of an .editorconfig file, and [CodeMaid](https://ma
             param3)
         .ConfigureAwait(false);
     ```
+1. Order of tags in documentation comments:
+  - `<summary>` - Describe a type or a member of a type
+  - `<remarks>` - Describe additional information about a type
+  - `<param>` - Describe a parameter for a method or constructor
+  - `<returns>` - Describe the return value of a method
+  - `<exception>` - Identifies the exceptions a method can throw
+  - `<example>` - Indicate an example
 
 ## Examples
 

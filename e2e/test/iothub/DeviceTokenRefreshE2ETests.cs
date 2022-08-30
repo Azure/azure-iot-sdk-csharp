@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -25,7 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -35,11 +35,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            };
+
+            //assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(UnauthorizedException))]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
@@ -50,7 +58,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
                 $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
                 options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -115,20 +132,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             using var deviceDisconnected = new SemaphoreSlim(0);
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
+            var auth = new DeviceAuthenticationWithConnectionString(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
-            {
-                SasTokenTimeToLive = sasTokenTimeToLive,
-                SasTokenRenewalBuffer = sasTokenRenewalBuffer,
-            };
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            using IotHubDeviceClient deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, auth, options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
-            deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
+            deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
             {
-                var status = connectionInfo.Status;
-                var reason = connectionInfo.ChangeReason;
+                ConnectionStatus status = connectionStatusInfo.Status;
+                ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
                 Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                 if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                 {
@@ -165,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Device device = testDevice.Device;
             using var deviceDisconnected = new SemaphoreSlim(0);
 
-            using var refresher = new TestTokenRefresher(
+            var refresher = new TestTokenRefresher(
                 device.Id,
                 device.Authentication.SymmetricKey.PrimaryKey,
                 ttl,
@@ -179,10 +193,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (transportSettings is IotHubClientMqttSettings
                 && transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                deviceClient.SetConnectionStatusChangeHandler((ConnectionInfo connectionInfo) =>
+                deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
                 {
-                    var status = connectionInfo.Status;
-                    var reason = connectionInfo.ChangeReason;
+                    ConnectionStatus status = connectionStatusInfo.Status;
+                    ConnectionStatusChangeReason reason = connectionStatusInfo.ChangeReason;
                     Logger.Trace($"{nameof(DeviceTokenRefreshE2ETests)}: {status}; {reason}");
                     if (status == ConnectionStatus.DisconnectedRetrying || status == ConnectionStatus.Disconnected)
                     {
@@ -284,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             ///<inheritdoc/>
-            protected override Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _logger.Trace($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 

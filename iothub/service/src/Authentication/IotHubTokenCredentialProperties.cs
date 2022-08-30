@@ -2,23 +2,23 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.Amqp;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure.Core;
-using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The properties required for authentication to IoT hub using a token credential.
     /// </summary>
-    internal class IotHubTokenCrendentialProperties
-        : IotHubConnectionProperties
+    internal class IotHubTokenCrendentialProperties : IotHubConnectionProperties
     {
         private const string TokenType = "Bearer";
+        private static readonly string[] s_iotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
+
         private readonly TokenCredential _credential;
-        private readonly object _tokenLock = new object();
+        private readonly object _tokenLock = new();
         private AccessToken? _cachedAccessToken;
 
         public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential) : base(hostName)
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                        new TokenRequestContext(s_iotHubAadTokenScopes),
                         new CancellationToken());
                 }
             }
@@ -47,9 +47,10 @@ namespace Microsoft.Azure.Devices
         // The AMQP protocol uses this method to get a CBS token for authentication.
         public async override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
-            AccessToken token = await _credential.GetTokenAsync(
-                new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
-                new CancellationToken()).ConfigureAwait(false);
+            AccessToken token = await _credential
+                .GetTokenAsync(new TokenRequestContext(s_iotHubAadTokenScopes), CancellationToken.None)
+                .ConfigureAwait(false);
+
             return new CbsToken(
                $"{TokenType} {token.Token}",
                 TokenType,

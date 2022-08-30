@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using static System.Runtime.InteropServices.RuntimeInformation;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Factory that creates ModuleClient based on the IoT Edge environment.
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         private readonly IotHubClientOptions _options;
 
         /// <summary>
-        /// Initializes a new instance of the class with transport settings.
+        /// Creates an instance of this class with transport settings.
         /// </summary>
         /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
@@ -92,13 +92,14 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
                 ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
 
-                TimeSpan sasTokenTimeToLive = _options.SasTokenTimeToLive;
-                int sasTokenRenewalBuffer = _options.SasTokenRenewalBuffer;
+                // TODO: environment variables need to be added to accept SasTokenTimeToLive and SasTokenRenewalBuffer.
+                // These values can then be passed on to ModuleAuthenticationWithHsm (internal class).
 
-#pragma warning disable CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
-                // Since the sdk creates the instance of disposable ModuleAuthenticationWithHsm, the sdk needs to dispose it once the client is disposed.
-                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId, sasTokenTimeToLive, sasTokenRenewalBuffer, disposeWithClient: true);
-#pragma warning restore CA2000 // Dispose objects before losing scope - IDisposable ModuleAuthenticationWithHsm is disposed when the client is disposed.
+                var authMethod = new ModuleAuthenticationWithHsm(
+                    signatureProvider,
+                    deviceId,
+                    moduleId,
+                    generationId);
 
                 Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
 

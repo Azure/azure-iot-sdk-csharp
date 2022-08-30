@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Common.Service.Auth
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Authentication method that uses a shared access policy key.
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyKey"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="policyName">Name of the shared access policy to use.</param>
         /// <param name="key">Key associated with the shared access policy.</param>

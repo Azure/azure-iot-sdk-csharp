@@ -5,10 +5,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service

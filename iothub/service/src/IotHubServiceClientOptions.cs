@@ -13,25 +13,18 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class IotHubServiceClientOptions
     {
-        private static readonly TimeSpan _defaultIdleTimeout = TimeSpan.FromMinutes(2);
-
-        /// <summary>
-        /// Initializes a new instance of this class using the default settings.
-        /// </summary>
-        public IotHubServiceClientOptions()
-        {
-            Proxy = DefaultWebProxySettings.Instance;
-            UseWebSocketOnly = false;
-        }
+        private static readonly TimeSpan s_defaultIdleTimeout = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// The web proxy that will be used to connect to IoT hub when using the HTTP protocol.
         /// </summary>
-        /// <value>
-        /// An instance of a class that implements <see cref="IWebProxy"/>.
-        /// </value>
+        /// <remarks>
+        /// If you wish to bypass OS-specified proxy settings, set this to <see cref="GlobalProxySelection.GetEmptyWebProxy()"/>.
+        /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.http.httpclienthandler.proxy?view=net-6.0"/>
         /// <example>
-        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
+        /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
         /// static ServiceClient GetServiceClient()
         /// {
@@ -106,7 +99,7 @@ namespace Microsoft.Azure.Devices
         /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </remarks>
-        public TimeSpan AmqpConnectionKeepAlive { get; set; } = _defaultIdleTimeout;
+        public TimeSpan AmqpConnectionKeepAlive { get; set; } = s_defaultIdleTimeout;
 
         /// <summary>
         /// A keep-alive for the transport layer in sending ping/pong control frames when using web sockets.

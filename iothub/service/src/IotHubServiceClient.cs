@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown when the provided connection string is empty or whitespace.</exception>
         public IotHubServiceClient(string connectionString, IotHubServiceClientOptions options = default)
         {
-            Argument.RequireNotNullOrEmpty(connectionString, nameof(connectionString));
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
             if (options == null)
             {
@@ -76,12 +76,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
         /// <param name="options">The optional client settings.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided hostName or credential is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided hostName is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="hostName"/> or <paramref name="credential"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="hostName"/> is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, TokenCredential credential, IotHubServiceClientOptions options = default)
         {
-            Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
-            Argument.RequireNotNull(credential, nameof(credential));
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNull(credential, nameof(credential));
 
             if (options == null)
             {
@@ -108,12 +108,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="options">The optional client settings.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided hostName or credential is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided hostName is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="hostName"/> or <paramref name="credential"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="hostName"/> is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, AzureSasCredential credential, IotHubServiceClientOptions options = default)
         {
-            Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
-            Argument.RequireNotNull(credential, nameof(credential));
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNull(credential, nameof(credential));
 
             if (options == null)
             {

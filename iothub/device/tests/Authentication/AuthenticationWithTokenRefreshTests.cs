@@ -57,20 +57,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task AuthenticationWithTokenRefresh_NonExpiredToken_GetTokenCached_Ok()
-        {
-            var refresher = new TestImplementation();
-            string expectedToken = CreateToken(DefaultTimeToLiveSeconds);
-
-            string token1 = await refresher.GetTokenAsync(TestIotHubName);
-            string token2 = await refresher.GetTokenAsync(TestIotHubName);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
-            Assert.AreEqual(expectedToken, token1);
-            Assert.AreEqual(token1, token2);
-        }
-
-        [TestMethod]
         public async Task AuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation();
@@ -98,22 +84,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var refresher = new TestImplementation();
             TestAssert.Throws<ArgumentNullException>(() => refresher.Populate(null));
-        }
-
-        [TestMethod]
-        public async Task AuthenticationWithTokenRefresh_GetTokenAsync_ConcurrentUpdate_Ok()
-        {
-            var refresher = new TestImplementation();
-
-            var tasks = new Task[5];
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = refresher.GetTokenAsync(TestIotHubName);
-            }
-
-            await Task.WhenAll(tasks);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount);
         }
 
         [TestMethod]
@@ -183,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, TimeSpan suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 

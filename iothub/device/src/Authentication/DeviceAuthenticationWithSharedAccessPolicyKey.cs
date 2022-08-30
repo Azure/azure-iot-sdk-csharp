@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Extensions;
 using System;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="policyName">Name of the shared access policy to use.</param>

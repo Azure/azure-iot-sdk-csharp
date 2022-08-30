@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public class ChannelMessageProcessingException : Exception
     {
         /// <summary>
-        /// Creates an instance of <see cref="ChannelMessageProcessingException"/> with a reference
+        /// Creates an instance of this class with a reference
         /// to the inner exception that caused this exception and the MQTT channel handler context.
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelMessageProcessingException"/> class with the specified serialization and context information.
+        /// Creates an instance of the this class with the specified serialization and context information.
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>

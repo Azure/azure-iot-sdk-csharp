@@ -19,9 +19,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <threadsafety static="true" instance="true" />
     public class IotHubDeviceClient : IDisposable
-#if NETSTANDARD2_1_OR_GREATER
-        , IAsyncDisposable
-#endif
     {
         /// <summary>
         /// Default operation timeout.
@@ -32,9 +29,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
 
-            if (InternalClient.IotHubConnectionInfo?.ModuleId != null)
+            if (InternalClient.IotHubConnectionCredentials?.ModuleId != null)
             {
-                throw new ArgumentException("A module Id was specified in the connection string - please use ModuleClient for modules.");
+                throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
             }
 
             if (Logging.IsEnabled)
@@ -44,13 +41,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates a disposable DeviceClient from the specified parameters, that uses AMQP transport protocol.
         /// </summary>
-        /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
+        /// <param name="hostName">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
-        public static IotHubDeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate"/> is used but <see cref="DeviceAuthenticationWithX509Certificate.Certificate"/> is null.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
+        /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
+        public static IotHubDeviceClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
         {
-            return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
+            return Create(() => ClientFactory.Create(hostName, authenticationMethod, options));
         }
 
         /// <summary>
@@ -59,6 +63,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
         /// <returns>A disposable DeviceClient instance</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name or device Id is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
+        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         public static IotHubDeviceClient CreateFromConnectionString(string connectionString, IotHubClientOptions options = default)
         {
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
@@ -105,13 +113,13 @@ namespace Microsoft.Azure.Devices.Client
         /// HTTP, as that protocol is stateless.
         /// </summary>
         /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStatusChangeHandler(Action<ConnectionInfo> statusChangeHandler)
+        public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
             => InternalClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
         /// <summary>
-        /// The latest connection information since the last status change.
+        /// The latest connection status information since the last status change.
         /// </summary>
-        public ConnectionInfo ConnectionInfo => InternalClient._connectionInfo;
+        public ConnectionStatusInfo ConnectionStatusInfo => InternalClient._connectionStatusInfo;
 
         /// <summary>
         /// Explicitly open the DeviceClient instance.
@@ -121,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task OpenAsync(CancellationToken cancellationToken = default) => InternalClient.OpenAsync(cancellationToken);
 
         /// <summary>
-        /// Sends an event to a hub
+        /// Sends an event to IoT hub.
         /// </summary>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
@@ -131,19 +139,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message to send. Should be disposed after sending.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown if the client encounters a transient retriable exception.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubException">
-        /// Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.
-        /// </exception>
+        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         public Task SendEventAsync(Message message, CancellationToken cancellationToken = default)
             => InternalClient.SendEventAsync(message, cancellationToken);
 
@@ -153,9 +159,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default)
             => InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
@@ -198,9 +203,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled.
-        /// The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default)
             => InternalClient.CompleteMessageAsync(lockToken, cancellationToken);
 
@@ -209,9 +213,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled.
-        /// The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default)
             => InternalClient.CompleteMessageAsync(message, cancellationToken);
 
@@ -224,9 +227,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled.
-        /// The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default)
             => InternalClient.AbandonMessageAsync(lockToken, cancellationToken);
 
@@ -239,9 +241,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="message">The message to abandon.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled.
-        /// The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default)
             => InternalClient.AbandonMessageAsync(message, cancellationToken);
 
@@ -254,9 +255,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <param name="lockToken">The message lockToken.</param>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled.
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken = default)
             => InternalClient.RejectMessageAsync(lockToken, cancellationToken);
 
@@ -269,9 +269,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="message">The message to reject.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled.
-        /// The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task RejectMessageAsync(Message message, CancellationToken cancellationToken = default)
             => InternalClient.RejectMessageAsync(message, cancellationToken);
 
@@ -313,9 +312,8 @@ namespace Microsoft.Azure.Devices.Client
         /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default) => InternalClient.GetTwinAsync(cancellationToken);
 
@@ -324,9 +322,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubCommunicationException">Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
             => InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
 

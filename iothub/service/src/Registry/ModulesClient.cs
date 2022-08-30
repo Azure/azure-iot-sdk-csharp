@@ -23,6 +23,9 @@ namespace Microsoft.Azure.Devices
 
         private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
 
+        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
+
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
@@ -62,7 +65,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(module, nameof(module));
+                Argument.AssertNotNull(module, nameof(module));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -110,8 +113,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-                Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -185,13 +188,13 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(module, nameof(module));
+                Argument.AssertNotNull(module, nameof(module));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (string.IsNullOrWhiteSpace(module.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
@@ -233,8 +236,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string deviceId, string moduleId, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-            Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
             var module = new Module(deviceId, moduleId);
             module.ETag = HttpMessageHelper.ETagForce;
@@ -270,11 +273,11 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(module, nameof(module));
+                Argument.AssertNotNull(module, nameof(module));
 
                 if (module.ETag == null)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

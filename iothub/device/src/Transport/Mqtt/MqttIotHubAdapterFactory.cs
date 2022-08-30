@@ -14,20 +14,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public MqttIotHubAdapter Create(
             IMqttIotHubEventHandler mqttIotHubEventHandler,
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation additionalClientInformation,
             IotHubClientMqttSettings mqttTransportSettings)
         {
             IWillMessage willMessage = mqttTransportSettings.HasWill ? _settings.WillMessage : null;
 
             return new MqttIotHubAdapter(
-                clientConfiguration.DeviceId,
-                clientConfiguration.ModuleId,
-                clientConfiguration.GatewayHostName,
-                mqttTransportSettings.ClientCertificate != null ? null : clientConfiguration,
+                connectionCredentials,
                 mqttTransportSettings,
                 willMessage,
                 mqttIotHubEventHandler,
-                clientConfiguration.ClientOptions);
+                additionalClientInformation);
         }
     }
 }

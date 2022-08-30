@@ -2,10 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Microsoft.Azure.Devices.Extensions;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Serialization
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A utility to create the application/json-patch+json operations payload required for update operations.
@@ -19,7 +18,7 @@ namespace Microsoft.Azure.Devices.Serialization
         private const string Path = "path";
         private const string Value = "value";
 
-        private readonly List<Dictionary<string, object>> _ops = new List<Dictionary<string, object>>();
+        private readonly List<Dictionary<string, object>> _ops = new();
 
         /// <summary>
         /// Include an add property operation.
@@ -168,8 +167,8 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <param name="propertyValues">The dictionary of property key values pairs to update to.</param>
         public void AppendAddComponentOp(string path, Dictionary<string, object> propertyValues)
         {
-            Argument.RequireNotNull(propertyValues, nameof(propertyValues));
-            propertyValues.AddComponentUpdateIdentifier();
+            Argument.AssertNotNull(propertyValues, nameof(propertyValues));
+            AddComponentUpdateIdentifier(propertyValues);
 
             var op = new Dictionary<string, object>
             {
@@ -205,8 +204,8 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <param name="propertyValues">The dictionary of property key values pairs to update to.</param>
         public void AppendReplaceComponentOp(string path, Dictionary<string, object> propertyValues)
         {
-            Argument.RequireNotNull(propertyValues, nameof(propertyValues));
-            propertyValues.AddComponentUpdateIdentifier();
+            Argument.AssertNotNull(propertyValues, nameof(propertyValues));
+            AddComponentUpdateIdentifier(propertyValues);
 
             var op = new Dictionary<string, object>
             {
@@ -224,6 +223,18 @@ namespace Microsoft.Azure.Devices.Serialization
         public string Serialize()
         {
             return JsonConvert.SerializeObject(_ops);
+        }
+
+        /// <summary>
+        /// Append the "$metadata" identifier to the property values, which helps the service identify the patch as a component update.
+        /// </summary>
+        /// <param name="propertyKeyValuePairs">The dictionary of property key values pairs to update to.</param>
+        private static void AddComponentUpdateIdentifier(Dictionary<string, object> propertyKeyValuePairs)
+        {
+            Argument.AssertNotNull(propertyKeyValuePairs, nameof(propertyKeyValuePairs));
+
+            const string metadataKey = "$metadata";
+            propertyKeyValuePairs.Add(metadataKey, new object());
         }
     }
 }

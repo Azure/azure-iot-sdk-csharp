@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
@@ -22,5 +22,8 @@ namespace Microsoft.Azure.Devices.Amqp
         public static readonly AmqpSymbol TrackingId = AmqpConstants.Vendor + ":tracking-id";
         public static readonly AmqpSymbol ErrorCode = AmqpConstants.Vendor + ":error-code";
         public static readonly AmqpSymbol ClientVersion = AmqpConstants.Vendor + ":client-version";
+
+        public const string BatchedFeedbackContentType = "application/vnd.microsoft.iothub.feedback.json";
+        public const string FileNotificationContentType = "application/vnd.microsoft.iothub.filenotification.json";
     }
 }

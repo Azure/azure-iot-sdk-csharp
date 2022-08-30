@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         //
         // This default value is consistent with the default value used in Azure.Core
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
-        private const int DefaultConnectionLeaseTimeoutMinutes = 5;
+        private static readonly TimeSpan DefaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
 
         /// <summary>
         /// Create an HTTP client for communicating with the provided host and that uses the
@@ -65,15 +65,15 @@ namespace Microsoft.Azure.Devices
             httpMessageHandler.SslProtocols = options.SslProtocols;
             httpMessageHandler.CheckCertificateRevocationList = options.CertificateRevocationCheck;
 
-            if (options.Proxy != DefaultWebProxySettings.Instance)
+            if (options.Proxy != null)
             {
-                httpMessageHandler.UseProxy = options.Proxy != null;
+                httpMessageHandler.UseProxy = true;
                 httpMessageHandler.Proxy = options.Proxy;
             }
 
             httpMessageHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
             ServicePoint servicePoint = ServicePointManager.FindServicePoint(httpsEndpoint);
-            servicePoint.ConnectionLeaseTimeout = TimeSpan.FromMinutes(DefaultConnectionLeaseTimeoutMinutes).Milliseconds;
+            servicePoint.ConnectionLeaseTimeout = DefaultConnectionLeaseTimeout.Milliseconds;
 
             return new HttpClient(httpMessageHandler);
         }

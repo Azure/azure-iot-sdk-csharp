@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="id">Device Id</param>
         public Device(string id)
         {
-            Argument.RequireNotNullOrEmpty(id, nameof(id));
+            Argument.AssertNotNullOrWhiteSpace(id, nameof(id));
 
             Id = id;
         }

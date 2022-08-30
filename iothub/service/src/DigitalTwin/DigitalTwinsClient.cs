@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
 
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an
         // HTTP patch request.
-        private readonly HttpMethod _patch = new HttpMethod("PATCH");
+        private readonly HttpMethod _patch = new("PATCH");
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -132,8 +132,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
-                Argument.RequireNotNullOrEmpty(digitalTwinUpdateOperations, nameof(digitalTwinUpdateOperations));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinUpdateOperations, nameof(digitalTwinUpdateOperations));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -151,11 +151,9 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.Accepted, response).ConfigureAwait(false);
 
-                var updateResponse = new DigitalTwinUpdateResponse()
-                {
-                    ETag = response.Headers.GetValues("ETag").FirstOrDefault(),
-                    Location = response.Headers.GetValues("Location").FirstOrDefault()
-                };
+                var updateResponse = new DigitalTwinUpdateResponse(
+                    response.Headers.GetValues("ETag").FirstOrDefault(),
+                    response.Headers.GetValues("Location").FirstOrDefault());
 
                 return updateResponse;
             }
@@ -203,8 +201,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
-                Argument.RequireNotNullOrEmpty(commandName, nameof(commandName));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -277,9 +275,9 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(digitalTwinId, nameof(digitalTwinId));
-                Argument.RequireNotNullOrEmpty(componentName, nameof(componentName));
-                Argument.RequireNotNullOrEmpty(commandName, nameof(commandName));
+                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+                Argument.AssertNotNullOrWhiteSpace(componentName, nameof(componentName));
+                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 

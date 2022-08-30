@@ -16,8 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public const string OperationStatusUnassigned = "unassigned";
 
         /// <summary>
-        /// Initializes a new instance of the RegistrationOperationStatus
-        /// class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="operationId">Operation Id.</param>
         /// <param name="status">Device enrollment status. Possible values

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal interface IAmqpAuthenticationRefresher : IDisposable
+    internal interface IAmqpAuthenticationRefresher
     {
         Task InitLoopAsync(CancellationToken cancellationToken);
         void StopLoop();

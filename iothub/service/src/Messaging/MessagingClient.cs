@@ -171,8 +171,8 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
 
-            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-            Argument.RequireNotNull(message, nameof(message));
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNull(message, nameof(message));
 
             if (!_amqpConnection.IsOpen())
             {
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices
                     throw AmqpClientHelper.GetExceptionFromOutcome(outcome);
                 }
             }
-            catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
+            catch (Exception ex) when (ex is not TimeoutException && !Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
@@ -233,9 +233,9 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
 
-            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
-            Argument.RequireNotNullOrEmpty(moduleId, nameof(moduleId));
-            Argument.RequireNotNull(message, nameof(message));
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+            Argument.AssertNotNull(message, nameof(message));
 
             if (!_amqpConnection.IsOpen())
             {
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices
                     throw AmqpClientHelper.GetExceptionFromOutcome(outcome);
                 }
             }
-            catch (Exception ex) when (!ex.IsFatal())
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetPurgeMessageQueueAsyncUri(deviceId), _credentialProvider);

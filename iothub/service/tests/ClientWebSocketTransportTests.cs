@@ -30,17 +30,17 @@ namespace Microsoft.Azure.Devices.Api.Test
         private static HttpListener s_listener;
         private static byte[] s_byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
 
-        [AssemblyInitialize()]
-        public static void AssembyInitialize(TestContext testcontext)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext testcontext)
         {
             s_listener = new HttpListener();
             s_listener.Prefixes.Add($"http://+:{Port}{AmqpsConstants.UriSuffix}/");
             s_listener.Start();
-            RunWebSocketServerAsync().Fork();
+            _ = RunWebSocketServerAsync();
         }
 
-        [AssemblyCleanup()]
-        public static void AssemblyCleanup()
+        [ClassCleanup]
+        public static void ClassCleanup()
         {
             s_listener.Stop();
         }
@@ -49,8 +49,8 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void ClientWebSocketTransportWriteWithoutConnectTest()
         {
-            var websocket = new ClientWebSocket();
-            var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var websocket = new ClientWebSocket();
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             var args = new TransportAsyncCallbackArgs();
             args.SetBuffer(s_byteArray, 0, s_byteArray.Length);
             clientWebSocketTransport.WriteAsync(args);
@@ -60,8 +60,8 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public async Task ClientWebSocketTransportReadWithoutConnectTest()
         {
-            var websocket = new ClientWebSocket();
-            var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
+            using var websocket = new ClientWebSocket();
+            using var clientWebSocketTransport = new ClientWebSocketTransport(websocket, null, null);
             var args = new TransportAsyncCallbackArgs();
             bool isReadComplete = false;
             args.CompletedCallback = (TransportAsyncCallbackArgs args) =>
@@ -74,14 +74,14 @@ namespace Microsoft.Azure.Devices.Api.Test
                 // Verify that data matches what was sent
                 if (s_byteArray.Length != args.Count)
                 {
-                    throw new InvalidOperationException("Expected " + s_byteArray.Length + " bytes in response");
+                    throw new InvalidOperationException($"Expected {s_byteArray.Length} bytes in response.");
                 }
 
                 for (int i = 0; i < args.Count; i++)
                 {
                     if (s_byteArray[i] != args.Buffer[i])
                     {
-                        throw new InvalidOperationException("Response contents do not match what was sent");
+                        throw new InvalidOperationException("Response contents do not match what was sent.");
                     }
                 }
 
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [DoNotParallelize]
         public async Task ReadWriteTest()
         {
-            var websocket = new ClientWebSocket();
+            using var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
             var uri = new Uri($"ws://{IotHubName}:{Port}{AmqpsConstants.UriSuffix}");
@@ -171,10 +171,9 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //TODO #318
         public async Task ReadAfterCloseTest()
         {
-            var websocket = new ClientWebSocket();
+            using var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
             var uri = new Uri($"ws://{IotHubName}:{Port}{AmqpsConstants.UriSuffix}");
@@ -195,14 +194,14 @@ namespace Microsoft.Azure.Devices.Api.Test
                 // Verify that data matches what was sent
                 if (s_byteArray.Length != args.Count)
                 {
-                    throw new InvalidOperationException("Expected " + s_byteArray.Length + " bytes in response");
+                    throw new InvalidOperationException($"Expected {s_byteArray.Length} bytes in response.");
                 }
 
                 for (int i = 0; i < args.Count; i++)
                 {
                     if (s_byteArray[i] != args.Buffer[i])
                     {
-                        throw new InvalidOperationException("Response contents do not match what was sent");
+                        throw new InvalidOperationException("Response contents do not match what was sent.");
                     }
                 }
             };
@@ -211,10 +210,9 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //TODO #318
         public async Task WriteAfterCloseTest()
         {
-            var websocket = new ClientWebSocket();
+            using var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
             var uri = new Uri($"ws://{IotHubName}:{Port}{AmqpsConstants.UriSuffix}");
@@ -228,7 +226,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             {
                 if (args.BytesTransfered != s_byteArray.Length)
                 {
-                    throw new InvalidOperationException("All the bytes sent were not transferred");
+                    throw new InvalidOperationException("All the bytes sent were not transferred.");
                 }
 
                 if (args.Exception != null)
@@ -243,7 +241,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public async Task ReadAfterAbortTest()
         {
-            var websocket = new ClientWebSocket();
+            using var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
             Uri uri = new Uri($"ws://{IotHubName}:{Port}{AmqpsConstants.UriSuffix}");
@@ -258,10 +256,9 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //TODO #318
         public async Task WriteAfterAbortTest()
         {
-            var websocket = new ClientWebSocket();
+            using var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
             websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
             var uri = new Uri($"ws://{IotHubName}:{Port}{AmqpsConstants.UriSuffix}");
@@ -277,7 +274,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             try
             {
-                while (true)
+                while (true) // exits when an exception is encountered, caused by shutdown fo the server
                 {
                     HttpListenerContext context = await s_listener.GetContextAsync().ConfigureAwait(false);
                     if (!context.Request.IsWebSocketRequest)
@@ -292,13 +289,11 @@ namespace Microsoft.Azure.Devices.Api.Test
 
                     var buffer = new byte[1 * 1024];
                     var arraySegment = new ArraySegment<byte>(buffer);
-                    var cancellationToken = new CancellationToken();
                     WebSocketReceiveResult receiveResult = await webSocketContext.WebSocket
-                        .ReceiveAsync(arraySegment, cancellationToken)
+                        .ReceiveAsync(arraySegment, CancellationToken.None)
                         .ConfigureAwait(false);
 
                     // Echo the data back to the client
-                    var responseCancellationToken = new CancellationToken();
                     var responseBuffer = new byte[receiveResult.Count];
                     for (int i = 0; i < receiveResult.Count; i++)
                     {
@@ -307,13 +302,13 @@ namespace Microsoft.Azure.Devices.Api.Test
 
                     var responseSegment = new ArraySegment<byte>(responseBuffer);
                     await webSocketContext.WebSocket
-                        .SendAsync(responseSegment, WebSocketMessageType.Binary, true, responseCancellationToken)
+                        .SendAsync(responseSegment, WebSocketMessageType.Binary, true, CancellationToken.None)
                         .ConfigureAwait(false);
 
                     // Have a pending read
-                    using var source = new CancellationTokenSource(s_oneMinute);
+                    using var cts = new CancellationTokenSource(s_oneMinute);
                     WebSocketReceiveResult result = await webSocketContext.WebSocket
-                        .ReceiveAsync(arraySegment, source.Token)
+                        .ReceiveAsync(arraySegment, cts.Token)
                         .ConfigureAwait(false);
                     int bytes = result.Count;
                 }
@@ -328,7 +323,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             }
             catch (WebSocketException)
             {
-                return;
+                _ = RunWebSocketServerAsync();
             }
             catch (HttpListenerException)
             {

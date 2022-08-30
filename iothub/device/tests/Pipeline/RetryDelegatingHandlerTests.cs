@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var ct = CancellationToken.None;
             PipelineContext contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
 
             nextHandlerMock
@@ -38,8 +38,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Returns(t =>
                     {
                         return ++callCounter == 1
-                            ? throw new IotHubException("Test transient exception", isTransient: true)
-                            : TaskHelpers.CompletedTask;
+                            ? throw new IotHubClientException("Test transient exception", isTransient: true)
+                            : Task.CompletedTask;
                     });
             nextHandlerMock.WaitForTransportClosedAsync().Returns(Task.Delay(TimeSpan.FromSeconds(10)));
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             PipelineContext contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
             nextHandlerMock
@@ -68,9 +68,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
-                        return TaskHelpers.CompletedTask;
+                        return Task.CompletedTask;
                     });
 
             var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             PipelineContext contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             IDelegatingHandler nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
             nextHandlerMock
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
             IEnumerable<Message> messages = new[] { message };
@@ -129,9 +129,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
-                        return TaskHelpers.CompletedTask;
+                        return Task.CompletedTask;
                     });
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var message = new Message(new byte[] { 1, 2, 3 });
             nextHandlerMock
@@ -159,9 +159,9 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         if (++callCounter == 1)
                         {
-                            throw new IotHubException(TestExceptionMessage, isTransient: true);
+                            throw new IotHubClientException(TestExceptionMessage, isTransient: true);
                         }
-                        return TaskHelpers.CompletedTask;
+                        return Task.CompletedTask;
                     });
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int callCounter = 0;
 
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
                 .OpenAsync(Arg.Any<CancellationToken>())
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     {
                         throw new InvalidOperationException("");
                     }
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -208,27 +208,30 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var contextMock = Substitute.For<PipelineContext>();
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new DeviceNotFoundException());
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new IotHubClientException() { StatusCode = IotHubStatusCode.DeviceNotFound});
 
-            ConnectionInfo connectionInfo = new ConnectionInfo();
-            Action<ConnectionInfo> statusChangeHandler = (c) =>
+            ConnectionStatusInfo connectionStatusInfo = new ConnectionStatusInfo();
+            Action<ConnectionStatusInfo> statusChangeHandler = (c) =>
             {
-                connectionInfo = c;
+                connectionStatusInfo = c;
             };
 
             contextMock.ConnectionStatusChangeHandler = statusChangeHandler;
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
-            // act
-            await ((Func<Task>)(() => sut
-                .OpenAsync(CancellationToken.None)))
-                .ExpectedAsync<DeviceNotFoundException>()
+            // act and assert for exception type
+            IotHubClientException exception = await sut
+                .OpenAsync(CancellationToken.None)
+                .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
 
-            // assert
-            connectionInfo.Status.Should().Be(ConnectionStatus.Disconnected);
-            connectionInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.DeviceDisabled);
+            // assert for exception status code
+            exception.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
+
+            // assert for connection status
+            connectionStatusInfo.Status.Should().Be(ConnectionStatus.Disconnected);
+            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.DeviceDisabled);
         }
 
         [TestMethod]
@@ -237,21 +240,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             using var cts = new CancellationTokenSource(100);
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock
                 .OpenAsync(cts.Token)
-                .Returns(t => throw new IotHubException(TestExceptionMessage, isTransient: true));
+                .Returns(t => throw new IotHubClientException(TestExceptionMessage, isTransient: true));
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
-            IotHubException exception = await sut
+
+            // act and assert
+            IotHubClientException exception = await sut
                 .OpenAsync(cts.Token)
-                .ExpectedAsync<IotHubException>()
+                .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
-
-            // act
-
-            // assert
             exception.Message.Should().Be(TestExceptionMessage);
         }
 
@@ -262,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             using var cts = new CancellationTokenSource();
             cts.Cancel();
-            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -276,7 +277,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -292,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.SendEventAsync((IEnumerable<Message>)null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.SendEventAsync((IEnumerable<Message>)null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -328,7 +329,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // arrange
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+            contextMock.ConnectionStatusChangeHandler = (connectionStatusInfo) => { };
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             var retryPolicy = new TestRetryPolicy();
@@ -339,17 +340,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t =>
                {
                    nextHandlerCallCounter++;
-                   throw new IotHubCommunicationException();
+                   throw new IotHubClientException(true, IotHubStatusCode.NetworkErrors);
                });
 
             // act and assert
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
+            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
 
             var noretry = new NoRetry();
             sut.SetRetryPolicy(noretry);
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
+            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
 
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
@@ -363,7 +364,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             const string lockToken = "fakeLockToken";
             using var cts = new CancellationTokenSource();
             cts.Cancel();
-            nextHandlerMock.CompleteMessageAsync(lockToken, cts.Token).Returns(TaskHelpers.CompletedTask);
+            nextHandlerMock.CompleteMessageAsync(lockToken, cts.Token).Returns(Task.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -377,7 +378,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.AbandonMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.AbandonMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -396,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var nextHandlerMock = Substitute.For<IDelegatingHandler>();
-            nextHandlerMock.RejectMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskHelpers.CompletedTask);
+            nextHandlerMock.RejectMessageAsync(null, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
 
             var contextMock = Substitute.For<PipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
@@ -414,7 +415,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 Counter++;
-                lastException.Should().BeOfType(typeof(IotHubCommunicationException));
+                lastException.Should().BeOfType(typeof(IotHubClientException));
 
                 retryInterval = TimeSpan.MinValue;
                 return Counter < 2;

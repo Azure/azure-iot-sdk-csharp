@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Linq;
@@ -96,16 +96,23 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task MqttTransportHandler_OpenAsync_OpenHandlesConnectExceptionAndThrowsWhenChannelIsNotInitialized()
         {
             // arrange
             var transport = CreateTransportHandlerWithRealChannel(out IChannel channel);
 
             // act
-            // Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
-            // However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Func<Task> act = async () =>
+            {
+                // act
+                // Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
+                // However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            };
+
+            //assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -337,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     var response = new Message(twinByteStream);
                     response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusSuccess);
                     transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act
@@ -360,12 +367,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                        var response = new Message();
                        response.MqttTopicName = GetResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
                        transport.OnMessageReceived(response);
-                       return TaskHelpers.CompletedTask;
+                       return Task.CompletedTask;
                    });
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -404,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     };
                     transport.OnMessageReceived(response);
 
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act
@@ -429,12 +436,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     var response = new Message();
                     response.MqttTopicName = GetResponseTopic(request.MqttTopicName, statusFailure);
                     transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             // act & assert
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
+            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -556,7 +563,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new MqttTransportHandler(
                 new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionCredentials(DummyConnectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(DummyConnectionString),
+                    IotHubClientTransportSettings = new IotHubClientMqttSettings(),
                 },
                 new IotHubClientMqttSettings());
         }
@@ -592,7 +600,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             transport = new MqttTransportHandler(
                 new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionCredentials(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString),
+                    IotHubClientTransportSettings = new IotHubClientMqttSettings(),
                 },
                 new IotHubClientMqttSettings(),
                 factory);
@@ -606,7 +615,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new MqttTransportHandler(
                 new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionCredentials(connectionString), new IotHubClientOptions(new IotHubClientMqttSettings())),
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(connectionString),
+                    IotHubClientTransportSettings = new IotHubClientMqttSettings(),
                 },
                 new IotHubClientMqttSettings(),
                 null);

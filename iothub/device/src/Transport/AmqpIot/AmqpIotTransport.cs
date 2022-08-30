@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
     {
         private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
+        private readonly IConnectionCredentials _connectionCredentials;
         private readonly AmqpSettings _amqpSettings;
         private readonly IotHubClientAmqpSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
@@ -26,11 +27,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIotTransport(
+            IConnectionCredentials connectionCredentials,
             AmqpSettings amqpSettings,
             IotHubClientAmqpSettings amqpTransportSettings,
             string hostName,
             bool disableServerCertificateValidation)
         {
+            _connectionCredentials = connectionCredentials;
             _amqpSettings = amqpSettings;
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
@@ -51,9 +54,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Protocols = amqpTransportSettings.SslProtocols,
             };
 
-            if (_amqpTransportSettings.ClientCertificate != null)
+            if (_connectionCredentials.Certificate != null)
             {
-                _tlsTransportSettings.Certificate = _amqpTransportSettings.ClientCertificate;
+                _tlsTransportSettings.Certificate = _connectionCredentials.Certificate;
             }
         }
 
@@ -153,9 +156,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
                 }
 
-                if (_amqpTransportSettings.ClientCertificate != null)
+                if (_connectionCredentials.Certificate != null)
                 {
-                    websocket.Options.ClientCertificates.Add(_amqpTransportSettings.ClientCertificate);
+                    websocket.Options.ClientCertificates.Add(_connectionCredentials.Certificate);
                 }
 
                 await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);

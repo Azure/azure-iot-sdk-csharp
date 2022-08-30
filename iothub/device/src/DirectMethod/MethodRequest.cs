@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class MethodRequest
     {
         /// <summary>
-        /// Initializes a new instance of this class with without any method data
+        /// Creates an instance of this class with without any method data
         /// and extra time for device to connect and send a response.
         /// </summary>
         /// <param name="name">The method name.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="name">The method name.</param>
         /// <param name="data">The method data.</param>
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of this class without any method data.
+        /// Creates an instance of this class without any method data.
         /// </summary>
         /// <param name="name">The method name.</param>
         /// <param name="responseTimeout">The method timeout value.</param>
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="name">The method name.</param>
         /// <param name="data">The method data.</param>

@@ -56,9 +56,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var sw = new Stopwatch();
             sw.Start();
 
+            Logger.Trace($"Testing ServiceClient SendAsync() cancellation.");
             try
             {
                 var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
+                await sender.Messaging.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
 
                 // Pass in the cancellation token to see how the operation reacts to it.
                 await sender.Messaging.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);

@@ -27,6 +27,6 @@ namespace Microsoft.Azure.Devices
         /// Date time in UTC to start the job.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", Required = Required.Always)]
-        public DateTime StartTimeUtc { get; set; }
+        public DateTimeOffset StartOn { get; set; }
     }
 }

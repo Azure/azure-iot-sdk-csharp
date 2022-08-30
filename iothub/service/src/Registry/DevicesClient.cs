@@ -32,6 +32,10 @@ namespace Microsoft.Azure.Devices
         private const string DeviceStatisticsUriFormat = "/statistics/devices";
         private const string ServiceStatisticsUriFormat = "/statistics/service";
         private const string AdminUriFormat = "/$admin/{0}";
+        private const string ETagSetWhileRegisteringDevice = "ETagSetWhileRegisteringDevice";
+        private const string InvalidImportMode = "InvalidImportMode";
+        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -72,7 +76,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(device, nameof(device));
+                Argument.AssertNotNull(device, nameof(device));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -119,7 +123,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -193,13 +197,13 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(device, nameof(device));
+                Argument.AssertNotNull(device, nameof(device));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (string.IsNullOrWhiteSpace(device.ETag) && !forceUpdate)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
@@ -241,7 +245,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string deviceId, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
             var device = new Device(deviceId);
             device.ETag = HttpMessageHelper.ETagForce;
@@ -277,11 +281,11 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(device, nameof(device));
+                Argument.AssertNotNull(device, nameof(device));
 
                 if (device.ETag == null)
                 {
-                    throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -387,7 +391,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(deviceId, nameof(deviceId));
+                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -618,8 +622,8 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Exporting registry", nameof(ExportAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(storageAccountConnectionString, nameof(storageAccountConnectionString));
-                Argument.RequireNotNullOrEmpty(containerName, nameof(containerName));
+                Argument.AssertNotNullOrWhiteSpace(storageAccountConnectionString, nameof(storageAccountConnectionString));
+                Argument.AssertNotNullOrWhiteSpace(containerName, nameof(containerName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -671,8 +675,8 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNullOrEmpty(storageAccountConnectionString, nameof(storageAccountConnectionString));
-                Argument.RequireNotNullOrEmpty(containerName, nameof(containerName));
+                Argument.AssertNotNullOrWhiteSpace(storageAccountConnectionString, nameof(storageAccountConnectionString));
+                Argument.AssertNotNullOrWhiteSpace(containerName, nameof(containerName));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -719,7 +723,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, bool excludeKeys, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(exportBlobContainerUri, nameof(exportBlobContainerUri));
+            Argument.AssertNotNullOrWhiteSpace(exportBlobContainerUri, nameof(exportBlobContainerUri));
 
             return ExportAsync(
                 JobProperties.CreateForExportJob(
@@ -750,7 +754,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(exportBlobContainerUri, nameof(exportBlobContainerUri));
+            Argument.AssertNotNullOrWhiteSpace(exportBlobContainerUri, nameof(exportBlobContainerUri));
 
             return ExportAsync(
                 JobProperties.CreateForExportJob(
@@ -780,7 +784,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ExportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNull(jobParameters, nameof(jobParameters));
+            Argument.AssertNotNull(jobParameters, nameof(jobParameters));
 
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Export Job running with {jobParameters}", nameof(ExportAsync));
@@ -823,8 +827,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(importBlobContainerUri, nameof(importBlobContainerUri));
-            Argument.RequireNotNullOrEmpty(outputBlobContainerUri, nameof(outputBlobContainerUri));
+            Argument.AssertNotNullOrWhiteSpace(importBlobContainerUri, nameof(importBlobContainerUri));
+            Argument.AssertNotNullOrWhiteSpace(outputBlobContainerUri, nameof(outputBlobContainerUri));
 
             return ImportAsync(
                JobProperties.CreateForImportJob(
@@ -855,8 +859,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNullOrEmpty(importBlobContainerUri, nameof(importBlobContainerUri));
-            Argument.RequireNotNullOrEmpty(outputBlobContainerUri, nameof(outputBlobContainerUri));
+            Argument.AssertNotNullOrWhiteSpace(importBlobContainerUri, nameof(importBlobContainerUri));
+            Argument.AssertNotNullOrWhiteSpace(outputBlobContainerUri, nameof(outputBlobContainerUri));
 
             return ImportAsync(
                JobProperties.CreateForImportJob(
@@ -886,7 +890,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         public virtual Task<JobProperties> ImportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
-            Argument.RequireNotNull(jobParameters, nameof(jobParameters));
+            Argument.AssertNotNull(jobParameters, nameof(jobParameters));
 
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportAsync));
@@ -936,7 +940,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(jobId, nameof(jobId));
+                Argument.AssertNotNull(jobId, nameof(jobId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -1024,7 +1028,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                Argument.RequireNotNull(jobId, nameof(jobId));
+                Argument.AssertNotNull(jobId, nameof(jobId));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -1179,19 +1183,19 @@ namespace Microsoft.Azure.Devices
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
         {
-            Argument.RequireNotNullOrEmpty(devices, nameof(devices));
+            Argument.AssertNotNullOrEmpty(devices, nameof(devices));
 
             var exportImportDeviceList = new List<ExportImportDevice>(devices.Count());
             foreach (Device device in devices)
             {
-                Argument.RequireNotNull(device, nameof(device));
+                Argument.AssertNotNull(device, nameof(device));
 
                 switch (importMode)
                 {
                     case ImportMode.Create:
                         if (!string.IsNullOrWhiteSpace(device.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagSetWhileRegisteringDevice);
+                            throw new ArgumentException(ETagSetWhileRegisteringDevice);
                         }
                         break;
 
@@ -1202,7 +1206,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateIfMatchETag:
                         if (string.IsNullOrWhiteSpace(device.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingDevice);
+                            throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                         }
                         break;
 
@@ -1213,12 +1217,12 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.DeleteIfMatchETag:
                         if (string.IsNullOrWhiteSpace(device.ETag))
                         {
-                            throw new ArgumentException(ApiResources.ETagNotSetWhileDeletingDevice);
+                            throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                         }
                         break;
 
                     default:
-                        throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
+                        throw new ArgumentException($"{InvalidImportMode} {importMode}.");
                 }
 
                 var exportImportDevice = new ExportImportDevice(device, importMode);

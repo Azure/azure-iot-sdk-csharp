@@ -54,11 +54,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Telemetry links
 
         internal async Task<AmqpIotSendingLink> OpenTelemetrySenderLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     null,
                     null,
@@ -71,11 +75,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMessageReceiverLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     null,
                     (byte)ReceiverSettleMode.Second,
@@ -92,11 +100,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region EventLink
 
         internal async Task<AmqpIotReceivingLink> OpenEventsReceiverLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     null,
                     (byte)ReceiverSettleMode.First,
@@ -113,12 +125,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region MethodLink
 
         internal async Task<AmqpIotSendingLink> OpenMethodsSenderLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -131,12 +147,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotReceivingLink> OpenMethodsReceiverLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -153,12 +173,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region TwinLink
 
         internal async Task<AmqpIotReceivingLink> OpenTwinReceiverLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenReceivingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -171,12 +195,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal async Task<AmqpIotSendingLink> OpenTwinSenderLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             string correlationIdSuffix,
             CancellationToken cancellationToken)
         {
             return await OpenSendingAmqpLinkAsync(
-                    clientConfiguration,
+                    connectionCredentials,
+                    clientInformation,
+                    amqpSettings,
                     _amqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
@@ -193,7 +221,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         #region Common link handling
 
         private static async Task<AmqpIotSendingLink> OpenSendingAmqpLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -205,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (Logging.IsEnabled)
             {
-                Logging.Enter(typeof(AmqpIotSession), clientConfiguration, nameof(OpenSendingAmqpLinkAsync));
+                Logging.Enter(typeof(AmqpIotSession), connectionCredentials, nameof(OpenSendingAmqpLinkAsync));
             }
 
             var amqpLinkSettings = new AmqpLinkSettings
@@ -213,20 +243,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 LinkName = linkSuffix,
                 Role = false,
                 InitialDeliveryCount = 0,
-                Target = new Target { Address = BuildLinkAddress(clientConfiguration, deviceTemplate, moduleTemplate) },
-                Source = new Source { Address = clientConfiguration.DeviceId },
+                Target = new Target { Address = BuildLinkAddress(connectionCredentials, deviceTemplate, moduleTemplate) },
+                Source = new Source { Address = connectionCredentials.DeviceId },
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
 
-            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, clientConfiguration.ClientOptions.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, clientInformation.ProductInfo?.ToString());
 
             if (correlationId != null)
             {
                 amqpLinkSettings.AddProperty(AmqpIotConstants.ChannelCorrelationId, correlationId);
             }
 
-            var amqpSettings = clientConfiguration.ClientOptions.TransportSettings as IotHubClientAmqpSettings;
             if (!amqpSettings.AuthenticationChain.IsNullOrWhiteSpace())
             {
                 amqpLinkSettings.AddProperty(AmqpIotConstants.AuthChain, amqpSettings.AuthenticationChain);
@@ -234,9 +263,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             // This check is added to enable the device or module client to available plug and play features. For devices or modules that pass in the model Id,
             // the SDK will enable plug and play features by setting the modelId to AMQP link settings.
-            if (!string.IsNullOrWhiteSpace(clientConfiguration.ClientOptions?.ModelId))
+            if (!clientInformation.ModelId.IsNullOrWhiteSpace())
             {
-                amqpLinkSettings.AddProperty(AmqpIotConstants.ModelId, clientConfiguration.ClientOptions.ModelId);
+                amqpLinkSettings.AddProperty(AmqpIotConstants.ModelId, clientInformation.ModelId);
             }
 
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
@@ -259,7 +288,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (iotEx is AmqpIotResourceException)
                 {
                     amqpSession.SafeClose();
-                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
+                    throw new IotHubClientException(iotEx.Message, iotEx, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 throw iotEx;
@@ -267,12 +296,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(typeof(AmqpIotSession), clientConfiguration, nameof(OpenSendingAmqpLinkAsync));
+                    Logging.Exit(typeof(AmqpIotSession), connectionCredentials, nameof(OpenSendingAmqpLinkAsync));
             }
         }
 
         private static async Task<AmqpIotReceivingLink> OpenReceivingAmqpLinkAsync(
-            IClientConfiguration clientConfiguration,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation clientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             AmqpSession amqpSession,
             byte? senderSettleMode,
             byte? receiverSettleMode,
@@ -283,9 +314,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(typeof(AmqpIotSession), clientConfiguration, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+                Logging.Enter(typeof(AmqpIotSession), connectionCredentials, $"{nameof(OpenReceivingAmqpLinkAsync)}");
 
-            var amqpSettings = clientConfiguration.ClientOptions.TransportSettings as IotHubClientAmqpSettings;
             uint prefetchCount = amqpSettings.PrefetchCount;
 
             var amqpLinkSettings = new AmqpLinkSettings
@@ -294,13 +324,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Role = true,
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
-                Source = new Source { Address = BuildLinkAddress(clientConfiguration, deviceTemplate, moduleTemplate) },
-                Target = new Target { Address = clientConfiguration.DeviceId },
+                Source = new Source { Address = BuildLinkAddress(connectionCredentials, deviceTemplate, moduleTemplate) },
+                Target = new Target { Address = connectionCredentials.DeviceId },
                 SndSettleMode = senderSettleMode,
                 RcvSettleMode = receiverSettleMode,
             };
 
-            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, clientConfiguration.ClientOptions.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIotConstants.ClientVersion, clientInformation.ProductInfo?.ToString());
             amqpLinkSettings.AddProperty(AmqpIotConstants.ApiVersion, ClientApiVersionHelper.ApiVersionString);
 
             if (!amqpSettings.AuthenticationChain.IsNullOrWhiteSpace())
@@ -331,7 +361,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (iotEx is AmqpIotResourceException)
                 {
                     amqpSession.SafeClose();
-                    throw new IotHubCommunicationException(iotEx.Message, iotEx);
+                    throw new IotHubClientException(iotEx.Message, iotEx, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 throw iotEx;
@@ -339,25 +369,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(typeof(AmqpIotSession), clientConfiguration, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+                    Logging.Exit(typeof(AmqpIotSession), connectionCredentials, $"{nameof(OpenReceivingAmqpLinkAsync)}");
             }
         }
 
-        private static string BuildLinkAddress(IClientConfiguration clientConfiguration, string deviceTemplate, string moduleTemplate)
+        private static string BuildLinkAddress(IConnectionCredentials connectionCredentials, string deviceTemplate, string moduleTemplate)
         {
-            string path = string.IsNullOrEmpty(clientConfiguration.ModuleId)
+            string path = connectionCredentials.ModuleId.IsNullOrWhiteSpace()
                 ? string.Format(
                     CultureInfo.InvariantCulture,
                     deviceTemplate,
-                    WebUtility.UrlEncode(clientConfiguration.DeviceId))
+                    WebUtility.UrlEncode(connectionCredentials.DeviceId))
                 : string.Format(
                     CultureInfo.InvariantCulture,
                     moduleTemplate,
-                    WebUtility.UrlEncode(clientConfiguration.DeviceId), WebUtility.UrlEncode(clientConfiguration.ModuleId));
+                    WebUtility.UrlEncode(connectionCredentials.DeviceId), WebUtility.UrlEncode(connectionCredentials.ModuleId));
 
             Uri amqpEndpoint = new UriBuilder(
                 CommonConstants.AmqpsScheme,
-                clientConfiguration.GatewayHostName,
+                connectionCredentials.HostName,
                 CommonConstants.DefaultAmqpSecurePort)
                 {
                     Path = path,
