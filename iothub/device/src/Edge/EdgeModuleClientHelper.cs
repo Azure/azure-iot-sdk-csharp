@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from file");
                     var expectedRoot = new X509Certificate2(certPath);
-                    certificateValidator = GetCertificateValidator(new List<X509Certificate2>() { expectedRoot }, options);
+                    certificateValidator = CreateCertificateValidator(new List<X509Certificate2>() { expectedRoot }, options);
                 }
 
                 return certificateValidator;
@@ -107,13 +107,13 @@ namespace Microsoft.Azure.Devices.Client
             if (!string.IsNullOrEmpty(gateway))
             {
                 IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
-                certificateValidator = GetCertificateValidator(certs, options);
+                certificateValidator = CreateCertificateValidator(certs, options);
             }
 
             return certificateValidator;
         }
 
-        private static ICertificateValidator GetCertificateValidator(IList<X509Certificate2> certs, IotHubClientOptions options)
+        private static ICertificateValidator CreateCertificateValidator(IList<X509Certificate2> certs, IotHubClientOptions options)
         {
             if (certs.Count != 0)
             {
