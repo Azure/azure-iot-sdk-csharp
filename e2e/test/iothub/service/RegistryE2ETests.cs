@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -530,7 +531,19 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 try
                 {
                     // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                    await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false);
+                    device = await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false);
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                }
+
+                try
+                {
+                    device.Status = DeviceStatus.Enabled;
+
+                    // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
+                    await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
                 }
                 catch (DeviceMessageLockLostException)
                 {
