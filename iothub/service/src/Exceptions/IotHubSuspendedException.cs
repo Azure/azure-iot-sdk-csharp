@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         /// <param name="iotHubName">The name of the IoT hub that has been suspended.</param>
         public IotHubSuspendedException(string iotHubName)
-            : base("IoT hub {0} is suspended".FormatInvariant(iotHubName))
+            : base($"IoT hub {iotHubName} is suspended")
         {
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <param name="iotHubName">The name of the IoT hub that has been suspended.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public IotHubSuspendedException(string iotHubName, string trackingId)
-            : base("IoT hub {0} is suspended".FormatInvariant(iotHubName), trackingId: trackingId)
+            : base($"IoT hub {iotHubName} is suspended", trackingId: trackingId)
         {
         }
 

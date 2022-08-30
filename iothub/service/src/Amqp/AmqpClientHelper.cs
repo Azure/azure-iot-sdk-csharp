@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices
             string contentType = amqpMessage.Properties.ContentType.ToString();
             if (!string.Equals(contentType, expectedContentType, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Unsupported content type: {0}".FormatInvariant(contentType));
+                throw new InvalidOperationException($"Unsupported content type: {contentType}.");
             }
         }
 

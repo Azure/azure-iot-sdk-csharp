@@ -25,9 +25,6 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
-        private const string RequestUriFormat = "/devices/{0}";
-        private const string TwinUriFormat = "/twins/{0}";
-        private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}";
         private const string ETagNotSetWhileUpdatingTwin = "ETagNotSetWhileUpdatingTwin";
         private const string InvalidImportMode = "InvalidImportMode";
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
@@ -706,18 +703,18 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModuleTwinUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
+            return new Uri($"/twins/{deviceId}/modules/{moduleId}", UriKind.Relative);
         }
 
         private static Uri GetTwinUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(TwinUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri($"/twins/{deviceId}", UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri()
         {
-            return new Uri(RequestUriFormat.FormatInvariant(string.Empty), UriKind.Relative);
+            return new Uri($"/devices/{string.Empty}", UriKind.Relative);
         }
     }
 }

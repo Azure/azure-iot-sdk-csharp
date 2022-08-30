@@ -21,8 +21,6 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
-        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
-
         private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
         private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
@@ -304,7 +302,7 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModulesRequestUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
+            return new Uri($"/devices/{deviceId}/modules/{moduleId}", UriKind.Relative);
         }
     }
 }

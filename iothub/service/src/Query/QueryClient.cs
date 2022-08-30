@@ -216,12 +216,12 @@ namespace Microsoft.Azure.Devices
 
             if (jobType != null)
             {
-                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
+                stringBuilder.Append($"&jobType={WebUtility.UrlEncode(jobType.ToString())}");
             }
 
             if (jobStatus != null)
             {
-                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
+                stringBuilder.Append($"&jobStatus={WebUtility.UrlEncode(jobStatus.ToString())}");
             }
 
             return stringBuilder.ToString();

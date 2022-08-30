@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
                 return new ServiceAuthenticationWithSharedAccessPolicyKey(iotHubConnectionStringBuilder.SharedAccessKeyName, iotHubConnectionStringBuilder.SharedAccessKey);
             }
 
-            throw new InvalidOperationException("Unsupported Authentication Method {0}".FormatInvariant(iotHubConnectionStringBuilder));
+            throw new InvalidOperationException($"Unsupported Authentication Method {iotHubConnectionStringBuilder}.");
         }
 
         /// <summary>

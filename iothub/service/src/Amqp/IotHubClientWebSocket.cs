@@ -47,7 +47,6 @@ namespace Microsoft.Azure.Devices
         private const string ClientWebSocketNotInOpenStateDuringReceive = "IotHubClientWebSocket not in Open State during Receive.";
         private const string ClientWebSocketNotInOpenStateDuringSend = "IotHubClientWebSocket not in Open State during Send.";
         private const string ServerRejectedUpgradeRequest = "The server rejected the upgrade request.";
-        private const string UpgradeProtocolNotSupported = "Protocol Type {0} was sent to a service that does not support that type of upgrade.";
         private const string SizeExceedsRemainingBufferSpace = "The specified size exceeds the remaining buffer space bytes.";
 
         private static readonly byte[] s_maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
@@ -193,7 +192,7 @@ namespace Microsoft.Azure.Devices
                         TcpClient.Close();
                     }
 
-                    throw new IOException(UpgradeProtocolNotSupported.FormatInvariant(WebSocketConstants.SubProtocols.Amqpwsb10));
+                    throw new IOException($"Protocol Type {WebSocketConstants.SubProtocols.Amqpwsb10} was sent to a service that does not support that type of upgrade.");
                 }
 
                 State = WebSocketState.Open;

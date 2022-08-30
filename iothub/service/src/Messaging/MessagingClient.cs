@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
 
         private const string _sendingPath = "/messages/deviceBound";
-        private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
         private int _sendingDeliveryTag;
 
         /// <summary>
@@ -329,7 +328,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
         {
-            return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri($"/devices/{deviceId}/commands", UriKind.Relative);
         }
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)

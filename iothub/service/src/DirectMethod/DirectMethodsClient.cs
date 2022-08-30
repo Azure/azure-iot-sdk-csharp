@@ -21,9 +21,6 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
-        private const string DeviceMethodUriFormat = "/twins/{0}/methods";
-        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods";
-
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
@@ -141,13 +138,13 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
+            return new Uri($"/twins/{deviceId}/modules/{moduleId}/methods", UriKind.Relative);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(DeviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri($"/twins/{deviceId}/methods", UriKind.Relative);
         }
     }
 }
