@@ -47,7 +47,5 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "enqueuedTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DateTime EnqueuedTimeUtc { get; set; }
-
-        internal ArraySegment<byte> DeliveryTag { get; set; }
     }
 }

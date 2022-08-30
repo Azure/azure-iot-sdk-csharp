@@ -34,10 +34,13 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 DeviceId = deviceId,
                 TotalMessagesPurged = 3
             };
+
+            await sc.Messaging.OpenAsync().ConfigureAwait(false);
             for (int i = 0; i < 3; ++i)
             {
                 await sc.Messaging.SendAsync(deviceId, testMessage);
             }
+            await sc.Messaging.CloseAsync().ConfigureAwait(false);
             result = await sc.Messaging.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false);
             result.DeviceId.Should().Be(deviceId);
             result.TotalMessagesPurged.Should().Be(expectedResult.TotalMessagesPurged);

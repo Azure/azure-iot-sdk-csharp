@@ -4,16 +4,14 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Common.Extensions;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Amqp
 {
     internal class AmqpClientHelper
     {
@@ -33,92 +31,10 @@ namespace Microsoft.Azure.Devices
             {
                 if (exception is AmqpException amqpException)
                 {
-                    return AmqpErrorMapper.ToIotHubClientContract(amqpException.Error);
+                    return ToIotHubClientContract(amqpException.Error);
                 }
 
                 return exception;
-            }
-        }
-
-        internal static string GetReceivingPath(EndpointKind endpointKind)
-        {
-            string path;
-            switch (endpointKind)
-            {
-                case EndpointKind.Feedback:
-                    path = "/messages/serviceBound/feedback";
-                    break;
-
-                case EndpointKind.FileNotification:
-                    path = "/messages/serviceBound/filenotifications";
-                    break;
-
-                default:
-                    throw new ArgumentException("Invalid endpoint kind to receive messages from Service endpoints", nameof(endpointKind));
-            }
-
-            Logging.Info(endpointKind, path, nameof(GetReceivingPath));
-
-            return path;
-        }
-
-        internal static async Task DisposeMessageAsync(
-            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
-            ArraySegment<byte> deliveryTag,
-            Outcome outcome,
-            bool batchable)
-        {
-            using var cts = new CancellationTokenSource(IotHubConnection.DefaultOperationTimeout);
-            await DisposeMessageAsync(faultTolerantReceivingLink, deliveryTag, outcome, batchable, cts.Token).ConfigureAwait(false);
-        }
-
-        internal static async Task DisposeMessageAsync(
-            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
-            ArraySegment<byte> deliveryTag,
-            Outcome outcome,
-            bool batchable,
-            CancellationToken cancellationToken)
-        {
-            Logging.Enter(faultTolerantReceivingLink, deliveryTag, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                Outcome disposeOutcome;
-                try
-                {
-                    ReceivingAmqpLink deviceBoundReceivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                    disposeOutcome = await deviceBoundReceivingLink
-                        .DisposeMessageAsync(
-                            deliveryTag,
-                            outcome,
-                            batchable,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logging.Error(faultTolerantReceivingLink, ex, nameof(DisposeMessageAsync));
-
-                    if (Fx.IsFatal(ex))
-                    {
-                        throw;
-                    }
-
-                    throw ToIotHubClientContract(ex);
-                }
-
-                Logging.Info(faultTolerantReceivingLink, disposeOutcome.DescriptorCode, nameof(DisposeMessageAsync));
-
-                if (disposeOutcome.DescriptorCode != Accepted.Code)
-                {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(disposeOutcome);
-                }
-            }
-            finally
-            {
-                Logging.Exit(faultTolerantReceivingLink, deliveryTag, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
             }
         }
 
@@ -136,6 +52,149 @@ namespace Microsoft.Azure.Devices
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(jsonString);
+        }
+
+        public static Exception GetExceptionFromOutcome(Outcome outcome)
+        {
+            if (outcome == null)
+            {
+                return new IotHubException("Unknown error.");
+            }
+
+            Exception retException;
+            if (outcome.DescriptorCode == Rejected.Code)
+            {
+                var rejected = (Rejected)outcome;
+                retException = ToIotHubClientContract(rejected.Error);
+            }
+            else if (outcome.DescriptorCode == Released.Code)
+            {
+                retException = new OperationCanceledException("AMQP link released.");
+            }
+            else
+            {
+                retException = new IotHubException("Unknown error.");
+            }
+
+            return retException;
+        }
+
+        public static Exception ToIotHubClientContract(Error error)
+        {
+            if (error == null)
+            {
+                return new IotHubException("Unknown error.");
+            }
+
+            Exception retException;
+            string message = error.Description;
+            string trackingId = null;
+
+            if (error.Info != null
+                && error.Info.TryGetValue(AmqpsConstants.TrackingId, out trackingId))
+            {
+                message = $"{message}\r\nTracking Id:{trackingId}";
+            }
+
+            if (error.Condition.Equals(IotHubAmqpErrorCode.TimeoutError))
+            {
+                retException = new TimeoutException(message);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.NotFound))
+            {
+                retException = new DeviceNotFoundException(message, innerException: null);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.NotImplemented))
+            {
+                retException = new NotSupportedException(message);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.MessageLockLostError))
+            {
+                retException = new DeviceMessageLockLostException(message);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.NotAllowed))
+            {
+                retException = new InvalidOperationException(message);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.UnauthorizedAccess))
+            {
+                retException = new UnauthorizedException(message);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.ArgumentError))
+            {
+                retException = new ArgumentException(message);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.ArgumentOutOfRangeError))
+            {
+                retException = new ArgumentOutOfRangeException(message);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.MessageSizeExceeded))
+            {
+                retException = new MessageTooLargeException(message);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
+            {
+                retException = new DeviceMaximumQueueDepthExceededException(message);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceAlreadyExists))
+            {
+                retException = new DeviceAlreadyExistsException(message, (Exception)null);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceContainerThrottled))
+            {
+                retException = new IotHubThrottledException(message, (Exception)null);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.QuotaExceeded))
+            {
+                retException = new QuotaExceededException(message, (Exception)null);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.PreconditionFailed))
+            {
+                retException = new PreconditionFailedException(message, (Exception)null);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
+            {
+                retException = new IotHubSuspendedException(message);
+            }
+            else
+            {
+                retException = new IotHubException(message);
+            }
+
+            if (trackingId != null
+                && retException is IotHubException exHub)
+            {
+                IotHubException iotHubException = exHub;
+                iotHubException.TrackingId = trackingId;
+                // This is created but not assigned to `retException`. If we change that now, it might be a
+                // breaking change. If not for v1, consider for #v2.
+            }
+
+            return retException;
+        }
+
+        public static ErrorContext GetErrorContextFromException(AmqpException exception)
+        {
+            Error error = exception.Error;
+            AmqpSymbol amqpSymbol = error.Condition;
+            string message = error.ToString();
+            if (AmqpErrorCode.ConnectionForced.Equals(amqpSymbol)
+                || AmqpErrorCode.ConnectionRedirect.Equals(amqpSymbol)
+                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
+                || AmqpErrorCode.WindowViolation.Equals(amqpSymbol)
+                || AmqpErrorCode.ErrantLink.Equals(amqpSymbol)
+                || AmqpErrorCode.HandleInUse.Equals(amqpSymbol)
+                || AmqpErrorCode.UnattachedHandle.Equals(amqpSymbol)
+                || AmqpErrorCode.DetachForced.Equals(amqpSymbol)
+                || AmqpErrorCode.TransferLimitExceeded.Equals(amqpSymbol)
+                || AmqpErrorCode.MessageSizeExceeded.Equals(amqpSymbol)
+                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
+                || AmqpErrorCode.Stolen.Equals(amqpSymbol))
+            {
+                return new ErrorContext(new IotHubException(message, exception));
+            }
+
+            return new ErrorContext(new IOException(message, exception));
         }
     }
 }

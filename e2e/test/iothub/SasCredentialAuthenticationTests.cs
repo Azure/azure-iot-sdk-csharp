@@ -173,6 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Messaging.SendAsync(testDevice.Id, message);
 
             // cleanup
+            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
@@ -207,6 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
             await serviceClient.Messaging.SendAsync(testDevice.Id, message);
+            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
 
             // cleanup
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
