@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
-            
+
             cancellationToken.ThrowIfCancellationRequested();
 
             // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
