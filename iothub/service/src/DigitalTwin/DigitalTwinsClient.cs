@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -23,6 +24,9 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
+        private const string DigitalTwinRequestUriFormat = "/digitaltwins/{0}";
+        private const string DigitalTwinCommandRequestUriFormat = "/digitaltwins/{0}/commands/{1}";
+        private const string DigitalTwinComponentCommandRequestUriFormat = "/digitaltwins/{0}/components/{1}/commands/{2}";
         private const string StatusCodeHeaderKey = "x-ms-command-statuscode";
         private const string RequestIdHeaderKey = "x-ms-request-id";
 
@@ -318,14 +322,14 @@ namespace Microsoft.Azure.Devices
         private static Uri GetDigitalTwinRequestUri(string digitalTwinId)
         {
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
-            return new Uri($"/digitaltwins/{digitalTwinId}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinRequestUriFormat, digitalTwinId), UriKind.Relative);
         }
 
         private static Uri GetDigitalTwinCommandRequestUri(string digitalTwinId, string commandName)
         {
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
             commandName = WebUtility.UrlEncode(commandName);
-            return new Uri($"/digitaltwins/{digitalTwinId}/commands/{commandName}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinCommandRequestUriFormat, digitalTwinId, commandName), UriKind.Relative);
         }
 
         private static Uri GetDigitalTwinComponentCommandRequestUri(string digitalTwinId, string componentPath, string commandName)
@@ -333,7 +337,7 @@ namespace Microsoft.Azure.Devices
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
             componentPath = WebUtility.UrlEncode(componentPath);
             commandName = WebUtility.UrlEncode(commandName);
-            return new Uri($"/digitaltwins/{digitalTwinId}/components/{componentPath}/commands/{commandName}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinComponentCommandRequestUriFormat, digitalTwinId, componentPath, commandName), UriKind.Relative);
         }
 
         // Root level commands and component level commands append the connect and read timeout values as query string values such as:

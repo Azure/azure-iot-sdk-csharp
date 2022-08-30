@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -34,6 +35,7 @@ namespace Microsoft.Azure.Devices
         private readonly FaultTolerantAmqpObject<SendingAmqpLink> _faultTolerantSendingLink;
 
         private const string _sendingPath = "/messages/deviceBound";
+        private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
         private int _sendingDeliveryTag;
 
         /// <summary>
@@ -328,7 +330,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
         {
-            return new Uri($"/devices/{deviceId}/commands", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, PurgeMessageQueueFormat, deviceId), UriKind.Relative);
         }
 
         private Task<SendingAmqpLink> CreateSendingLinkAsync(TimeSpan timeout)

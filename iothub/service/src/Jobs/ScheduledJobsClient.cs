@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -26,6 +27,8 @@ namespace Microsoft.Azure.Devices
 
         private readonly QueryClient _queryClient;
 
+        private const string JobsUriFormat = "/jobs/v2/{0}";
+        private const string CancelJobUriFormat = "/jobs/v2/{0}/cancel";
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string PageSizeHeader = "x-ms-max-item-count";
 
@@ -149,7 +152,7 @@ namespace Microsoft.Azure.Devices
                 Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri($"/jobs/v2/{jobId}/cancel", UriKind.Relative), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, CancelJobUriFormat, jobId), UriKind.Relative), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<ScheduledJob>(response).ConfigureAwait(false);
@@ -289,7 +292,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetJobUri(string jobId)
         {
-            return new Uri($"/jobs/v2/{jobId ?? string.Empty}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, JobsUriFormat, jobId ?? string.Empty), UriKind.Relative);
         }
     }
 }

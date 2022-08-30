@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
+        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
         private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
         private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
@@ -302,7 +304,7 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri($"/devices/{deviceId}/modules/{moduleId}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ModulesRequestUriFormat, deviceId, moduleId), UriKind.Relative);
         }
     }
 }

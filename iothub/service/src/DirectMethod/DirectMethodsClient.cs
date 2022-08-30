@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -20,6 +21,8 @@ namespace Microsoft.Azure.Devices
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
+        private const string DeviceMethodUriFormat = "/twins/{0}/methods";
+        private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -138,13 +141,13 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri($"/twins/{deviceId}/modules/{moduleId}/methods", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ModuleMethodUriFormat, deviceId, moduleId), UriKind.Relative);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri($"/twins/{deviceId}/methods", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceMethodUriFormat, deviceId), UriKind.Relative);
         }
     }
 }

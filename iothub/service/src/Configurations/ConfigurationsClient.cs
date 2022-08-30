@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -22,6 +23,8 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
+        private const string ConfigurationRequestUriFormat = "/configurations/{0}";
+        private const string ConfigurationsRequestUriFormat = "&top={0}";
         private const string ETagSetWhileCreatingConfiguration = "ETagSetWhileCreatingConfiguration";
         private const string ArgumentMustBeNonNegative = "ArgumentMustBeNonNegative";
         private const string ETagNotSetWhileDeletingConfiguration = "ETagNotSetWhileDeletingConfiguration";
@@ -165,7 +168,7 @@ namespace Microsoft.Azure.Devices
                 }
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, $"&top={maxCount}");
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<Configuration>>(response).ConfigureAwait(false);
@@ -406,7 +409,7 @@ namespace Microsoft.Azure.Devices
         private static Uri GetConfigurationRequestUri(string configurationId)
         {
             configurationId = WebUtility.UrlEncode(configurationId);
-            return new Uri($"/configurations/{configurationId}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ConfigurationRequestUriFormat, configurationId), UriKind.Relative);
         }
     }
 }

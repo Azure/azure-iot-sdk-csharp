@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -24,7 +25,11 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
+        private const string DeviceRequestUriFormat = "/devices/{0}";
+        private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
+        private const string JobsGetUriFormat = "/jobs/{0}";
         private const string JobsListUriFormat = "/jobs";
+        private const string AdminUriFormat = "/$admin/{0}";
         private const string JobsCreateUriFormat = "/jobs/create";
         private const string DeviceStatisticsUriFormat = "/statistics/devices";
         private const string ServiceStatisticsUriFormat = "/statistics/service";
@@ -1133,28 +1138,28 @@ namespace Microsoft.Azure.Devices
         private static Uri GetRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri($"/devices/{deviceId}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceRequestUriFormat, deviceId), UriKind.Relative);
         }
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri($"/devices/{deviceId}/modules", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ModulesOnDeviceRequestUriFormat, deviceId), UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri()
         {
-            return new Uri($"/devices/{string.Empty}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceRequestUriFormat, string.Empty), UriKind.Relative);
         }
 
         private static Uri GetAdminUri(string operation)
         {
-            return new Uri($"/$admin/{operation}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, AdminUriFormat, operation), UriKind.Relative);
         }
 
         private static Uri GetJobUri(string jobId)
         {
-            return new Uri($"/jobs/{jobId}", UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, JobsGetUriFormat, jobId), UriKind.Relative);
         }
 
         private static Uri GetListJobsUri()
