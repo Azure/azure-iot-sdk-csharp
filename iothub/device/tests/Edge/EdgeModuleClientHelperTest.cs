@@ -99,16 +99,16 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 Environment.SetEnvironmentVariable(IotEdgedUriVariableName, ServerUrl);
                 TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
-                Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
-                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
-
-                Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
-                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
-
                 Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
                 TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
+
+                Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
+
+                Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
                 TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
                 Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
