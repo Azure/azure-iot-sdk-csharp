@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -132,17 +130,24 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private async void WaitForFileUploadNotification(FileUploadNotificationCounter counter, int expectedFileUploadNotificationReceivedCount)
         {
             var timer = Stopwatch.StartNew();
-            while (counter.FileUploadNotificationsReceived < expectedFileUploadNotificationReceivedCount && timer.ElapsedMilliseconds < 60000)
+            try
             {
-                await Task.Delay(200);
+                // Note that this test may receive notifications from other file upload tests, so the received count may be higher
+                // than the expected count.
+                while (counter.FileUploadNotificationsReceived < expectedFileUploadNotificationReceivedCount)
+                {
+                    if (timer.ElapsedMilliseconds < 60000)
+                    {
+                        throw new AssertFailedException($"Timed out waiting for the expected number of file upload notifications. Received {counter.FileUploadNotificationsReceived}, expected {expectedFileUploadNotificationReceivedCount}");
+                    }
+
+                    await Task.Delay(200);
+                }
             }
-
-            timer.Stop();
-
-            // Note that this test may receive notifications from other file upload tests, so the received count may be higher
-            // than the expected count.
-            counter.FileUploadNotificationsReceived.Should().BeGreaterOrEqualTo(expectedFileUploadNotificationReceivedCount,
-                "Timed out waiting to receive file upload notification.");
+            finally
+            {
+                timer.Stop();
+            }
         }
 
         private async Task UploadFile()
