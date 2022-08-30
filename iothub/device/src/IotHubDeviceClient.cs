@@ -122,14 +122,14 @@ namespace Microsoft.Azure.Devices.Client
         public ConnectionStatusInfo ConnectionStatusInfo => InternalClient._connectionStatusInfo;
 
         /// <summary>
-        /// Explicitly open the DeviceClient instance.
+        /// Open the DeviceClient instance. Must be done before any operation can begin.
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// </summary>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task OpenAsync(CancellationToken cancellationToken = default) => InternalClient.OpenAsync(cancellationToken);
 
         /// <summary>
-        /// Sends an event to IoT hub.
+        /// Sends an event to IoT hub. DeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages
-        /// one after the other.
+        /// one after the other. DeviceClient instance must be opened already.
         /// </summary>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue using the cancellation token.
+        /// Receive a message from the device queue using the cancellation token. DeviceClient instance must be opened already.
         /// After handling a received message, a client should call <see cref="CompleteMessageAsync(Message, CancellationToken)"/>,
         /// <see cref="AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="RejectMessageAsync(Message, CancellationToken)"/>,
         /// and then dispose the message.
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Devices.Client
             => InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
 
         /// <summary>
-        /// Retrieve the device twin properties for the current device.
+        /// Retrieve the device twin properties for the current device. DeviceClient instance must be opened already.
         /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -370,6 +370,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Close the DeviceClient instance.
         /// </summary>
+        /// <remarks>
+        /// The instance can be re-opened after closing and before disposing.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task CloseAsync(CancellationToken cancellationToken = default) => InternalClient.CloseAsync(cancellationToken);

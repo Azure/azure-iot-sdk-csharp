@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Explicitly open the ModuleClient instance.
+        /// Open the ModuleClient instance. Must be done before any operation can begin.
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// </summary>
@@ -251,12 +251,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Close the client instance.
         /// </summary>
+        /// <remarks>
+        /// The instance can be re-opened after closing and before disposing.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task CloseAsync(CancellationToken cancellationToken = default) => InternalClient.CloseAsync(cancellationToken);
 
         /// <summary>
-        /// Sends an event to IoT hub.
+        /// Sends an event to IoT hub. ModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
@@ -282,6 +285,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
         /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// ModuleClient instance must be opened already.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -290,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default) => InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
-        /// Sends an event to IoT hub.
+        /// Sends an event to IoT hub. ModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
@@ -317,7 +321,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// ModuleClient instance must be opened already.
         /// </summary>
         /// <param name="outputName">The output target for sending the given message.</param>
         /// <param name="messages">A list of one or more messages to send.</param>
@@ -328,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SendEventBatchAsync(outputName, messages, cancellationToken);
 
         /// <summary>
-        /// Retrieve a module twin object for the current module.
+        /// Retrieve a module twin object for the current module. ModuleClient instance must be opened already.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The module twin object for the current module</returns>
@@ -347,6 +352,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.
         /// Both the edge module and the edge device need to be connected to the same edge hub.
+        /// ModuleClient instance must be opened already.
         /// </summary>
         /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
         /// <param name="methodRequest">The details of the method to invoke.</param>
@@ -362,6 +368,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Interactively invokes a method from an edge module to a different edge module.
         /// Both of the edge modules need to be connected to the same edge hub.
+        /// ModuleClient instance must be opened already.
         /// </summary>
         /// <param name="deviceId">The unique identifier of the device.</param>
         /// <param name="moduleId">The unique identifier of the edge module to invoke the method on.</param>
