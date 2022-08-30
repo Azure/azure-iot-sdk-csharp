@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
         public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = null)
         {
