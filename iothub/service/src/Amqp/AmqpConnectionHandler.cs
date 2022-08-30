@@ -284,10 +284,9 @@ namespace Microsoft.Azure.Devices.Amqp
                 // Set SubProtocol to AMQPWSB10
                 websocket.Options.AddSubProtocol(AmqpsConstants.Amqpwsb10);
 
-                if (_options.AmqpWebSocketKeepAlive != null)
+                if (_options.AmqpWebSocketKeepAlive.HasValue)
                 {
-                    // safe to cast from TimeSpan? to TimeSpan since it is not null
-                    websocket.Options.KeepAliveInterval = (TimeSpan)_options.AmqpWebSocketKeepAlive;
+                    websocket.Options.KeepAliveInterval = _options.AmqpWebSocketKeepAlive.Value;
                 }
 
                 // Check if we're configured to use a proxy server
