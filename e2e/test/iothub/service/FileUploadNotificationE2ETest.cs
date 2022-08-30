@@ -2,13 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Execution;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -18,41 +15,139 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 {
     /// <summary>
-    /// E2E test class for FileUploadNotification.
+    /// E2E test class for testing receiving file upload notifications.
     /// </summary>
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     public class FileUploadNotificationE2eTest : E2EMsTestBase
     {
-        public bool fileUploaded;
         private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2eTest)}_";
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task FileUploadNotification_Operation()
-        {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+        // All file upload notifications will be acknowledged with this type. We are deliberately
+        // choosing to Abandon rather than Complete because each test process may receive file upload
+        // notifications that another test was looking for. By abandoning each received notification,
+        // the service makes it available for redelivery to other open receivers.
+        private readonly AcknowledgementType _acknowledgementType = AcknowledgementType.Abandon;
 
-            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = fileUploadCallback;
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task FileUploadNotification_Operation(TransportType transportType)
+        {
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+
+            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                counter.FileUploadNotificationsReceived++;
+                return _acknowledgementType;
+            };
+
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
-            var timer = Stopwatch.StartNew();
-            while (!fileUploaded && timer.ElapsedMilliseconds < 60000)
-            {
-                continue;
-            }
-            timer.Stop();
-            if (!fileUploaded)
-                throw new AssertionFailedException("Timed out waiting to receive file upload notification.");
-
+            await WaitForFileUploadNotification(counter, 1);
             await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
-            fileUploaded.Should().BeTrue();
         }
 
-        private AcknowledgementType fileUploadCallback(FileUploadNotification notification)
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task FileUploadNotification_Operation_OpenCloseOpen(TransportType transportType)
         {
-            fileUploaded = true;
-            return AcknowledgementType.Complete;
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+
+            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                counter.FileUploadNotificationsReceived++;
+                return _acknowledgementType;
+            };
+
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
+            // Close and re-open the client
+            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+
+            // Client should still be able to receive file upload notifications after being closed and re-opened.
+            await UploadFile().ConfigureAwait(false);
+            await WaitForFileUploadNotification(counter, 1);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket)]
+        public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(TransportType transportType)
+        {
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions()
+            {
+                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+            };
+
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
+
+            FileUploadNotificationCounter counter = new FileUploadNotificationCounter();
+            Func<FileUploadNotification, AcknowledgementType> OnFileUploadNotificationReceived = (fileUploadNotification) =>
+            {
+                counter.FileUploadNotificationsReceived++;
+                return _acknowledgementType;
+            };
+
+            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+
+            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await UploadFile().ConfigureAwait(false);
+            await UploadFile().ConfigureAwait(false);
+
+            // The open file upload notification processor should be able to receive more than one
+            // file upload notification without closing and re-opening as long as there is more
+            // than one file upload notification to consume.
+            await WaitForFileUploadNotification(counter, 2);
+            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Wait until the expected number of file upload notifications have been received. If the expected
+        /// number of notifications are not received in time, this method throws a AssertionFailedException.
+        /// </summary>
+        /// <param name="fileUploadNotificationReceivedCount">The current number of file upload notifications received.</param>
+        /// <param name="expectedFileUploadNotificationReceivedCount">The expected number of file upload notifications to receive in this test.</param>
+        private async Task WaitForFileUploadNotification(FileUploadNotificationCounter counter, int expectedFileUploadNotificationReceivedCount)
+        {
+            var timer = Stopwatch.StartNew();
+            try
+            {
+                // Note that this test may receive notifications from other file upload tests, so the received count may be higher
+                // than the expected count.
+                while (counter.FileUploadNotificationsReceived < expectedFileUploadNotificationReceivedCount)
+                {
+                    if (timer.ElapsedMilliseconds > 60000)
+                    {
+                        throw new AssertFailedException($"Timed out waiting for the expected number of file upload notifications. Received {counter.FileUploadNotificationsReceived}, expected {expectedFileUploadNotificationReceivedCount}");
+                    }
+
+                    await Task.Delay(200);
+                }
+            }
+            finally
+            {
+                timer.Stop();
+            }
         }
 
         private async Task UploadFile()
@@ -89,6 +184,18 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             };
 
             await deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification).ConfigureAwait(false);
+        }
+
+        // This class exists to facilitate passing around an integer by reference. It is incremented
+        // in a callback function and has its value checked in the WaitForFileUploadNotification function.
+        private class FileUploadNotificationCounter
+        {
+            public FileUploadNotificationCounter()
+            {
+                FileUploadNotificationsReceived = 0;
+            }
+
+            public int FileUploadNotificationsReceived;
         }
     }
 }

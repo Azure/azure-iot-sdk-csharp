@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(SocketException), () => new SocketException(1) },
             { typeof(HttpRequestException), () => new HttpRequestException() },
             { typeof(WebException), () => new WebException() },
-            { typeof(AmqpException), () => new AmqpException(new Amqp.Framing.Error()) },
+            { typeof(AmqpException), () => new AmqpException(new Azure.Amqp.Framing.Error()) },
             { typeof(WebSocketException), () => new WebSocketException(1) },
             { typeof(TestSecurityException), () => new Exception("Test top level", new Exception("Inner exception", new AuthenticationException())) },
             { typeof(TestDerivedException), () => new TestDerivedException() },
