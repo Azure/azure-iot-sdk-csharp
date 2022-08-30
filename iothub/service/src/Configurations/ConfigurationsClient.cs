@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
-                HttpMessageHelper.InsertETag(request, configuration.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Configuration>(response).ConfigureAwait(false);
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices
                 // use wild-card ETag
                 var eTag = new ETagHolder { ETag = "*" };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configurationId), _credentialProvider);
-                HttpMessageHelper.InsertETag(request, eTag.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, eTag.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
@@ -335,7 +335,7 @@ namespace Microsoft.Azure.Devices
                     throw new ArgumentException(ETagNotSetWhileDeletingConfiguration);
                 }
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
-                HttpMessageHelper.InsertETag(request, configuration.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
