@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
                 // than the expected count.
                 while (counter.FileUploadNotificationsReceived < expectedFileUploadNotificationReceivedCount)
                 {
-                    if (timer.ElapsedMilliseconds < 60000)
+                    if (timer.ElapsedMilliseconds > 60000)
                     {
                         throw new AssertFailedException($"Timed out waiting for the expected number of file upload notifications. Received {counter.FileUploadNotificationsReceived}, expected {expectedFileUploadNotificationReceivedCount}");
                     }
