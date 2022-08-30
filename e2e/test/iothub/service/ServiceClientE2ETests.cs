@@ -89,7 +89,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
 
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
             await sender.Messaging.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             await sender.Messaging.CloseAsync().ConfigureAwait(false);
         }
