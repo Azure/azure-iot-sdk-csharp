@@ -94,6 +94,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
         public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
+            // Make sure client options is initialized.
             if (options == default)
             {
                 options = new();

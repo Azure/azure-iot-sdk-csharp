@@ -43,45 +43,39 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return new IotHubConnectionCredentials(connectionString);
             }
-            else
+
+            string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
+            string deviceId = GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
+            string moduleId = GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
+            string hostName = GetValueFromEnvironment(envVariables, IotHubHostNameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostNameVariableName} is required.");
+            string authScheme = GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
+            string generationId = GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
+            string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
+
+            if (!string.Equals(authScheme, SasTokenAuthScheme, StringComparison.OrdinalIgnoreCase))
             {
-                string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
-                string deviceId = GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
-                string moduleId = GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
-                string hostName = GetValueFromEnvironment(envVariables, IotHubHostNameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostNameVariableName} is required.");
-                string authScheme = GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
-                string generationId = GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
-                string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
-
-                if (!string.Equals(authScheme, SasTokenAuthScheme, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException($"Unsupported authentication scheme. Supported scheme is {SasTokenAuthScheme}.");
-                }
-
-                ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
-
-                // TODO: environment variables need to be added to accept SasTokenTimeToLive and SasTokenRenewalBuffer.
-                // These values can then be passed on to ModuleAuthenticationWithHsm (internal class).
-
-                var authMethod = new ModuleAuthenticationWithHsm(
-                    signatureProvider,
-                    deviceId,
-                    moduleId,
-                    generationId);
-
-                Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
-
-                return new IotHubConnectionCredentials(authMethod, hostName, gateway);
+                throw new InvalidOperationException($"Unsupported authentication scheme. Supported scheme is {SasTokenAuthScheme}.");
             }
+
+            ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
+
+            // TODO: environment variables need to be added to accept SasTokenTimeToLive and SasTokenRenewalBuffer.
+            // These values can then be passed on to ModuleAuthenticationWithHsm (internal class).
+
+            var authMethod = new ModuleAuthenticationWithHsm(
+                signatureProvider,
+                deviceId,
+                moduleId,
+                generationId);
+
+            Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
+
+            return new IotHubConnectionCredentials(authMethod, hostName, gateway);
         }
 
         internal static async Task<ICertificateValidator> CreateCertificateValidatorFromEnvironmentAsync(ITrustBundleProvider trustBundleProvider, IotHubClientOptions options)
         {
-            // Make sure client options is initialized.
-            if (options == default)
-            {
-                options = new();
-            }
+            Debug.Assert(options != null);
 
             ICertificateValidator certificateValidator = NullCertificateValidator.Instance;
 
@@ -104,21 +98,19 @@ namespace Microsoft.Azure.Devices.Client
 
                 return certificateValidator;
             }
-            else
+
+            string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
+            string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
+
+            Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
+
+            if (!string.IsNullOrEmpty(gateway))
             {
-                string edgedUri = GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
-                string gateway = GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
-
-                Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
-
-                if (!string.IsNullOrEmpty(gateway))
-                {
-                    IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
-                    certificateValidator = GetCertificateValidator(certs, options);
-                }
-
-                return certificateValidator;
+                IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
+                certificateValidator = GetCertificateValidator(certs, options);
             }
+
+            return certificateValidator;
         }
 
         private static ICertificateValidator GetCertificateValidator(IList<X509Certificate2> certs, IotHubClientOptions options)

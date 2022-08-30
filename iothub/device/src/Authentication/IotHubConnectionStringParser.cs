@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new ArgumentException($"The connection string is missing the property: {propertyName}.");
+                throw new ArgumentException($"The connection string is missing the property: {propertyName}.", nameof(propertyName));
             }
 
             return value;
