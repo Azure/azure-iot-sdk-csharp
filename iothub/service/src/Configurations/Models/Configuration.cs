@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         internal Configuration()
         {

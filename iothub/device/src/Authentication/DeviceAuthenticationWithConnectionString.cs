@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly IotHubConnectionString _iotHubConnectionString;
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="connectionString">The connection string containing the device Id, shared access key aname and shared access key
         /// to be used for authenticating with IoT hub service.</param>

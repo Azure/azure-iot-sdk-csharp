@@ -11,13 +11,13 @@ using System.Net.Http;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// API for using the IotHub Device Provisioning Service Runtime Features
+    /// API for using the IotHub Device Provisioning Service Runtime Features.
     /// </summary>
     internal partial class DeviceProvisioningServiceRuntimeClient
         : ServiceClient<DeviceProvisioningServiceRuntimeClient>, IDeviceProvisioningServiceRuntimeClient
     {
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='handlers'>
         /// Optional. The delegating handlers to add to the http client pipeline.
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='rootHandler'>
         /// Optional. The http client handler used to handle http transport.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='credentials'>
         /// Required. Subscription credentials which uniquely identify client subscription.
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='credentials'>
         /// Required. Subscription credentials which uniquely identify client subscription.
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Initializes a new instance of the DeviceProvisioningServiceRuntimeClient class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.

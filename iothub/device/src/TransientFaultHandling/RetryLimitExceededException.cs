@@ -21,7 +21,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The special type of exception that provides managed exit from a retry loop. The user code can use this
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 #pragma warning restore CA1064 // Exceptions should be public
     {
         /// <summary>
-        /// Initializes a new instance of this class with a default error message.
+        /// Creates an instance of this class with a default error message.
         /// </summary>
         public RetryLimitExceededException()
             : this(Resources.RetryLimitExceeded)
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with a specified error message.
+        /// Creates an instance of this class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public RetryLimitExceededException(string message)
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with a reference to the inner exception
+        /// Creates an instance of this class with a reference to the inner exception
         /// that is the cause of this exception.
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with a specified error message and inner exception.
+        /// Creates an instance of this class with a specified error message and inner exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>

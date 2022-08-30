@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         private byte[] _key;
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>

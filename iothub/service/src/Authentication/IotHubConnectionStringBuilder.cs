@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SharedAccessSignatureParser = Microsoft.Azure.Devices.Common.Security.SharedAccessSignature;
+using SharedAccessSignatureParser = Microsoft.Azure.Devices.SharedAccessSignature;
 
 namespace Microsoft.Azure.Devices
 {
@@ -265,7 +264,9 @@ namespace Microsoft.Azure.Devices
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), nameof(value));
+                throw new ArgumentException(
+                    $"The connection string has an invalid value for property: {propertyName}",
+                    nameof(value));
             }
         }
 
@@ -281,7 +282,9 @@ namespace Microsoft.Azure.Devices
         {
             if (!map.TryGetValue(propertyName, out string value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), nameof(map));
+                throw new ArgumentException(
+                    $"The connection string is missing the property: {propertyName}",
+                    nameof(map));
             }
 
             return value;
@@ -296,7 +299,9 @@ namespace Microsoft.Azure.Devices
         internal static string GetIotHubName(string hostName)
         {
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-            string iotHubName = index >= 0 ? hostName.Substring(0, index) : hostName;
+            string iotHubName = index >= 0
+                ? hostName.Substring(0, index)
+                : hostName;
             return iotHubName;
         }
 

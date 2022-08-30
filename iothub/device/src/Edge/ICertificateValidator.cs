@@ -5,7 +5,7 @@ using System;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
     internal interface ICertificateValidator
     {

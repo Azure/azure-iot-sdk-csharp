@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Service.Auth;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {

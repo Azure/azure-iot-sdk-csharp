@@ -8,7 +8,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Microsoft.Azure.Devices.Common.Security
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Builds Shared Access Signature (SAS) tokens.
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         public SharedAccessSignatureBuilder()
         {

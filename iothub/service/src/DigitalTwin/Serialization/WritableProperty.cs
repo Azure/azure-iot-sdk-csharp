@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Serialization
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// An optional, helper class for deserializing a digital twin.
@@ -48,6 +48,6 @@ namespace Microsoft.Azure.Devices.Serialization
         /// The time when this property was last updated.
         /// </summary>
         [JsonProperty("lastUpdateTime")]
-        public DateTimeOffset LastUpdateTime { get; set; }
+        public DateTimeOffset LastUpdatedOn { get; set; }
     }
 }

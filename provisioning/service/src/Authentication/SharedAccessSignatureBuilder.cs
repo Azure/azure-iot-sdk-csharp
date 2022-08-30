@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Net;
 
-namespace Microsoft.Azure.Devices.Common.Service.Auth
+namespace Microsoft.Azure.Devices
 {
     internal sealed class SharedAccessSignatureBuilder
     {

@@ -3,21 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Azure.Devices.Client.Extensions
+namespace Microsoft.Azure.Devices.Client
 {
     internal delegate bool TryParse<in TInput, TOutput>(TInput input, bool ignoreCase, out TOutput output);
 
     internal static class CommonExtensionMethods
     {
-        private const char ValuePairDelimiter = ';';
-        private const char ValuePairSeparator = '=';
-
         public static IDictionary<string, string> ToDictionary(this string valuePairString, char kvpDelimiter, char kvpSeparator)
         {
             if (string.IsNullOrWhiteSpace(valuePairString))
@@ -49,12 +44,15 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
         public static void AppendKeyValuePairIfNotEmpty(this StringBuilder builder, string name, object value)
         {
+            const char valuePairDelimiter = ';';
+            const char valuePairSeparator = '=';
+
             if (value != null)
             {
                 builder.Append(name);
-                builder.Append(ValuePairSeparator);
+                builder.Append(valuePairSeparator);
                 builder.Append(value);
-                builder.Append(ValuePairDelimiter);
+                builder.Append(valuePairDelimiter);
             }
         }
 

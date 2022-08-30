@@ -20,7 +20,7 @@ using System;
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Defines an interface that must be implemented by custom components responsible for detecting specific transient conditions.

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices
 {
@@ -15,7 +14,7 @@ namespace Microsoft.Azure.Devices
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="policyName">Name of the shared access policy to use.</param>
         /// <param name="token">Token associated with the shared access policy.</param>

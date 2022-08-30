@@ -22,7 +22,7 @@ using System;
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 // 7/12/2021 drwill Changed property+backing field to auto-property.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Represents a retry strategy that determines the number of retry attempts and the interval between retries.
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         public const bool DefaultFirstFastRetry = true;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RetryStrategy" /> class.
+        /// Creates an instance of the <see cref="RetryStrategy" /> class.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="firstFastRetry">

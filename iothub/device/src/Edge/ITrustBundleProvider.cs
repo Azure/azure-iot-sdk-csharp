@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
     internal interface ITrustBundleProvider
     {

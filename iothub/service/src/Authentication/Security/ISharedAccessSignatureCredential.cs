@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Common.Security
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Credential interface used for authentication and authorization.

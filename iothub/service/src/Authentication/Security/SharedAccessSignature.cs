@@ -5,23 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace Microsoft.Azure.Devices.Common.Security
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A shared access signature, which can be used for authorization to an IoT hub.
     /// </summary>
     internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
-        private readonly string _encodedAudience;
-        private readonly string _expiry;
-
         private SharedAccessSignature(
             string iotHubName,
             DateTime expiresOn,
-            string expiry,
             string keyName,
             string signature,
             string encodedAudience)
@@ -41,8 +35,6 @@ namespace Microsoft.Azure.Devices.Common.Security
             IotHubName = iotHubName;
             Signature = signature;
             Audience = WebUtility.UrlDecode(encodedAudience);
-            _encodedAudience = encodedAudience;
-            _expiry = expiry;
             KeyName = keyName ?? string.Empty;
         }
 
@@ -121,7 +113,6 @@ namespace Microsoft.Azure.Devices.Common.Security
             return new SharedAccessSignature(
                 iotHubName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
-                expiry,
                 keyName,
                 signature,
                 encodedAudience);

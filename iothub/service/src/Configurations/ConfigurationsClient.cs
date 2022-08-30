@@ -211,7 +211,8 @@ namespace Microsoft.Azure.Devices
         /// replace the mutable fields of the configuration registration.
         /// </summary>
         /// <param name="configuration">The configuration object with replaced fields.</param>
-        /// <param name="forceUpdate">Forces the configuration object to be replaced even if it was replaced since it was retrieved last time.</param>
+        /// <param name="forceUpdate">Forces the configuration object to be replaced even if it was replaced since it was retrieved last time
+        /// (i.e., the <see cref="Configuration.ETag"/> does not match the service's.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>

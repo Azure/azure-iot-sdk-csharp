@@ -20,7 +20,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Defines a callback delegate that will be invoked whenever a retry condition is encountered.

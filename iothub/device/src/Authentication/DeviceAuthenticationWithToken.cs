@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of the class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="token">Security Token.</param>
