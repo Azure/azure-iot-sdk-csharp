@@ -143,6 +143,7 @@ namespace Microsoft.Azure.Devices.Client
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
@@ -159,6 +160,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default)
@@ -181,6 +183,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets a new delegate for receiving a message from the device queue using a cancellation token.
+        /// DeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
         /// After handling a received message, a client should call <see cref="CompleteMessageAsync(Message, CancellationToken)"/>,
@@ -191,6 +194,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be used when a could to device message is received by the client.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetReceiveMessageHandlerAsync(
             Func<Message, object, Task> messageHandler,
@@ -312,6 +316,7 @@ namespace Microsoft.Azure.Devices.Client
         /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <returns>The device twin object for the current device</returns>

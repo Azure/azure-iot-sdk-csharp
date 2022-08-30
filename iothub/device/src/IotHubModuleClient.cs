@@ -273,6 +273,7 @@ namespace Microsoft.Azure.Devices.Client
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
@@ -290,6 +291,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default) => InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
@@ -308,6 +310,7 @@ namespace Microsoft.Azure.Devices.Client
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
@@ -328,6 +331,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken = default) =>
             InternalClient.SendEventBatchAsync(outputName, messages, cancellationToken);
@@ -337,6 +341,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The module twin object for the current module</returns>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default) => InternalClient.GetTwinAsync(cancellationToken);
 
@@ -358,6 +363,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
@@ -375,6 +381,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
