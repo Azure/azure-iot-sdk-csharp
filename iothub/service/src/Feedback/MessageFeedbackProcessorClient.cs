@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
         ///    return AcknowledgementType.Complete;
         /// }
         /// </example>
-        public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor;
+        public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor { get; set; }
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices
         ///    Console.WriteLine("Feedback message processor connection lost")
         /// }
         /// </example>
-        public Action<ErrorContext> ErrorProcessor;
+        public Action<ErrorContext> ErrorProcessor { get; set; };
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
