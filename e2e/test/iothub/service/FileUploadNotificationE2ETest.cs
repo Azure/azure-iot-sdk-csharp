@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
             await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
-            WaitForFileUploadNotification(counter, 1);
+            await WaitForFileUploadNotification(counter, 1);
             await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
 
             // Client should still be able to receive file upload notifications after being closed and re-opened.
             await UploadFile().ConfigureAwait(false);
-            WaitForFileUploadNotification(counter, 1);
+            await WaitForFileUploadNotification(counter, 1);
             await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
             // The open file upload notification processor should be able to receive more than one
             // file upload notification without closing and re-opening as long as there is more
             // than one file upload notification to consume.
-            WaitForFileUploadNotification(counter, 2);
+            await WaitForFileUploadNotification(counter, 2);
             await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         /// </summary>
         /// <param name="fileUploadNotificationReceivedCount">The current number of file upload notifications received.</param>
         /// <param name="expectedFileUploadNotificationReceivedCount">The expected number of file upload notifications to receive in this test.</param>
-        private async void WaitForFileUploadNotification(FileUploadNotificationCounter counter, int expectedFileUploadNotificationReceivedCount)
+        private async Task WaitForFileUploadNotification(FileUploadNotificationCounter counter, int expectedFileUploadNotificationReceivedCount)
         {
             var timer = Stopwatch.StartNew();
             try
