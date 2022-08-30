@@ -67,6 +67,12 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
             }
 
+            // Make sure client options is initialized.
+            if (options == default)
+            {
+                options = new();
+            }
+
             // Validate certs.
             if (iotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.ChainCertificates != null)
@@ -77,12 +83,6 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     throw new ArgumentException("Certificate chains are only supported on MQTT over TCP and AMQP over TCP.");
                 }
-            }
-
-            // Make sure client options is initialized.
-            if (options == default)
-            {
-                options = new();
             }
 
             InternalClient = new InternalClient(iotHubConnectionCredentials, options, null);
