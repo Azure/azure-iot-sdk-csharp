@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable <c>IotHubDeviceClient</c> instance.</returns>
+        /// <returns>A disposable client instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
