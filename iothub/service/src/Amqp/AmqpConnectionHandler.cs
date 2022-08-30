@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
                 try
                 {
-                    if (webProxy != DefaultWebProxySettings.Instance)
+                    if (webProxy != null)
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;

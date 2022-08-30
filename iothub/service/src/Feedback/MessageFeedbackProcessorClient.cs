@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices
         ///    Console.WriteLine("Feedback message processor connection lost")
         /// }
         /// </example>
-        public Action<ErrorContext> ErrorProcessor { get; set; };
+        public Action<ErrorContext> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.

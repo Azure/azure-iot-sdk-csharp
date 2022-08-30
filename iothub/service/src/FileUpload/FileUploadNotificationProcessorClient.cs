@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices
         ///    return AcknowledgementType.Complete;
         /// }
         /// </example>
-        public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor { get; set; };
+        public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor { get; set; }
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
