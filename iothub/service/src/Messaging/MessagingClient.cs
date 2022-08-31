@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices
             _clientOptions = options;
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
-                options.UseWebSocketOnly,
+                options.Protocol,
                 AmqpsConstants.CloudToDeviceMessageAddress,
                 options,
                 OnConnectionClosed);
