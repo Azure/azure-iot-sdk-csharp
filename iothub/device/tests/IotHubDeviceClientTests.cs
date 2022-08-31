@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -1400,7 +1401,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.ReceiveMessageAsync(cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
@@ -1408,7 +1408,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_CompleteAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1441,7 +1440,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_RejectAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1474,13 +1472,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_SendEventAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1499,15 +1496,59 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.SendEventAsync(new Message(), cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
+        }
+
+        [TestMethod]
+        public void IotHubDeviceClient_SendEventAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
+        {
+            // arrange
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            // act
+            Func<Task> act = async () => await deviceClient.SendEventAsync(new Message());
+
+            // assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+
+        [TestMethod]
+        public void IotHubDeviceClient_SendEventAsync_BeforeExplicitOpenAsync_ThrowsInvalidOperationException()
+        {
+            // arrange
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            // act
+            Func<Task> act = async () => 
+            {
+                await deviceClient.SendEventAsync(new Message());
+                await deviceClient.OpenAsync();
+            };
+
+            // assert
+            act.Should().Throw<InvalidOperationException>();
+        }
+
+        [TestMethod]
+        public void IotHubDeviceClient_SendEventAsync_AfterExplicitOpenAsync_ThrowsInvalidOperationException()
+        {
+            // arrange
+            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await deviceClient.OpenAsync();
+                await deviceClient.SendEventAsync(new Message()); 
+            };
+
+            // should not throw
         }
 
         [TestMethod]
         public void IotHubDeviceClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1532,7 +1573,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.OpenAsync(cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
@@ -1540,7 +1580,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_AbandonAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1565,7 +1604,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.AbandonMessageAsync("SomeLockToken", cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
@@ -1573,7 +1611,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_UpdateReportedPropertiesAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1598,7 +1635,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection(), cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
@@ -1606,7 +1642,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_GetTwinAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1631,7 +1666,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.GetTwinAsync(cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
@@ -1639,7 +1673,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_CloseAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1664,7 +1697,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Func<Task> act = async () => await deviceClient.CloseAsync(cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
@@ -1672,7 +1704,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_SetDesiredPropertyCallbackAsync_Cancelled_ThrowsOperationCanceledException()
         {
             // arrange
-
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
 
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
@@ -1704,7 +1735,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 cts.Token);
 
             // assert
-
             act.Should().Throw<OperationCanceledException>();
         }
 
