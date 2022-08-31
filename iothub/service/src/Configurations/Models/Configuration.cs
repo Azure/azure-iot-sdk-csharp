@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices
     /// You can define configurations and summarize compliance as the configuration is applied.
     /// See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/> for more details.
     /// </remarks>
-    public class Configuration : IETagHolder
+    public class Configuration
     {
         /// <summary>
         /// Initializes an instance of this class.

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     /// Twin representation.
     /// </summary>
     [JsonConverter(typeof(TwinJsonConverter))]
-    public class Twin : IETagHolder
+    public class Twin
     {
         /// <summary>
         /// Creates an instance of this class.
