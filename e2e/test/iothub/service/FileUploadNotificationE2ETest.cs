@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private readonly AcknowledgementType _acknowledgementType = AcknowledgementType.Abandon;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(TransportType.Amqp)]
-        [DataRow(TransportType.Amqp_WebSocket)]
-        public async Task FileUploadNotification_Operation(TransportType transportType)
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
+        public async Task FileUploadNotification_Operation(IotHubTransportProtocol protocol)
         {
             IotHubServiceClientOptions options = new IotHubServiceClientOptions()
             {
-                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+                Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
@@ -58,13 +58,13 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(TransportType.Amqp)]
-        [DataRow(TransportType.Amqp_WebSocket)]
-        public async Task FileUploadNotification_Operation_OpenCloseOpen(TransportType transportType)
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
+        public async Task FileUploadNotification_Operation_OpenCloseOpen(IotHubTransportProtocol protocol)
         {
             IotHubServiceClientOptions options = new IotHubServiceClientOptions()
             {
-                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+                Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
@@ -90,13 +90,13 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(TransportType.Amqp)]
-        [DataRow(TransportType.Amqp_WebSocket)]
-        public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(TransportType transportType)
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
+        public async Task FileUploadNotification_ReceiveMultipleNotificationsInOneConnection(IotHubTransportProtocol protocol)
         {
             IotHubServiceClientOptions options = new IotHubServiceClientOptions()
             {
-                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+                Protocol = protocol
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);

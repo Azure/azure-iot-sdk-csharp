@@ -42,14 +42,14 @@ namespace Microsoft.Azure.Devices.Amqp
 
         public AmqpConnectionHandler(
             IotHubConnectionProperties credential,
-            bool useWebSocketOnly,
+            IotHubTransportProtocol protocol,
             string linkAddress,
             IotHubServiceClientOptions options,
             EventHandler connectionLossHandler,
             Action<AmqpMessage> messageHandler = null)
         {
             _credential = credential;
-            _useWebSocketOnly = useWebSocketOnly;
+            _useWebSocketOnly = protocol == IotHubTransportProtocol.WebSocket;
             _linkAddress = linkAddress;
             _options = options;
             _connectionLossHandler = connectionLossHandler;

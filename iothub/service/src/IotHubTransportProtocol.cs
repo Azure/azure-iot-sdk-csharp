@@ -4,15 +4,15 @@
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Transport types supported by MessagingClient, FileUploadNotificationProcessorClient and MessageFeedbackProcessorClient.
+    /// Transport protocol types supported by MessagingClient, FileUploadNotificationProcessorClient and MessageFeedbackProcessorClient.
     /// </summary>
     /// <remarks>
-    /// Only supports Amqp and Amqp over WebSocket.
+    /// Only supports AMQP over TCP and AMQP over web socket.
     /// </remarks>
-    public enum TransportType
+    public enum IotHubTransportProtocol
     {
         /// <summary>
-        /// Communicate over TCP using the port 5671.
+        /// Communicate over TCP using port 5671.
         /// </summary>
         Tcp,
 

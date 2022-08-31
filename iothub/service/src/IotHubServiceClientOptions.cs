@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
-        public TransportType Transport { get; set; } = TransportType.Tcp;
+        public IotHubTransportProtocol Protocol { get; set; } = IotHubTransportProtocol.Tcp;
 
         /// <summary>
         /// The version of TLS to use by default.

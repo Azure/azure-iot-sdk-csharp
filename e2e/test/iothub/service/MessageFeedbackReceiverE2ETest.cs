@@ -23,13 +23,13 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
         private bool messagedFeedbackReceived;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(TransportType.Amqp)]
-        [DataRow(TransportType.Amqp_WebSocket)]
-        public async Task MessageFeedbackReceiver_Operation(TransportType transportType)
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
+        public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
         {
             var options = new IotHubServiceClientOptions
             {
-                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+                Protocol = protocol,
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
