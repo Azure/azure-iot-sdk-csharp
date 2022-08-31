@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -65,9 +66,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Update the root-level property "targetTemperature".
                 string propertyName = "targetTemperature";
                 double propertyValue = new Random().Next(0, 100);
-                var ops = new UpdateOperationsUtility();
-                ops.AppendAddPropertyOp($"/{propertyName}", propertyValue);
-                string patch = ops.Serialize();
+                var patchDocument = new JsonPatchDocument();
+                patchDocument.AppendAdd($"/{propertyName}", propertyValue);
+                string patch = patchDocument.ToString();
                 DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins.UpdateAsync(deviceId, patch);
 
                 // Set callback to handle root-level command invocation request.
@@ -148,9 +149,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 double propertyValue = new Random().Next(0, 100);
                 var propertyValues = new Dictionary<string, object> { { propertyName, propertyValue } };
 
-                var ops = new UpdateOperationsUtility();
-                ops.AppendAddComponentOp($"/{componentName}", propertyValues);
-                string patch = ops.Serialize();
+                var patchDocument = new JsonPatchDocument();
+                patchDocument.AppendAdd($"/{componentName}", propertyValues);
+                string patch = patchDocument.ToString();
                 DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins
                     .UpdateAsync(deviceId, patch)
                     .ConfigureAwait(false);
