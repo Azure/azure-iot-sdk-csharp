@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MessageFeedbackReceiverE2eTest : E2EMsTestBase
+    public class MessageFeedbackReceiverE2ETest : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2eTest)}_";
+        private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
         private bool messagedFeedbackReceived;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

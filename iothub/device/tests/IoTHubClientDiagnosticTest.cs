@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
     [TestClass]
     [TestCategory("Unit")]
-    public class IoTHubClientDiagnosticTest
+    public class IotHubClientDiagnosticTest
     {
         [TestMethod]
         public void IoTHubClientDiagnostic_AddDiagnosticInfoIfNecessary_Test()

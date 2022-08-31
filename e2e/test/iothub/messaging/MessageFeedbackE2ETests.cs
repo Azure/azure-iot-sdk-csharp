@@ -16,11 +16,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MessageFeedbackE2eTests : E2EMsTestBase
+    public class MessageFeedbackE2ETests : E2EMsTestBase
     {
         private const int MessageCount = 3;
 
-        private static readonly string s_devicePrefix = $"{nameof(MessageFeedbackE2eTests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(MessageFeedbackE2ETests)}_";
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
 

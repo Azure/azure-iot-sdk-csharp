@@ -19,9 +19,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [DoNotParallelize] // creating jobs limits to running one at a time anyway, so reduce throttling conflicts
-    public class QueryClientE2eTests : E2EMsTestBase
+    public class QueryClientE2ETests : E2EMsTestBase
     {
-        private readonly string _idPrefix = $"{nameof(QueryClientE2eTests)}_";
+        private readonly string _idPrefix = $"{nameof(QueryClientE2ETests)}_";
 
         // There is some latency between when a twin/job is created and when it can be queried. This
         // timeout is for how long to wait for this latency before failing the test.
