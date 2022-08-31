@@ -1382,7 +1382,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.ReceiveMessageAsync(Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1413,7 +1413,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.CompleteMessageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1445,7 +1445,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.RejectMessageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1554,7 +1554,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.OpenAsync(Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1585,7 +1585,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.AbandonMessageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1616,7 +1616,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.SendTwinPatchAsync(Arg.Any<TwinCollection>(), Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1647,7 +1647,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.SendTwinGetAsync(Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1678,7 +1678,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.CloseAsync(Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
@@ -1709,7 +1709,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var mainProtocolHandler = Substitute.For<IDelegatingHandler>();
 
             // We will setup the main handler which can be either MQTT or AMQP or HTTP handler to throw
-            // a cancellation token expiry exception (OperationCancelledException) To ensure that we mimic when a token expires.
+            // a cancellation token expiry exception (OperationCancelledException) to ensure that we mimic when a token expires.
             mainProtocolHandler
                 .When(x => x.EnableTwinPatchAsync(Arg.Any<CancellationToken>()))
                 .Do(x => { throw new OperationCanceledException(); });
