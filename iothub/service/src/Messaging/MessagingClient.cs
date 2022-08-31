@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -326,7 +328,7 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
         {
-            return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, PurgeMessageQueueFormat, deviceId), UriKind.Relative);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)

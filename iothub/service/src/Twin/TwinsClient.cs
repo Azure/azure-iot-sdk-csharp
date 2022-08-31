@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -706,18 +707,18 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(ModuleTwinUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ModuleTwinUriFormat, deviceId, moduleId), UriKind.Relative);
         }
 
         private static Uri GetTwinUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(TwinUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, TwinUriFormat, deviceId), UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri()
         {
-            return new Uri(RequestUriFormat.FormatInvariant(string.Empty), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, RequestUriFormat, string.Empty), UriKind.Relative);
         }
     }
 }
