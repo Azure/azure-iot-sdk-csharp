@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Device's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag"), JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialize properly
+        [JsonProperty(PropertyName = "etag"), JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
         public ETag ETag { get; set; }
 
         /// <summary>

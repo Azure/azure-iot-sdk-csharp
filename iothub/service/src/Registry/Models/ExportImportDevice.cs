@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Azure;
+using Azure.Core.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -11,9 +13,6 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class ExportImportDevice
     {
-        private string _eTag;
-        private string _twinETag;
-
         /// <summary>
         /// The desired and reported properties of the twin.
         /// </summary>
@@ -66,7 +65,7 @@ namespace Microsoft.Azure.Devices
             }
 
             Id = device.Id;
-            _eTag = SanitizeETag(device.ETag.ToString());
+            ETag = device.ETag;
             ImportMode = importmode;
             Status = device.Status;
             StatusReason = device.StatusReason;
@@ -94,12 +93,8 @@ namespace Microsoft.Azure.Devices
         ///  The value is only used if import mode is updateIfMatchETag, in that case the import operation is performed
         ///  only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
-        public string ETag
-        {
-            get => _eTag;
-            set => _eTag = SanitizeETag(value);
-        }
+        [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// The type of registry operation and ETag preferences.
@@ -142,12 +137,8 @@ namespace Microsoft.Azure.Devices
         /// The value is only used if import mode is updateIfMatchETag, in that case the import operation is
         /// performed only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
-        public string TwinETag
-        {
-            get => _twinETag;
-            set => _twinETag = SanitizeETag(value);
-        }
+        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag TwinETag { get; set; }
 
         /// <summary>
         /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
@@ -179,32 +170,5 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Include)]
         public string DeviceScope { get; set; }
-
-        private static string SanitizeETag(string eTag)
-        {
-            if (!string.IsNullOrWhiteSpace(eTag))
-            {
-                string localETag = eTag;
-
-                if (eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove only the first char
-                    localETag = eTag.Substring(1);
-                }
-
-                if (localETag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove only the last char
-                    localETag = localETag.Remove(localETag.Length - 1);
-                }
-
-                return localETag;
-            }
-            else
-            {
-                // In case it is empty or contains whitespace
-                return eTag;
-            }
-        }
     }
 }

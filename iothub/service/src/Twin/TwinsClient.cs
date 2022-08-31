@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
@@ -690,7 +691,7 @@ namespace Microsoft.Azure.Devices
                     Id = twin.DeviceId,
                     ModuleId = twin.ModuleId,
                     ImportMode = importMode,
-                    TwinETag = importMode == ImportMode.UpdateTwinIfMatchETag ? twin.ETag : null,
+                    TwinETag = new ETag(twin.ETag),
                     Tags = twin.Tags,
                     Properties = new ExportImportDevice.PropertyContainer(),
                 };
