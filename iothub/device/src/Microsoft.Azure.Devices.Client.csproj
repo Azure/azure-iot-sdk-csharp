@@ -124,6 +124,6 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Net.Http" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.1.1" />
+    <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
   </ItemGroup>
 </Project>
