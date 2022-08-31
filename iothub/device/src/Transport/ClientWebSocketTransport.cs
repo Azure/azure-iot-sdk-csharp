@@ -151,9 +151,9 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-            catch (TaskCanceledException taskCanceledException)
+            catch (TaskCanceledException)
             {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
+                throw;
             }
             finally
             {
@@ -200,9 +200,9 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-            catch (TaskCanceledException taskCanceledException)
+            catch (TaskCanceledException)
             {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
+                throw;
             }
             finally
             {

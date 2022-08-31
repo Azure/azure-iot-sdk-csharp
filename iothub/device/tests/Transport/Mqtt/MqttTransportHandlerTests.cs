@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             {
                 // act
                 // Open will attempt to connect to localhost, and get a connect exception. Expected behavior is for this exception to be ignored.
-                // However, later in the open call, the lack of an opened channel should throw an IotHubCommunicationException.
+                // However, later in the open call, the lack of an opened channel should throw an IotHubClientException with status code NetworkErrors.
                 await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             };
 
@@ -153,20 +153,26 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandlerEnableMethodsAsyncSubscribeTimesOut()
+        public async Task MqttTransportHandlerEnableMethodsAsyncSubscribeThrowsIotHubClientException()
         {
             // arrange
             IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
-                .Returns(x => { throw new TimeoutException(); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
 
-            // act & assert
+            // act
             transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -188,19 +194,25 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandlerDisablemethodsAsyncUnsubscribeTimesOut()
+        public async Task MqttTransportHandlerDisablemethodsAsyncUnsubscribeThrowsIotHubClientException()
         {
             // arrange
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
-                .Returns(x => { throw new TimeoutException(); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
 
-            // act & assert
+            // act
             transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -222,20 +234,26 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribeTimesOut()
+        public async Task MqttTransportHandler_EnableEventReceiveAsync_Subscribe_Throws_IotHubClientException()
         {
             // arrange
             string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel, DummyModuleConnectionString);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter)))
-                .Returns(x => { throw new TimeoutException(); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
 
-            // act & assert
+            // act
             transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.EnableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.EnableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -257,20 +275,26 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribeTimesOut()
+        public async Task MqttTransportHandler_DisableEventReceiveAsync_Unsubscribe_Throws_IotHubClientException()
         {
             // arrange
             string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel, DummyModuleConnectionString);
             channel
                 .WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter)))
-                .Returns(x => { throw new TimeoutException(); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
 
-            // act & assert
+            // act
             transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.DisableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.DisableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -314,19 +338,25 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandlerEnableTwinPatchAsyncTimesOut()
+        public async Task MqttTransportHandlerEnableTwinPatchAsyncThrowsIotHubClientException()
         {
             // arrange
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(twinPatchDesiredTopicFilter)))
-                .Returns(x => { throw new TimeoutException(); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
 
-            // act & assert
+            // act
             transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.EnableTwinPatchAsync(CancellationToken.None).ConfigureAwait(false);
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.EnableTwinPatchAsync(CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
@@ -445,17 +475,23 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandlerSendTwinPatchAsyncTimesOut()
+        public async Task MqttTransportHandlerSendTwinPatchAsyncThrowsIotHubClientException()
         {
             // arrange
             var transport = this.CreateTransportHandlerWithMockChannel(out IChannel channel);
             transport.TwinTimeout = TimeSpan.FromMilliseconds(20);
             var props = new TwinCollection();
 
-            // act & assert
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
+            // act
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]

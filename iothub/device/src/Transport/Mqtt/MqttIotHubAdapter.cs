@@ -447,7 +447,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled)
                     Logging.Error(context, "MQTT connection hasn't been established in time, will shut down.", nameof(ShutdownIfNotReady));
 
-                ShutdownOnErrorAsync(context, new TimeoutException("Connection hasn't been established in time."));
+                ShutdownOnErrorAsync(context, new IotHubClientException("Connection hasn't been established in time.", true, IotHubStatusCode.NetworkErrors));
             }
         }
 
@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (Logging.IsEnabled)
                             Logging.Info(context, $"The ping response wasn't received in {s_pingResponseTimeout}, will shut down.", nameof(PingServerAsync));
 
-                        ShutdownOnErrorAsync(context, new TimeoutException($"The ping response wasn't received in {s_pingResponseTimeout}"));
+                        ShutdownOnErrorAsync(context, new IotHubClientException($"The ping response wasn't received in {s_pingResponseTimeout}", true, IotHubStatusCode.NetworkErrors));
                     }
 
                     if (Logging.IsEnabled)
