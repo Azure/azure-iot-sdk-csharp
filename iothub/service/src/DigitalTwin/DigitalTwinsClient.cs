@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
@@ -105,12 +107,15 @@ namespace Microsoft.Azure.Devices
         /// For further information on how to create the json-patch, see <see href="https://docs.microsoft.com/azure/iot-pnp/howto-manage-digital-twin"/>.
         /// </remarks>
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
-        /// <param name="digitalTwinUpdateOperations">The application/json-patch+json operations to be performed on the specified digital twin.</param>
+        /// <param name="jsonPatch">
+        /// The application/json-patch+json operations to be performed on the specified digital twin.
+        /// This patch can be constructed using <see cref="JsonPatchDocument"/>. See the example code for more details.
+        /// </param>
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The new ETag for the digital twin and the URI location of the digital twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="digitalTwinUpdateOperations"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="digitalTwinUpdateOperations"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
@@ -121,9 +126,18 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        /// <example>
+        /// string propertyName = "targetTemperature";
+        /// int propertyValue = 12;
+        /// var propertyValues = new Dictionary&lt;string, object&gt; { { propertyName, propertyValue } };
+        /// var patchDocument = new JsonPatchDocument();
+        /// patchDocument.AppendAdd("/myComponentName", propertyValues);
+        /// string jsonPatch = patchDocument.ToString();
+        /// DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins.UpdateAsync(deviceId, jsonPatch);
+        /// </example>
         public virtual async Task<DigitalTwinUpdateResponse> UpdateAsync(
             string digitalTwinId,
-            string digitalTwinUpdateOperations,
+            string jsonPatch,
             UpdateDigitalTwinOptions requestOptions = default,
             CancellationToken cancellationToken = default)
         {
@@ -133,7 +147,7 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinUpdateOperations, nameof(digitalTwinUpdateOperations));
+                Argument.AssertNotNullOrWhiteSpace(jsonPatch, nameof(jsonPatch));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -141,7 +155,7 @@ namespace Microsoft.Azure.Devices
                     _patch,
                     GetDigitalTwinRequestUri(digitalTwinId),
                     _credentialProvider,
-                    digitalTwinUpdateOperations);
+                    jsonPatch);
 
                 if (!string.IsNullOrWhiteSpace(requestOptions?.IfMatch))
                 {
