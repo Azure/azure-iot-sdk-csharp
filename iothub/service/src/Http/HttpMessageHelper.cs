@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
@@ -89,39 +90,49 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="requestMessage">The request to add the If-Match header to.</param>
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
+        public static void ConditionallyInsertETag(HttpRequestMessage requestMessage, string eTag)
+        {
+            ConditionallyInsertETag(requestMessage, new ETag(eTag), false);
+        }
+
+        /// <summary>
+        /// Adds the appropriate If-Match header value to the provided HTTP request.
+        /// </summary>
+        /// <param name="requestMessage">The request to add the If-Match header to.</param>
+        /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         /// <param name="onlyIfUnchanged">
         /// If true, the inserted IfMatch header value will be "*". If false, the IfMatch header value will be equal to the provided eTag.
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        public static void ConditionallyInsertETag(HttpRequestMessage requestMessage, string eTag, bool onlyIfUnchanged = false)
+        public static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged = false)
         {
             Argument.AssertNotNullOrWhiteSpace(eTag, nameof(eTag));
             Argument.AssertNotNull(requestMessage, nameof(requestMessage));
 
             if (!onlyIfUnchanged)
             {
-                // TODO maybe pass in IfMatch = "*" in
                 requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(ETagForce));
-                return;
             }
-
-            // All ETag values need to be wrapped in escaped quotes, but the "forced" value
-            // is hardcoded with quotes so it can be skipped here
-            if (!ETagForce.Equals(eTag))
+            else
             {
-                if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+                StringBuilder escapedETagBuilder = new StringBuilder();
+                if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
-                    eTag = "\"" + eTag;
+                    escapedETagBuilder.Append('"');
                 }
 
-                if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+                escapedETagBuilder.Append(eTag.ToString());
+
+                if (!eTag.ToString().EndsWith("\"", StringComparison.OrdinalIgnoreCase))
                 {
-                    eTag += "\"";
+                    escapedETagBuilder.Append('"');
                 }
+
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETagBuilder.ToString()));
             }
-
-            requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(eTag));
         }
     }
 }

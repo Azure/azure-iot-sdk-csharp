@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
             }
 
             Id = device.Id;
-            _eTag = SanitizeETag(device.ETag);
+            _eTag = SanitizeETag(device.ETag.ToString());
             ImportMode = importmode;
             Status = device.Status;
             StatusReason = device.StatusReason;

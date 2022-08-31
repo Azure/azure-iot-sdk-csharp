@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Azure;
 using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void ExportImportDeviceTakingDeviceWithEtagWithoutQuotes()
         {
             // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "MA==" }, ImportMode.Create);
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("MA==") }, ImportMode.Create);
             exportimportDevice.TwinETag = "MA==";
 
             // nothing to Act on
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void ExportImportDeviceTakingDeviceWithEtagWithQuotes()
         {
             // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "\"MA==\"" }, ImportMode.Create);
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("\"MA==\"") }, ImportMode.Create);
             exportimportDevice.TwinETag = "\"MA==\"";
 
             // nothing to Act on
@@ -42,7 +43,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void ExportImportDeviceTakingDeviceWithEtagWithDoubleQuotes()
         {
             // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "\"\"MA==\"\"" }, ImportMode.Create);
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("\"\"MA==\"\"") }, ImportMode.Create);
             exportimportDevice.TwinETag = "\"\"MA==\"\"";
 
             // nothing to Act on
@@ -56,7 +57,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void ExportImportDeviceTakingDeviceWithEtagWithStartingDoubleQuotes()
         {
             // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "\"\"MA==" }, ImportMode.Create);
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("\"\"MA==") }, ImportMode.Create);
             exportimportDevice.TwinETag = "\"\"MA==";
 
             // nothing to Act on
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void ExportImportDeviceTakingDeviceWithEtagWithTrailingDoubleQuotes()
         {
             // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "MA==\"\"" }, ImportMode.Create);
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag("MA==\"\"") }, ImportMode.Create);
             exportimportDevice.TwinETag = "MA==\"\"";
 
             // nothing to Act on
@@ -97,7 +98,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         public void ExportImportDeviceTakingDeviceWithEmptyEtag()
         {
             // Arrange
-            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = string.Empty }, ImportMode.Create);
+            var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = new ETag(string.Empty) }, ImportMode.Create);
             exportimportDevice.TwinETag = string.Empty;
 
             // nothing to Act on

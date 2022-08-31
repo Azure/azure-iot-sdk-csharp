@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (string.IsNullOrWhiteSpace(device.ETag) && onlyIfUnchanged)
+                if (string.IsNullOrWhiteSpace(device.ETag.ToString()) && onlyIfUnchanged)
                 {
                     throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.AssertNotNull(device, nameof(device));
 
-                if (string.IsNullOrWhiteSpace(device.ETag) && onlyIfUnchanged)
+                if (string.IsNullOrWhiteSpace(device.ETag.ToString()) && onlyIfUnchanged)
                 {
                     throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
@@ -1132,7 +1132,7 @@ namespace Microsoft.Azure.Devices
                 switch (importMode)
                 {
                     case ImportMode.Create:
-                        if (!string.IsNullOrWhiteSpace(device.ETag))
+                        if (!string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
                             throw new ArgumentException(ETagSetWhileRegisteringDevice);
                         }
@@ -1143,7 +1143,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case ImportMode.UpdateIfMatchETag:
-                        if (string.IsNullOrWhiteSpace(device.ETag))
+                        if (string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
                             throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                         }
@@ -1154,7 +1154,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case ImportMode.DeleteIfMatchETag:
-                        if (string.IsNullOrWhiteSpace(device.ETag))
+                        if (string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
                             throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                         }

@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -92,7 +93,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task RegisterDevicesAsyncWithETagsSetTest()
         {
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
-            var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
+            var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
@@ -138,7 +139,7 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task UpdateDeviceAsyncTest()
         {
-            var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
+            var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("123") };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
@@ -190,7 +191,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevicesAsyncWithETagMissingTest()
         {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
+            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -207,7 +208,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UpdateDevicesAsyncWithNullDeviceTest()
         {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
+            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
             Device badDevice = null;
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -275,8 +276,8 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task UpdateDevicesAsyncForceUpdateFalseTest()
         {
-            var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
-            var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
+            var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
+            var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("123") };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");
@@ -326,7 +327,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncWithETagMissingTest()
         {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
+            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
             var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -343,7 +344,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeleteDevicesAsyncWithNullDeviceTest()
         {
-            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
+            var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
             Device badDevice = null;
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -412,8 +413,8 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task DeleteDevicesAsyncForceDeleteFalseTest()
         {
-            var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
-            var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
+            var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
+            var goodDevice2 = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("123") };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");

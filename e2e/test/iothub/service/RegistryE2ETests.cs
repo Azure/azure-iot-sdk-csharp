@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                string oldEtag = device.ETag;
+                ETag oldEtag = device.ETag;
 
                 device.Status = DeviceStatus.Disabled;
 
@@ -572,7 +572,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             try
             {
-                string oldEtag = device.ETag;
+                ETag oldEtag = device.ETag;
 
                 device.Status = DeviceStatus.Disabled;
 

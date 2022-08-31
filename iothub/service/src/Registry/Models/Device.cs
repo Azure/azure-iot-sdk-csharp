@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Azure.Core.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -49,8 +51,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Device's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
-        public string ETag { get; set; }
+        [JsonProperty(PropertyName = "etag"), JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialize properly
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// Device's connection state.
