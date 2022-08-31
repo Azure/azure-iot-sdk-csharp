@@ -1530,7 +1530,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public void IotHubDeviceClient_SendEventAsync_AfterExplicitOpenAsync_ThrowsInvalidOperationException()
+        public void IotHubDeviceClient_SendEventAsync_AfterExplicitOpenAsync_DoesNotThrow()
         {
             // arrange
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
