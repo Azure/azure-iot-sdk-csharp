@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices
         /// int propertyValue = 12;
         /// var propertyValues = new Dictionary&lt;string, object&gt; { { propertyName, propertyValue } };
         /// var patchDocument = new JsonPatchDocument();
-        /// patchDocument.AppendAdd($"/{componentName}", propertyValues);
+        /// patchDocument.AppendAdd("/myComponentName", propertyValues);
         /// string jsonPatch = patchDocument.ToString();
         /// DigitalTwinUpdateResponse updateResponse = await serviceClient.DigitalTwins.UpdateAsync(deviceId, jsonPatch);
         /// </example>
