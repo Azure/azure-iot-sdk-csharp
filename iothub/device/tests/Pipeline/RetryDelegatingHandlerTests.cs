@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            NotSupportedException exception = await retryDelegatingHandler
+            var exception = await retryDelegatingHandler
                 .SendEventAsync(message, CancellationToken.None)
                 .ExpectedAsync<NotSupportedException>()
                 .ConfigureAwait(false);
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act and assert for exception type
-            IotHubClientException exception = await sut
+            var exception = await sut
                 .OpenAsync(CancellationToken.None)
                 .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
 
             // act and assert
-            IotHubClientException exception = await sut
+            var exception = await sut
                 .OpenAsync(cts.Token)
                 .ExpectedAsync<IotHubClientException>()
                 .ConfigureAwait(false);
@@ -363,14 +363,16 @@ namespace Microsoft.Azure.Devices.Client.Test
                });
 
             // act and assert
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
+            var exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
+            exception.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(2);
             retryPolicy.Counter.Should().Be(2);
 
             var noretry = new NoRetry();
             sut.SetRetryPolicy(noretry);
-            await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
 
+            exception = await sut.OpenAsync(CancellationToken.None).ExpectedAsync<IotHubClientException>().ConfigureAwait(false);
+            exception.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
         }
@@ -444,6 +446,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 Counter++;
                 lastException.Should().BeOfType(typeof(IotHubClientException));
+                ((IotHubClientException)lastException).StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
 
                 retryInterval = TimeSpan.MinValue;
                 return Counter < 2;
