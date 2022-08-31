@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (OperationCanceledException)
             {
-                throw;
+                throw new IotHubClientException(true, IotHubStatusCode.NetworkErrors);
             }
 
             try
