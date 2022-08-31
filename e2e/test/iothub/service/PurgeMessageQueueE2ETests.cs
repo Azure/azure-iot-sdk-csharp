@@ -8,7 +8,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.service
 {
     /// <summary>
     /// E2E test class for PurgeMesageQueue.
