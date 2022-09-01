@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
                     iotHubConnectionStringBuilder.SharedAccessKey);
             }
 
-            throw new InvalidOperationException($"Unsupported Authentication Method {iotHubConnectionStringBuilder}");
+            throw new InvalidOperationException($"Unsupported authentication method {iotHubConnectionStringBuilder}");
         }
     }
 }

@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(message, cancellationToken));
         }
 
-        public override Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }

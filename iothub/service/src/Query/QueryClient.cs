@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -19,6 +20,8 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
     public class QueryClient
     {
+        private const string JobTypeFormat = "&jobType={0}";
+        private const string JobStatusFormat = "&jobStatus={0}";
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string PageSizeHeader = "x-ms-max-item-count";
         private const string DevicesQueryUriFormat = "/devices/query";
@@ -216,12 +219,12 @@ namespace Microsoft.Azure.Devices
 
             if (jobType != null)
             {
-                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
+                stringBuilder.Append(string.Format(CultureInfo.InvariantCulture, JobTypeFormat, jobType.ToString()));
             }
 
             if (jobStatus != null)
             {
-                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
+                stringBuilder.Append(string.Format(CultureInfo.InvariantCulture, JobStatusFormat, jobStatus.ToString()));
             }
 
             return stringBuilder.ToString();

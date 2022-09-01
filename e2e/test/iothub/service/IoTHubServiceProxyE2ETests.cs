@@ -17,10 +17,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("Proxy")]
-    public class IoTHubServiceProxyE2ETests : E2EMsTestBase
+    public class IotHubServiceProxyE2ETests : E2EMsTestBase
     {
         private const int MaxIterationWait = 30;
-        private static readonly string s_devicePrefix = $"{nameof(IoTHubServiceProxyE2ETests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(IotHubServiceProxyE2ETests)}_";
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

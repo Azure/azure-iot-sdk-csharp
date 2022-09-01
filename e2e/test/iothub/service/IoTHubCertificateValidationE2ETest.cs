@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [Ignore("TODO: Enable when invalid cert server is back online.")]
     [TestCategory("InvalidServiceCertificate")]
-    public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
+    public class IotHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()
@@ -33,26 +33,26 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpTcp_Fails()
         {
-            TransportType transport = TransportType.Amqp;
+            IotHubTransportProtocol protocol = IotHubTransportProtocol.Tcp;
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestServiceClientInvalidServiceCertificate(protocol)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpWs_Fails()
         {
-            TransportType transport = TransportType.Amqp_WebSocket;
+            IotHubTransportProtocol protocol = IotHubTransportProtocol.WebSocket;
             WebSocketException exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
-                () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestServiceClientInvalidServiceCertificate(protocol)).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        private static async Task TestServiceClientInvalidServiceCertificate(TransportType transport)
+        private static async Task TestServiceClientInvalidServiceCertificate(IotHubTransportProtocol protocol)
         {
-          IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions
             {
-                UseWebSocketOnly = transport == TransportType.Amqp_WebSocket
+                Protocol = protocol
             };
             using var service = new IotHubServiceClient(
                 TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate, options);

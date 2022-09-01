@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// E2E test class for MessageFeedbackReceiver.
@@ -17,19 +17,19 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MessageFeedbackReceiverE2eTest : E2EMsTestBase
+    public class MessageFeedbackReceiverE2ETest : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2eTest)}_";
+        private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
         private bool messagedFeedbackReceived;
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [DataRow(TransportType.Amqp)]
-        [DataRow(TransportType.Amqp_WebSocket)]
-        public async Task MessageFeedbackReceiver_Operation(TransportType transportType)
+        [DataRow(IotHubTransportProtocol.Tcp)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
+        public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
         {
             var options = new IotHubServiceClientOptions
             {
-                UseWebSocketOnly = transportType == TransportType.Amqp_WebSocket,
+                Protocol = protocol,
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);

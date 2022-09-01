@@ -40,21 +40,12 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static Exception AssertAndThrowFatal(string description)
-        {
-            Debug.Fail(description);
-            throw Exception.AsError(new FatalException(description));
-        }
-
         public static bool IsFatal(Exception ex)
         {
             while (ex != null)
             {
                 // FYI, CallbackException is-a FatalException
-                if (ex is FatalException
-                    || ex is OutOfMemoryException
-                    || ex is SEHException)
+                if (ex is OutOfMemoryException || ex is SEHException)
                 {
                     return true;
                 }
@@ -62,8 +53,7 @@ namespace Microsoft.Azure.Devices.Client
                 // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
                 // we want to check to see whether they've been used to wrap a fatal exception.  If so, then they
                 // count as fatal.
-                if (ex is TypeInitializationException
-                    || ex is TargetInvocationException)
+                if (ex is TypeInitializationException || ex is TargetInvocationException)
                 {
                     ex = ex.InnerException;
                 }

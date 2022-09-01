@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -18,7 +17,6 @@ using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
@@ -174,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetMethodHandlerAsync(
             string methodName,
-            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
             => InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
@@ -189,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public Task SetMethodDefaultHandlerAsync(
-            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
             => InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
@@ -365,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken = default)
+        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
@@ -383,7 +381,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken = default)
+        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
@@ -452,7 +450,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken = default)
+        private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             HttpClientHandler httpClientHandler = null;
             Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
@@ -476,10 +474,21 @@ namespace Microsoft.Azure.Devices.Client
                 };
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
-                var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
-                MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+                var methodInvokeRequest = new DirectMethodRequest()
+                {
+                    MethodName = methodRequest.MethodName,
+                    Payload = methodRequest.Payload,
+                    ResponseTimeout = methodRequest.ResponseTimeout,
+                    ConnectionTimeout = methodRequest.ConnectionTimeout
+                };
 
-                return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
+                DirectMethodResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+
+                return new DirectMethodResponse()
+                {
+                    Status = result.Status,
+                    Payload = result.Payload
+                };
             }
             finally
             {

@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         private const int statusFailure = 400;
         private const string fakeResponseId = "fakeResponseId";
         private static readonly TimeSpan ReceiveTimeoutBuffer = TimeSpan.FromSeconds(5);
+
         private delegate bool MessageMatcher(Message msg);
 
         [TestMethod]
@@ -74,7 +75,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(null, 0), token)).ConfigureAwait(false);
+            var response = new DirectMethodResponse()
+            {
+                Status = 0,
+            };
+
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(response, token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -271,29 +277,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.DisableEventReceiveAsync(false, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task MqttTransportHandler_SendMethodResponseAsync_SendsMessage()
-        {
-            // arrange
-            var responseBytes = Encoding.UTF8.GetBytes(fakeMethodResponseBody);
-            var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-            var response = new MethodResponseInternal(fakeResponseId, statusSuccess, responseBytes);
-            MessageMatcher matches = (msg) =>
-            {
-                return StringComparer.InvariantCulture.Equals(msg.MqttTopicName, $"$iothub/methods/res/{statusSuccess}/?$rid={fakeResponseId}");
-            };
-
-            // act
-            transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendMethodResponseAsync(response, CancellationToken.None).ConfigureAwait(false);
-
-            // assert
-            await channel
-                .Received().WriteAndFlushAsync(Arg.Is<Message>(msg => matches(msg)))
-                .ConfigureAwait(false);
         }
 
         [TestMethod]

@@ -57,12 +57,12 @@ namespace Microsoft.Azure.Devices
         public HttpClient HttpClient { get; set; }
 
         /// <summary>
-        /// Whether to use web sockets or not.
+        /// The configured transport protocol.
         /// </summary>
         /// <remarks>
         /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
-        public bool UseWebSocketOnly { get; set; }
+        public IotHubTransportProtocol Protocol { get; set; } = IotHubTransportProtocol.Tcp;
 
         /// <summary>
         /// The version of TLS to use by default.

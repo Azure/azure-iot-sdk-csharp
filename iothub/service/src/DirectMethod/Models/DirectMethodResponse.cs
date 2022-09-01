@@ -4,28 +4,29 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Represents the method invocation result.
+    /// The device/module's response to a direct method invocation.
     /// </summary>
-    internal class MethodInvokeResponse
+    public class DirectMethodResponse
     {
         /// <summary>
         /// Gets or sets the status of device method invocation.
         /// </summary>
         [JsonProperty("status")]
-        public int Status { get; set; }
+        public int Status { get; internal set; }
 
         /// <summary>
-        /// Get payload as json.
+        /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
-        public string GetPayloadAsJson()
+        [JsonIgnore]
+        public string Payload
         {
-            return (string)Payload;
+            get => (string)JsonPayload.Value;
         }
 
         [JsonProperty("payload")]
-        internal JRaw Payload { get; set; }
+        internal JRaw JsonPayload { get; set; }
     }
 }

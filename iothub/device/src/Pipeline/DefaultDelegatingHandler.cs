@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.DisableMethodsAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public virtual Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return NextHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? Task.CompletedTask;

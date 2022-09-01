@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -28,10 +29,10 @@ namespace Microsoft.Azure.Devices
         private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
         private const string JobsGetUriFormat = "/jobs/{0}";
         private const string JobsListUriFormat = "/jobs";
+        private const string AdminUriFormat = "/$admin/{0}";
         private const string JobsCreateUriFormat = "/jobs/create";
         private const string DeviceStatisticsUriFormat = "/statistics/devices";
         private const string ServiceStatisticsUriFormat = "/statistics/service";
-        private const string AdminUriFormat = "/$admin/{0}";
         private const string ETagSetWhileRegisteringDevice = "ETagSetWhileRegisteringDevice";
         private const string InvalidImportMode = "InvalidImportMode";
         private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
@@ -1076,38 +1077,38 @@ namespace Microsoft.Azure.Devices
         private static Uri GetRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(DeviceRequestUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceRequestUriFormat, deviceId), UriKind.Relative);
         }
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(ModulesOnDeviceRequestUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ModulesOnDeviceRequestUriFormat, deviceId), UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri()
         {
-            return new Uri(DeviceRequestUriFormat.FormatInvariant(string.Empty), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceRequestUriFormat, string.Empty), UriKind.Relative);
         }
 
         private static Uri GetAdminUri(string operation)
         {
-            return new Uri(AdminUriFormat.FormatInvariant(operation), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, AdminUriFormat, operation), UriKind.Relative);
         }
 
         private static Uri GetJobUri(string jobId)
         {
-            return new Uri(JobsGetUriFormat.FormatInvariant(jobId), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, JobsGetUriFormat, jobId), UriKind.Relative);
         }
 
         private static Uri GetListJobsUri()
         {
-            return new Uri(JobsListUriFormat.FormatInvariant(), UriKind.Relative);
+            return new Uri(JobsListUriFormat, UriKind.Relative);
         }
 
         private static Uri GetCreateJobsUri()
         {
-            return new Uri(JobsCreateUriFormat.FormatInvariant(), UriKind.Relative);
+            return new Uri(JobsCreateUriFormat, UriKind.Relative);
         }
 
         private static Uri GetDeviceStatisticsUri()

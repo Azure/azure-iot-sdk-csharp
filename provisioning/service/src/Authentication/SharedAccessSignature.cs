@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
+    internal sealed class SharedAccessSignature
     {
         private readonly string _encodedAudience;
         private readonly string _expiry;

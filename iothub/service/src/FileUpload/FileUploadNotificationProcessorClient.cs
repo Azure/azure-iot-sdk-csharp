@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
             _credentialProvider = credentialProvider;
             _amqpConnection = new AmqpConnectionHandler(
                 credentialProvider,
-                options.UseWebSocketOnly,
+                options.Protocol,
                 AmqpsConstants.FileUploadNotificationsAddress,
                 options,
                 OnConnectionClosed,
