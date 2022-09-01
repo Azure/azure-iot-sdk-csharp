@@ -406,16 +406,22 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task MqttTransportHandlerSendTwinGetAsyncTimesOut()
+        public async Task MqttTransportHandlerSendTwinGetAsyncThrowsIotHubClientException()
         {
             // arrange
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             transport.TwinTimeout = TimeSpan.FromMilliseconds(20);
 
-            // act & assert
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            // act
+            Func<Task> act = async () =>
+            {
+                await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+                await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubClientException>();
+            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
         }
 
         [TestMethod]
