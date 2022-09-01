@@ -23,14 +23,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
         /// <param name="shouldExecuteOperation">A function that determines if the operation should be executed.
         /// Eg.: for scenarios when we want to execute the operation only if the client is connected, this would be a function that returns if the client is currently connected.</param>
         /// <param name="logger">The <see cref="ILogger"/> instance to be used.</param>
-        /// <param name="exceptionsToBeIgnored">An optional list of exceptions that can be ignored.</param>
+        /// <param name="exceptionsToBeIgnored">An optional list of status codes that can be ignored.</param>
         /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
         internal static async Task RetryTransientExceptionsAsync(
             string operationName,
             Func<Task> asyncOperation,
             Func<bool> shouldExecuteOperation,
-            ILogger logger,
-            IDictionary<Type, string> exceptionsToBeIgnored = default,
+            IDictionary<IotHubStatusCode, string> exceptionsToBeIgnored = default,
             CancellationToken cancellationToken = default)
         {
             IRetryPolicy retryPolicy = new ExponentialBackoffTransientExceptionRetryPolicy(maxRetryCount: int.MaxValue, exceptionsToBeIgnored: exceptionsToBeIgnored);
@@ -39,36 +38,40 @@ namespace Microsoft.Azure.Devices.Client.Samples
             bool shouldRetry;
             do
             {
-                Exception lastException = new IotHubCommunicationException("Client is currently reconnecting internally; attempt the operation after some time.");
+                Exception lastException = new IotHubClientException("Client is currently reconnecting internally; attempt the operation after some time.", null, true, IotHubStatusCode.NetworkErrors);
                 try
                 {
                     if (shouldExecuteOperation())
                     {
-                        logger.LogInformation(FormatRetryOperationLogMessage(operationName, attempt, "executing."));
+                        Console.WriteLine(FormatRetryOperationLogMessage(operationName, attempt, "executing."));
 
                         await asyncOperation();
                         break;
                     }
                     else
                     {
-                        logger.LogWarning(FormatRetryOperationLogMessage(operationName, attempt, "operation is not ready to be executed. Attempt discarded."));
+                        Console.WriteLine(FormatRetryOperationLogMessage(operationName, attempt, "operation is not ready to be executed. Attempt discarded."));
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(FormatRetryOperationLogMessage(operationName, attempt, $"encountered an exception while processing the request: {ex}"));
+                    Console.WriteLine(FormatRetryOperationLogMessage(operationName, attempt, $"encountered an exception while processing the request: {ex}"));
                     lastException = ex;
                 }
 
                 shouldRetry = retryPolicy.ShouldRetry(++attempt, lastException, out TimeSpan retryInterval);
                 if (shouldRetry)
                 {
-                    logger.LogWarning(FormatRetryOperationLogMessage(operationName, attempt, $"caught a recoverable exception, will retry in {retryInterval}."));
-                    await Task.Delay(retryInterval, cancellationToken);
+                    Console.WriteLine(FormatRetryOperationLogMessage(operationName, attempt, $"caught a recoverable exception, will retry in {retryInterval}."));
+                    try
+                    {
+                        await Task.Delay(retryInterval, cancellationToken);
+                    }
+                    catch (OperationCanceledException) { }
                 }
                 else
                 {
-                    logger.LogWarning(FormatRetryOperationLogMessage(operationName, attempt, $"retry policy determined that the operation should no longer be retried, stopping retries."));
+                    Console.WriteLine(FormatRetryOperationLogMessage(operationName, attempt, $"retry policy determined that the operation should no longer be retried, stopping retries."));
                 }
             }
             while (shouldRetry && !cancellationToken.IsCancellationRequested);
