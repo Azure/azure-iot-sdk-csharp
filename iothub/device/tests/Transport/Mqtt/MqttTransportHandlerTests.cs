@@ -275,29 +275,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        public async Task MqttTransportHandler_SendMethodResponseAsync_SendsMessage()
-        {
-            // arrange
-            var responseBytes = Encoding.UTF8.GetBytes(fakeMethodResponseBody);
-            var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-            var response = new DirectMethodResponse(statusSuccess, responseBytes);
-            MessageMatcher matches = (msg) =>
-            {
-                return StringComparer.InvariantCulture.Equals(msg.MqttTopicName, $"$iothub/methods/res/{statusSuccess}/?$rid={fakeResponseId}");
-            };
-
-            // act
-            transport.OnConnected();
-            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.SendMethodResponseAsync(response, CancellationToken.None).ConfigureAwait(false);
-
-            // assert
-            await channel
-                .Received().WriteAndFlushAsync(Arg.Is<Message>(msg => matches(msg)))
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncSubscribes()
         {
             // arrange

@@ -332,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
             }, "custom data").ConfigureAwait(false);
 
-            var DirectMethodRequest = new DirectMethodRequest("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9");
+            var DirectMethodRequest = new DirectMethodRequest("TestMethodName");
 
             await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);

@@ -22,6 +22,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Initialize and instance of this class.
         /// </summary>
         /// <param name="methodName">The name of the method to invoke.</param>
+        /// <exception cref="ArgumentException">If methodName is null or whitespace.</exception>
+        public DirectMethodRequest(string methodName)
+            : this(methodName, (string)null, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Initialize and instance of this class.
+        /// </summary>
+        /// <param name="methodName">The name of the method to invoke.</param>
         /// <param name="payload">The optional payload of the request.</param>
         /// <param name="responseTimeout">The optional response timeout for the request.</param>
         /// <param name="connectionTimeout">The optional connect timeout for the request.</param>
