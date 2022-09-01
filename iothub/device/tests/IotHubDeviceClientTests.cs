@@ -687,7 +687,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DirectMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
-                Payload = methodBody,
+                Payload = methodBody2,
             };
 
             await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
@@ -758,7 +758,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             DirectMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
-                Payload = methodBody,
+                Payload = methodBody2,
             };
 
             await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Represents the method invocation result.
+    /// The device/module's response to a direct method invocation.
     /// </summary>
     public class DirectMethodResponse
     {
