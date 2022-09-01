@@ -53,9 +53,6 @@ namespace Microsoft.Azure.Devices.Client
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : (int?)null;
 
-        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal JRaw JsonPayload { get; set; }
-
         /// <summary>
         /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
@@ -84,6 +81,9 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
+
+        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
+        internal JRaw JsonPayload { get; set; }
 
         /// <summary>
         /// The request Id for the transport layer.

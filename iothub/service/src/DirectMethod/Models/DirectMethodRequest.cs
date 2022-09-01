@@ -56,15 +56,6 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan? ResponseTimeout { get; set; }
 
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout != null ? (int)ResponseTimeout?.TotalSeconds : null;
-
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout != null ? (int)ConnectionTimeout?.TotalSeconds : null;
-
-        [JsonProperty("payload")]
-        internal JRaw JsonPayload { get; set; }
-
         /// <summary>
         /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
@@ -93,5 +84,14 @@ namespace Microsoft.Azure.Devices
                 }
             }
         }
+
+        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout != null ? (int)ResponseTimeout?.TotalSeconds : null;
+
+        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout != null ? (int)ConnectionTimeout?.TotalSeconds : null;
+
+        [JsonProperty("payload")]
+        internal JRaw JsonPayload { get; set; }
     }
 }

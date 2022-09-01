@@ -45,8 +45,7 @@ namespace Microsoft.Azure.Devices.Client
             while (ex != null)
             {
                 // FYI, CallbackException is-a FatalException
-                if (ex is OutOfMemoryException
-                    || ex is SEHException)
+                if (ex is OutOfMemoryException || ex is SEHException)
                 {
                     return true;
                 }
@@ -54,8 +53,7 @@ namespace Microsoft.Azure.Devices.Client
                 // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
                 // we want to check to see whether they've been used to wrap a fatal exception.  If so, then they
                 // count as fatal.
-                if (ex is TypeInitializationException
-                    || ex is TargetInvocationException)
+                if (ex is TypeInitializationException || ex is TargetInvocationException)
                 {
                     ex = ex.InnerException;
                 }
