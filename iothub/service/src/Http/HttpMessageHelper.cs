@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        public static void ConditionallyInsertETag(HttpRequestMessage requestMessage, string eTag)
+        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, string eTag)
         {
             ConditionallyInsertETag(requestMessage, new ETag(eTag), false);
         }
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        public static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged = false)
+        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged = false)
         {
             Argument.AssertNotNullOrWhiteSpace(eTag, nameof(eTag));
             Argument.AssertNotNull(requestMessage, nameof(requestMessage));
