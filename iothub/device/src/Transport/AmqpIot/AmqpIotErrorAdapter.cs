@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if (error.Condition.Equals(TimeoutError))
             {
-                retException = new IotHubClientException(message, true, IotHubStatusCode.NetworkErrors);
+                retException = new IotHubClientException(message, true, IotHubStatusCode.Timeout);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {

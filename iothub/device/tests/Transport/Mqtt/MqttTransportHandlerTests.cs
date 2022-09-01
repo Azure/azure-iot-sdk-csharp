@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out channel);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
-                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.Timeout); });
 
             // act
             transport.OnConnected();
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]
@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(methodPostTopicFilter)))
-                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.Timeout); });
 
             // act
             transport.OnConnected();
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel, DummyModuleConnectionString);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter)))
-                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.Timeout); });
 
             // act
             transport.OnConnected();
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel, DummyModuleConnectionString);
             channel
                 .WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter)))
-                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.Timeout); });
 
             // act
             transport.OnConnected();
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             channel
                 .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(twinPatchDesiredTopicFilter)))
-                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.NetworkErrors); });
+                .Returns(x => { throw new IotHubClientException("Time out", true, IotHubStatusCode.Timeout); });
 
             // act
             transport.OnConnected();
@@ -356,7 +356,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]
@@ -421,7 +421,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]
@@ -497,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.Timeout);
         }
 
         [TestMethod]

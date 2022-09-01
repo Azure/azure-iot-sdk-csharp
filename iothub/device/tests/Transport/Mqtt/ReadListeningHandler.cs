@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Task task = await Task.WhenAny(promise.Task, Task.Delay(timeout)).ConfigureAwait(false);
                 if (task != promise.Task)
                 {
-                    throw new IotHubClientException("ReceiveAsync timed out", true, IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException("ReceiveAsync timed out", true, IotHubStatusCode.Timeout);
                 }
 
                 return promise.Task.Result;

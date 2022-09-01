@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 else
                 {
-                    throw new IotHubClientException("Timeout happen before task completes.", true, IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException("Timeout happen before task completes.", true, IotHubStatusCode.Timeout);
                 }
             }
             finally

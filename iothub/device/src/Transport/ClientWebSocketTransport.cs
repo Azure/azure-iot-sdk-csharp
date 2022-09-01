@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Amqp.Transport
             }
             catch (TaskCanceledException taskCanceledException)
             {
-                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.NetworkErrors);
+                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.Timeout);
             }
             finally
             {
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Amqp.Transport
             }
             catch (TaskCanceledException taskCanceledException)
             {
-                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.NetworkErrors);
+                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.Timeout);
             }
             finally
             {
