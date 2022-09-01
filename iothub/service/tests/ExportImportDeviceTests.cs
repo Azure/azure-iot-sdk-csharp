@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             // nothing to Act on
 
             // Assert
-            Assert.IsTrue(exportimportDevice.ETag.ToString() == "", "ETag was not set correctly");
+            exportimportDevice.ETag.Should().Be("", "ETag was not set correctly");
             Assert.IsTrue(exportimportDevice.TwinETag.ToString() == "", "Twin ETag was not set correctly");
         }
 
