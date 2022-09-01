@@ -12,7 +12,6 @@ using System.Text;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Common.Api;
 using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -31,6 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
+        private const string FailedToSerializeUnsupportedType = "FailedToSerializeUnsupportedType";
 
         #region AmqpMessage <--> Message
 
@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
                         throw FxTrace.Exception.AsError(new SerializationException(
-                            IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
+                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
                     }
                     else if (amqpObject is AmqpMap map)
                     {
@@ -474,7 +474,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         throw FxTrace.Exception.AsError(
                             new SerializationException(
-                                IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
+                                string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {
