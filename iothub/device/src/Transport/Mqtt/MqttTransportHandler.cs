@@ -29,7 +29,6 @@ using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt

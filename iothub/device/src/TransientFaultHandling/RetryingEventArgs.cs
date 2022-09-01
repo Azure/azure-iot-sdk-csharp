@@ -1,6 +1,5 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 
@@ -50,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="lastException">The exception that caused the retry conditions to occur.</param>
         public RetryingEventArgs(int currentRetryCount, TimeSpan delay, Exception lastException)
         {
-            Guard.ArgumentNotNull(lastException, "lastException");
+            Argument.AssertNotNull(lastException, "lastException");
             CurrentRetryCount = currentRetryCount;
             Delay = delay;
             LastException = lastException;

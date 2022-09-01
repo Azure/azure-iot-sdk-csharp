@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {

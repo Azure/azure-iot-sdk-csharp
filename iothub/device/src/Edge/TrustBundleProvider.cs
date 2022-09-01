@@ -9,7 +9,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.Edge
 {
