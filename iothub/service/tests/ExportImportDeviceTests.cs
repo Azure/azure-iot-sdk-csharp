@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Azure;
+using FluentAssertions;
 using Microsoft.Azure.Devices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

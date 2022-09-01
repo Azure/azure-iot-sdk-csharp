@@ -52,7 +52,6 @@
   <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.22.0" />
-    <PackageReference Include="Microsoft.Azure.Core.NewtonsoftJson" Version="1.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
