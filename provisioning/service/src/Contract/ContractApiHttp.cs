@@ -45,11 +45,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 CheckCertificateRevocationList = httpSettings.CertificateRevocationCheck
             };
 
-            IWebProxy webProxy = httpSettings.Proxy;
-            if (webProxy != DefaultWebProxySettings.Instance)
+            if (httpSettings.Proxy != null)
             {
-                _httpClientHandler.UseProxy = webProxy != null;
-                _httpClientHandler.Proxy = webProxy;
+                _httpClientHandler.UseProxy = true;
+                _httpClientHandler.Proxy = httpSettings.Proxy;
             }
 
             _httpClientObj = new HttpClient(_httpClientHandler, false)
@@ -57,6 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 BaseAddress = _baseAddress,
                 Timeout = s_defaultOperationTimeout,
             };
+
             _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
         }
