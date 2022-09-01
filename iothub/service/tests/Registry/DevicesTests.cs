@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Tests
         public async Task RegisterDevicesAsyncWithETagsSetTest()
         {
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
-            var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
+            var badDevice = new Device("234") { ConnectionState = DeviceConnectionState.Connected, ETag = new("234") };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
