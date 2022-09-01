@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Logging
 {
     /// <summary>
     /// The ILogger implementation for writing color log entries to console.
-    /// For additional details, see https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.ilogger?view=dotnet-plat-ext-3.1.
+    /// For additional details, see https://docs.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger?view=dotnet-plat-ext-3.1.
     /// </summary>
     public class ColorConsoleLogger : ILogger
     {
