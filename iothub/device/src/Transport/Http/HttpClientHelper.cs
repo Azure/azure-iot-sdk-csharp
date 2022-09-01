@@ -127,44 +127,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return mergedMapping;
         }
 
-        public Task PostAsync<T>(
-            Uri requestUri,
-            T entity,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders,
-            CancellationToken cancellationToken)
-        {
-            return ExecuteAsync(
-                HttpMethod.Post,
-                new Uri(_baseAddress, requestUri),
-                (requestMsg, token) =>
-                {
-                    AddCustomHeaders(requestMsg, customHeaders);
-                    if (entity != null)
-                    {
-                        if (typeof(T) == typeof(byte[]))
-                        {
-                            requestMsg.Content = new ByteArrayContent((byte[])(object)entity);
-                        }
-                        else if (typeof(T) == typeof(string))
-                        {
-                            // only used to send batched messages on Http runtime
-                            requestMsg.Content = new StringContent((string)(object)entity);
-                            requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
-                        }
-                        else
-                        {
-                            requestMsg.Content = CreateContent(entity);
-                        }
-                    }
-
-                    return Task.CompletedTask;
-                },
-                ReadResponseMessageAsync<HttpResponseMessage>,
-                errorMappingOverrides,
-                cancellationToken);
-        }
-
         public async Task<T2> PostAsync<T1, T2>(
              Uri requestUri,
              T1 entity,
@@ -185,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return result;
         }
 
-        private Task PostAsyncHelper<T1>(
+        private async Task PostAsyncHelper<T1>(
             Uri requestUri,
             T1 entity,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
@@ -193,70 +155,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
             CancellationToken cancellationToken)
         {
-            return ExecuteAsync(
-                HttpMethod.Post,
-                new Uri(_baseAddress, requestUri),
-                (requestMsg, token) =>
-                {
-                    AddCustomHeaders(requestMsg, customHeaders);
-                    if (entity != null)
-                    {
-                        if (typeof(T1) == typeof(byte[]))
-                        {
-                            requestMsg.Content = new ByteArrayContent((byte[])(object)entity);
-                        }
-                        else if (typeof(T1) == typeof(string))
-                        {
-                            // only used to send batched messages on Http runtime
-                            requestMsg.Content = new StringContent((string)(object)entity);
-                            requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
-                        }
-                        else
-                        {
-                            requestMsg.Content = CreateContent(entity);
-                        }
-                    }
-
-                    return Task.CompletedTask;
-                },
-                processResponseMessageAsync,
-                errorMappingOverrides,
-                cancellationToken);
-        }
-
-        private Task ExecuteAsync(
-            HttpMethod httpMethod,
-            Uri requestUri,
-            Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
-            Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            CancellationToken cancellationToken)
-        {
-            return ExecuteAsync(
-                httpMethod,
-                requestUri,
-                modifyRequestMessageAsync,
-                message => message.IsSuccessStatusCode,
-                processResponseMessageAsync,
-                errorMappingOverrides,
-                cancellationToken);
-        }
-
-        private async Task ExecuteAsync(
-            HttpMethod httpMethod,
-            Uri requestUri,
-            Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
-            Func<HttpResponseMessage, bool> isSuccessful,
-            Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            CancellationToken cancellationToken)
-        {
             cancellationToken.ThrowIfCancellationRequested();
 
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping =
                 MergeErrorMapping(errorMappingOverrides);
 
-            using var msg = new HttpRequestMessage(httpMethod, requestUri);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(_baseAddress, requestUri));
             if (!_usingX509ClientCert)
             {
                 string authHeader = await _connectionCredentials.GetPasswordAsync().ConfigureAwait(false);
@@ -268,12 +172,37 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo?.ToString(UserAgentFormats.Http));
 
+            Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync = (requestMsg, token) =>
+            {
+                AddCustomHeaders(requestMsg, customHeaders);
+                if (entity != null)
+                {
+                    if (typeof(T1) == typeof(byte[]))
+                    {
+                        requestMsg.Content = new ByteArrayContent((byte[])(object)entity);
+                    }
+                    else if (typeof(T1) == typeof(string))
+                    {
+                        // only used to send batched messages on Http runtime
+                        requestMsg.Content = new StringContent((string)(object)entity);
+                        requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
+                    }
+                    else
+                    {
+                        requestMsg.Content = CreateContent(entity);
+                    }
+                }
+
+                return Task.CompletedTask;
+            };
+
             if (modifyRequestMessageAsync != null)
             {
                 await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
             }
 
-            // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
+            bool isSuccessful(HttpResponseMessage message) => message.IsSuccessStatusCode;
+
             HttpResponseMessage responseMsg;
             try
             {
@@ -281,9 +210,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (responseMsg == null)
                 {
                     throw new InvalidOperationException(
-                        $"The response message was null when executing operation {httpMethod}.");
+                        $"The response message was null when executing operation {HttpMethod.Post}.");
                 }
-
                 if (isSuccessful(responseMsg))
                 {
                     if (processResponseMessageAsync != null)

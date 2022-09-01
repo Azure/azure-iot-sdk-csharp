@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal sealed class HttpTransportHandler : TransportHandler
     {
+        public const string ModuleId = "x-ms-edge-moduleId";
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan s_defaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             cancellationToken.ThrowIfCancellationRequested();
 
             await _httpClientHelper
-                .PostAsync(
+                .PostAsync<FileUploadCompletionNotification, Task>(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
                     notification,
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
@@ -91,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _ = GetInvokeDeviceMethodOperationTimeout(methodInvokeRequest);
             var customHeaders = new Dictionary<string, string>
             {
-                { CustomHeaderConstants.ModuleId, $"{_deviceId}/{_moduleId}" }
+                { ModuleId, $"{_deviceId}/{_moduleId}" }
             };
 
             return await _httpClientHelper
