@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly AdditionalClientInformation _additionalClientInformation;
         private readonly IotHubClientAmqpSettings _amqpSettings;
 
-        private readonly Func<MethodRequestInternal, Task> _onMethodCallback;
+        private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
         private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
         private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<MethodRequestInternal, Task> onMethodCallback,
+            Func<DirectMethodRequest, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
@@ -879,23 +879,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private void OnMethodReceived(MethodRequestInternal methodRequestInternal)
+        private void OnMethodReceived(DirectMethodRequest DirectMethodRequest)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodRequestInternal, nameof(OnMethodReceived));
+                Logging.Enter(this, DirectMethodRequest, nameof(OnMethodReceived));
 
             try
             {
-                _onMethodCallback?.Invoke(methodRequestInternal);
+                _onMethodCallback?.Invoke(DirectMethodRequest);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodRequestInternal, nameof(OnMethodReceived));
+                    Logging.Exit(this, DirectMethodRequest, nameof(OnMethodReceived));
             }
         }
 
-        public async Task<AmqpIotOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public async Task<AmqpIotOutcome> SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));

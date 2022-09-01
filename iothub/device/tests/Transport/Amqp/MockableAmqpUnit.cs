@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Threading;
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             AdditionalClientInformation additionalClientInformation,
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<MethodRequestInternal, Task> onMethodCallback = null,
+            Func<DirectMethodRequest, Task> onMethodCallback = null,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
@@ -52,7 +52,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             await Task.Yield();
         }
-
 
         public new async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {

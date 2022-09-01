@@ -352,8 +352,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.
-        internal async Task<MethodInvokeResponse> InvokeMethodAsync(
-            MethodInvokeRequest methodInvokeRequest,
+        internal async Task<DirectMethodResponse> InvokeMethodAsync(
+            DirectMethodRequest methodInvokeRequest,
             Uri uri,
             CancellationToken cancellationToken)
         {
@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             };
 
             return await _httpClientHelper
-                .PostAsync<MethodInvokeRequest, MethodInvokeResponse>(
+                .PostAsync<DirectMethodRequest, DirectMethodResponse>(
                     uri,
                     methodInvokeRequest,
                     null,
@@ -378,7 +378,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .ConfigureAwait(false);
         }
 
-        private static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
+        private static TimeSpan GetInvokeDeviceMethodOperationTimeout(DirectMethodRequest methodInvokeRequest)
         {
             // For InvokeDeviceMethod, we need to take into account the timeouts specified
             // for the Device to connect and send a response. We also need to take into account

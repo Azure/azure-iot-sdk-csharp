@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The device/module's response to the direct method invocation.
+    /// The device/module's response to a direct method invocation.
     /// </summary>
     public class DirectMethodResponse
     {
@@ -17,9 +17,6 @@ namespace Microsoft.Azure.Devices
         [JsonProperty("status")]
         public int Status { get; internal set; }
 
-        [JsonProperty("payload")]
-        internal JRaw JsonPayload { get; set; }
-
         /// <summary>
         /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
@@ -28,5 +25,8 @@ namespace Microsoft.Azure.Devices
         {
             get => (string)JsonPayload.Value;
         }
+
+        [JsonProperty("payload")]
+        internal JRaw JsonPayload { get; set; }
     }
 }

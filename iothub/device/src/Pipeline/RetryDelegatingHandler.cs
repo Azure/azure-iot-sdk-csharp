@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal method, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse method, CancellationToken cancellationToken)
         {
             try
             {

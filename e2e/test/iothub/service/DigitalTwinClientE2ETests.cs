@@ -77,9 +77,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetMethodHandlerAsync(commandName,
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.Name}.");
-                        string payload = JsonConvert.SerializeObject(request.Name);
-                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
+                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
+                        string payload = JsonConvert.SerializeObject(request.MethodName);
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = expectedCommandStatus,
+                            Payload = Encoding.UTF8.GetBytes(payload)
+                        };
+
+                        return Task.FromResult(response);
                     },
                     null);
 
@@ -164,9 +170,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetMethodHandlerAsync(rootCommandName,
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
-                        string payload = JsonConvert.SerializeObject(request.Name);
-                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
+                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.MethodName} received.");
+                        string payload = JsonConvert.SerializeObject(request.MethodName);
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = expectedCommandStatus,
+                            Payload = Encoding.UTF8.GetBytes(payload)
+                        };
+
+                        return Task.FromResult(response);
                     },
                     null);
 
@@ -190,9 +202,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetMethodHandlerAsync(componentCommandNamePnp,
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.Name} received.");
-                        string payload = JsonConvert.SerializeObject(request.Name);
-                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(payload), expectedCommandStatus));
+                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.MethodName} received.");
+                        string payload = JsonConvert.SerializeObject(request.MethodName);
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = expectedCommandStatus,
+                            Payload = Encoding.UTF8.GetBytes(payload)
+                        };
+
+                        return Task.FromResult(response);
                     },
                     null);
 
