@@ -28,7 +28,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningTransportHandlerHttp()
         {
             Port = DefaultHttpsPort;
-            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public async override Task<DeviceRegistrationResult> RegisterAsync(
+        public override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterRequest message,
             CancellationToken cancellationToken)
         {
@@ -101,15 +100,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 using var httpClientHandler = new HttpClientHandler()
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
-                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.	
-                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.	
+                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
+                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                     //SslProtocols = TlsVersions.Preferred,
                 };
 
-                if (Proxy != DefaultWebProxySettings.Instance)
+                if (Proxy != null)
                 {
-                    httpClientHandler.UseProxy = Proxy != null;
+                    httpClientHandler.UseProxy = true;
                     httpClientHandler.Proxy = Proxy;
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"{nameof(RegisterAsync)} Setting HttpClientHandler.Proxy");

@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
+
         private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
 
         /// <summary>
@@ -35,7 +36,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             TransportProtocol = transportProtocol;
             bool useWebSocket = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket;
             Port = useWebSocket ? AmqpWebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
-            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
