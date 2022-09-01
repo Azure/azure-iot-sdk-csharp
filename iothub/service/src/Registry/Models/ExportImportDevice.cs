@@ -93,7 +93,8 @@ namespace Microsoft.Azure.Devices
         ///  The value is only used if import mode is updateIfMatchETag, in that case the import operation is performed
         ///  only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag ETag { get; set; }
 
         /// <summary>
@@ -137,7 +138,8 @@ namespace Microsoft.Azure.Devices
         /// The value is only used if import mode is updateIfMatchETag, in that case the import operation is
         /// performed only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag TwinETag { get; set; }
 
         /// <summary>
