@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Diagnostics.Contracts;
     using System.Threading.Tasks;
     using DotNetty.Transport.Channels;
+    using Microsoft.Azure.Devices.Client.Exceptions;
 
     public sealed class ReadListeningHandler : ChannelHandlerAdapter
     {
@@ -65,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Task task = await Task.WhenAny(promise.Task, Task.Delay(timeout)).ConfigureAwait(false);
                 if (task != promise.Task)
                 {
-                    throw new TimeoutException("ReceiveAsync timed out");
+                    throw new IotHubClientException("ReceiveAsync timed out", true, IotHubStatusCode.Timeout);
                 }
 
                 return promise.Task.Result;

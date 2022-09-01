@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             { typeof(IotHubClientException), () => new IotHubClientException(ErrorMessage) },
             { typeof(IOException), () => new IOException(ErrorMessage) },
-            { typeof(TimeoutException), () => new TimeoutException(ErrorMessage) },
             { typeof(ObjectDisposedException), () => new ObjectDisposedException(ErrorMessage) },
             { typeof(OperationCanceledException), () => new OperationCanceledException(ErrorMessage) },
             { typeof(TaskCanceledException), () => new TaskCanceledException(ErrorMessage) },
@@ -50,7 +49,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),

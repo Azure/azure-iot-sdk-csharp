@@ -1071,7 +1071,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 else if (response == null)
                 {
-                    throw new TimeoutException($"Response for message {rid} not received");
+                    throw new IotHubClientException($"Response for message {rid} not received", true, IotHubStatusCode.Timeout);
                 }
 
                 return response;

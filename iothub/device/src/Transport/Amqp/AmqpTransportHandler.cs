@@ -413,8 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 else
                 {
-                    // Timeout happen
-                    throw new TimeoutException();
+                    throw new IotHubClientException("The client timed out waiting for the service to send the twin response", true, IotHubStatusCode.Timeout);
                 }
             }
             finally
