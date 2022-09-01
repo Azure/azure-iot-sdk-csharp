@@ -63,6 +63,12 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         Suspended,
 
         /// <summary>
+        /// The request failed because the operation timed out. This can be caused by underlying network issues 
+        /// or by the server being too busy to handle the request.
+        /// </summary>
+        Timeout,
+
+        /// <summary>
         /// The request failed because the IoT hub exceed the limits based on the tier of the hub.
         /// </summary>
         /// <remark>

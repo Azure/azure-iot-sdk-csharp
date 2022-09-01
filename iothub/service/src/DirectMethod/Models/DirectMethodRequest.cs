@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,10 +8,17 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Parameters to execute a direct method on the device.
+    /// Parameters to execute a direct method on a device or module.
     /// </summary>
     public class DirectMethodRequest
     {
+        /// <summary>
+        /// Initialize and instance of this class.
+        /// </summary>
+        public DirectMethodRequest()
+        {
+        }
+
         /// <summary>
         /// The method name to run.
         /// </summary>
@@ -48,15 +56,6 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan? ResponseTimeout { get; set; }
 
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout != null ? (int)ResponseTimeout?.TotalSeconds : null;
-
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout != null ? (int)ConnectionTimeout?.TotalSeconds : null;
-
-        [JsonProperty("payload")]
-        internal JRaw JsonPayload { get; set; }
-
         /// <summary>
         /// Get the serialized JSON payload. May be null or empty.
         /// </summary>
@@ -85,5 +84,14 @@ namespace Microsoft.Azure.Devices
                 }
             }
         }
+
+        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ResponseTimeoutInSeconds => ResponseTimeout != null ? (int)ResponseTimeout?.TotalSeconds : null;
+
+        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout != null ? (int)ConnectionTimeout?.TotalSeconds : null;
+
+        [JsonProperty("payload")]
+        internal JRaw JsonPayload { get; set; }
     }
 }

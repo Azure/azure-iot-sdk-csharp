@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
             {
-                // It should always throw UnauthorizedException
+                // It should always throw IotHubClientException with status code Unauthorized
             }
             catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.NetworkErrors && ex.InnerException is TaskCanceledException)
             {
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
                 {
-                    // It should always throw UnauthorizedException
+                    // It should always throw IotHubClientException with status code Unauthorized
                 }
             }
 

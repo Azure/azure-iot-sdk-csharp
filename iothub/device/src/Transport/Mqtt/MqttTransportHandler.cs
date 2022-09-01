@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -18,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Azure.Core;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Codecs.Mqtt.Packets;
@@ -27,7 +29,6 @@ using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -113,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
-        private readonly Func<MethodRequestInternal, Task> _methodListener;
+        private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
@@ -490,8 +491,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
-            var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.Payload);
-            await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
+            var directMethodRequest = new DirectMethodRequest()
+            {
+                MethodName = tokens[3],
+                Payload = Encoding.UTF8.GetString(message.Payload),
+                RequestId = tokens[4].Substring(6)
+            };
+
+            await Task.Run(() => _methodListener(directMethodRequest)).ConfigureAwait(false);
         }
 
         [SuppressMessage(
@@ -788,7 +795,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new UnsubscribePacket(0, _receiveEventMessageFilter)).ConfigureAwait(true);
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
@@ -1064,7 +1071,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 else if (response == null)
                 {
-                    throw new TimeoutException($"Response for message {rid} not received");
+                    throw new IotHubClientException($"Response for message {rid} not received", true, IotHubStatusCode.Timeout);
                 }
 
                 return response;

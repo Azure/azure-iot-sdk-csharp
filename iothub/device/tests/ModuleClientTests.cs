@@ -126,7 +126,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, default).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
-
             await moduleClient.SetInputMessageHandlerAsync("endpoint2", null, null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -338,16 +337,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await moduleClient.InternalClient.OnModuleEventMessageReceivedAsync("endpoint2", testMessage).ConfigureAwait(false);
             Assert.IsFalse(isDefaultCallbackCalled);
             Assert.IsTrue(isSpecificCallbackCalled);
-        }
-
-        [TestMethod]
-        public void ModuleClient_InvokeMethodAsyncWithoutBodyShouldNotThrow()
-        {
-            // arrange
-            var request = new MethodRequest("test");
-
-            // act
-            _ = new MethodInvokeRequest(request.Name, request.DataAsJson, request.ResponseTimeout, request.ConnectionTimeout);
         }
     }
 }

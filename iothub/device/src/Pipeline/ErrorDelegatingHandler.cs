@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(IOException),
             typeof(SocketException),
             typeof(ClosedChannelException),
-            typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
@@ -130,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(message, cancellationToken));
         }
 
-        public override Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }

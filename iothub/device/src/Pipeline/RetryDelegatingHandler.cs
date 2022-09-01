@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -115,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal method, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse method, CancellationToken cancellationToken)
         {
             try
             {

@@ -81,11 +81,11 @@ namespace Microsoft.Azure.Devices.Client
         public ExponentialBackoffRetryStrategy(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff, bool firstFastRetry)
             : base(name, firstFastRetry)
         {
-            Guard.ArgumentNotNegativeValue(retryCount, "retryCount");
-            Guard.ArgumentNotNegativeValue(minBackoff.Ticks, "minBackoff");
-            Guard.ArgumentNotNegativeValue(maxBackoff.Ticks, "maxBackoff");
-            Guard.ArgumentNotNegativeValue(deltaBackoff.Ticks, "deltaBackoff");
-            Guard.ArgumentNotGreaterThan(minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds, "minBackoff");
+            Argument.AssertNotNegativeValue(retryCount, "retryCount");
+            Argument.AssertNotNegativeValue(minBackoff.Ticks, "minBackoff");
+            Argument.AssertNotNegativeValue(maxBackoff.Ticks, "maxBackoff");
+            Argument.AssertNotNegativeValue(deltaBackoff.Ticks, "deltaBackoff");
+            Argument.AssertNotGreaterThan(minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds, "minBackoff");
             _retryCount = retryCount;
             _minBackoff = minBackoff;
             _maxBackoff = maxBackoff;

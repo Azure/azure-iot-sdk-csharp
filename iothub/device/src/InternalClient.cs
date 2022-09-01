@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Client
         // Method callback information
         private bool _isDeviceMethodEnabled;
 
-        private volatile Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> _deviceDefaultMethodCallback;
-        private readonly Dictionary<string, Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>> _deviceMethods = new();
+        private volatile Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> _deviceDefaultMethodCallback;
+        private readonly Dictionary<string, Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>> _deviceMethods = new();
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.Client
         /// of cancellation.</param>
         public async Task SetMethodHandlerAsync(
             string methodName,
-            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (methodHandler != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceMethods[methodName] = new Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>(methodHandler, userContext);
+                    _deviceMethods[methodName] = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
         /// of cancellation.</param>
         public async Task SetMethodDefaultHandlerAsync(
-            Func<MethodRequest, object, Task<MethodResponse>> methodHandler,
+            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
 
-                    _deviceDefaultMethodCallback = new Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object>(methodHandler, userContext);
+                    _deviceDefaultMethodCallback = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
@@ -606,23 +606,23 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling direct methods received from service.
         /// </summary>
-        internal async Task OnMethodCalledAsync(MethodRequestInternal methodRequestInternal)
+        internal async Task OnMethodCalledAsync(DirectMethodRequest directMethodRequest)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodRequestInternal?.Name, methodRequestInternal, nameof(OnMethodCalledAsync));
+                Logging.Enter(this, directMethodRequest?.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
 
-            if (methodRequestInternal == null)
+            if (directMethodRequest == null)
             {
                 return;
             }
 
-            Tuple<Func<MethodRequest, object, Task<MethodResponse>>, object> callbackContextPair = null;
-            MethodResponseInternal methodResponseInternal = null;
+            Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> callbackContextPair = null;
+            DirectMethodResponse directMethodResponse = null;
 
             await _methodsSemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
-                if (!_deviceMethods.TryGetValue(methodRequestInternal.Name, out callbackContextPair))
+                if (!_deviceMethods.TryGetValue(directMethodRequest.MethodName, out callbackContextPair))
                 {
                     callbackContextPair = _deviceDefaultMethodCallback;
                 }
@@ -632,9 +632,13 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
 
-                methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.BadRequest);
+                directMethodResponse = new DirectMethodResponse()
+                {
+                    Status = (int)DirectMethodResponseStatusCode.BadRequest,
+                    RequestId = directMethodRequest.RequestId,
+                };
 
-                await SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
+                await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
@@ -648,36 +652,42 @@ namespace Microsoft.Azure.Devices.Client
 
             if (callbackContextPair == null)
             {
-                methodResponseInternal = new MethodResponseInternal(
-                    methodRequestInternal.RequestId,
-                    (int)MethodResponseStatusCode.MethodNotImplemented);
+                directMethodResponse = new DirectMethodResponse()
+                {
+                    Status = (int)DirectMethodResponseStatusCode.MethodNotImplemented,
+                    RequestId = directMethodRequest.RequestId,
+                };
             }
             else
             {
                 try
                 {
-                    Func<MethodRequest, object, Task<MethodResponse>> userSuppliedCallback = callbackContextPair.Item1;
+                    Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = callbackContextPair.Item1;
                     object userSuppliedContext = callbackContextPair.Item2;
 
-                    MethodResponse rv = await userSuppliedCallback
-                        .Invoke(new MethodRequest(methodRequestInternal.Name, methodRequestInternal.Payload), userSuppliedContext)
+                    directMethodResponse = await userSuppliedCallback
+                        .Invoke(directMethodRequest, userSuppliedContext)
                         .ConfigureAwait(false);
 
-                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, rv.Status, rv.Result);
+                    directMethodResponse.RequestId = directMethodRequest.RequestId;
                 }
                 catch (Exception ex)
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(this, ex, nameof(OnMethodCalledAsync));
 
-                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResponseStatusCode.UserCodeException);
+                    directMethodResponse = new DirectMethodResponse()
+                    {
+                        Status = (int)DirectMethodResponseStatusCode.UserCodeException,
+                        RequestId = directMethodRequest.RequestId,
+                    };
                 }
             }
 
-            await SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
+            await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalledAsync));
+                Logging.Exit(this, directMethodRequest.MethodName, directMethodRequest, nameof(OnMethodCalledAsync));
         }
 
         internal void OnDesiredStatePatchReceived(TwinCollection patch)
@@ -693,11 +703,11 @@ namespace Microsoft.Azure.Devices.Client
             _ = _desiredPropertyUpdateCallback.Invoke(patch, _twinPatchCallbackContext);
         }
 
-        private async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken = default)
+        private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
         {
             try
             {
-                await InnerHandler.SendMethodResponseAsync(methodResponse, cancellationToken).ConfigureAwait(false);
+                await InnerHandler.SendMethodResponseAsync(directMethodResponse, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {

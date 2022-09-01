@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Amqp.Transport
 {
@@ -153,7 +154,7 @@ namespace Microsoft.Azure.Amqp.Transport
             }
             catch (TaskCanceledException taskCanceledException)
             {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
+                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.Timeout);
             }
             finally
             {
@@ -202,7 +203,7 @@ namespace Microsoft.Azure.Amqp.Transport
             }
             catch (TaskCanceledException taskCanceledException)
             {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
+                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.Timeout);
             }
             finally
             {

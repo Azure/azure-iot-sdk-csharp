@@ -1,9 +1,7 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
@@ -38,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class with a default error message.
         /// </summary>
         public RetryLimitExceededException()
-            : this(Resources.RetryLimitExceeded)
+            : this("RetryLimitExceeded")
         {
         }
 
@@ -57,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public RetryLimitExceededException(Exception innerException)
-            : base((innerException != null) ? innerException.Message : Resources.RetryLimitExceeded, innerException)
+            : base((innerException != null) ? innerException.Message : "RetryLimitExceeded", innerException)
         {
         }
 

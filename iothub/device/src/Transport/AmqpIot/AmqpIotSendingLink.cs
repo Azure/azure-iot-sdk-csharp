@@ -155,14 +155,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Method handling
 
-        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertDirectMethodResponseToAmqpMessage(methodResponse);
             AmqpIotMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
 
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);

@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
@@ -413,8 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 else
                 {
-                    // Timeout happen
-                    throw new TimeoutException();
+                    throw new IotHubClientException("The client timed out waiting for the service to send the twin response", true, IotHubStatusCode.Timeout);
                 }
             }
             finally
@@ -454,7 +453,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
             }
-
         }
 
         public override Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)

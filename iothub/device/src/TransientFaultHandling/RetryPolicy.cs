@@ -1,6 +1,5 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Diagnostics;
@@ -107,8 +106,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="retryStrategy">The strategy to use for this retry policy.</param>
         public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy, RetryStrategy retryStrategy)
         {
-            Guard.ArgumentNotNull(errorDetectionStrategy, "errorDetectionStrategy");
-            Guard.ArgumentNotNull(retryStrategy, "retryPolicy");
+            Argument.AssertNotNull(errorDetectionStrategy, "errorDetectionStrategy");
+            Argument.AssertNotNull(retryStrategy, "retryPolicy");
             ErrorDetectionStrategy = errorDetectionStrategy;
             if (errorDetectionStrategy == null)
             {
