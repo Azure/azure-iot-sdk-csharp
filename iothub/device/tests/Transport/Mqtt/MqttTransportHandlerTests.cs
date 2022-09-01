@@ -75,7 +75,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new DirectMethodResponse(0, null), token)).ConfigureAwait(false);
+            var response = new DirectMethodResponse()
+            {
+                Status = 0,
+            };
+
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(response, token)).ConfigureAwait(false);
         }
 
         [TestMethod]

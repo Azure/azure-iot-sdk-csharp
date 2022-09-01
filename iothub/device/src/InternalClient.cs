@@ -632,8 +632,11 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled)
                     Logging.Error(this, ex, nameof(OnMethodCalledAsync));
 
-                directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.BadRequest);
-                directMethodResponse.RequestId = directMethodRequest.RequestId;
+                directMethodResponse = new DirectMethodResponse()
+                {
+                    Status = (int)DirectMethodResponseStatusCode.BadRequest,
+                    RequestId = directMethodRequest.RequestId,
+                };
 
                 await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
 
@@ -649,8 +652,11 @@ namespace Microsoft.Azure.Devices.Client
 
             if (callbackContextPair == null)
             {
-                directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.MethodNotImplemented);
-                directMethodResponse.RequestId = directMethodRequest.RequestId;
+                directMethodResponse = new DirectMethodResponse()
+                {
+                    Status = (int)DirectMethodResponseStatusCode.MethodNotImplemented,
+                    RequestId = directMethodRequest.RequestId,
+                };
             }
             else
             {
@@ -670,8 +676,11 @@ namespace Microsoft.Azure.Devices.Client
                     if (Logging.IsEnabled)
                         Logging.Error(this, ex, nameof(OnMethodCalledAsync));
 
-                    directMethodResponse = new DirectMethodResponse((int)DirectMethodResponseStatusCode.UserCodeException);
-                    directMethodResponse.RequestId = directMethodRequest.RequestId;
+                    directMethodResponse = new DirectMethodResponse()
+                    {
+                        Status = (int)DirectMethodResponseStatusCode.UserCodeException,
+                        RequestId = directMethodRequest.RequestId,
+                    };
                 }
             }
 

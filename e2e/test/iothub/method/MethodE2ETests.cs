@@ -252,7 +252,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         {
                             methodRequest.MethodName.Should().Be(commandName);
                             deviceMethodCalledSuccessfully = true;
-                            return Task.FromResult(new Client.DirectMethodResponse(200));
+                            var response = new Client.DirectMethodResponse()
+                            {
+                                Status = 200,
+                            };
+
+                            return Task.FromResult(response);
                         },
                         null)
                     .ConfigureAwait(false);
@@ -384,7 +389,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 (request, context) =>
                 {
                     logger.Trace($"{nameof(SubscribeAndUnsubscribeMethodAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
-                    return Task.FromResult(new Client.DirectMethodResponse(200, Encoding.UTF8.GetBytes(DeviceResponseJson)));
+                    var response = new Client.DirectMethodResponse()
+                    {
+                        Status = 200,
+                        Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                    };
+
+                    return Task.FromResult(response);
                 },
                 null)
                 .ConfigureAwait(false);
@@ -417,8 +428,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                             {
                                 methodCallReceived.SetException(ex);
                             }
+                            var response = new Client.DirectMethodResponse()
+                            {
+                                Status = 200,
+                                Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                            };
 
-                            return Task.FromResult(new Client.DirectMethodResponse(200, Encoding.UTF8.GetBytes(DeviceResponseJson)));
+                            return Task.FromResult(response);
                         },
                     null)
                 .ConfigureAwait(false);
@@ -448,7 +464,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         methodCallReceived.SetException(ex);
                     }
 
-                    return Task.FromResult(new Client.DirectMethodResponse(200, Encoding.UTF8.GetBytes(DeviceResponseJson)));
+                    var response = new Client.DirectMethodResponse()
+                    {
+                        Status = 200,
+                        Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                    };
+
+                    return Task.FromResult(response);
                 },
                 null).ConfigureAwait(false);
 
@@ -477,7 +499,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         methodCallReceived.SetException(ex);
                     }
 
-                    return Task.FromResult(new Client.DirectMethodResponse(200, Encoding.UTF8.GetBytes(DeviceResponseJson)));
+                    var response = new Client.DirectMethodResponse()
+                    {
+                        Status = 200,
+                        Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                    };
+
+                    return Task.FromResult(response);
                 },
                 null).ConfigureAwait(false);
 
@@ -506,7 +534,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         methodCallReceived.SetException(ex);
                     }
 
-                    return Task.FromResult(new Client.DirectMethodResponse(200, Encoding.UTF8.GetBytes(DeviceResponseJson)));
+                    var response = new Client.DirectMethodResponse()
+                    {
+                        Status = 200,
+                        Payload = Encoding.UTF8.GetBytes(DeviceResponseJson)
+                    };
+
+                    return Task.FromResult(response);
                 },
                 null).ConfigureAwait(false);
 

@@ -79,7 +79,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
                         string payload = JsonConvert.SerializeObject(request.MethodName);
-                        return Task.FromResult(new Client.DirectMethodResponse(expectedCommandStatus, Encoding.UTF8.GetBytes(payload)));
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = expectedCommandStatus,
+                            Payload = Encoding.UTF8.GetBytes(payload)
+                        };
+
+                        return Task.FromResult(response);
                     },
                     null);
 
@@ -166,7 +172,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.MethodName} received.");
                         string payload = JsonConvert.SerializeObject(request.MethodName);
-                        return Task.FromResult(new Client.DirectMethodResponse(expectedCommandStatus, Encoding.UTF8.GetBytes(payload)));
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = expectedCommandStatus,
+                            Payload = Encoding.UTF8.GetBytes(payload)
+                        };
+
+                        return Task.FromResult(response);
                     },
                     null);
 
@@ -192,7 +204,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.MethodName} received.");
                         string payload = JsonConvert.SerializeObject(request.MethodName);
-                        return Task.FromResult(new Client.DirectMethodResponse(expectedCommandStatus, Encoding.UTF8.GetBytes(payload)));
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = expectedCommandStatus,
+                            Payload = Encoding.UTF8.GetBytes(payload)
+                        };
+
+                        return Task.FromResult(response);
                     },
                     null);
 

@@ -30,6 +30,23 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(FakeConnectionString);
 
+        private DirectMethodResponse directMethodResponseWithPayload = new DirectMethodResponse()
+        {
+            Status = 200,
+            Payload = Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")
+        };
+
+        private DirectMethodResponse directMethodResponseWithNoPayload = new DirectMethodResponse()
+        {
+            Status = 200,
+        };
+
+        private DirectMethodResponse directMethodResponseWithEmptyByteArrayPayload = new DirectMethodResponse()
+        {
+            Status = 200,
+            Payload = new byte[0]
+        };
+
         [TestMethod]
         public void DeviceAuthenticationWithX509Certificate_NullCertificate_Throws()
         {
@@ -285,7 +302,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient
                 .SetMethodHandlerAsync(
                     "TestMethodName",
-                    (payload, context) => Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"))), "custom data")
+                    (payload, context) => Task.FromResult(directMethodResponseWithPayload), "custom data")
                 .ConfigureAwait(false);
 
             await deviceClient
@@ -310,7 +327,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync("testMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                isMethodHandlerCalled = true;
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
             await deviceClient.InternalClient.OnMethodCalledAsync(null).ConfigureAwait(false);
@@ -329,7 +347,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest()
@@ -352,7 +370,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest()
@@ -376,7 +394,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodDefaultHandlerAsync((payload, context) =>
             {
                 isMethodDefaultHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest()
@@ -401,12 +419,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync("TestMethodName2", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
             await deviceClient.SetMethodDefaultHandlerAsync((payload, context) =>
             {
                 isMethodDefaultHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest()
@@ -432,12 +450,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
             await deviceClient.SetMethodDefaultHandlerAsync((payload, context) =>
             {
                 isMethodDefaultHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}")));
+                return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest()
@@ -462,7 +480,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200));
+                return Task.FromResult(directMethodResponseWithNoPayload);
             }, "custom data").ConfigureAwait(false);
 
             var DirectMethodRequest = new DirectMethodRequest()
@@ -513,7 +531,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -571,7 +589,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -629,7 +647,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -660,7 +678,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody2 = methodRequest.Payload;
                 actualMethodUserContext2 = userContext;
                 methodCallbackCalled2 = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodUserContext2 = "UserContext2";
@@ -700,7 +718,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -731,7 +749,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody2 = methodRequest.Payload;
                 actualMethodUserContext2 = userContext;
                 methodCallbackCalled2 = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodUserContext2 = "UserContext2";
@@ -771,7 +789,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -825,7 +843,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";
@@ -908,7 +926,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 actualMethodBody = methodRequest.Payload;
                 actualMethodUserContext = userContext;
                 methodCallbackCalled = true;
-                return Task.FromResult(new DirectMethodResponse(200, new byte[0]));
+                return Task.FromResult(directMethodResponseWithEmptyByteArrayPayload);
             };
 
             string methodName = "TestMethodName";

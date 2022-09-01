@@ -484,7 +484,11 @@ namespace Microsoft.Azure.Devices.Client
 
                 DirectMethodResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
 
-                return new DirectMethodResponse(result.Status, result.Payload);
+                return new DirectMethodResponse()
+                {
+                    Status = result.Status,
+                    Payload = result.Payload
+                };
             }
             finally
             {
