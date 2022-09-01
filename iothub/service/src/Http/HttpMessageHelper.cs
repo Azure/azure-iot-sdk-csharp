@@ -112,27 +112,40 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(eTag, nameof(eTag));
             Argument.AssertNotNull(requestMessage, nameof(requestMessage));
 
-            if (!onlyIfUnchanged)
+            if (onlyIfUnchanged)
             {
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(ETagForce));
+                // "Perform this operation only if the entity is unchanged"
+                // Sends the If-Match header with a value of the ETag.
+                string escapedETag = EscapeETag(eTag.ToString());
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
             }
             else
             {
-                StringBuilder escapedETagBuilder = new StringBuilder();
-                if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    escapedETagBuilder.Append('"');
-                }
-
-                escapedETagBuilder.Append(eTag.ToString());
-
-                if (!eTag.ToString().EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    escapedETagBuilder.Append('"');
-                }
-
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETagBuilder.ToString()));
+                // "Perform this operation even if the entity has changed"
+                // Sends the If-Match header with a value of "*"
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(ETagForce));
             }
+        }
+
+        // ETag values other than "*" need to be wrapped in escaped quotes if they are not
+        // already.
+        private static string EscapeETag(string eTag)
+        {
+            StringBuilder escapedETagBuilder = new StringBuilder();
+            
+            if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                escapedETagBuilder.Append('"');
+            }
+
+            escapedETagBuilder.Append(eTag.ToString());
+
+            if (!eTag.ToString().EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                escapedETagBuilder.Append('"');
+            }
+
+            return escapedETagBuilder.ToString();
         }
     }
 }
