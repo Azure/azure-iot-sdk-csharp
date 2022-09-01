@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             catch (Exception)
             {
                 Cleanup();
-                throw new IotHubClientException("Failed to enter the semaphore required for closing an AMQP session.", true, IotHubStatusCode.NetworkErrors);
+                throw;
             }
             finally
             {
