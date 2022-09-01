@@ -63,8 +63,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         Suspended,
 
         /// <summary>
-        /// The request failed because the operation times out which can be caused by underlying network issues 
-        /// or the server is currently busy to handle requests.
+        /// The request failed because the operation timed out. This can be caused by underlying network issues 
+        /// or by the server being too busy to handle the request.
         /// </summary>
         Timeout,
 
