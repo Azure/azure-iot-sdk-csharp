@@ -1,6 +1,5 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 
@@ -75,9 +74,9 @@ namespace Microsoft.Azure.Devices.Client
         public Incremental(string name, int retryCount, TimeSpan initialInterval, TimeSpan increment, bool firstFastRetry)
             : base(name, firstFastRetry)
         {
-            Guard.ArgumentNotNegativeValue(retryCount, "retryCount");
-            Guard.ArgumentNotNegativeValue(initialInterval.Ticks, "initialInterval");
-            Guard.ArgumentNotNegativeValue(increment.Ticks, "increment");
+            Argument.AssertNotNegativeValue(retryCount, "retryCount");
+            Argument.AssertNotNegativeValue(initialInterval.Ticks, "initialInterval");
+            Argument.AssertNotNegativeValue(increment.Ticks, "increment");
             _retryCount = retryCount;
             _initialInterval = initialInterval;
             _increment = increment;

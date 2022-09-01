@@ -1,6 +1,5 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 
@@ -75,8 +74,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="firstFastRetry">true to immediately retry in the first attempt; otherwise, false. The subsequent retries will remain subject to the configured retry interval.</param>
         public FixedInterval(string name, int retryCount, TimeSpan retryInterval, bool firstFastRetry) : base(name, firstFastRetry)
         {
-            Guard.ArgumentNotNegativeValue(retryCount, "retryCount");
-            Guard.ArgumentNotNegativeValue(retryInterval.Ticks, "retryInterval");
+            Argument.AssertNotNegativeValue(retryCount, "retryCount");
+            Argument.AssertNotNegativeValue(retryInterval.Ticks, "retryInterval");
             _retryCount = retryCount;
             _retryInterval = retryInterval;
         }
