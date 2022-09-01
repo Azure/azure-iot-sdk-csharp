@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -18,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Azure.Core;
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Codecs.Mqtt.Packets;
@@ -490,9 +492,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
-            var mr = new DirectMethodRequest(tokens[3], message.Payload);
-            mr.RequestId = tokens[4].Substring(6);
-            await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
+            var directMethodRequest = new DirectMethodRequest()
+            {
+                MethodName = tokens[3],
+                Payload = Encoding.UTF8.GetString(message.Payload),
+                RequestId = tokens[4].Substring(6)
+            };
+
+            await Task.Run(() => _methodListener(directMethodRequest)).ConfigureAwait(false);
         }
 
         [SuppressMessage(

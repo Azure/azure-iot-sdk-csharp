@@ -474,7 +474,14 @@ namespace Microsoft.Azure.Devices.Client
                 };
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
-                var methodInvokeRequest = new DirectMethodRequest(methodRequest.MethodName, methodRequest.Payload, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
+                var methodInvokeRequest = new DirectMethodRequest()
+                {
+                    MethodName = methodRequest.MethodName,
+                    Payload = methodRequest.Payload,
+                    ResponseTimeout = methodRequest.ResponseTimeout,
+                    ConnectionTimeout = methodRequest.ConnectionTimeout
+                };
+
                 DirectMethodResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
 
                 return new DirectMethodResponse(result.Status, result.Payload);

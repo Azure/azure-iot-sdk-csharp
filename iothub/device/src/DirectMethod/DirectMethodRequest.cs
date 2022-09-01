@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,77 +12,30 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DirectMethodRequest
     {
-        // For serialization
-        internal DirectMethodRequest()
-        {
-        }
-
         /// <summary>
         /// Initialize and instance of this class.
         /// </summary>
-        /// <param name="methodName">The name of the method to invoke.</param>
-        /// <exception cref="ArgumentException">If methodName is null or whitespace.</exception>
-        public DirectMethodRequest(string methodName)
-            : this(methodName, (string)null, null, null)
+        public DirectMethodRequest()
         {
-        }
-
-        /// <summary>
-        /// Initialize and instance of this class.
-        /// </summary>
-        /// <param name="methodName">The name of the method to invoke.</param>
-        /// <param name="payload">The optional payload of the request.</param>
-        /// <param name="responseTimeout">The optional response timeout for the request.</param>
-        /// <param name="connectionTimeout">The optional connect timeout for the request.</param>
-        /// <exception cref="ArgumentException">If methodName is null or whitespace.</exception>
-        public DirectMethodRequest(string methodName, byte[] payload = null, TimeSpan? responseTimeout = null, TimeSpan? connectionTimeout = null)
-            : this(methodName, Encoding.UTF8.GetString(payload), responseTimeout, connectionTimeout)
-        {
-        }
-
-        /// <summary>
-        /// Initialize and instance of this class.
-        /// </summary>
-        /// <param name="methodName">Method name.</param>
-        /// <param name="payload">The optional payload of the request.</param>
-        /// <param name="responseTimeout">The optional response timeout for the request.</param>
-        /// <param name="connectionTimeout">The optional connect timeout for the request.</param>
-        /// <exception cref="ArgumentException">If methodName is null or whitespace.</exception>
-        public DirectMethodRequest(string methodName, string payload = null, TimeSpan? responseTimeout = null, TimeSpan? connectionTimeout = null)
-        {
-            if (string.IsNullOrWhiteSpace(methodName))
-            {
-                throw new ArgumentNullException(nameof(methodName));
-            }
-            MethodName = methodName;
-
-            if (!string.IsNullOrEmpty(payload))
-            {
-                ValidatePayloadIsJson(payload);
-                JsonPayload = new JRaw(payload);
-            }
-
-            ResponseTimeout = responseTimeout;
-            ConnectionTimeout = connectionTimeout;
         }
 
         /// <summary>
         /// Method to invoke.
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
-        public string MethodName { get; private set; }
+        public string MethodName { get; set; }
 
         /// <summary>
         /// Method timeout.
         /// </summary>
         [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; private set; }
+        public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
         /// Timeout for device to come online.
         /// </summary>
         [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; private set; }
+        public TimeSpan? ConnectionTimeout { get; set; }
 
         /// <summary>
         /// Method timeout, in seconds.
@@ -130,18 +82,6 @@ namespace Microsoft.Azure.Devices.Client
                         throw new ArgumentException(ex.Message, nameof(value));
                     }
                 }
-            }
-        }
-
-        private static void ValidatePayloadIsJson(string json)
-        {
-            try
-            {
-                JToken.Parse(json);
-            }
-            catch (JsonException ex)
-            {
-                throw new ArgumentException(ex.Message, nameof(json)); // @ailn: here we want to hide the fact we're using Json.net
             }
         }
 
