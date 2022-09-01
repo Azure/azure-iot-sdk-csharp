@@ -8,7 +8,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// E2E test class for PurgeMesageQueue.
@@ -16,9 +16,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class PurgeMesageQueueE2eTests : E2EMsTestBase
+    public class PurgeMesageQueueE2ETests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(PurgeMesageQueueE2eTests)}_";
+        private readonly string _devicePrefix = $"{nameof(PurgeMesageQueueE2ETests)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task PurgeMessageQueueOperation()

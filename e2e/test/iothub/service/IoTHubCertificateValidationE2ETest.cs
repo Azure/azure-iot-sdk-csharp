@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [Ignore("TODO: Enable when invalid cert server is back online.")]
     [TestCategory("InvalidServiceCertificate")]
-    public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
+    public class IotHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()

@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.iothub.service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// E2E test class for testing receiving file upload notifications.
@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.E2ETests.iothub.service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class FileUploadNotificationE2eTest : E2EMsTestBase
+    public class FileUploadNotificationE2ETest : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2eTest)}_";
+        private readonly string _devicePrefix = $"{nameof(FileUploadNotificationE2ETest)}_";
 
         // All file upload notifications will be acknowledged with this type. We are deliberately
         // choosing to Abandon rather than Complete because each test process may receive file upload
