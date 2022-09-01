@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// HttpStatusCode.PreconditionFailed is converted to this exception.
     /// </summary>
     [Serializable]
-    public class DeviceMessageLockLostException : IotHubException
+    public class DeviceMessageLockLostException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with a specified error message and marks it as non-transient.

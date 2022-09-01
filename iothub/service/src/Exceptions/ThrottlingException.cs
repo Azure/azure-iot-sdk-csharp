@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when the rate of incoming requests exceeds the throttling limit set by IoT hub.
     /// </summary>
     [Serializable]
-    public class ThrottlingException : IotHubException
+    public class ThrottlingException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="ThrottlingException"/> with a specified error message and marks it as non-transient.

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
     /// </summary>
     [Serializable]
-    public class IotHubSuspendedException : IotHubException
+    public class IotHubSuspendedException : IotHubServiceException
     {
         private const string SuspendedException = "IotHubSuspendedException";
         private const string IotHubSuspended = "IoT hub {0} is suspended.";

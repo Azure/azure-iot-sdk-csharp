@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// quotas and throttling | Other limits</see>
     /// </remarks>
     [Serializable]
-    public sealed class MessageTooLargeException : IotHubException
+    public sealed class MessageTooLargeException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with the value of the

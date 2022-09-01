@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when an attempt to enqueue a message fails because the message queue for the device is already full.
     /// </summary>
     [Serializable]
-    public sealed class DeviceMaximumQueueDepthExceededException : IotHubException
+    public sealed class DeviceMaximumQueueDepthExceededException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="DeviceMaximumQueueDepthExceededException"/> with the specified value of the maximum queue depth

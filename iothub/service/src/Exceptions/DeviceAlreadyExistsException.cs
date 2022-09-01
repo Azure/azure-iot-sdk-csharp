@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when an attempt is made to create a device that already exists in the hub.
     /// </summary>
     [Serializable]
-    public sealed class DeviceAlreadyExistsException : IotHubException
+    public sealed class DeviceAlreadyExistsException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="DeviceAlreadyExistsException"/> with the specified device Id, an empty error message

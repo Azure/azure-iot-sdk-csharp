@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when a request is made against an IoT hub that does not exist.
     /// </summary>
     [Serializable]
-    public class IotHubNotFoundException : IotHubException
+    public class IotHubNotFoundException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a name of the IoT hub and marks it as non-transient.

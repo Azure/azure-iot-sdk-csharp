@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when IoT hub exceeds the available quota for active jobs.
     /// </summary>
     [Serializable]
-    public sealed class JobQuotaExceededException : IotHubException
+    public sealed class JobQuotaExceededException : IotHubServiceException
     {
         private const string DefaultErrorMessage = "Job quota has been exceeded.";
 

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// </summary>
     ///
     [Serializable]
-    public sealed class TooManyModulesOnDeviceException : IotHubException
+    public sealed class TooManyModulesOnDeviceException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a specified error message and marks it as non-transient.

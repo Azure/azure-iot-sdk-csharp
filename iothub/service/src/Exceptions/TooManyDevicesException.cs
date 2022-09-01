@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when the list of input devices is too large for an operation.
     /// </summary>
     [Serializable]
-    public sealed class TooManyDevicesException : IotHubException
+    public sealed class TooManyDevicesException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a specified error message and marks it as non-transient.

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// Note: This exception is currently not thrown by the client library.
     /// </summary>
     [Serializable]
-    public sealed class JobCancelledException : IotHubException
+    public sealed class JobCancelledException : IotHubServiceException
     {
         private const string DefaultErrorMessage = "Job has been canceled.";
 

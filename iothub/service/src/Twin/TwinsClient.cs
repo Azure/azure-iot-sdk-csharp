@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The device twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The module twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated device twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="twinPatch"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated device twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="jsonTwinPatch"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="jsonTwinPatch"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated device twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="twinPatch"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated module twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="jsonTwinPatch"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="jsonTwinPatch"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>updated module twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="twins"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>updated twins.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="newTwin"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated device twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="newTwinJson"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="newTwinJson"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -490,7 +490,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated device twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="newTwin"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -538,7 +538,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated module twin.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="newTwinJson"/> or <paramref name="etag"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="newTwinJson"/> or <paramref name="etag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

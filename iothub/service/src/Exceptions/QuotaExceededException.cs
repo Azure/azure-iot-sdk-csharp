@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// guide.
     /// </remarks>
     [Serializable]
-    public sealed class QuotaExceededException : IotHubException
+    public sealed class QuotaExceededException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a specified error message and marks it as transient.

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// guide for more information. The best course of action is to retry your operation after some time.
     /// </remarks>
     [Serializable]
-    public sealed class ServerErrorException : IotHubException
+    public sealed class ServerErrorException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="ServerErrorException"/> with a specified error message and marks it as transient.

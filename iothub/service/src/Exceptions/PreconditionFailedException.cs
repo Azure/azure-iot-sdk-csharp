@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when a precondition set by IoT hub is not fulfilled.
     /// </summary>
     [Serializable]
-    public sealed class PreconditionFailedException : IotHubException
+    public sealed class PreconditionFailedException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a specified error message and marks it as non-transient.

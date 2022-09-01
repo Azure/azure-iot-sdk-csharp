@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// Note: This exception is currently not thrown by the client library.
     /// </summary>
     [Serializable]
-    public sealed class DeviceInvalidResultCountException : IotHubException
+    public sealed class DeviceInvalidResultCountException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="DeviceInvalidResultCountException"/> with the value of the

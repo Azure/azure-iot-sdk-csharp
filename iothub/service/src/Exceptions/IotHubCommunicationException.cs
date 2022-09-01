@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// network issues or operation timeouts. Retrying failed operations could resolve the error.
     /// </summary>
     [Serializable]
-    public sealed class IotHubCommunicationException : IotHubException
+    public sealed class IotHubCommunicationException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="IotHubCommunicationException"/> with a specified error message and marks it as transient.

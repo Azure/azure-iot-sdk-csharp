@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// Note: This exception is currently not thrown by the client library.
     /// </summary>
     [Serializable]
-    public class InvalidProtocolVersionException : IotHubException
+    public class InvalidProtocolVersionException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="InvalidProtocolVersionException"/> with the specified protocol version number

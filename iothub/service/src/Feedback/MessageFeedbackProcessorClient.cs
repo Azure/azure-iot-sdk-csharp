@@ -102,9 +102,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -148,9 +148,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -216,10 +216,10 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OnFeedbackMessageReceivedAsync)} threw an exception: {ex}", nameof(OnFeedbackMessageReceivedAsync));
-                if (ex is IotHubException || ex is IOException)
+                if (ex is IotHubServiceException || ex is IOException)
                 {
-                    if (ex is IotHubException)
-                        ErrorProcessor?.Invoke(new ErrorContext((IotHubException)ex));
+                    if (ex is IotHubServiceException)
+                        ErrorProcessor?.Invoke(new ErrorContext((IotHubServiceException)ex));
                     else
                         ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
                 }

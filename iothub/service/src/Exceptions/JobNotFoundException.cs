@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when the queried job details are not available on IoT hub.
     /// </summary>
     [Serializable]
-    public sealed class JobNotFoundException : IotHubException
+    public sealed class JobNotFoundException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with the Id of the job and marks it as non-transient.

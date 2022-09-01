@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered device with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved device identity.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated device identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device or twin is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The modules that are registered on the specified device.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -467,7 +467,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -537,7 +537,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -565,7 +565,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The result of the bulk operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -607,7 +607,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -659,7 +659,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -712,7 +712,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided container URI is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -743,7 +743,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided container URI or blob name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the output blob name is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -773,7 +773,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -816,7 +816,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -848,7 +848,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null or when the input blob name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided input blob name is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -879,7 +879,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>Conditionally includes configurations, if specified.</remarks>
         /// <returns>JobProperties of the newly created job.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -924,7 +924,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>JobProperties of the job specified by the provided jobId.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided job Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -968,7 +968,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>IEnumerable of JobProperties of all jobs for this IoT hub.</returns>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -1012,7 +1012,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided job Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided job Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -1056,7 +1056,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registry statistics for you Iot hub.</returns>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -1098,7 +1098,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

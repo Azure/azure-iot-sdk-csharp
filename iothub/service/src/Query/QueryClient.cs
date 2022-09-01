@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>An iterable set of the queried items.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="query"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the provided <paramref name="query"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="options">The optional parameters to run the query with.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>An iterable set of the queried jobs.</returns>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Amqp
             else
             {
                 // Should not happen since link addresses are hardcoded. If this throws, there is a bug in the SDK.
-                throw new IotHubException($"Unexpected link address {linkAddress}");
+                throw new IotHubServiceException($"Unexpected link address {linkAddress}");
             }
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 // Should never happen because it means a service client constructed an AMQP connection
                 // to receive file upload notifications or feedback messages but then tried to send a cloud to device message.
-                throw new IotHubException("Cannot send the message because no sender links are open yet.");
+                throw new IotHubServiceException("Cannot send the message because no sender links are open yet.");
             }
 
             return await _sendingLinkHandler.SendAsync(message, deliveryTag, cancellationToken).ConfigureAwait(false);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 // Should never happen because it means a service client constructed an AMQP connection
                 // to send cloud to device messages but then tried to acknowledge a file upload notification or feedback message.
-                throw new IotHubException("Cannot acknowledge the message because no receiver links are open yet.");
+                throw new IotHubServiceException("Cannot acknowledge the message because no receiver links are open yet.");
             }
 
             await _receivingLinkHandler.AcknowledgeMessageAsync(deliveryTag, outcome, cancellationToken).ConfigureAwait(false);

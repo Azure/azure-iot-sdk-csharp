@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     ///  guide for more information.
     /// </remarks>
     [Serializable]
-    public sealed class UnauthorizedException : IotHubException
+    public sealed class UnauthorizedException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a specified error message and marks it as non-transient.

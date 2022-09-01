@@ -88,9 +88,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -129,9 +129,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
+        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="message"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices
 
             if (!_amqpConnection.IsOpen())
             {
-                throw new IotHubException("Must open client before sending messages.");
+                throw new IotHubServiceException("Must open client before sending messages.");
             }
 
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="message"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.Devices
 
             if (!_amqpConnection.IsOpen())
             {
-                throw new IotHubException("Must open client before sending messages.");
+                throw new IotHubServiceException("Must open client before sending messages.");
             }
 
             if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The <see cref="PurgeMessageQueueResult"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

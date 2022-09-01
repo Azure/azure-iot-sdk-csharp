@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// For information on the IoT hub quotas and throttling, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling"/>.
     /// </remarks>
     [Serializable]
-    public sealed class IotHubThrottledException : IotHubException
+    public sealed class IotHubThrottledException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with the value of the

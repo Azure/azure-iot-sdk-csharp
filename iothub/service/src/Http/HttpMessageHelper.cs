@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The serialized HttpContent.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="payload"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="payload"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices
                 // Default case for when the mapping of this error code to an exception does not exist yet
                 ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
-                throw new IotHubException(errorCode, errorMessage);
+                throw new IotHubServiceException(errorCode, errorMessage);
             }
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when IoT hub receives an invalid serialization request.
     /// </summary>
     [Serializable]
-    public class IotHubSerializationException : IotHubException
+    public class IotHubSerializationException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with a specified error message and marks it as non-transient.

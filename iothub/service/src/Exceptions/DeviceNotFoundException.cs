@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when an attempt is made to access a device instance that is not registered on the IoT hub.
     /// </summary>
     [Serializable]
-    public sealed class DeviceNotFoundException : IotHubException
+    public sealed class DeviceNotFoundException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="DeviceNotFoundException"/> with the specified device Id and marks it as non-transient.

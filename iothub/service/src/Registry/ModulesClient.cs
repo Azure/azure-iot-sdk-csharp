@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered module with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved module identity.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

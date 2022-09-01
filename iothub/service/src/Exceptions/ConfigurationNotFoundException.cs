@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when the queried configuration is not available on IoT hub.
     /// </summary>
     [Serializable]
-    public class ConfigurationNotFoundException : IotHubException
+    public class ConfigurationNotFoundException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="ConfigurationNotFoundException"/> with the Id of the configuration and marks it as non-transient.

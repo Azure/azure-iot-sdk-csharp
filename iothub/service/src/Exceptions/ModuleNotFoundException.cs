@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when an attempt is made to access a module instance that is not registered on the IoT hub.
     /// </summary>
     [Serializable]
-    public class ModuleNotFoundException : IotHubException
+    public class ModuleNotFoundException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of this class with the specified module Id and

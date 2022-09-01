@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// The exception that is thrown when an attempt is made to create a module that already exists in the hub.
     /// </summary>
     [Serializable]
-    public sealed class ModuleAlreadyExistsException : IotHubException
+    public sealed class ModuleAlreadyExistsException : IotHubServiceException
     {
         /// <summary>
         /// Creates an instance of <see cref="ModuleAlreadyExistsException"/> with the specified module Id, an empty error message

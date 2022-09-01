@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>The configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configurationId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="configurationId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <returns>The list of configuration.</returns>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="maxCount"/> value less than zero.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configurationId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="configurationId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -313,7 +313,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="configuration">The configuration being deleted.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="content"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
         /// error cases, see <see cref="Common.Exceptions"/>.

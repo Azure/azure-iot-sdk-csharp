@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             if (outcome == null)
             {
-                return new IotHubException("Unknown error.");
+                return new IotHubServiceException("Unknown error.");
             }
 
             Exception retException;
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubServiceException("Unknown error.");
             }
 
             return retException;
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             if (error == null)
             {
-                return new IotHubException("Unknown error.");
+                return new IotHubServiceException("Unknown error.");
             }
 
             Exception retException;
@@ -158,13 +158,13 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else
             {
-                retException = new IotHubException(message);
+                retException = new IotHubServiceException(message);
             }
 
             if (trackingId != null
-                && retException is IotHubException exHub)
+                && retException is IotHubServiceException exHub)
             {
-                IotHubException iotHubException = exHub;
+                IotHubServiceException iotHubException = exHub;
                 iotHubException.TrackingId = trackingId;
                 // This is created but not assigned to `retException`. If we change that now, it might be a
                 // breaking change. If not for v1, consider for #v2.
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
                 || AmqpErrorCode.Stolen.Equals(amqpSymbol))
             {
-                return new ErrorContext(new IotHubException(message, exception));
+                return new ErrorContext(new IotHubServiceException(message, exception));
             }
 
             return new ErrorContext(new IOException(message, exception));
