@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Status code for method response.
     /// </summary>
-    public enum MethodResponseStatusCode
+    public enum DirectMethodResponseStatusCode
     {
         /// <summary>
         /// Equivalent to HTTP status code 400: bad request.

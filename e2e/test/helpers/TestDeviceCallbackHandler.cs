@@ -55,18 +55,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 {
                     try
                     {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.Name} {request.ResponseTimeout}.");
-                        request.Name.Should().Be(methodName, "The expected method name should match what was sent from service");
-                        request.DataAsJson.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
+                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} {request.ResponseTimeout}.");
+                        request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
+                        request.Payload.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
-                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                        return Task.FromResult(new Client.DirectMethodResponse(200, Encoding.UTF8.GetBytes(deviceResponseJson)));
                     }
                     catch (Exception ex)
                     {
                         _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                        return Task.FromResult(new MethodResponse(500));
+                        return Task.FromResult(new Client.DirectMethodResponse(500));
                     }
                     finally
                     {

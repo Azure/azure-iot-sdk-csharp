@@ -40,20 +40,12 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static Exception AssertAndThrowFatal(string description)
-        {
-            Debug.Fail(description);
-            throw Exception.AsError(new FatalException(description));
-        }
-
         public static bool IsFatal(Exception ex)
         {
             while (ex != null)
             {
                 // FYI, CallbackException is-a FatalException
-                if (ex is FatalException
-                    || ex is OutOfMemoryException
+                if (ex is OutOfMemoryException
                     || ex is SEHException)
                 {
                     return true;

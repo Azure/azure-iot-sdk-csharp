@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
-        private readonly Func<MethodRequestInternal, Task> _methodListener;
+        private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
@@ -490,7 +490,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
-            var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.Payload);
+            var mr = new DirectMethodRequest(tokens[3], message.Payload);
+            mr.RequestId = tokens[4].Substring(6);
             await Task.Run(() => _methodListener(mr)).ConfigureAwait(false);
         }
 
@@ -788,7 +789,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await _channel.WriteAsync(new UnsubscribePacket(0, _receiveEventMessageFilter)).ConfigureAwait(true);
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();

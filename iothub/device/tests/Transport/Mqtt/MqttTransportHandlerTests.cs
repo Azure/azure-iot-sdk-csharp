@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         private const int statusFailure = 400;
         private const string fakeResponseId = "fakeResponseId";
         private static readonly TimeSpan ReceiveTimeoutBuffer = TimeSpan.FromSeconds(5);
+
         private delegate bool MessageMatcher(Message msg);
 
         [TestMethod]
@@ -74,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(null, 0), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new DirectMethodResponse(0, null), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -279,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // arrange
             var responseBytes = Encoding.UTF8.GetBytes(fakeMethodResponseBody);
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
-            var response = new MethodResponseInternal(fakeResponseId, statusSuccess, responseBytes);
+            var response = new DirectMethodResponse(statusSuccess, responseBytes);
             MessageMatcher matches = (msg) =>
             {
                 return StringComparer.InvariantCulture.Equals(msg.MqttTopicName, $"$iothub/methods/res/{statusSuccess}/?$rid={fakeResponseId}");
