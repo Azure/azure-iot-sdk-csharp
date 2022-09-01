@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class Program
     {
         /// <summary>
-        /// A sample to illustrate a device receiving methods.
+        /// A sample for illustrating how a device should handle connection status updates.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
@@ -19,32 +19,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
         public static async Task<int> Main(string[] args)
         {
             // Parse application parameters
-            Parameters parameters = null;
-            ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
+            ApplicationParameters parameters = null;
+            ParserResult<ApplicationParameters> result = Parser.Default.ParseArguments<ApplicationParameters>(args)
                 .WithParsed(parsedParams =>
                 {
                     parameters = parsedParams;
-                    if (parameters.TransportType == TransportType.Http1)
-                    {
-                        Console.WriteLine("Methods are not supported over HTTP.");
-                        Environment.Exit(1);
-                    }
                 })
                 .WithNotParsed(errors =>
                 {
                     Environment.Exit(1);
                 });
 
+            // Run the sample
             var runningTime = parameters.ApplicationRunningTime != null
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
-                parameters.PrimaryConnectionString,
-                parameters.TransportType);
-            var sample = new MethodSample(deviceClient);
+            var sample = new DeviceReconnectionSample(parameters);
             await sample.RunSampleAsync(runningTime);
-            await deviceClient.CloseAsync();
 
             Console.WriteLine("Done.");
             return 0;
