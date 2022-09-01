@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <returns></returns>
         /// <exception cref="IotHubClientException">Thrown if an attempt is made to open a session on a client that is already closed.</exception>
         /// <exception cref="IotHubClientException">
-        /// Thrown with <see cref="IotHubStatusCode.NetworkErrors"/> if the operation timed out before it could 
+        /// Thrown with <see cref="IotHubStatusCode.Timeout"/> if the operation timed out before it could 
         /// gain access to the semaphore for retrieving the session reference.
         /// </exception>
         internal async Task<AmqpIotSession> EnsureSessionIsOpenAsync(CancellationToken cancellationToken)
