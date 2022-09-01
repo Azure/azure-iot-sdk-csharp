@@ -130,35 +130,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public async Task<T2> PostAsync<T1, T2>(
              Uri requestUri,
              T1 entity,
-             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
              IDictionary<string, string> customHeaders,
              CancellationToken cancellationToken)
         {
             T2 result = default;
-            await PostAsyncHelper(
-                    requestUri,
-                    entity,
-                    errorMappingOverrides,
-                    customHeaders,
-                    async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
-                    cancellationToken)
-                .ConfigureAwait(false);
 
-            return result;
-        }
-
-        private async Task PostAsyncHelper<T1>(
-            Uri requestUri,
-            T1 entity,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders,
-            Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
-            CancellationToken cancellationToken)
-        {
             cancellationToken.ThrowIfCancellationRequested();
 
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping =
-                MergeErrorMapping(errorMappingOverrides);
+                MergeErrorMapping(ExceptionHandlingHelper.GetDefaultErrorMapping());
 
             using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(_baseAddress, requestUri));
             if (!_usingX509ClientCert)
@@ -201,8 +181,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
             }
 
-            bool isSuccessful(HttpResponseMessage message) => message.IsSuccessStatusCode;
-
             HttpResponseMessage responseMsg;
             try
             {
@@ -212,12 +190,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw new InvalidOperationException(
                         $"The response message was null when executing operation {HttpMethod.Post}.");
                 }
-                if (isSuccessful(responseMsg))
+                if (responseMsg.IsSuccessStatusCode)
                 {
-                    if (processResponseMessageAsync != null)
-                    {
-                        await processResponseMessageAsync(responseMsg, cancellationToken).ConfigureAwait(false);
-                    }
+                    result = await ReadResponseMessageAsync<T2>(responseMsg, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (AggregateException ex)
@@ -258,11 +233,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new IotHubClientException(ex.Message, ex);
             }
 
-            if (!isSuccessful(responseMsg))
+            if (!responseMsg.IsSuccessStatusCode)
             {
                 Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
                 throw mappedEx;
             }
+
+            return result;
         }
 
         private static async Task<Exception> MapToExceptionAsync(

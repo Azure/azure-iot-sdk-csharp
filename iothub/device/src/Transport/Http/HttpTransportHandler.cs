@@ -58,7 +58,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),
                     request,
-                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -72,7 +71,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .PostAsync<FileUploadCompletionNotification, Task>(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadStatusPathTemplate + "notifications", null),
                     notification,
-                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -89,7 +87,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new InvalidOperationException("ModuleId is required.");
             }
 
-            _ = GetInvokeDeviceMethodOperationTimeout(methodInvokeRequest);
             var customHeaders = new Dictionary<string, string>
             {
                 { ModuleId, $"{_deviceId}/{_moduleId}" }
@@ -99,23 +96,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .PostAsync<MethodInvokeRequest, MethodInvokeResponse>(
                     uri,
                     methodInvokeRequest,
-                    null,
                     customHeaders,
                     cancellationToken)
                 .ConfigureAwait(false);
-        }
-
-        private static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
-        {
-            // For InvokeDeviceMethod, we need to take into account the timeouts specified
-            // for the Device to connect and send a response. We also need to take into account
-            // the transmission time for the request send/receive
-            var timeout = TimeSpan.FromSeconds(15); // For wire time
-            timeout += TimeSpan.FromSeconds(methodInvokeRequest.ConnectionTimeoutInSeconds ?? 0);
-            timeout += TimeSpan.FromSeconds(methodInvokeRequest.ResponseTimeoutInSeconds ?? 0);
-            return timeout <= s_defaultMethodOperationTimeout
-                ? s_defaultMethodOperationTimeout
-                : timeout;
         }
 
         private static Uri GetRequestUri(string deviceId, string path, IDictionary<string, string> queryValueDictionary)
