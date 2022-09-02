@@ -16,9 +16,9 @@
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.1" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Client.csproj" />
+	
+<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
 </Project>
