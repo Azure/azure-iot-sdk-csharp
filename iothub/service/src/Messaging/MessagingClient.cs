@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
     /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
-    public class MessagingClient
+    public class MessagingClient : IDisposable
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
@@ -95,13 +95,9 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening MessagingClient", nameof(OpenAsync));
+
             try
             {
-                if (_amqpConnection.IsOpen())
-                {
-                    return;
-                }
-
                 await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -349,6 +345,12 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _amqpConnection?.Dispose();
         }
     }
 }

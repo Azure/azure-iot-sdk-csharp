@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
-                _cbsLink.Close();
+                _cbsLink?.Close();
             }
             finally
             {

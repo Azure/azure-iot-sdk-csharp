@@ -115,7 +115,10 @@ namespace Microsoft.Azure.Devices.Amqp
                     await _receivingLinkHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
                 }
 
-                await _session.CloseAsync(cancellationToken).ConfigureAwait(false);
+                if (_session != null)
+                {
+                    await _session.CloseAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
             finally
             {
