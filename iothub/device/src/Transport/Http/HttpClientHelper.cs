@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         private readonly Uri _baseAddress;
         private readonly IConnectionCredentials _connectionCredentials;
-        private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
+        private readonly IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
         private HttpClientHandler _httpClientHandler;
@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             AdditionalClientInformation additionalClientInformation,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            Action<HttpClient> preRequestActionForAllRequests,
             HttpClientHandler httpClientHandler,
             IotHubClientHttpSettings iotHubClientHttpSettings)
         {
@@ -71,8 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
-
-            preRequestActionForAllRequests?.Invoke(_httpClientObj);
             _additionalClientInformation = additionalClientInformation;
         }
 
@@ -98,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return entity;
         }
 
-        private static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
+        private static void AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
         {
             if (customHeaders != null)
             {
@@ -107,24 +104,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     requestMessage.Headers.Add(header.Key, header.Value);
                 }
             }
-
-            return Task.CompletedTask;
-        }
-
-        private IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> MergeErrorMapping(
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides)
-        {
-            var mergedMapping = _defaultErrorMapping.ToDictionary(mapping => mapping.Key, mapping => mapping.Value);
-
-            if (errorMappingOverrides != null)
-            {
-                foreach (KeyValuePair<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorOverride in errorMappingOverrides)
-                {
-                    mergedMapping[errorOverride.Key] = errorOverride.Value;
-                }
-            }
-
-            return mergedMapping;
         }
 
         public async Task<T2> PostAsync<T1, T2>(
@@ -136,9 +115,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             T2 result = default;
 
             cancellationToken.ThrowIfCancellationRequested();
-
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping =
-                MergeErrorMapping(ExceptionHandlingHelper.GetDefaultErrorMapping());
 
             using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(_baseAddress, requestUri));
             if (!_usingX509ClientCert)
@@ -152,33 +128,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo?.ToString(UserAgentFormats.Http));
 
-            Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync = (requestMsg, token) =>
+            AddCustomHeaders(msg, customHeaders);
+            if (entity != null)
             {
-                AddCustomHeaders(requestMsg, customHeaders);
-                if (entity != null)
+                if (typeof(T1) == typeof(byte[]))
                 {
-                    if (typeof(T1) == typeof(byte[]))
-                    {
-                        requestMsg.Content = new ByteArrayContent((byte[])(object)entity);
-                    }
-                    else if (typeof(T1) == typeof(string))
-                    {
-                        // only used to send batched messages on Http runtime
-                        requestMsg.Content = new StringContent((string)(object)entity);
-                        requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
-                    }
-                    else
-                    {
-                        requestMsg.Content = CreateContent(entity);
-                    }
+                    msg.Content = new ByteArrayContent((byte[])(object)entity);
                 }
-
-                return Task.CompletedTask;
-            };
-
-            if (modifyRequestMessageAsync != null)
-            {
-                await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
+                else if (typeof(T1) == typeof(string))
+                {
+                    // only used to send batched messages on Http runtime
+                    msg.Content = new StringContent((string)(object)entity);
+                    msg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
+                }
+                else
+                {
+                    msg.Content = CreateContent(entity);
+                }
             }
 
             HttpResponseMessage responseMsg;
@@ -235,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (!responseMsg.IsSuccessStatusCode)
             {
-                Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
+                Exception mappedEx = await MapToExceptionAsync(responseMsg, _defaultErrorMapping).ConfigureAwait(false);
                 throw mappedEx;
             }
 

@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public const string ModuleId = "x-ms-edge-moduleId";
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);
-        private static readonly TimeSpan s_defaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
 
         private readonly HttpClientHelper _httpClientHelper;
         private readonly string _deviceId;
@@ -46,7 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 additionalClientInformation,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                null,
                 httpClientHandler,
                 transportSettings);
         }
