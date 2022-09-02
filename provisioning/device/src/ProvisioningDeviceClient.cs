@@ -8,7 +8,7 @@ using Microsoft.Azure.Devices.Authentication;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Allows devices to use the Device Provisioning Service.
+    /// The client for provisioning devices using Azure Device Provisioning Service.
     /// </summary>
     public class ProvisioningDeviceClient
     {
@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly ProvisioningClientOptions _options;
 
         /// <summary>
-        /// Creates an instance of the Device Provisioning Client.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
         /// <param name="idScope">The IDScope for the Device Provisioning Service.</param>
         /// <param name="authenticationProvider">The security provider instance.</param>
         /// <param name="options">The options that allow configuration of the provisioning device client instance during initialization.</param>
         /// <returns>An instance of the ProvisioningDeviceClient</returns>
-        public static ProvisioningDeviceClient Create(
+        public ProvisioningDeviceClient(
             string globalDeviceEndpoint,
             string idScope,
             AuthenticationProvider authenticationProvider,
@@ -41,15 +41,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 options = new();
             }
 
-            return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, authenticationProvider, options);
-        }
-
-        private ProvisioningDeviceClient(
-            string globalDeviceEndpoint,
-            string idScope,
-            AuthenticationProvider authenticationProvider,
-            ProvisioningClientOptions options = default)
-        {
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _options = options;
@@ -80,7 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
-        /// The optional additional data that is passed through to the custom allocation policy webhook if 
+        /// The optional additional data that is passed through to the custom allocation policy webhook if
         /// a custom allocation policy webhook is setup for this enrollment.
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>

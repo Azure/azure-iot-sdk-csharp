@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType attestationType)
         {
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentAsync(
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public async Task ProvisioningServiceClient_GetEnrollmentGroupAttestation(AttestationMechanismType attestationType)
         {
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
             string groupId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroupAsync(provisioningServiceClient, attestationType, groupId, null, AllocationPolicy.Static, null, null, null, Logger);
 
@@ -628,7 +628,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transportSettings.Proxy = new WebProxy(proxyServerAddress);
             }
 
-            return ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString, options);
+            return new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString, options);
         }
 
         /// <summary>

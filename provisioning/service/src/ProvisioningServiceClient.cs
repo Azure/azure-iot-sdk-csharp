@@ -80,18 +80,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="options"> The options that allow configuration of the provisioning service client instance during initialization.</param>
         /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
         /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
-        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, ProvisioningServiceClientOptions options = default)
+        public ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options = default)
         {
             if (options == default)
             {
                 options = new();
             }
 
-            return new ProvisioningServiceClient(connectionString, options);
-        }
-
-        private ProvisioningServiceClient(string connectionString, ProvisioningServiceClientOptions options)
-        {
             if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
             {
                 throw new ArgumentException($"{nameof(connectionString)} cannot be empty string");

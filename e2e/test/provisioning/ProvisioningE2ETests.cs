@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : new WebProxy(s_proxyServerAddress);
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            var provClient = new ProvisioningDeviceClient(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
@@ -924,7 +924,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 transport.Proxy = (proxyServerAddress != null) ? new WebProxy(s_proxyServerAddress) : null;
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            var provClient = new ProvisioningDeviceClient(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
@@ -981,7 +981,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                var provClient = ProvisioningDeviceClient.Create(
+                var provClient = new ProvisioningDeviceClient(
                     s_globalDeviceEndpoint,
                     TestConfiguration.Provisioning.IdScope,
                     auth,
@@ -1027,7 +1027,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null)
             .ConfigureAwait(false);
 
-            var provClient = ProvisioningDeviceClient.Create(
+            var provClient = new ProvisioningDeviceClient(
                 s_globalDeviceEndpoint,
                 InvalidIdScope,
                 auth,
@@ -1084,7 +1084,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     null)
                 .ConfigureAwait(false);
 
-            var provClient = ProvisioningDeviceClient.Create(
+            var provClient = new ProvisioningDeviceClient(
                 InvalidGlobalAddress,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
@@ -1208,7 +1208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             _verboseLog.WriteLine($"{nameof(CreateAuthProviderFromNameAsync)}({attestationType})");
 
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {

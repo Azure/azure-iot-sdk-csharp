@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : new WebProxy(s_proxyServerAddress);
             }
 
-            var provClient = ProvisioningDeviceClient.Create(
+            var provClient = new ProvisioningDeviceClient(
                 s_globalDeviceEndpoint,
                 TestConfiguration.Provisioning.IdScope,
                 auth,
@@ -553,7 +553,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             _verboseLog.WriteLine($"{nameof(CreateAuthenticationProviderFromNameAsync)}({attestationType})");
 
             string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(TestConfiguration.Provisioning.ConnectionString);
+            using var provisioningServiceClient = new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString);
 
             switch (attestationType)
             {

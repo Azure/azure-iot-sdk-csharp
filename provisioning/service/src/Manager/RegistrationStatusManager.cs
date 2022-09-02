@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -111,13 +112,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             id = WebUtility.UrlEncode(id);
             return new Uri(
-                DeviceRegistrationStatusUriFormat.FormatInvariant(ServiceName, id, SdkUtils.ApiVersionQueryString),
+                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusUriFormat, ServiceName, id, SdkUtils.ApiVersionQueryString),
                 UriKind.Relative);
         }
 
         private static string GetGetDeviceRegistrationStatus(string id)
         {
-            return DeviceRegistrationStatusFormat.FormatInvariant(ServiceName, id);
+            return string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusFormat, ServiceName, id);
         }
     }
 }

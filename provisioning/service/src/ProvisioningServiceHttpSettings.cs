@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets or sets proxy information for the request.
         /// </summary>
-        public IWebProxy Proxy { get; set; } = DefaultWebProxySettings.Instance;
+        public IWebProxy Proxy { get; set; }
 
         /// <summary>
         /// The version of TLS to use by default.
