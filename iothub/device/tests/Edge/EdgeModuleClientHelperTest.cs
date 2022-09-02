@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
 
-            // // This client is being used by the test methods. It will be disposed by the respective tests.
+            // This client is being used by the test methods. It will be disposed by the respective tests.
             IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
