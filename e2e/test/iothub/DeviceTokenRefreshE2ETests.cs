@@ -150,11 +150,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             });
 
+
             var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
             using var cts1 = new CancellationTokenSource(timeout);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SendEventAsync(message, cts1.Token).ConfigureAwait(false);
 
             // Wait for the Token to expire.
