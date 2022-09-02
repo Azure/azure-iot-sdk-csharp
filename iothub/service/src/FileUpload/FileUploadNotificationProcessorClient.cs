@@ -110,11 +110,6 @@ namespace Microsoft.Azure.Devices
                     throw new Exception("Callback for file upload notifications must be set before opening the connection.");
                 }
 
-                if (_amqpConnection.IsOpen())
-                {
-                    return;
-                }
-
                 await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)

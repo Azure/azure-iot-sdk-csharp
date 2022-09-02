@@ -115,11 +115,6 @@ namespace Microsoft.Azure.Devices
                     throw new Exception("Callback for message feedback must be set before opening the connection.");
                 }
 
-                if (_amqpConnection.IsOpen())
-                {
-                    return;
-                }
-
                 await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
