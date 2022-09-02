@@ -1640,7 +1640,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_SendEventAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
+            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             // act
             Func<Task> act = async () => await deviceClient.SendEventAsync(new Message());
@@ -1653,7 +1653,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_SendEventAsync_BeforeExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
+            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             // act
             Func<Task> act = async () =>
@@ -1670,7 +1670,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_SendEventAsync_AfterExplicitOpenAsync_DoesNotThrow()
         {
             // arrange
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(FakeConnectionString);
+            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
 
             // act
             Func<Task> act = async () =>
