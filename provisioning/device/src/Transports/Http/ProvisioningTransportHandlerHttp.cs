@@ -22,6 +22,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
         private const int DefaultHttpsPort = 443;
 
+        // These default values are consistent with Azure.Core default values:
+        // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L28
+        private const int DefaultMaxConnectionsPerServer = 50;
+
+        // How long, in milliseconds, a given cached TCP connection created by this client's HTTP layer will live before being closed.
+        // If this value is set to any negative value, the connection lease will be infinite. If this value is set to 0, then the TCP connection will close after
+        // each HTTP request and a new TCP connection will be opened upon the next request.
+        //
+        // By closing cached TCP connections and opening a new one upon the next request, the underlying HTTP client has a chance to do a DNS lookup
+        // to validate that it will send the requests to the correct IP address. While it is atypical for a given IoT hub to change its IP address, it does
+        // happen when a given IoT hub fails over into a different region.
+        //
+        // This default value is consistent with the default value used in Azure.Core
+        // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
+        private static readonly TimeSpan DefaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
+
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerHttp class.
         /// </summary>
@@ -120,6 +136,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     Host = message.GlobalDeviceEndpoint,
                     Port = Port,
                 };
+
+                httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
+                ServicePoint servicePoint = ServicePointManager.FindServicePoint(builder.Uri);
+                servicePoint.ConnectionLeaseTimeout = DefaultConnectionLeaseTimeout.Milliseconds;
 
                 using DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", message.ProductInfo);
