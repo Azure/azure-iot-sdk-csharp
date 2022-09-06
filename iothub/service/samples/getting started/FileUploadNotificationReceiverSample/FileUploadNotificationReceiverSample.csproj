@@ -12,6 +12,6 @@
     <PackageReference Include="System.Text.Json" Version="6.0.5" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+    <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
   </ItemGroup>
 </Project>
