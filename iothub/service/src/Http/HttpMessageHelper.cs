@@ -131,8 +131,8 @@ namespace Microsoft.Azure.Devices
         // already.
         private static string EscapeETag(string eTag)
         {
-            StringBuilder escapedETagBuilder = new StringBuilder();
-            
+            var escapedETagBuilder = new StringBuilder();
+
             if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 escapedETagBuilder.Append('"');
