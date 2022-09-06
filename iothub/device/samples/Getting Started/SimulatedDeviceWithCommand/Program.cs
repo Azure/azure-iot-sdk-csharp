@@ -29,8 +29,8 @@ namespace SimulatedDeviceWithCommand
         {
             Parameters parameters = null;
             ParserResult<Parameters> result = Parser.Default.ParseArguments<Parameters>(args)
-                    .WithParsed(parsedParams => parameters = parsedParams)
-                    .WithNotParsed(errors => Environment.Exit(1));
+                .WithParsed(parsedParams => parameters = parsedParams)
+                .WithNotParsed(errors => Environment.Exit(1));
 
             Console.WriteLine("IoT Hub Quickstarts - Simulated device with command.");
 

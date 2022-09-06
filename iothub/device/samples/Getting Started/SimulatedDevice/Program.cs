@@ -21,9 +21,6 @@ namespace SimulatedDevice
     /// </summary>
     internal class Program
     {
-        //private static Parameters s_parameters;
-        private static DeviceClient s_deviceClient;
-
         private static async Task Main(string[] args)
         {
             Parameters parameters = null;
@@ -34,7 +31,7 @@ namespace SimulatedDevice
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device.");
 
             // Connect to the IoT hub using the MQTT protocol by default
-            s_deviceClient = DeviceClient.CreateFromConnectionString(parameters.DeviceConnectionString, parameters.TransportType);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.DeviceConnectionString, parameters.TransportType);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press control-C to exit.");
@@ -47,7 +44,7 @@ namespace SimulatedDevice
             };
 
             // Run the telemetry loop
-            await SendDeviceToCloudMessagesAsync(cts.Token);
+            await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
 
             // SendDeviceToCloudMessagesAsync is designed to run until cancellation has been explicitly requested by Console.CancelKeyPress.
             // As a result, by the time the control reaches the call to close the device client, the cancellation token source would
@@ -55,14 +52,13 @@ namespace SimulatedDevice
             // Hence, if you want to pass a cancellation token to any subsequent calls, a new token needs to be generated.
             // For device client APIs, you can also call them without a cancellation token, which will set a default
             // cancellation timeout of 4 minutes: https://github.com/Azure/azure-iot-sdk-csharp/blob/64f6e9f24371bc40ab3ec7a8b8accbfb537f0fe1/iothub/device/src/InternalClient.cs#L1922
-            await s_deviceClient.CloseAsync();
+            await deviceClient.CloseAsync();
 
-            s_deviceClient.Dispose();
             Console.WriteLine("Device simulator finished.");
         }
 
         // Async method to send simulated telemetry
-        private static async Task SendDeviceToCloudMessagesAsync(CancellationToken ct)
+        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken ct)
         {
             // Initial telemetry values
             double minTemperature = 20;
@@ -94,7 +90,7 @@ namespace SimulatedDevice
                     message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
                     // Send the telemetry message
-                    await s_deviceClient.SendEventAsync(message, ct);
+                    await deviceClient.SendEventAsync(message, ct);
                     Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
 
                     await Task.Delay(1000, ct);

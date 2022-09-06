@@ -16,8 +16,6 @@ namespace InvokeDeviceMethod
     /// </summary>
     internal class Program
     {
-        private static ServiceClient s_serviceClient;
-
         private static async Task Main(string[] args)
         {
             Console.WriteLine("IoT Hub Quickstarts - InvokeDeviceMethod application.");
@@ -29,14 +27,12 @@ namespace InvokeDeviceMethod
                 .WithNotParsed(errors => Environment.Exit(1));
 
             // This sample accepts the service connection string as a parameter, if present.
-            ValidateConnectionString(parameters.HubConnectionString);
+            Parameters.ValidateConnectionString(parameters.HubConnectionString);
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
-            s_serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
 
             await InvokeMethodAsync(parameters.DeviceId);
-
-            s_serviceClient.Dispose();
 
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
@@ -58,21 +54,6 @@ namespace InvokeDeviceMethod
 
             Console.WriteLine($"Response status: {response.Status}, payload:\n\t{response.GetPayloadAsJson()}");
 
-        }
-
-        private static void ValidateConnectionString(string hubConnectionString)
-        {
-            try
-            {
-                _ = IotHubConnectionStringBuilder.Create(hubConnectionString);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("An IoT hub connection string needs to be specified, " +
-                    "please set the environment variable \"IOTHUB_DEVICE_CONNECTION_STRING\" " +
-                    "or pass in \"-c | --DeviceConnectionString\" through command line.");
-                Environment.Exit(1);
-            }
         }
     }
 }

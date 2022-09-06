@@ -10,8 +10,6 @@ namespace ReadD2cMessages
     /// </summary>
     internal class Parameters
     {
-        internal const string IotHubSharedAccessKeyName = "service";
-
         [Option(
             'e',
             "EventHubCompatibleEndpoint",
@@ -38,7 +36,8 @@ namespace ReadD2cMessages
 
         internal string GetEventHubConnectionString()
         {
-            return EventHubConnectionString ?? $"Endpoint={EventHubCompatibleEndpoint};SharedAccessKeyName={IotHubSharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
+            const string iotHubSharedAccessKeyName = "service";
+            return EventHubConnectionString ?? $"Endpoint={EventHubCompatibleEndpoint};SharedAccessKeyName={iotHubSharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
         }
     }
 }
