@@ -21,11 +21,6 @@ namespace Microsoft.Azure.Devices.Client
     public class IotHubDeviceClient : IDisposable
     {
         /// <summary>
-        /// Default operation timeout.
-        /// </summary>
-        public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
-
-        /// <summary>
         /// Creates a disposable <c>IotHubDeviceClient</c> from the specified connection string.
         /// </summary>
         /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the device to communicate with IoT Hub.</param>
@@ -105,6 +100,11 @@ namespace Microsoft.Azure.Devices.Client
             set => InternalClient.DiagnosticSamplingPercentage = value;
         }
 
+        /// <summary>
+        /// The latest connection status information since the last status change.
+        /// </summary>
+        public ConnectionStatusInfo ConnectionStatusInfo => InternalClient._connectionStatusInfo;
+
         internal IDelegatingHandler InnerHandler
         {
             get => InternalClient.InnerHandler;
@@ -132,11 +132,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
         public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
             => InternalClient.SetConnectionStatusChangeHandler(statusChangeHandler);
-
-        /// <summary>
-        /// The latest connection status information since the last status change.
-        /// </summary>
-        public ConnectionStatusInfo ConnectionStatusInfo => InternalClient._connectionStatusInfo;
 
         /// <summary>
         /// Open the DeviceClient instance. Must be done before any operation can begin.
