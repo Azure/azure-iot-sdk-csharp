@@ -150,31 +150,9 @@ namespace Microsoft.Azure.Devices
         /// Replace a device identity's state with the provided device identity's state.
         /// </summary>
         /// <param name="device">The device identity's new state.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The newly updated device identity including its new ETag.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
-        /// <exception cref="IotHubException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Device> SetAsync(Device device, CancellationToken cancellationToken = default)
-        {
-            return await SetAsync(device, false, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Replace a device identity's state with the provided device identity's state.
-        /// </summary>
-        /// <param name="device">The device identity's new state.</param>
-        /// <param name="forceUpdate">
-        /// If true, this update operation will execute even if the provided device identity has
-        /// an out of date ETag. If false, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// <param name="onlyIfUnchanged">
+        /// If false, this update operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
@@ -191,7 +169,7 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Device> SetAsync(Device device, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<Device> SetAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating device: {device?.Id}", nameof(SetAsync));
@@ -202,13 +180,13 @@ namespace Microsoft.Azure.Devices
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (string.IsNullOrWhiteSpace(device.ETag) && !forceUpdate)
+                if (string.IsNullOrWhiteSpace(device.ETag.ToString()) && onlyIfUnchanged)
                 {
                     throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                 }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
-                HttpMessageHelper.InsertETag(request, device.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, device.ETag, onlyIfUnchanged);
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -249,8 +227,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
             var device = new Device(deviceId);
-            device.ETag = HttpMessageHelper.ETagForce;
-            await DeleteAsync(device, cancellationToken).ConfigureAwait(false);
+            await DeleteAsync(device, default, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -262,6 +239,12 @@ namespace Microsoft.Azure.Devices
         /// An up-to-date ETag can be retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// To force the operation to execute regardless of ETag, set the device identity's ETag to "*" or
         /// use <see cref="DeleteAsync(string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="onlyIfUnchanged">
+        /// If false, this delete operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device is null.</exception>
@@ -275,16 +258,16 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task DeleteAsync(Device device, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting device: {device?.Id}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting device: {device?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
             try
             {
                 Argument.AssertNotNull(device, nameof(device));
 
-                if (device.ETag == null)
+                if (string.IsNullOrWhiteSpace(device.ETag.ToString()) && onlyIfUnchanged)
                 {
                     throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                 }
@@ -292,7 +275,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
-                HttpMessageHelper.InsertETag(request, device.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, device.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
@@ -305,7 +288,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting device: {device?.Id}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting device: {device?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
             }
         }
 
@@ -460,36 +443,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Forceably update up to 100 device identities in your IoT hub's registry in bulk.
-        /// </summary>
-        /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The result of the bulk operation.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
-        {
-            return await SetAsync(devices, false, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Update up to 100 device identities in your IoT hub's registry in bulk.
         /// </summary>
         /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
-        /// <param name="forceUpdate">
-        /// If true, device identities will be updated even if they have an out-of-date ETag. If false,
-        /// only the devices that have an up-to-date ETag will be updated. An up-to-date ETag can be retrieved
-        /// using <see cref="GetAsync(string, CancellationToken)"/>.
+        /// <param name="onlyIfUnchanged">
+        /// If false, this update operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
@@ -505,14 +466,14 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
 
             try
             {
-                ImportMode importMode = forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag;
+                ImportMode importMode = onlyIfUnchanged ? ImportMode.UpdateIfMatchETag : ImportMode.Update;
                 IEnumerable<ExportImportDevice> exportImportDevices = GenerateExportImportDeviceListForBulkOperations(devices, importMode);
                 return await BulkDeviceOperationAsync(exportImportDevices, cancellationToken).ConfigureAwait(false);
             }
@@ -525,41 +486,19 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - Force update: {forceUpdate}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
             }
-        }
-
-        /// <summary>
-        /// Forceably delete up to 100 device identities from your IoT hub's registry in bulk.
-        /// </summary>
-        /// <param name="devices">The device identities to delete from your IoT hub's registry. May not exceed 100 devices.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The result of the bulk operation.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided device collection is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided device collection is empty.</exception>
-        /// <exception cref="IotHubException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
-        {
-            return await DeleteAsync(devices, false, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Delete up to 100 device identities from your IoT hub's registry in bulk.
         /// </summary>
         /// <param name="devices">The device identities to delete from your IoT hub's registry. May not exceed 100 devices.</param>
-        /// <param name="forceDelete">
-        /// If true, device identities will be deleted even if they have an out-of-date ETag. If false,
-        /// only the devices that have an up-to-date ETag will be deleted. An up-to-date ETag can be retrieved
-        /// using <see cref="GetAsync(string, CancellationToken)"/>.
+        /// <param name="onlyIfUnchanged">
+        /// If false, this delete operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The result of the bulk operation.</returns>
@@ -575,14 +514,14 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, bool forceDelete, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting devices : count: {devices?.Count()} - Force delete: {forceDelete}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting devices : count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
             try
             {
-                ImportMode importMode = forceDelete ? ImportMode.Delete : ImportMode.DeleteIfMatchETag;
+                ImportMode importMode = onlyIfUnchanged ? ImportMode.DeleteIfMatchETag : ImportMode.Delete;
                 IEnumerable<ExportImportDevice> exportImportDevices = GenerateExportImportDeviceListForBulkOperations(devices, importMode);
                 return await BulkDeviceOperationAsync(exportImportDevices, cancellationToken).ConfigureAwait(false);
             }
@@ -595,7 +534,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting devices : count: {devices?.Count()} - Force delete: {forceDelete}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting devices : count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
             }
         }
 
@@ -1034,7 +973,7 @@ namespace Microsoft.Azure.Devices
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
-                HttpMessageHelper.InsertETag(request, jobId);
+                HttpMessageHelper.ConditionallyInsertETag(request, jobId);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
@@ -1194,7 +1133,7 @@ namespace Microsoft.Azure.Devices
                 switch (importMode)
                 {
                     case ImportMode.Create:
-                        if (!string.IsNullOrWhiteSpace(device.ETag))
+                        if (!string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
                             throw new ArgumentException(ETagSetWhileRegisteringDevice);
                         }
@@ -1205,7 +1144,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case ImportMode.UpdateIfMatchETag:
-                        if (string.IsNullOrWhiteSpace(device.ETag))
+                        if (string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
                             throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
                         }
@@ -1216,7 +1155,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case ImportMode.DeleteIfMatchETag:
-                        if (string.IsNullOrWhiteSpace(device.ETag))
+                        if (string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
                             throw new ArgumentException(ETagNotSetWhileDeletingDevice);
                         }
