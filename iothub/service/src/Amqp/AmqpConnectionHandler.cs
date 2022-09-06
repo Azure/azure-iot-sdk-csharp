@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// <remarks>
     /// This class intentionally abstracts away details about sessions and links for simplicity at the service client level.
     /// </remarks>
-    internal class AmqpConnectionHandler
+    internal class AmqpConnectionHandler : IDisposable
     {
         private AmqpConnection _connection;
         private AmqpCbsSessionHandler _cbsSession;
@@ -39,6 +39,9 @@ namespace Microsoft.Azure.Devices.Amqp
 
         // The current delivery tag. Increments after each send operation to give a unique value.
         private int _sendingDeliveryTag;
+
+        // The lock that prevents simultaneous open/close, open/open, and close/close operations
+        private SemaphoreSlim _openCloseSemaphore = new SemaphoreSlim(1, 1);
 
         public AmqpConnectionHandler(
             IotHubConnectionProperties credential,
@@ -69,8 +72,15 @@ namespace Microsoft.Azure.Devices.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening amqp connection.");
 
+            _openCloseSemaphore.Wait(cancellationToken);
+
             try
             {
+                if (IsOpen())
+                {
+                    return;
+                }
+
                 AmqpSettings amqpSettings = CreateAmqpSettings();
 
                 if (_useWebSocketOnly)
@@ -119,6 +129,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             finally
             {
+                _openCloseSemaphore.Release();
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Opening amqp connection.");
             }
@@ -133,11 +144,21 @@ namespace Microsoft.Azure.Devices.Amqp
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing amqp connection.");
 
+            _openCloseSemaphore.Wait(cancellationToken);
+
             try
             {
-                _cbsSession.Close(); // not async because the cbs link type only has a sync close API
-                await _workerSession.CloseAsync(cancellationToken).ConfigureAwait(false);
-                await _connection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                _cbsSession?.Close(); // not async because the cbs link type only has a sync close API
+
+                if (_workerSession != null)
+                {
+                    await _workerSession.CloseAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                if (_connection != null)
+                {
+                    await _connection.CloseAsync(cancellationToken).ConfigureAwait(false);
+                }
 
                 if (_transport is ClientWebSocketTransport webSocketTransport)
                 {
@@ -149,6 +170,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             finally
             {
+                _openCloseSemaphore.Release();
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Closing amqp connection.");
             }
@@ -318,6 +340,12 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (Logging.IsEnabled)
                     Logging.Exit(this, websocketUri, cancellationToken, nameof(CreateClientWebSocketAsync));
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _openCloseSemaphore?.Dispose();
         }
     }
 }

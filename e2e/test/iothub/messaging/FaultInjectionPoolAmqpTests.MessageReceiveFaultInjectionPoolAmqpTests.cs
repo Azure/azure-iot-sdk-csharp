@@ -582,25 +582,22 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // Initialize the service client
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sending message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
-                await serviceClient.Messaging.SendAsync(testDevice.Id, msg)
-                .ConfigureAwait(false);
+                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
-                await deviceClient.OpenAsync()
-                .ConfigureAwait(false);
-                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msg, payload, Logger)
-                .ConfigureAwait(false);
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(deviceClient, testDevice.Id, msg, payload, Logger).ConfigureAwait(false);
             }
 
             async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
             {
-                await serviceClient.Messaging.CloseAsync()
-                .ConfigureAwait(false);
+                await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
                 serviceClient.Dispose();
 
                 deviceClients.ForEach(deviceClient => deviceClient.Dispose());
