@@ -32,7 +32,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
-        [JsonIgnore] // not part of the Json payload
+        /// <remarks>
+        /// This value is not part of the Json payload. It is received as topic string parameter over MQTT and as a
+        /// property over AMQP.
+        /// </remarks>
+        [JsonIgnore]
         internal string RequestId { get; set; }
     }
 }
