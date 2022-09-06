@@ -88,6 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
+        [JsonIgnore] // not part of the Json payload
         internal string RequestId { get; set; }
     }
 }
