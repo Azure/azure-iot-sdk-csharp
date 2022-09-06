@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Logging
     public class ColorConsoleLoggerProvider : ILoggerProvider
     {
         private readonly ColorConsoleLoggerConfiguration _config;
-        private readonly ConcurrentDictionary<string, ColorConsoleLogger> _loggers = new ConcurrentDictionary<string, ColorConsoleLogger>();
+        private readonly ConcurrentDictionary<string, ColorConsoleLogger> _loggers = new();
 
         /// <summary>
         /// Initialize an instance of <see cref="ColorConsoleLoggerProvider"/> with the supplied <see cref="ColorConsoleLoggerConfiguration"/>.
