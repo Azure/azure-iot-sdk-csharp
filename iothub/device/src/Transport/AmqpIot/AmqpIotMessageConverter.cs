@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
-        private const string FailedToSerializeUnsupportedType = "FailedToSerializeUnsupportedType: {0}";
+        private const string FailedToSerializeUnsupportedType = "Failed to serialize an unsupported type of '{0}'.";
 
         #region AmqpMessage <--> Message
 
@@ -263,20 +263,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region AmqpMessage <--> Methods
 
-        public static AmqpMessage ConvertDirectMethodResponseToAmqpMessage(DirectMethodResponse directMethodResponse)
+        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal)
         {
-            AmqpMessage amqpMessage = directMethodResponse.Payload == null
+            AmqpMessage amqpMessage = methodResponseInternal.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(new MemoryStream(directMethodResponse.Payload), true);
+                : AmqpMessage.Create(new MemoryStream(methodResponseInternal.Payload), true);
 
-            PopulateAmqpMessageFromMethodResponse(amqpMessage, directMethodResponse);
+            PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponseInternal);
             return amqpMessage;
         }
 
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
+        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)
             {
@@ -298,28 +298,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             using var ms = new MemoryStream();
             amqpMessage.BodyStream.CopyTo(ms);
             amqpMessage.Dispose();
-            var directMethodRequest = new DirectMethodRequest()
-            {
-                MethodName = methodName,
-                Payload = Encoding.UTF8.GetString(ms.ToArray())
-            };
-
-            directMethodRequest.RequestId = methodRequestId;
-            return directMethodRequest;
+            return new MethodRequestInternal(methodName, methodRequestId, ms.ToArray());
         }
 
         /// <summary>
         /// Copies the Method instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse DirectMethodResponse)
+        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponseInternal methodResponseInternal)
         {
-            Debug.Assert(DirectMethodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
+            Debug.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
 
-            amqpMessage.Properties.CorrelationId = new Guid(DirectMethodResponse.RequestId);
+            amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
 
             amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
-            amqpMessage.ApplicationProperties.Map[Status] = DirectMethodResponse.Status;
+            amqpMessage.ApplicationProperties.Map[Status] = methodResponseInternal.Status;
         }
 
         #endregion AmqpMessage <--> Methods
