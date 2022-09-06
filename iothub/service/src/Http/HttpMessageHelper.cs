@@ -109,10 +109,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
         internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged = false)
         {
-            Argument.AssertNotNullOrWhiteSpace(eTag, nameof(eTag));
             Argument.AssertNotNull(requestMessage, nameof(requestMessage));
 
-            if (onlyIfUnchanged)
+            if (onlyIfUnchanged && eTag != null)
             {
                 // "Perform this operation only if the entity is unchanged"
                 // Sends the If-Match header with a value of the ETag.
