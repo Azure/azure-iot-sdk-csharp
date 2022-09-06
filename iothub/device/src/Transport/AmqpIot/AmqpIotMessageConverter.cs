@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
-        private const string FailedToSerializeUnsupportedType = "FailedToSerializeUnsupportedType";
+        private const string FailedToSerializeUnsupportedType = "Failed to serialize an unsupported type of '{0}'.";
 
         #region AmqpMessage <--> Message
 

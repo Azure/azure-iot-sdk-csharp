@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     internal class StringValidationHelper
     {
         private const char Base64Padding = '=';
-        private const string StringIsNotBase64 = "StringIsNotBase64";
+        private const string StringIsNotBase64 = "String '{0}' is not Base64";
 
         private static readonly HashSet<char> s_base64Table = new HashSet<char>
         {
