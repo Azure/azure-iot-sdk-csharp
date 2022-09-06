@@ -180,14 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                throw new IotHubClientException(true, IotHubStatusCode.Timeout);
-            }
 
-            try
-            {
                 if (_amqpIotConnection == null || _amqpIotConnection.IsClosing())
                 {
                     if (Logging.IsEnabled)
