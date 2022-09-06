@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using var deviceClient = IotHubDeviceClient.Create(
+            using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
                 new IotHubClientOptions(new IotHubClientMqttSettings()));
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using var deviceClient = IotHubDeviceClient.Create(
+            using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
                 new IotHubClientOptions(new IotHubClientAmqpSettings()));
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = IotHubDeviceClient.Create(_hostName, auth, new IotHubClientOptions(transportSettings));
+            using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             try
             {
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = IotHubDeviceClient.Create(_hostName, auth, new IotHubClientOptions(transportSettings));
+            using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             for (int i = 0; i < 2; i++)
             {

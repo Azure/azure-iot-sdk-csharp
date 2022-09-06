@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
@@ -25,6 +26,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
+        /// <exception cref="ArgumentException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
+        /// <exception cref="IotHubClientException"><see cref="DeviceAuthenticationWithX509Certificate.ChainCertificates"/> could not be installed.</exception>
         public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
@@ -341,6 +344,32 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentException(
                     "Should not specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is used for authenticating the client with IoT hub.");
+            }
+
+            // Validate certs.
+            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate)
+            {
+                // Prep for certificate auth.
+                if (Certificate == null)
+                {
+                    throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(AuthenticationMethod));
+                }
+
+                if (ChainCertificates != null)
+                {
+                    // Install all the intermediate certificates in the chain if specified.
+                    try
+                    {
+                        CertificateInstaller.EnsureChainIsInstalled(ChainCertificates);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
+
+                        throw new IotHubClientException($"Failed to provide certificates in the chain - {ex.Message}", ex, false, IotHubStatusCode.Unauthorized);
+                    }
+                }
             }
         }
     }

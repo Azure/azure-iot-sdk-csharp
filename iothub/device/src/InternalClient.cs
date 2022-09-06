@@ -144,8 +144,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal X509Certificate2 Certificate { get; set; }
-
         internal IDelegatingHandler InnerHandler { get; set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
@@ -969,7 +967,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientHelper"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(
@@ -1033,7 +1031,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientHelper"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(

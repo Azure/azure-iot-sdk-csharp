@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static async Task TestDeviceClientInvalidServiceCertificate(IotHubClientTransportSettings transportSettings)
         {
             using var deviceClient =
-                IotHubDeviceClient.CreateFromConnectionString(
+                new IotHubDeviceClient(
                     TestConfiguration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
                     new IotHubClientOptions(transportSettings));
             var testMessage = new Client.Message();

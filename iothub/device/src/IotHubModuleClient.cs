@@ -32,87 +32,80 @@ namespace Microsoft.Azure.Devices.Client
         private readonly ICertificateValidator _certValidator;
 
         /// <summary>
-        /// Constructor for a module client to be created from an <see cref="InternalClient"/>.
+        /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
         /// </summary>
-        /// <param name="internalClient">The internal client to use for the commands.</param>
-        internal IotHubModuleClient(InternalClient internalClient)
-            : this(internalClient, NullCertificateValidator.Instance)
+        /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the module to communicate with IoT Hub.</param>
+        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
+        /// <returns>A disposable client instance.</returns>
+        /// <exception cref="ArgumentNullException">Either <paramref name="connectionString"/> is null,
+        /// or the IoT hub host name, device Id or module Id in the connection string is null.</exception>
+        /// <exception cref="ArgumentException">Either <paramref name="connectionString"/> is an empty string or consists only of white-space characters,
+        /// or the IoT hub host name, device Id or module Id in the connection string are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
+        public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
+            : this(new IotHubConnectionCredentials(connectionString), options, null)
         {
         }
 
         /// <summary>
-        /// Constructor for a module client to be created from an <see cref="InternalClient"/>. With a specific certificate validator.
-        /// </summary>
-        /// <param name="internalClient">The internal client to use for the commands.</param>
-        /// <param name="certValidator">The custom certificate validator to use for connection.</param>
-        internal IotHubModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
-        {
-            InternalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
-            _certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
-
-            if (InternalClient.IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentException("A valid module Id should be specified to create a ModuleClient");
-            }
-
-            // There is a distinction between a Module Twin and and Edge module. We set this flag in order
-            // to correctly select the reciver link for AMQP on a Module Twin. This does not affect MQTT.
-            // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = !internalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
-
-            if (Logging.IsEnabled)
-                Logging.Associate(this, this, internalClient, nameof(IotHubModuleClient));
-        }
-
-        /// <summary>
-        /// Creates an AMQP ModuleClient from individual parameters.
+        /// Creates a disposable <c>IotHubModuleClient</c> from the specified parameters.
         /// </summary>
         /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="authenticationMethod">The authentication method that is used.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
+        /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id, module Id or <paramref name="authenticationMethod"/> is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="hostName"/>, device Id or module Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        public static IotHubModuleClient Create(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+        public IotHubModuleClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
+            : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options, null)
         {
-            return Create(() => ClientFactory.Create(hostName, authenticationMethod, options));
         }
 
-        /// <summary>
-        /// Creates a ModuleClient using AMQP transport from the specified connection string.
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId).</param>
-        /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="connectionString"/>, IoT hub host name, device Id or module Id are an empty string or consist only of white-space characters.</exception>
-        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
-        /// <exception cref="ArgumentException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        public static IotHubModuleClient CreateFromConnectionString(string connectionString, IotHubClientOptions options = default)
+        internal IotHubModuleClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options, ICertificateValidator certificateValidator)
         {
-            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
+            Argument.AssertNotNullOrWhiteSpace(iotHubConnectionCredentials.ModuleId, nameof(iotHubConnectionCredentials.ModuleId));
+
+            // Make sure client options is initialized.
+            if (options == default)
+            {
+                options = new();
+            }
+
+            InternalClient = new InternalClient(iotHubConnectionCredentials, options, null);
+
+            // There is a distinction between a Module Twin and and Edge module. We set this flag in order
+            // to correctly select the receiver link for AMQP on a Module Twin. This does not affect MQTT.
+            // We can determine that this is an edge module if the connection string is using a gateway host.
+            _isAnEdgeModule = !InternalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
+
+            _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
+
+            if (Logging.IsEnabled)
+                Logging.CreateClient(
+                    InternalClient,
+                    $"HostName={InternalClient.IotHubConnectionCredentials.HostName};DeviceId={InternalClient.IotHubConnectionCredentials.DeviceId};ModuleId={InternalClient.IotHubConnectionCredentials.ModuleId}",
+                    options);
         }
 
         /// <summary>
         /// Creates a ModuleClient instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <returns>ModuleClient instance</returns>
-        public static Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
+        /// <returns>A disposable client instance.</returns>
+        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
+            // Make sure client options is initialized.
             if (options == default)
             {
                 options = new();
             }
 
-            return new EdgeModuleClientFactory(new TrustBundleProvider(), options).CreateAsync();
-        }
+            IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), options);
 
-        private static IotHubModuleClient Create(Func<InternalClient> internalClientCreator)
-        {
-            return new IotHubModuleClient(internalClientCreator());
+            return new IotHubModuleClient(iotHubConnectionCredentials, options, certificateValidator);
         }
 
         internal InternalClient InternalClient { get; private set; }

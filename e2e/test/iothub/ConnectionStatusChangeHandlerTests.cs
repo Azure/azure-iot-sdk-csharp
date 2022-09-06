@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int deviceDisabledReceivedCount = 0;
 
             var options = new IotHubClientOptions(transportSettings);
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(deviceConnectionString, options);
+            using var deviceClient = new IotHubDeviceClient(deviceConnectionString, options);
             void statusChangeHandler(ConnectionStatusInfo c)
             {
                 if (c.ChangeReason == ConnectionStatusChangeReason.DeviceDisabled)
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
             var options = new IotHubClientOptions(transportSettings);
 
-            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
             moduleClient.SetConnectionStatusChangeHandler(statusChangeHandler);
             Logger.Trace($"{nameof(IotHubModuleClient_Gives_ConnectionStatus_Disconnected_ChangeReason_DeviceDisabled_Base)}: Created {nameof(IotHubModuleClient)} with moduleId={testModule.Id}");
 
