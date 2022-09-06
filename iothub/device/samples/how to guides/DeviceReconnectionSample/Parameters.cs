@@ -1,31 +1,21 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using CommandLine;
+﻿using CommandLine;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    public enum Transport
-    {
-        Mqtt,
-        Amqp,
-    }
-
     /// <summary>
     /// Parameters for the application.
     /// </summary>
-    internal class ApplicationParameters
+    internal class Parameters
     {
         [Option(
-            'p',
+            'c',
             "PrimaryConnectionString",
             Required = true,
             HelpText = "The primary connection string for the device to simulate.")]
         public string PrimaryConnectionString { get; set; }
 
         [Option(
-            's',
             "SecondaryConnectionString",
             Required = false,
             HelpText = "The secondary connection string for the device to simulate.")]
@@ -33,18 +23,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         [Option(
             't',
-            "Transport",
-            Default = Transport.Mqtt,
+            "TransportType",
+            Default = TransportType.Mqtt,
             Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub.")]
-        public Transport Transport { get; set; }
-
-        [Option(
-            "Protocol",
-            Default = IotHubClientTransportProtocol.Tcp,
-            Required = false,
-            HelpText = "The protocol to connect over.")]
-        public IotHubClientTransportProtocol Protocol { get; set; }
+            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_Only, and Http1.")]
+        public TransportType TransportType { get; set; }
 
         [Option(
             'r',
@@ -52,8 +35,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Required = false,
             HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
         public double? ApplicationRunningTime { get; set; }
-
-        public int MyProperty { get; set; }
 
         public List<string> GetConnectionStrings()
         {
