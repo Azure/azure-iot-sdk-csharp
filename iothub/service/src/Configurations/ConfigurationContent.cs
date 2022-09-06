@@ -17,6 +17,9 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// See <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2020-11#create-a-deployment-manifest"/>
         /// and <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/> for more details.
+        /// <para>
+        /// For Edge deployments, this should have a key of <c>"$edgeAgent"</c>.
+        /// </para>
         /// </remarks>
         [JsonProperty(PropertyName = "modulesContent")]
 #pragma warning disable CA2227 // Collection properties should be read only

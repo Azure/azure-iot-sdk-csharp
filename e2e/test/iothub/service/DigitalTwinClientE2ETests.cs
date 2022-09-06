@@ -14,7 +14,7 @@ using Microsoft.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
@@ -24,10 +24,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private const string ThermostatModelId = "dtmi:com:example:Thermostat;1";
         private const string TemperatureControllerModelId = "dtmi:com:example:TemperatureController;1";
 
-        private readonly string _devicePrefix = $"E2E_{nameof(DigitalTwinClientE2ETests)}_";
+        private readonly string _devicePrefix = $"{nameof(DigitalTwinClientE2ETests)}_";
         private static readonly string s_connectionString = TestConfiguration.IoTHub.ConnectionString;
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
             // Create a new test device instance.
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
             // Create a new test device instance.

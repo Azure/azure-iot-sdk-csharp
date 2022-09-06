@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
     <!--See #1874 for additional details-->
@@ -21,7 +21,7 @@
   <!-- delay sign the assembly for Release build -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
     <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>true</DelaySign>
+    <PublicSign>true</PublicSign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
@@ -133,7 +133,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
   </ItemGroup>
 
   <ItemGroup>
@@ -154,7 +154,7 @@
     <Reference Include="System.Web" Version="4.0.0.0" />
     <Reference Include="System.Net.Http" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 

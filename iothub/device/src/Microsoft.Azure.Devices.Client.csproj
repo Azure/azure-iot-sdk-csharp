@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netstandard2.1;netstandard2.0</TargetFrameworks>
@@ -21,7 +21,7 @@
   <!-- delay sign the assembly for Release build -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
     <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>true</DelaySign>
+    <PublicSign>true</PublicSign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
@@ -98,7 +98,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.10" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -124,6 +124,6 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Net.Http" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
   </ItemGroup>
 </Project>

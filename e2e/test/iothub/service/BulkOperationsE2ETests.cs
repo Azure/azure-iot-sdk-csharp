@@ -8,7 +8,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("E2E")]
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
         private readonly string ModulePrefix = $"{nameof(BulkOperationsE2ETests)}_";
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Device_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2DevicePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
             string tagName = Guid.NewGuid().ToString();
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
             string tagName = Guid.NewGuid().ToString();

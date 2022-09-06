@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -21,7 +20,7 @@ using Azure;
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
-namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
+namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     /// <summary>
     /// Tests to ensure authentication using SAS credential succeeds in all the clients.
@@ -31,11 +30,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
     [TestCategory("IoTHub")]
     public class SasCredentialAuthenticationTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"E2E_{nameof(SasCredentialAuthenticationTests)}_";
+        private readonly string _devicePrefix = $"{nameof(SasCredentialAuthenticationTests)}_";
 
 #if !NET451
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -56,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Renewed_Success()
         {
             // arrange
@@ -89,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -121,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             }
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_SasCredentialAuth_Success()
         {
             // arrange
@@ -156,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Success()
         {
             // arrange
@@ -180,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [LoggedTestMethod]
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Renewed_Success()
         {
             // arrange

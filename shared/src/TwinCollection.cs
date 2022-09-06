@@ -145,10 +145,8 @@ namespace Microsoft.Azure.Devices.Shared
                 {
                     return value;
                 }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(nameof(propertyName));
-                }
+
+                throw new ArgumentOutOfRangeException(nameof(propertyName), $"Unexpected property name '{propertyName}'.");
             }
             set => TrySetMemberInternal(propertyName, value);
         }

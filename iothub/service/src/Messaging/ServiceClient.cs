@@ -287,14 +287,16 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public virtual async Task OpenAsync()
         {
-            Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
 
             using var ctx = new CancellationTokenSource(_openTimeout);
 
             await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
 
-            Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
         }
 
         /// <summary>
@@ -302,14 +304,16 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public virtual async Task CloseAsync()
         {
-            Logging.Enter(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
 
             await _faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
             await _feedbackReceiver.CloseAsync().ConfigureAwait(false);
             await _fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
             await Connection.CloseAsync().ConfigureAwait(false);
 
-            Logging.Exit(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
+            if (Logging.IsEnabled)
+                Logging.Exit(this, $"Closing AmqpServiceClient", nameof(CloseAsync));
         }
 
         /// <summary>
@@ -320,7 +324,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
         public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
         {
-            Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
 
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -354,7 +359,8 @@ namespace Microsoft.Azure.Devices
                     .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
                     .ConfigureAwait(false);
 
-                Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -363,12 +369,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!(ex is TimeoutException) && !ex.IsFatal())
             {
-                Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
             {
-                Logging.Exit(this, $"Sending message [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Sending message [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
             }
         }
 
@@ -379,7 +387,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         public virtual Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
 
             try
             {
@@ -392,12 +401,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(PurgeMessageQueueAsync)} threw an exception: {ex}", nameof(PurgeMessageQueueAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
             }
         }
 
@@ -430,7 +441,8 @@ namespace Microsoft.Azure.Devices
         /// <returns>The service statistics that can be retrieved from IoT hub, eg. the number of devices connected to the hub.</returns>
         public virtual Task<ServiceStatistics> GetServiceStatisticsAsync(CancellationToken cancellationToken = default)
         {
-            Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
 
             try
             {
@@ -443,12 +455,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
             }
         }
 
@@ -521,7 +535,8 @@ namespace Microsoft.Azure.Devices
         ///  <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
         public virtual async Task SendAsync(string deviceId, string moduleId, Message message, TimeSpan? timeout = null)
         {
-            Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
 
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -563,7 +578,8 @@ namespace Microsoft.Azure.Devices
                         timeout.Value)
                     .ConfigureAwait(false);
 
-                Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Outcome was: {outcome?.DescriptorName}", nameof(SendAsync));
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -572,12 +588,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(SendAsync)} threw an exception: {ex}", nameof(SendAsync));
                 throw AmqpClientHelper.ToIotHubClientContract(ex);
             }
             finally
             {
-                Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}, module {moduleId}", nameof(SendAsync));
             }
         }
 
@@ -588,7 +606,8 @@ namespace Microsoft.Azure.Devices
 
         private async Task<SendingAmqpLink> GetSendingLinkAsync()
         {
-            Logging.Enter(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
 
             try
             {
@@ -597,13 +616,15 @@ namespace Microsoft.Azure.Devices
                     sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(_openTimeout).ConfigureAwait(false);
                 }
 
-                Logging.Info(this, $"Retrieved SendingAmqpLink [{sendingLink?.Name}]", nameof(GetSendingLinkAsync));
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Retrieved SendingAmqpLink [{sendingLink?.Name}]", nameof(GetSendingLinkAsync));
 
                 return sendingLink;
             }
             finally
             {
-                Logging.Exit(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
             }
         }
 
@@ -611,7 +632,8 @@ namespace Microsoft.Azure.Devices
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
         {
-            Logging.Enter(this, $"Invoking device method for: {uri}", nameof(InvokeDeviceMethodAsync));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Invoking device method for: {uri}", nameof(InvokeDeviceMethodAsync));
 
             try
             {
@@ -627,12 +649,14 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex)
             {
-                Logging.Error(this, $"{nameof(InvokeDeviceMethodAsync)} threw an exception: {ex}", nameof(InvokeDeviceMethodAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(InvokeDeviceMethodAsync)} threw an exception: {ex}", nameof(InvokeDeviceMethodAsync));
                 throw;
             }
             finally
             {
-                Logging.Exit(this, $"Invoking device method for: {uri}", nameof(InvokeDeviceMethodAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Invoking device method for: {uri}", nameof(InvokeDeviceMethodAsync));
             }
         }
 

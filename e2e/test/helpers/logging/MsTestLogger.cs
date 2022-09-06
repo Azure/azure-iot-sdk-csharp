@@ -23,18 +23,18 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class MsTestLogger
     {
         // Test specific properties that cannot be changed.
-        private IDictionary<string, string> MsTestProperties = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> MsTestProperties = new();
 
         // This property bag can be used to add other properties.
-        public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Properties { get; } = new();
 
         internal MsTestLogger(TestContext testContext)
         {
             // Framework against which the test is running.
             var targetFramework = (TargetFrameworkAttribute)Assembly
-                    .GetExecutingAssembly()
-                    .GetCustomAttributes(typeof(TargetFrameworkAttribute), false)
-                    .SingleOrDefault();
+                .GetExecutingAssembly()
+                .GetCustomAttributes(typeof(TargetFrameworkAttribute), false)
+                .SingleOrDefault();
 
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
 

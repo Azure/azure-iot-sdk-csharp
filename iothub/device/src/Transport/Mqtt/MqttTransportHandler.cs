@@ -848,9 +848,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails.
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(MethodPostTopicFilter, _qosReceivePacketFromService))).ConfigureAwait(true);
         }
 
@@ -859,9 +856,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            //SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
-            //SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
-            //SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
             await _channel.WriteAsync(new UnsubscribePacket(0, MethodPostTopicFilter)).ConfigureAwait(true);
         }
 
@@ -870,9 +864,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_021:  `EnableEventReceiveAsync` shall subscribe using the 'devices/{0}/modules/{1}/' topic filter.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_022:  `EnableEventReceiveAsync` shall wait for a SUBACK for the subscription request.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_023:  `EnableEventReceiveAsync` shall return failure if the subscription request fails.
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(_receiveEventMessageFilter, _qosReceivePacketFromService))).ConfigureAwait(true);
         }
 
@@ -881,9 +872,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            //SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
-            //SRS_CSHARP_MQTT_TRANSPORT_33_022: `DisableEventReceiveAsync` shall wait for a UNSUBACK for the unsubscription.
-            //SRS_CSHARP_MQTT_TRANSPORT_33_023: `DisableEventReceiveAsync` shall return failure if the unsubscription fails.
             await _channel.WriteAsync(new UnsubscribePacket(0, _receiveEventMessageFilter)).ConfigureAwait(true);
         }
 
@@ -892,10 +880,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_005:  `SendMethodResponseAsync` shall allocate a `Message` object containing the method response.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_006:  `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_007:  `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_008:  `SendMethodResponseAsync` shall send the message to the service.
             using var message = new Message(methodResponse.BodyStream)
             {
                 MqttTopicName = MethodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId)
@@ -912,9 +896,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_010: `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
             await _channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(TwinPatchTopicFilter, _qosReceivePacketFromService))).ConfigureAwait(true);
 
             if (Logging.IsEnabled)
@@ -993,10 +974,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
             if (IsProxyConfigured())
             {
                 // No need to do a DNS lookup since we have the proxy address already
-
 #if NET451
                 _serverAddresses = new IPAddress[0];
 #else
@@ -1055,7 +1036,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             await _connectCompletion.Task.ConfigureAwait(false);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
             await SubscribeTwinResponsesAsync().ConfigureAwait(true);
         }
 
