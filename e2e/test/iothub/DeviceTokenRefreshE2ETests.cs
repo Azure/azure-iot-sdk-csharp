@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
             using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
-                $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
+                $"HostName={config.IotHubHostName};DeviceId={config.DeviceId};SharedAccessKey={invalidKey}",
                 options);
 
             // act
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string iotHub = config.IotHubHostName;
-            string deviceId = config.DeviceID;
+            string deviceId = config.DeviceId;
             string key = config.SharedAccessKey;
 
             var builder = new SharedAccessSignatureBuilder()
