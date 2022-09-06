@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
 
                 BulkRegistryOperationResult result = await serviceClient.Twins
-                    .UpdateAsync(new[] { twin1, twin2 })
+                    .UpdateAsync(new[] { twin1, twin2 }, true)
                     .ConfigureAwait(false);
 
                 // assert
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // act
 
                 BulkRegistryOperationResult bulkDeleteResult = await serviceClient.Devices
-                    .DeleteAsync(new[] { device1, device2 }, true, default)
+                    .DeleteAsync(new[] { device1, device2 }, false, default)
                     .ConfigureAwait(false);
 
                 // assert
