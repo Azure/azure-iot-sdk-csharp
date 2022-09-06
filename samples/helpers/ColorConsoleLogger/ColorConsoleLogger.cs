@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Logging
     /// </summary>
     public class ColorConsoleLogger : ILogger
     {
-        private static readonly object _lockObject = new();
+        private static readonly object s_lockObject = new();
 
         private readonly ColorConsoleLoggerConfiguration _config;
 
@@ -46,25 +46,25 @@ namespace Microsoft.Azure.Devices.Logging
             return logLevel >= _config.MinLogLevel;
         }
 
-        lock (_lockObject)
+        /// <summary>
+        /// Writes the log entry to console output.
+        /// </summary>
+        /// <typeparam name="TState">The type of the object to be written.</typeparam>
+        /// <param name="logLevel">The log level of the log entry to be written.</param>
+        /// <param name="eventId">The event Id of the log entry to be written.</param>
+        /// <param name="state">The log entry to be written.</param>
+        /// <param name="exception">The exception related to the log entry.</param>
+        /// <param name="formatter">The formatter to be used for formatting the log message.</param>
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            /// <summary>
-            /// Writes the log entry to console output.
-            /// </summary>
-            /// <typeparam name="TState">The type of the object to be written.</typeparam>
-            /// <param name="logLevel">The log level of the log entry to be written.</param>
-            /// <param name="eventId">The event Id of the log entry to be written.</param>
-            /// <param name="state">The log entry to be written.</param>
-            /// <param name="exception">The exception related to the log entry.</param>
-            /// <param name="formatter">The formatter to be used for formatting the log message.</param>
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            lock (s_lockObject)
             {
                 if (!IsEnabled(logLevel))
                 {
                     return;
                 }
 
-                var color = _config.LogLevelToColorMapping[logLevel];
+                ConsoleColor color = _config.LogLevelToColorMapping[logLevel];
                 if (_config.EventIds.Contains(ColorConsoleLoggerConfiguration.DefaultEventId) || _config.EventIds.Contains(eventId.Id))
                 {
                     ConsoleColor initialColor = Console.ForegroundColor;

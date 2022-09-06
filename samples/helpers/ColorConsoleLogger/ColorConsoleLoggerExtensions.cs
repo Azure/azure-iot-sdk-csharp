@@ -18,7 +18,8 @@ namespace Microsoft.Azure.Devices.Logging
         /// <returns>The <see cref="ILoggerFactory "/> instance.</returns>
         public static ILoggerFactory AddColorConsoleLogger(this ILoggerFactory loggerFactory, ColorConsoleLoggerConfiguration config)
         {
-            loggerFactory.AddProvider(new ColorConsoleLoggerProvider(config));
+            using var colorConsoleLoggerProvider = new ColorConsoleLoggerProvider(config);
+            loggerFactory.AddProvider(colorConsoleLoggerProvider);
             return loggerFactory;
         }
 
