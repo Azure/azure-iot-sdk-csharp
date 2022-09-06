@@ -3,55 +3,51 @@ name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Re
 # https://docs.microsoft.com/azure/devops/pipelines/process/runtime-parameters
 parameters:
 - name: maxParallelJobs
-  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make builds run in serial rather than in parallel.
+  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
   type: number
   # Reasonable target to avoid throttling and contention with several PRs running.
   default: 4
 - name: jobTimeoutInMinutes
   displayName: Timeout for each job
   type: number
-  default: 75
+  default: 120
 - name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'pr-build' (net6.0, netcoreapp3.1) are aggregates of the remaining values.
+  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0, netcore3.1) are aggregates of the remaining values.
   type: string
   values:
+    - default
     - all
-    - pr-build
+    - min-matrix
     - net6.0
     - net5.0
-    - netcoreapp3.1
-    - netcoreapp2.1
+    - netcore3.1
+    - netcore2.1
     - net4.7.2
     - net4.5.1
-  default: 'all'
+  default: default
 
 variables:
-  ${{ or(eq(variables['Build.Reason'], 'PullRequest'), contains(parameters['testTargets'], 'pr-build')) }}:
-  isPR: true
+# Variables for the buid/test matrix based on the 'testTargets' that turn on/off various test targets specifically or based on the 2 aggregates.
+  ${{ if and(eq(parameters['testTargets'], 'default'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    allTestTargets: 'False'
+    minMatrix: 'True'
+  ${{ elseif eq(parameters['testTargets'], 'default') }}:
+    allTestTargets: 'True'
+    minMatrix: 'True'
+  ${{ else }}:
+    allTestTargets: ${{ contains(parameters['testTargets'], 'all') }}
+    # We wish to run the minimum test matrix targets if 1) directly specified, 2) if all targets was chosen.
+    minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
 
-  ${{ contains(parameters['testTargets'], 'all') }}:
-  allTestTargets: true
+# The minimum matrix build/test targets.
+  testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
+  testNetcore31: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
 
-  ${{ if or(eq(variables['allTestTargets'], true), eq(variables['isPR'], true)) }}:
-  pri1: true
-
-  ${{ if or(eq(variables['pri1'], 'true'), contains(parameters['testTargets'], 'net6.0')) }}:
-  testNet60: true
-
-  ${{ if or(eq(variables['pri1'], 'true'), contains(parameters['testTargets'], 'netcoreapp3.1')) }}:
-  testNetcoreapp31: true
-
-  ${{ if or(eq(variables['allTestTargets'], true), contains(parameters['testTargets'], 'net5.0')) }}:
-  testNet50: true
-
-  ${{ if or(eq(variables['allTestTargets'], true), contains(parameters['testTargets'], 'netcoreapp2.1')) }}:
-  testNetcoreapp21: true
-
-  ${{ if or(eq(variables['allTestTargets'], true), contains(parameters['testTargets'], 'net4.7.2')) }}:
-  testNet472: true
-
-  ${{ if or(eq(variables['allTestTargets'], true), contains(parameters['testTargets'], 'net4.5.1')) }}:
-  testNet451: true
+# The remaining build/test targets.
+  testNet50: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net5.0')) }}
+  testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
+  testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
+  testNet451: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.5.1')) }}
 
 trigger:
   batch: true
@@ -77,18 +73,19 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
-        ${{ if eq('variables['testNet60']', 'true') }}:
-          .NET6.0:
-            FRAMEWORK: net6.0
-        ${{ if eq('variables['testNet50']', 'true') }}:
-          .NET5.0:
-            FRAMEWORK: net5.0
-        ${{ if eq('variables['testNetcoreapp31']', 'true') }}:
-          .NETCoreApp3.1:
-            FRAMEWORK: netcoreapp3.1
-        ${{ if eq('variables['testNetcoreapp21']', 'true') }}:
-          .NETCoreApp2.1.30:
-            FRAMEWORK: netcoreapp2.1.30
+        .NET 6.0:
+          FRAMEWORK: net6.0
+          # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
+          SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
+        .NET 5.0:
+          FRAMEWORK: net5.0
+          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
+        .NET CoreApp 3.1:
+          FRAMEWORK: netcoreapp3.1
+          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
+        .NET CoreApp 2.1.30:
+          FRAMEWORK: netcoreapp2.1.30
+          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -100,21 +97,29 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            Write-Host "max parallel 1: ${{ parameters.maxParallelJobs }}"
-            Write-Host "max parallel 2: $parameters['maxParallelJobs']"
+            Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
+            Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
+            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
+            Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNet60: ${{ variables.testNet60 }}"
+            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
+            Write-Host "testNet50: ${{ variables.testNet50 }}"
+            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
+            Write-Host "testNet451: ${{ variables.testNet451 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      - ${{ if eq(variables['testNet60'], true) }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 6.0'
-          inputs:
-           packageType: sdk
-           version: 6.x
-           performMultiLevelLookup: true
-           installationPath: $(Agent.ToolsDirectory)/dotnet
+      # Linux requires .NET 6.0 install for tests to run, no matter which framework target is being tested
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 6.0'
+        inputs:
+         packageType: sdk
+         version: 6.x
+         performMultiLevelLookup: true
+         installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet50'], true) }}:
+      - ${{ if eq(variables['testNet50'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 5.0'
           inputs:
@@ -123,7 +128,7 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcoreapp31'], true) }}:
+      - ${{ if eq(variables['testNetcore31'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 3.1'
           inputs:
@@ -132,7 +137,7 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcoreapp21'], true) }}:
+      - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 2.1'
           inputs:
@@ -251,31 +256,47 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
-        ${{ if eq('variables['testNet60']', 'true') }}:
-          .NET6.0:
-            FRAMEWORK: net6.0
-        ${{ if eq('variables['testNet50']', 'true') }}:
-          .NET5.0:
-            FRAMEWORK: net5.0
-        ${{ if eq('variables['testNetcoreapp31']', 'true') }}:
-          .NETCoreApp3.1:
-            FRAMEWORK: netcoreapp3.1
-        ${{ if eq('variables['testNetcoreapp21']', 'true') }}:
-          .NETCoreApp2.1.30:
-            FRAMEWORK: netcoreapp2.1.30
-        ${{ if eq('variables['testNet472']', 'true') }}:
-          .NET4.7.2:
-            FRAMEWORK: net4.7.2
-        ${{ if eq('variables['testNet451']', 'true') }}:
-          .NET451:
-            FRAMEWORK: net4.5.1
+        .NET 6.0:
+          FRAMEWORK: net6.0
+          SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
+        .NET 5.0:
+          FRAMEWORK: net5.0
+          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
+        .NET CoreApp 3.1:
+          FRAMEWORK: netcoreapp3.1
+          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
+        .NET CoreApp 2.1.30:
+          FRAMEWORK: netcoreapp2.1.30
+          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
+        .NET 4.7.2:
+          FRAMEWORK: net4.7.2
+          SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
+        .NET 4.5.1:
+          FRAMEWORK: net4.5.1
+          SHOULD_RUN: ${{ eq(variables['testNet451'], 'True') }}
 
     condition: succeeded()
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: windows-2022
     steps:
-      - ${{ if eq(variables['testNet60'], true) }}:
+      - task: PowerShell@2
+        displayName: 'Print vars'
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
+            Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
+            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
+            Write-Host "minMatrix: ${{ variables.minMatrix }}"
+            Write-Host "testNet60: ${{ variables.testNet60 }}"
+            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
+            Write-Host "testNet50: ${{ variables.testNet50 }}"
+            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
+            Write-Host "testNet451: ${{ variables.testNet451 }}"
+
+      - ${{ if eq(variables['testNet60'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 6.0'
           inputs:
@@ -284,7 +305,7 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet50'], true) }}:
+      - ${{ if eq(variables['testNet50'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 5.0'
           inputs:
@@ -293,7 +314,7 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcoreapp31'], true) }}:
+      - ${{ if eq(variables['testNetcore31'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET Core SDK 3.1'
           inputs:
@@ -302,19 +323,19 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNetcoreapp21'], true) }}:
+      - ${{ if eq(variables['testNetcore21'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET Core 2.1'
           inputs:
             script: 'choco install dotnetcore-2.1-sdk'
 
-      - ${{ if eq(variables['testNet472'], true) }}:
+      - ${{ if eq(variables['testNet472'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET 4.7.2'
           inputs:
             script: 'choco install netfx-4.7.2-devpack'
 
-      - ${{ if eq(variables['testNet451'], true) }}:
+      - ${{ if eq(variables['testNet451'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET 4.5.1'
           inputs:
@@ -415,7 +436,7 @@ jobs:
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
 
         condition: always()
-        
+
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
         inputs:
