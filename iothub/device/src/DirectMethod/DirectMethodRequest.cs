@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     public class DirectMethodRequest
     {
         /// <summary>
-        /// Initialize and instance of this class.
+        /// Initialize an instance of this class.
         /// </summary>
         public DirectMethodRequest()
         {
