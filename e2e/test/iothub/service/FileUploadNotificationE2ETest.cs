@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // the service makes it available for redelivery to other open receivers.
         private readonly AcknowledgementType _acknowledgementType = AcknowledgementType.Abandon;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task FileUploadNotification_Operation(IotHubTransportProtocol protocol)
@@ -136,12 +136,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // than the expected count.
                 while (counter.FileUploadNotificationsReceived < expectedFileUploadNotificationReceivedCount)
                 {
-                    if (timer.ElapsedMilliseconds > 60000)
+                    if (timer.ElapsedMilliseconds > 200000)
                     {
                         throw new AssertFailedException($"Timed out waiting for the expected number of file upload notifications. Received {counter.FileUploadNotificationsReceived}, expected {expectedFileUploadNotificationReceivedCount}");
                     }
 
-                    await Task.Delay(200);
+                    await Task.Delay(800);
                 }
             }
             finally

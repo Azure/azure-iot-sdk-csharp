@@ -15,9 +15,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class ServiceClientE2ETests : E2EMsTestBase
+    public class MessagingClientE2ETests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(ServiceClientE2ETests)}_";
+        private readonly string DevicePrefix = $"{nameof(MessagingClientE2ETests)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(TaskCanceledException))]
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task ServiceClient_SendsMessage(IotHubTransportProtocol protocol)
+        public async Task MessagingClient_SendsMessage(IotHubTransportProtocol protocol)
         {
             // arrange
             IotHubServiceClientOptions options = new IotHubServiceClientOptions
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task ServiceClient_CanReopenClosedClient(IotHubTransportProtocol protocol)
+        public async Task MessagingClient_CanReopenClosedClient(IotHubTransportProtocol protocol)
         {
             // arrange
             IotHubServiceClientOptions options = new IotHubServiceClientOptions
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task ServiceClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
+        public async Task MessagingClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
         {
             // arrange
             IotHubServiceClientOptions options = new IotHubServiceClientOptions

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(
+            using var provisioningServiceClient = new ProvisioningServiceClient(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
                 new QuerySpecification("SELECT * FROM enrollmentGroups"));
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);
             var auth = new AuthenticationProviderX509Certificate(cert);
-            var provisioningDeviceClient = ProvisioningDeviceClient.Create(
+            var provisioningDeviceClient = new ProvisioningDeviceClient(
                 TestConfiguration.Provisioning.GlobalDeviceEndpointInvalidServiceCertificate,
                 "0ne00000001",
                 auth,

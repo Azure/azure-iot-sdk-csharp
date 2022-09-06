@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -129,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
-            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, ServiceName, enrollmentGroupId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
 
         internal static async Task<AttestationMechanism> GetEnrollmentAttestationAsync(
@@ -159,7 +160,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
             return new Uri(
-                EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
+                string.Format(CultureInfo.InvariantCulture, EnrollmentAttestationUriFormat, ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
                 UriKind.Relative);
         }
     }

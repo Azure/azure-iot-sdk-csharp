@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     public class DirectMethodRequest
     {
         /// <summary>
-        /// Initialize and instance of this class.
+        /// Initialize an instance of this class.
         /// </summary>
         public DirectMethodRequest()
         {
@@ -88,6 +88,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
+        /// <remarks>
+        /// This value is not part of the Json payload. It is received as topic string parameter over MQTT and as a
+        /// property over AMQP.
+        /// </remarks>
+        [JsonIgnore]
         internal string RequestId { get; set; }
     }
 }

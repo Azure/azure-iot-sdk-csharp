@@ -37,18 +37,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     Query Language for the Device Provisioning Service.
     ///
     /// Optionally, an <c>Integer</c> with the <b>page size</b>, can determine the maximum number of the items in the
-    ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it 
+    ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it
     ///     contains 0, the Device Provisioning Service will ignore it and use a standard page size.
     ///
     /// You can use this Object as a standard iterator, just using the <c>HasNext</c> and <c>NextAsync</c> in a
-    ///     <c>while</c> loop, up to the point where the <c>HasNext</c> contains <c>false</c>. But, keep 
-    ///     in mind that the <see cref="QueryResult"/> can contain a empty list, even if the <c>HasNext</c> contained 
-    ///     <c>true</c>. For example, image that you have 10 IndividualEnrollment in the Device Provisioning Service 
-    ///     and you created new query with the <c>PageSize</c> equals 5. In the first iteration, <c>HasNext</c> 
-    ///     will contains <c>true</c>, and the first <c>NextAsync</c> will return a <c>QueryResult</c> with 
-    ///     5 items. After, your code will check the <c>HasNext</c>, which will contains <c>true</c> again. Now, 
-    ///     before you get the next page, somebody deletes all the IndividualEnrollment. What happened, when you call the 
-    ///     <c>NextAsync</c>, it will return a valid <c>QueryResult</c>, but the <see cref="QueryResult.Items"/> 
+    ///     <c>while</c> loop, up to the point where the <c>HasNext</c> contains <c>false</c>. But, keep
+    ///     in mind that the <see cref="QueryResult"/> can contain a empty list, even if the <c>HasNext</c> contained
+    ///     <c>true</c>. For example, image that you have 10 IndividualEnrollment in the Device Provisioning Service
+    ///     and you created new query with the <c>PageSize</c> equals 5. In the first iteration, <c>HasNext</c>
+    ///     will contains <c>true</c>, and the first <c>NextAsync</c> will return a <c>QueryResult</c> with
+    ///     5 items. After, your code will check the <c>HasNext</c>, which will contains <c>true</c> again. Now,
+    ///     before you get the next page, somebody deletes all the IndividualEnrollment. What happened, when you call the
+    ///     <c>NextAsync</c>, it will return a valid <c>QueryResult</c>, but the <see cref="QueryResult.Items"/>
     ///     will contain an empty list.
     ///
     /// Besides the <c>Items</c>, the <c>QueryResult</c> contains the <see cref="QueryResult.ContinuationToken"/>.
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static Uri GetQueryUri(string path)
         {
-            return new Uri(QueryUriFormat.FormatInvariant(path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, QueryUriFormat, path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }

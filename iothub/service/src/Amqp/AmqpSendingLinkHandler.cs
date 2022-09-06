@@ -72,7 +72,10 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
-                await _sendingLink.CloseAsync(cancellationToken).ConfigureAwait(false);
+                if (_sendingLink != null)
+                {
+                    await _sendingLink.CloseAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
             finally
             {

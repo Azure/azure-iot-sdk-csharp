@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
     internal class StringValidationHelper
     {
         private const char Base64Padding = '=';
+        private const string StringIsNotBase64 = "String '{0}' is not Base64";
 
         private static readonly HashSet<char> s_base64Table = new HashSet<char>
         {
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!IsBase64StringValid(value))
             {
-                throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, value), paramName);
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value), paramName);
             }
         }
 
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (!IsNullOrBase64String(value))
             {
-                throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, value), paramName);
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, StringIsNotBase64, value), paramName);
             }
         }
 

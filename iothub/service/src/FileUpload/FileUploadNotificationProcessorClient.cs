@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Amqp;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
@@ -18,7 +17,7 @@ namespace Microsoft.Azure.Devices
     /// Subclient of <see cref="IotHubServiceClient"/> for receiving file upload notifications.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#service-file-upload-notifications"/>.
-    public class FileUploadNotificationProcessorClient
+    public class FileUploadNotificationProcessorClient : IDisposable
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
@@ -109,11 +108,6 @@ namespace Microsoft.Azure.Devices
                 if (FileUploadNotificationProcessor == null)
                 {
                     throw new Exception("Callback for file upload notifications must be set before opening the connection.");
-                }
-
-                if (_amqpConnection.IsOpen())
-                {
-                    return;
                 }
 
                 await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -235,6 +229,12 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _amqpConnection?.Dispose();
         }
     }
 }

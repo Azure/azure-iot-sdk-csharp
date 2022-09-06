@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using SharedAccessSignatureParser = Microsoft.Azure.Devices.SharedAccessSignature;
@@ -38,12 +39,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>
         /// The connection string contains a set of information that uniquely identify an IoT Service.
-        /// 
+        ///
         /// A valid connection string shall be in the following format:
         /// <c>
         /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
         /// </c>
-        /// 
+        ///
         /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
         /// </remarks>
         /// <param name="serviceConnectionString">the <c>string</c> with the connection string information.</param>
@@ -85,7 +86,7 @@ namespace Microsoft.Azure.Devices
 
         private void Parse(string serviceConnectionString)
         {
-            IDictionary<string, string> map = serviceConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
+            IDictionary<string, string> map = ToDictionary(serviceConnectionString, ValuePairDelimiter, ValuePairSeparator);
 
             HostName = GetConnectionStringValue(map, s_hostNamePropertyName);
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, s_sharedAccessKeyNamePropertyName);
@@ -203,6 +204,27 @@ namespace Microsoft.Azure.Devices
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
             string serviceName = index >= 0 ? hostName.Substring(0, index) : hostName;
             return serviceName;
+        }
+
+        public static IDictionary<string, string> ToDictionary(string valuePairString, char kvpDelimiter, char kvpSeparator)
+        {
+            if (string.IsNullOrWhiteSpace(valuePairString))
+            {
+                throw new ArgumentException("Malformed Token");
+            }
+
+            IEnumerable<string[]> parts = valuePairString
+                .Split(kvpDelimiter)
+                .Select((part) => part.Split(new char[] { kvpSeparator }, 2));
+
+            if (parts.Any((part) => part.Length != 2))
+            {
+                throw new FormatException("Malformed Token");
+            }
+
+            IDictionary<string, string> map = parts.ToDictionary((kvp) => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
+
+            return map;
         }
     }
 }
