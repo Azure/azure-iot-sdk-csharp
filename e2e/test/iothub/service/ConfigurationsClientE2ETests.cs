@@ -92,7 +92,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_SetETag_Works()
         {
-            bool configCreated = false;
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
             try
@@ -102,68 +101,47 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     Priority = 2,
                     Labels = { { "labelName", "labelValue" } },
                     TargetCondition = "deviceId='fakeDevice'",
-                    Content = new ConfigurationContent
-                    {
-                        DeviceContent = { { "properties.desired.x", 4L } },
-                    },
-                    Metrics = new ConfigurationMetrics
-                    {
-                        Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 4" } }
-                    },
+                    Content = new ConfigurationContent(),
+                    Metrics = new ConfigurationMetrics(),
                 };
 
                 configuration = await serviceClient.Configurations.CreateAsync(configuration).ConfigureAwait(false);
-                configCreated = true;
                 ETag oldEtag = configuration.ETag;
 
                 configuration.Priority = 3;
 
                 configuration = await serviceClient.Configurations.SetAsync(configuration).ConfigureAwait(false);
-
                 configuration.ETag = oldEtag;
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                    await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    // expected thrown exception, continue the test without throwing anything
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                    configuration = await serviceClient.Configurations.SetAsync(configuration, false).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () => { configuration = await serviceClient.Configurations.SetAsync(configuration, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
-                try
-                {
-                    configuration.Priority = 2;
-
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
-                    await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                configuration.Priority = 2;
+                FluentActions
+                .Invoking(async () => { await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
             }
             finally
             {
                 try
                 {
-                    if (configCreated)
-                    {
-                        // If this fails, we shall let it throw an exception and fail the test
-                        await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
-                    }
+                    // If this fails, we shall let it throw an exception and fail the test
+                    await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // configuration was already deleted during the normal test flow
                 }
                 catch (Exception ex)
                 {
@@ -175,7 +153,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_DeleteETag_Works()
         {
-            bool configCreated = false;
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
             try
@@ -185,18 +162,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     Priority = 2,
                     Labels = { { "labelName", "labelValue" } },
                     TargetCondition = "deviceId='fakeDevice'",
-                    Content = new ConfigurationContent
-                    {
-                        DeviceContent = { { "properties.desired.x", 4L } },
-                    },
-                    Metrics = new ConfigurationMetrics
-                    {
-                        Queries = { { "successfullyConfigured", "select deviceId from devices where properties.reported.x = 4" } }
-                    },
+                    Content = new ConfigurationContent(),
+                    Metrics = new ConfigurationMetrics(),
                 };
 
                 configuration = await serviceClient.Configurations.CreateAsync(configuration).ConfigureAwait(false);
-                configCreated = true;
                 ETag oldEtag = configuration.ETag;
 
                 configuration.Priority = 3;
@@ -205,35 +175,26 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 configuration.ETag = oldEtag;
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                    await serviceClient.Configurations.DeleteAsync(configuration, true).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    // expected thrown exception, continue the test without throwing anything
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Configurations.DeleteAsync(configuration, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
 
-                try
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () =>
                 {
-                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                     await serviceClient.Configurations.DeleteAsync(configuration, false).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
             }
             finally
             {
                 try
                 {
-                    if (configCreated)
-                    {
-                        await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
-                    }
+                    await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
                 catch (DeviceNotFoundException)
                 {

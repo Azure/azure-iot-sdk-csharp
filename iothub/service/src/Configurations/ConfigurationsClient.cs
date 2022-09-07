@@ -218,10 +218,6 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.AssertNotNull(configuration, nameof(configuration));
-                if (string.IsNullOrWhiteSpace(configuration.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileUpdatingConfiguration);
-                }
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);

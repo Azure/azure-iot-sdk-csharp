@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -465,7 +464,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 string propValue = "userA";
                 moduleTwin.Properties.Desired[propName] = propValue;
 
-                Twin updatedModuleTwin = await serviceClient.Twins.UpdateAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
+                Twin updatedModuleTwin = await serviceClient.Twins.UpdateAsync(module.DeviceId, module.Id, moduleTwin).ConfigureAwait(false);
 
                 Assert.IsNotNull(updatedModuleTwin.Properties.Desired[propName]);
                 Assert.AreEqual(propValue, (string)updatedModuleTwin.Properties.Desired[propName]);
@@ -517,38 +516,24 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // header appropriately when sending the request.
                 device.ETag = oldEtag;
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                    await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    // expected thrown exception, continue the test without throwing anything
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                    device = await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () => { device = await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
-                try
-                {
-                    device.Status = DeviceStatus.Enabled;
-
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
-                    await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
+                device.Status = DeviceStatus.Enabled;
+                FluentActions
+                .Invoking(async () => { device = await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
             }
             finally
             {
@@ -583,26 +568,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // header appropriately when sending the request.
                 device.ETag = oldEtag;
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                    await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    // expected thrown exception, continue the test without throwing anything
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                    await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
             }
             finally
             {
@@ -645,38 +621,25 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // header appropriately when sending the request.
                 module.ETag = oldEtag;
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                    await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    // expected thrown exception, continue the test without throwing anything
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                    module = await serviceClient.Modules.SetAsync(module, false).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () => { module = await serviceClient.Modules.SetAsync(module, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
-                try
-                {
-                    module.ManagedBy = "";
-
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
-                    await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
+                module.ManagedBy = "";
+                device.Status = DeviceStatus.Enabled;
+                FluentActions
+                .Invoking(async () => { await serviceClient.Modules.SetAsync(module, true).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
             }
             finally
             {
@@ -716,26 +679,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // header appropriately when sending the request.
                 module.ETag = oldEtag;
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-                    await serviceClient.Modules.DeleteAsync(module, true).ConfigureAwait(false);
-                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    // expected thrown exception, continue the test without throwing anything
-                }
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Modules.DeleteAsync(module, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a module with an out of date ETag");
 
-                try
-                {
-                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
-                    await serviceClient.Modules.DeleteAsync(module, false).ConfigureAwait(false);
-                }
-                catch (DeviceMessageLockLostException)
-                {
-                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
-                }
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Modules.DeleteAsync(module, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
             }
             finally
             {

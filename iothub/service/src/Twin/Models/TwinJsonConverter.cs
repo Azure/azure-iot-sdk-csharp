@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices
             }
 
             writer.WritePropertyName(ETagJsonTag);
-            writer.WriteValue(twin.ETag);
+            writer.WriteValue(twin.ETag.ToString());
 
             writer.WritePropertyName(VersionTag);
             writer.WriteValue(twin.Version);

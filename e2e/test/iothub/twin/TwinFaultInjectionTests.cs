@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await serviceClient.Twins.UpdateAsync(deviceId, twinPatch, new ETag("*")).ConfigureAwait(false);
+            await serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryAsync(

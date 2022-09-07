@@ -168,13 +168,7 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.AssertNotNull(module, nameof(module));
-
                 cancellationToken.ThrowIfCancellationRequested();
-
-                if (string.IsNullOrWhiteSpace(module.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
-                }
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
@@ -259,12 +253,6 @@ namespace Microsoft.Azure.Devices
             try
             {
                 Argument.AssertNotNull(module, nameof(module));
-
-                if (string.IsNullOrWhiteSpace(module.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
