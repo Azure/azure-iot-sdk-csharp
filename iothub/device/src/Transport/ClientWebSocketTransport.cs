@@ -152,10 +152,6 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-            catch (TaskCanceledException taskCanceledException)
-            {
-                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.Timeout);
-            }
             finally
             {
                 if (!succeeded)
@@ -200,10 +196,6 @@ namespace Microsoft.Azure.Amqp.Transport
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
-            }
-            catch (TaskCanceledException taskCanceledException)
-            {
-                throw new IotHubClientException(taskCanceledException.Message, true, IotHubStatusCode.Timeout);
             }
             finally
             {
