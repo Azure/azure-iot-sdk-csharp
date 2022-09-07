@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The default reported "value" and "av" for each "Thermostat" component on the client initial startup.
         // See https://docs.microsoft.com/azure/iot-develop/concepts-convention#writable-properties for more details in acknowledgment responses.
         private const double DefaultPropertyValue = 0d;
+
         private const long DefaultAckVersion = 0L;
 
         private const string TargetTemperatureProperty = "targetTemperature";
@@ -96,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await GetWritablePropertiesAndHandleChangesAsync();
                 }
             });
-            
+
             _logger.LogDebug("Set handler for 'reboot' command.");
             await _deviceClient.SetMethodHandlerAsync("reboot", HandleRebootCommandAsync, _deviceClient, cancellationToken);
 
@@ -164,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         case Thermostat2:
                             // This will be called when a device client gets initialized and the _temperature dictionary is still empty.
                             if (!_temperature.TryGetValue(componentName, out double value))
-                            { 
+                            {
                                 _temperature[componentName] = 21d; // The default temperature value is 21°C.
                             }
                             await TargetTemperatureUpdateCallbackAsync(twinCollection, componentName);
@@ -384,7 +385,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             TwinCollection reportedProperties = PnpConvention.CreatePropertyPatch(propertyName, SerialNumber);
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
-            _logger.LogDebug($"Property: Update - {{ \"{propertyName}\": \"{SerialNumber}\" }} is complete.");
+            var oBrace = '{';
+            var cBrace = '}';
+            _logger.LogDebug($"Property: Update - {oBrace} \"{propertyName}\": \"{SerialNumber}\" {cBrace} is complete.");
         }
 
         private async Task SendTemperatureAsync(string componentName, CancellationToken cancellationToken)
@@ -451,10 +454,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
             TwinCollection reportedProperties = PnpConvention.CreateComponentWritablePropertyResponse(
-                componentName, 
-                propertyName, 
-                DefaultPropertyValue, 
-                (int)StatusCode.ReportDeviceInitialProperty, 
+                componentName,
+                propertyName,
+                DefaultPropertyValue,
+                (int)StatusCode.ReportDeviceInitialProperty,
                 DefaultAckVersion,
                 "Initialized with default value");
 

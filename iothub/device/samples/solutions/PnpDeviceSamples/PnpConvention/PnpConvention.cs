@@ -178,9 +178,9 @@ namespace PnpHelpers
             }
 
             var propertyPatch = new StringBuilder();
-            propertyPatch.Append("{");
+            propertyPatch.Append('{');
             propertyPatch.Append($"\"{componentName}\":");
-            propertyPatch.Append("{");
+            propertyPatch.Append('{');
             propertyPatch.Append($"\"{PropertyComponentIdentifierKey}\":\"{PropertyComponentIdentifierValue}\",");
             foreach (var kvp in propertyPairs)
             {
