@@ -69,13 +69,13 @@ namespace Microsoft.Azure.Devices
             },
             {
                 HttpStatusCode.InternalServerError,
-                async (response) => new ServerErrorException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
             {
                 HttpStatusCode.ServiceUnavailable,
-                async (response) => new ServerBusyException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
