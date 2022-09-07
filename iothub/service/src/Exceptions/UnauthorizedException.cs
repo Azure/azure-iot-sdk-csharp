@@ -27,12 +27,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of this class with a specified <see cref="ErrorCode"/>, error message
+        /// Creates an instance of this class with a specified <see cref="IotHubStatusCode"/>, error message
         /// and marks it as non-transient.
         /// </summary>
-        /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
+        /// <param name="code">The <see cref="IotHubStatusCode"/> associated with the error.</param>
         /// <param name="message">The message that describes the error.</param>
-        public UnauthorizedException(ErrorCode code, string message)
+        public UnauthorizedException(IotHubStatusCode code, string message)
             : base(code, message)
         {
         }

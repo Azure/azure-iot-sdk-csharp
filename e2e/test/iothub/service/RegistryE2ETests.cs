@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     Device actualDevice1 = await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
                     throw new AssertFailedException("Expected the request to fail with a \"not found\" error");
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is ErrorCode.DeviceNotFound)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceNotFound)
                 {
                     // expected exception
                 }
@@ -312,7 +312,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     Device actualDevice2 = await serviceClient.Devices.GetAsync(device1.Id).ConfigureAwait(false);
                     throw new AssertFailedException("Expected the request to fail with a \"not found\" error");
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is ErrorCode.DeviceNotFound)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceNotFound)
                 {
                     // expected exception
                 }

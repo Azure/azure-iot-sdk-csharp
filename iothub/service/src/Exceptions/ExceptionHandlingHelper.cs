@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="response">The HTTP response message</param>
         /// <returns>The fully-qualified error code, or the response status code, if no error code was provided.</returns>
-        public static async Task<ErrorCode> GetExceptionCodeAsync(HttpResponseMessage response)
+        public static async Task<IotHubStatusCode> GetExceptionCodeAsync(HttpResponseMessage response)
         {
             // First we will attempt to retrieve the error code from the response content.
             string responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -111,9 +111,9 @@ namespace Microsoft.Azure.Devices
             // the SDK will do its best to decide what to surface to the user.
             // The SDK will attempt to retrieve the integer error code from the response content and the error description from the response header. Through a 'description'
             // to 'error code' enum mapping, the SDK will check if both values are a match. If so, the SDK will populate the exception with the proper Code. In the case where
-            // there is a mismatch between the error code and the description, the SDK returns ErrorCode.InvalidErrorCode and log a warning.
+            // there is a mismatch between the error code and the description, the SDK returns IotHubStatusCode.InvalidErrorCode and log a warning.
 
-            int errorCodeValue = (int)ErrorCode.InvalidErrorCode;
+            int errorCodeValue = (int)IotHubStatusCode.InvalidErrorCode;
             try
             {
                 IoTHubExceptionResult responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseContentStr);
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices
                                     string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
 
                                     // Only taing the first 6 characters of 'errorCodeFields[1]' as the IoT hub error code has 6 digits only.
-                                    if (Enum.TryParse(errorCodeFields[1].Substring(0, 6), out ErrorCode errorCode))
+                                    if (Enum.TryParse(errorCodeFields[1].Substring(0, 6), out IotHubStatusCode errorCode))
                                     {
                                         errorCodeValue = (int)errorCode;
                                     }
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices
                             Logging.Error(null, $"Failed to deserialize error message into a dictionary and could not parse ';' delimited string either: {ex}." +
                                 $" Message body: '{responseContentStr}.'");
 
-                        return ErrorCode.InvalidErrorCode;
+                        return IotHubStatusCode.InvalidErrorCode;
                     }
                 }
             }
@@ -175,13 +175,13 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(null, $"Failed to parse response content JSON: {ex}. Message body: '{responseContentStr}.'");
 
-                return ErrorCode.InvalidErrorCode;
+                return IotHubStatusCode.InvalidErrorCode;
             }
 
             // Now that we retrieved the integer error code from the response content, we will retrieve the error description from the header.
             string headerErrorCodeString = response.Headers.GetFirstValueOrNull(HttpErrorCodeName);
             if (headerErrorCodeString != null
-                && Enum.TryParse(headerErrorCodeString, out ErrorCode headerErrorCode))
+                && Enum.TryParse(headerErrorCodeString, out IotHubStatusCode headerErrorCode))
             {
                 if ((int)headerErrorCode == errorCodeValue)
                 {
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices
                         $"Content error code: {errorCodeValue}. Header error code description: {(int)headerErrorCode}.");
             }
 
-            return ErrorCode.InvalidErrorCode;
+            return IotHubStatusCode.InvalidErrorCode;
         }
     }
 }

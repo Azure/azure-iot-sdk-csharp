@@ -29,10 +29,10 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Headers.Add(HttpErrorCodeName, "DeviceNotFound");
 
             // act
-            ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
+            IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(ErrorCode.DeviceNotFound, errorCode);
+            Assert.AreEqual(IotHubStatusCode.DeviceNotFound, errorCode);
         }
 
         [TestMethod]
@@ -48,10 +48,10 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Headers.Add(HttpErrorCodeName, "DummyErrorCode");
 
             // act
-            ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
+            IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(ErrorCode.InvalidErrorCode, errorCode);
+            Assert.AreEqual(IotHubStatusCode.InvalidErrorCode, errorCode);
         }
 
         [TestMethod]
@@ -67,10 +67,10 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Headers.Add(HttpErrorCodeName, "DeviceNotFound");
 
             // act
-            ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
+            IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(ErrorCode.InvalidErrorCode, errorCode);
+            Assert.AreEqual(IotHubStatusCode.InvalidErrorCode, errorCode);
         }
 
         [TestMethod]
@@ -85,10 +85,10 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
+            IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(ErrorCode.InvalidErrorCode, errorCode);
+            Assert.AreEqual(IotHubStatusCode.InvalidErrorCode, errorCode);
         }
     }
 }

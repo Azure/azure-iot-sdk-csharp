@@ -23,12 +23,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with a specified <see cref="ErrorCode"/>
+        /// Creates an instance of <see cref="DeviceMessageLockLostException"/> with a specified <see cref="IotHubStatusCode"/>
         /// and error message, and marks it as non-transient.
         /// </summary>
-        /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
+        /// <param name="code">The <see cref="IotHubStatusCode"/> associated with the error.</param>
         /// <param name="message">The message that describes the error.</param>
-        public DeviceMessageLockLostException(ErrorCode code, string message)
+        public DeviceMessageLockLostException(IotHubStatusCode code, string message)
             : base(code, message)
         {
         }

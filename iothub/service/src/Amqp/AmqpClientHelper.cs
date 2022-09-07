@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {
-                retException = new IotHubServiceException(ErrorCode.DeviceNotFound, message, innerException: null);
+                retException = new IotHubServiceException(IotHubStatusCode.DeviceNotFound, message, innerException: null);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotImplemented))
             {
@@ -134,11 +134,11 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
-                retException = new IotHubServiceException(ErrorCode.DeviceMaximumQueueDepthExceeded, message);
+                retException = new IotHubServiceException(IotHubStatusCode.DeviceMaximumQueueDepthExceeded, message);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceAlreadyExists))
             {
-                retException = new IotHubServiceException(ErrorCode.DeviceAlreadyExists, message, (Exception)null);
+                retException = new IotHubServiceException(IotHubStatusCode.DeviceAlreadyExists, message, (Exception)null);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceContainerThrottled))
             {

@@ -22,12 +22,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="ThrottlingException"/> with a specified <see cref="ErrorCode"/>, error message
+        /// Creates an instance of <see cref="ThrottlingException"/> with a specified <see cref="IotHubStatusCode"/>, error message
         /// and marks it as non-transient.
         /// </summary>
-        /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
+        /// <param name="code">The <see cref="IotHubStatusCode"/> associated with the error.</param>
         /// <param name="message">The message that describes the error.</param>
-        public ThrottlingException(ErrorCode code, string message)
+        public ThrottlingException(IotHubStatusCode code, string message)
             : base(code, message)
         {
         }

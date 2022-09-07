@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 // Default case for when the mapping of this error code to an exception does not exist yet
-                ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
+                IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
                 throw new IotHubServiceException(errorCode, errorMessage);
             }

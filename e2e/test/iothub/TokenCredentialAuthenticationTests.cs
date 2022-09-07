@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(ErrorCode.DeviceNotFound);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
 
             await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }
