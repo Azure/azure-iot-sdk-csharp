@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="device">The device identity's new state.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this update operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="onlyIfUnchanged">
         /// If false, this delete operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
@@ -448,7 +448,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="devices">The device identities to update to your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this update operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
@@ -496,7 +496,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="devices">The device identities to delete from your IoT hub's registry. May not exceed 100 devices.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this delete operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
         /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
