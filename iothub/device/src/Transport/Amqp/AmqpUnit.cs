@@ -135,9 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             catch (OperationCanceledException)
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Error(this, "Failed to enter the semaphore required for opening an AMQP session.", nameof(EnsureSessionIsOpenAsync));
-                }
                 throw;
             }
 
