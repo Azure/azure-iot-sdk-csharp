@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             if (exception is TimeoutException)
             {
-                return new IotHubCommunicationException(exception.Message);
+                return new IotHubServiceException(IotHubStatusCode.NetworkErrors, exception.Message);
             }
             else if (exception is UnauthorizedAccessException)
             {
