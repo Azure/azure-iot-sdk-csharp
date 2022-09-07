@@ -883,6 +883,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task OpenInternalAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
             if (IsProxyConfigured())
             {
                 // No need to do a DNS lookup since we have the proxy address already
@@ -936,7 +937,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             await _connectCompletion.Task.ConfigureAwait(false);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
             await SubscribeTwinResponsesAsync().ConfigureAwait(true);
         }
 

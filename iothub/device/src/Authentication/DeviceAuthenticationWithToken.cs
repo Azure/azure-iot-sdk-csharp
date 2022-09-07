@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Token must be of type SharedAccessSignature");
+                throw new ArgumentException("Token must be of type SharedAccessSignature", nameof(token));
             }
 
             _token = token;

@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
@@ -585,7 +586,7 @@ namespace Microsoft.Azure.Devices
                 twin.DeviceId = deviceId;
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(isReplace ? HttpMethod.Put : _patch, GetTwinUri(deviceId), _credentialProvider, twin);
-                HttpMessageHelper.InsertETag(request, etag);
+                HttpMessageHelper.ConditionallyInsertETag(request, etag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
@@ -613,7 +614,7 @@ namespace Microsoft.Azure.Devices
                 twin.ModuleId = moduleId;
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(isReplace ? HttpMethod.Put : _patch, GetModuleTwinRequestUri(deviceId, moduleId), _credentialProvider, twin);
-                HttpMessageHelper.InsertETag(request, etag);
+                HttpMessageHelper.ConditionallyInsertETag(request, etag);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
@@ -691,7 +692,7 @@ namespace Microsoft.Azure.Devices
                     Id = twin.DeviceId,
                     ModuleId = twin.ModuleId,
                     ImportMode = importMode,
-                    TwinETag = importMode == ImportMode.UpdateTwinIfMatchETag ? twin.ETag : null,
+                    TwinETag = new ETag(twin.ETag),
                     Tags = twin.Tags,
                     Properties = new ExportImportDevice.PropertyContainer(),
                 };

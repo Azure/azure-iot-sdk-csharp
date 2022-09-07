@@ -397,8 +397,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                         // ignore and proceed.
                     }
                 }
-
-                await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
@@ -91,36 +92,59 @@ namespace Microsoft.Azure.Devices
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        public static void InsertETag(HttpRequestMessage requestMessage, string eTag)
+        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, string eTag)
         {
-            Argument.AssertNotNullOrWhiteSpace(eTag, nameof(eTag));
+            ConditionallyInsertETag(requestMessage, new ETag(eTag), false);
+        }
+
+        /// <summary>
+        /// Adds the appropriate If-Match header value to the provided HTTP request.
+        /// </summary>
+        /// <param name="requestMessage">The request to add the If-Match header to.</param>
+        /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
+        /// <param name="onlyIfUnchanged">
+        /// If true, the inserted IfMatch header value will be "*". If false, the IfMatch header value will be equal to the provided eTag.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
+        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged = false)
+        {
             Argument.AssertNotNull(requestMessage, nameof(requestMessage));
 
-            // All ETag values need to be wrapped in escaped quotes, but the "forced" value
-            // is hardcoded with quotes so it can be skipped here
-            if (!ETagForce.Equals(eTag))
+            if (onlyIfUnchanged && eTag != null)
             {
-                if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    eTag = "\"" + eTag;
-                }
+                // "Perform this operation only if the entity is unchanged"
+                // Sends the If-Match header with a value of the ETag.
+                string escapedETag = EscapeETag(eTag.ToString());
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(escapedETag));
+            }
+            else
+            {
+                // "Perform this operation even if the entity has changed"
+                // Sends the If-Match header with a value of "*"
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(ETagForce));
+            }
+        }
 
-                if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    eTag += "\"";
-                }
+        // ETag values other than "*" need to be wrapped in escaped quotes if they are not
+        // already.
+        private static string EscapeETag(string eTag)
+        {
+            var escapedETagBuilder = new StringBuilder();
+
+            if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                escapedETagBuilder.Append('"');
             }
 
-            requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(eTag));
+            escapedETagBuilder.Append(eTag.ToString());
+
+            if (!eTag.ToString().EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
+                escapedETagBuilder.Append('"');
+            }
+
+            return escapedETagBuilder.ToString();
         }
     }
 }

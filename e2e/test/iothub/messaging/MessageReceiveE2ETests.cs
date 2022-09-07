@@ -366,6 +366,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             using var cts = new CancellationTokenSource(s_tenSeconds);
             Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             await Task
                 .WhenAll(
                     serviceClient.Messaging.SendAsync(testDevice.Id, msg),
@@ -400,6 +401,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // First receive message using the polling ReceiveAsync() API.
             (Message firstMessage, _, _) = ComposeC2dTestMessage(Logger);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messaging.SendAsync(testDevice.Id, firstMessage).ConfigureAwait(false);
             Logger.Trace($"Sent C2D message from service, messageId={firstMessage.MessageId} - to be received on polling ReceiveAsync");
 
@@ -481,6 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             (Message firstMessage, _, _) = ComposeC2dTestMessage(Logger);
             deviceHandler1.ExpectedMessageSentByService = firstMessage;
             Logger.Trace($"Sending C2D message from service, messageId={firstMessage.MessageId}");
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             await Task
                 .WhenAll(
                     serviceClient.Messaging.SendAsync(testDevice.Id, firstMessage),
@@ -537,6 +540,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // Send the message from service.
             (Message msg, string _, string _) = ComposeC2dTestMessage(Logger);
             Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
             using IotHubDeviceClient deviceClient2 = testDevice.CreateDeviceClient(options);
@@ -601,6 +605,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // Send the message from service.
             Logger.Trace($"Sending C2D message from service, messageId={msg.MessageId}");
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
             // Subscribe to receive C2D messages over the callback.

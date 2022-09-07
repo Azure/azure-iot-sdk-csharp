@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpTransportHandler : TransportHandler
     {
-        private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
         protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
@@ -397,24 +396,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 Task<Twin> receivingTask = taskCompletionSource.Task;
 
-                if (await Task
-                    .WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds), cancellationToken))
-                    .ConfigureAwait(false) == receivingTask)
+                if (receivingTask.Exception?.InnerException != null)
                 {
-                    if (receivingTask.Exception?.InnerException != null)
-                    {
-                        throw receivingTask.Exception.InnerException;
-                    }
+                    throw receivingTask.Exception.InnerException;
+                }
 
-                    // Task completed within timeout.
-                    // Consider that the task may have faulted or been canceled.
-                    // We re-await the task so that any exceptions/cancellation is re-thrown.
-                    response = await receivingTask.ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new IotHubClientException("The client timed out waiting for the service to send the twin response", true, IotHubStatusCode.Timeout);
-                }
+                // Consider that the task may have faulted or been canceled.
+                // We re-await the task so that any exceptions/cancellation is re-thrown.
+                response = await receivingTask.ConfigureAwait(false);
             }
             finally
             {

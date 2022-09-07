@@ -115,10 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns></returns>
         /// <exception cref="IotHubClientException">Thrown if an attempt is made to open a session on a client that is already closed.</exception>
-        /// <exception cref="IotHubClientException">
-        /// Thrown with <see cref="IotHubStatusCode.Timeout"/> if the operation timed out before it could 
-        /// gain access to the semaphore for retrieving the session reference.
-        /// </exception>
+        /// <exception cref="OperationCanceledException"> Thrown if the operation canceled before it could gain access to the semaphore for retrieving the session reference.</exception>
         internal async Task<AmqpIotSession> EnsureSessionIsOpenAsync(CancellationToken cancellationToken)
         {
             if (_closed)
@@ -137,10 +134,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for opening an AMQP session.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Failed to enter the semaphore required for opening an AMQP session.", nameof(EnsureSessionIsOpenAsync));
+                throw;
             }
 
             try
@@ -217,10 +213,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for closing an AMQP session.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for closing an AMQP session.", nameof(CloseAsync));
+                }
+                throw;
             }
 
             try
@@ -293,10 +290,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP message receiver links are open.", 
-                    true, 
-                    IotHubStatusCode.Timeout); ;
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP message receiver links are open.", nameof(EnsureMessageReceivingLinkIsOpenAsync));
+                }
+                throw;
             }
 
             try
@@ -429,10 +427,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 }
                 catch (OperationCanceledException)
                 {
-                    throw new IotHubClientException(
-                        "Failed to enter the semaphore required for ensuring that AMQP message receiver links are open and a listener can be set.", 
-                        true, 
-                        IotHubStatusCode.Timeout);
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP message receiver links are open and a listener can be set.", nameof(EnableReceiveMessageAsync));
+                    }
+                    throw;
                 }
 
                 await EnsureMessageReceivingLinkIsOpenAsync(cancellationToken, true).ConfigureAwait(false);
@@ -466,10 +465,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 }
                 catch (OperationCanceledException)
                 {
-                    throw new IotHubClientException(
-                        "Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.", 
-                        true, 
-                        IotHubStatusCode.Timeout);
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.", nameof(DisableReceiveMessageAsync));
+                    }
+                    throw;
                 }
 
                 await DisableMessageReceivingLinkAsync(cancellationToken).ConfigureAwait(false);
@@ -496,10 +496,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP message receiver links are closed.", nameof(DisableMessageReceivingLinkAsync));
+                }
+                throw;
             }
 
             // This event handler is in place for network drop cases and will try to close the session that this
@@ -587,10 +588,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP event receiver links are open.", nameof(EnableEventReceiveAsync));
+                }
+                throw;
             }
 
             try
@@ -695,10 +697,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are open.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are open.", nameof(EnableMethodsAsync));
+                }
+                throw;
             }
 
             string correlationIdSuffix = Guid.NewGuid().ToString();
@@ -770,10 +773,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are closed.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are closed.", nameof(DisableTwinLinksAsync));
+                }
+                throw;
             }
 
             // These event handlers are in place for network drop cases and will try to close the session that this
@@ -830,10 +834,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are closed.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP method sender and receiver links are closed.", nameof(DisableMethodsAsync));
+                }
+                throw;
             }
 
             // These event handlers are in place for network drop cases and will try to close the session that this
@@ -969,10 +974,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             catch (OperationCanceledException)
             {
-                throw new IotHubClientException(
-                    "Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are open.", 
-                    true, 
-                    IotHubStatusCode.Timeout);
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, "Failed to enter the semaphore required for ensuring that AMQP twin sender and receiver links are open.", nameof(EnableTwinLinksAsync));
+                }
+                throw;
             }
 
             try

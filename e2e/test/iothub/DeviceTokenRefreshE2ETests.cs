@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
+            using var deviceClient = new IotHubDeviceClient(
                 $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
                 options);
 
@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
-            using var deviceClient = IotHubDeviceClient.CreateFromConnectionString(
-                $"HostName={config.IotHubHostName};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}",
+            using var deviceClient = new IotHubDeviceClient(
+                $"HostName={config.IotHubHostName};DeviceId={config.DeviceId};SharedAccessKey={invalidKey}",
                 options);
 
             // act
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var config = new TestConfiguration.IoTHub.ConnectionStringParser(deviceConnectionString);
             string iotHub = config.IotHubHostName;
-            string deviceId = config.DeviceID;
+            string deviceId = config.DeviceId;
             string key = config.SharedAccessKey;
 
             var builder = new SharedAccessSignatureBuilder()
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
-            using var deviceClient = IotHubDeviceClient.Create(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            using var deviceClient = new IotHubDeviceClient(iotHub, auth, new IotHubClientOptions(new IotHubClientAmqpSettings()));
             Logger.Trace($"{deviceId}: Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             Logger.Trace($"{deviceId}: DeviceClient OpenAsync.");
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
 
-            using IotHubDeviceClient deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, auth, options);
+            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, auth, options);
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} instance for {testDevice.Id}.");
 
             deviceClient.SetConnectionStatusChangeHandler((ConnectionStatusInfo connectionStatusInfo) =>
@@ -150,11 +150,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             });
 
+
             var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
             Logger.Trace($"[{testDevice.Id}]: SendEventAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
             using var cts1 = new CancellationTokenSource(timeout);
+            await deviceClient.OpenAsync().ConfigureAwait(false);
             await deviceClient.SendEventAsync(message, cts1.Token).ConfigureAwait(false);
 
             // Wait for the Token to expire.
@@ -187,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 transportSettings,
                 Logger);
 
-            using var deviceClient = IotHubDeviceClient.Create(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
+            using var deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, refresher, new IotHubClientOptions(transportSettings));
             Logger.Trace($"Created {nameof(IotHubDeviceClient)} ID={TestLogger.IdOf(deviceClient)}");
 
             if (transportSettings is IotHubClientMqttSettings

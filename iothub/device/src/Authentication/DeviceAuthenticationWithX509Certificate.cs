@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -20,13 +19,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="certificate">X.509 Certificate.</param>
         /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
+        /// <exception cref="ArgumentException"><paramref name="certificate"/> is null.</exception>
         public DeviceAuthenticationWithX509Certificate(
             string deviceId,
             X509Certificate2 certificate,
             X509Certificate2Collection chainCertificates = null)
         {
             SetDeviceId(deviceId);
-            Certificate = certificate;
+            Certificate = certificate
+                ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
             ChainCertificates = chainCertificates;
         }
 
@@ -40,11 +41,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the X.509 certificate associated with this device.
+        /// The X.509 certificate associated with this device.
         /// The private key should be available in the <see cref="X509Certificate2"/> object,
         /// or should be available in the certificate store of the system where the client will be authenticated from.
         /// </summary>
-        public X509Certificate2 Certificate { get; set; }
+        public X509Certificate2 Certificate { get; }
 
         /// <summary>
         /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the

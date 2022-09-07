@@ -7,7 +7,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -247,7 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
 
                 BulkRegistryOperationResult result = await serviceClient.Twins
-                    .UpdateAsync(new[] { twin1, twin2 })
+                    .UpdateAsync(new[] { twin1, twin2 }, true)
                     .ConfigureAwait(false);
 
                 // assert
@@ -290,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // act
 
                 BulkRegistryOperationResult bulkDeleteResult = await serviceClient.Devices
-                    .DeleteAsync(new[] { device1, device2 }, true, default)
+                    .DeleteAsync(new[] { device1, device2 }, false, default)
                     .ConfigureAwait(false);
 
                 // assert
@@ -493,6 +495,130 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             registryStatistics.DisabledDeviceCount.Should().BeGreaterOrEqualTo(0);
             registryStatistics.EnabledDeviceCount.Should().BeGreaterOrEqualTo(0);
             registryStatistics.TotalDeviceCount.Should().BeGreaterOrEqualTo(0);
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task DevicesClient_SetDevicesETag_Works()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            Device device = new Device(_idPrefix + Guid.NewGuid());
+            device = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
+
+            try
+            {
+                ETag oldEtag = device.ETag;
+
+                device.Status = DeviceStatus.Disabled;
+
+                // Update the device once so that the last ETag falls out of date.
+                device = await serviceClient.Devices.SetAsync(device).ConfigureAwait(false);
+
+                // Deliberately set the ETag to an older version to test that the SDK is setting the If-Match
+                // header appropriately when sending the request.
+                device.ETag = oldEtag;
+
+                try
+                {
+                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                    await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
+                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    // expected thrown exception, continue the test without throwing anything
+                }
+
+                try
+                {
+                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                    device = await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false);
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                }
+
+                try
+                {
+                    device.Status = DeviceStatus.Enabled;
+
+                    // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
+                    await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                }
+            }
+            finally
+            {
+                try
+                {
+                    await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                }
+            }
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task DevicesClient_DeleteDevicesETag_Works()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            Device device = new Device(_idPrefix + Guid.NewGuid());
+            device = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
+
+            try
+            {
+                ETag oldEtag = device.ETag;
+
+                device.Status = DeviceStatus.Disabled;
+
+                // Update the device once so that the last ETag falls out of date.
+                device = await serviceClient.Devices.SetAsync(device).ConfigureAwait(false);
+
+                // Deliberately set the ETag to an older version to test that the SDK is setting the If-Match
+                // header appropriately when sending the request.
+                device.ETag = oldEtag;
+
+                try
+                {
+                    // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                    await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
+                    throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    // expected thrown exception, continue the test without throwing anything
+                }
+
+                try
+                {
+                    // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                    await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false);
+                }
+                catch (DeviceMessageLockLostException)
+                {
+                    throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+                }
+            }
+            finally
+            {
+                try
+                {
+                    await serviceClient.Devices.DeleteAsync(device.Id).ConfigureAwait(false);
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // device was already deleted during the normal test flow
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up devices due to {ex}");
+                }
+            }
         }
 
         private static async Task CleanupAsync(IotHubServiceClient serviceClient, string deviceId)
