@@ -226,5 +226,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// Retrying failed operations could resolve the error.
         /// </remarks>
         NetworkErrors,
+
+        /// <summary>
+        /// The operation failed because the IoT hub has been suspended. 
+        /// </summary>
+        /// <remarks>
+        /// This is likely due to exceeding Azure spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
+        /// </remarks>
+        HubSuspended,
     }
 }
