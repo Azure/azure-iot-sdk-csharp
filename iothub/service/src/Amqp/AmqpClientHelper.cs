@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.MessageSizeExceeded))
             {
-                retException = new MessageTooLargeException(message);
+                retException = new IotHubServiceException(IotHubStatusCode.MessageTooLarge, message);
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {

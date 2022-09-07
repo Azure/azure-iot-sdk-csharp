@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices
             },
             {
                 HttpStatusCode.RequestEntityTooLarge,
-                async (response) => new MessageTooLargeException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
