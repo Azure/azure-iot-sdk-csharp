@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     case ETagJsonTag:
-                        twin.ETag = reader.Value as string;
+                        twin.ETag = new ETag(reader.Value as string);
                         break;
 
                     case TagsJsonTag:
