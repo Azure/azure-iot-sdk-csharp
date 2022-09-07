@@ -146,11 +146,11 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.QuotaExceeded))
             {
-                retException = new QuotaExceededException(message, (Exception)null);
+                retException = new IotHubServiceException(IotHubStatusCode.IotHubQuotaExceeded, message, (Exception)null);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.PreconditionFailed))
             {
-                retException = new PreconditionFailedException(message, (Exception)null);
+                retException = new IotHubServiceException(IotHubStatusCode.PreconditionFailed, message, (Exception)null);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
             {

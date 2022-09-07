@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices
             },
             {
                 HttpStatusCode.Forbidden,
-                async (response) => new QuotaExceededException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
