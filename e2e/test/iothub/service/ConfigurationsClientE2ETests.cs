@@ -134,19 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                try
-                {
-                    // If this fails, we shall let it throw an exception and fail the test
-                    await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
-                }
-                catch (DeviceNotFoundException)
-                {
-                    // configuration was already deleted during the normal test flow
-                }
-                catch (Exception ex)
-                {
-                    Logger.Trace($"Failed to clean up configuration due to {ex}");
-                }
+                await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
             }
         }
 
@@ -192,18 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                try
-                {
-                    await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
-                }
-                catch (DeviceNotFoundException)
-                {
-                    // configuration was already deleted during the normal test flow
-                }
-                catch (Exception ex)
-                {
-                    Logger.Trace($"Failed to clean up configuration due to {ex}");
-                }
+                await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
             }
         }
     }
