@@ -69,9 +69,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _usingX509ClientCert = true;
             }
 
-            if (proxy != DefaultWebProxySettings.Instance)
+            if (proxy != null)
             {
-                _httpClientHandler.UseProxy = proxy != null;
+                _httpClientHandler.UseProxy = true;
                 _httpClientHandler.Proxy = proxy;
             }
 
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj = new HttpClient(_httpClientHandler)
             {
                 BaseAddress = _baseAddress,
-                Timeout = timeout
+                Timeout = timeout,
             };
 
             _httpClientObj.BaseAddress = _baseAddress;

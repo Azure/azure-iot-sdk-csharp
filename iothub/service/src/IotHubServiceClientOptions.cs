@@ -26,41 +26,40 @@ namespace Microsoft.Azure.Devices
         /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
         /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
-        /// static ServiceClient GetServiceClient()
+        /// IotHubServiceClient GetServiceClient()
         /// {
-        ///     try
+        ///     var proxy = new WebProxy("localhost", "8888");
+        ///     var options = new IotHubServiceClientOptions
         ///     {
-        ///         var proxyHost = "localhost";
-        ///         var proxyPort = 8888;
-        ///         var transportSettings = new HttpTransportSettings
-        ///         {
-        ///             Proxy = new WebProxy(proxyHost, proxyPort)
-        ///         };
-        ///         // Specify the WebProxy to be used for the HTTP connection
-        ///         var serviceClient = new ServiceClient("a connection string", transportSettings);
-        ///         return serviceClient;
-        ///     }
-        ///     catch (Exception)
-        ///     {
-        ///         Console.WriteLine("Error creating client.");
-        ///         throw;
-        ///     }
+        ///         Protocol = IotHubTransportProtocol.WebSocket,
+        ///         // Specify the WebProxy to be used for the HTTP and web socket connections.
+        ///         Proxy = proxy,
+        ///         // Using the default HttpClient here, so the proxy for HTTP operations will be set for me.
+        ///     };
+        ///     return new IotHubServiceClient("a connection string", options);
         /// }
         /// </c>
         /// </example>
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
-        /// The HTTP client to use for all HTTP operations. If provided, all other settings will be ignored. If not provided,
-        /// an HTTP client will be created for you based on the other provided settings.
+        /// The HTTP client to use for all HTTP operations.
         /// </summary>
+        /// <remarks>
+        /// If not provided, an HTTP client will be created for you based on the other settings provided.
+        /// <para>
+        /// If provided, all other HTTP-specific settings (that is <see cref="Proxy"/>, <see cref="SslProtocols"/>, and <see cref="CertificateRevocationCheck"/>)
+        /// on this class will be ignored and must be specified on the custom HttpClient instance.
+        /// </para>
+        /// </remarks>
         public HttpClient HttpClient { get; set; }
 
         /// <summary>
         /// The configured transport protocol.
         /// </summary>
         /// <remarks>
-        /// Only used for AMQP. Can only be used for <see cref="MessagingClient"/> and <see cref="MessageFeedbackProcessorClient"/> and <see cref="FileUploadNotificationProcessorClient"/>.
+        /// Only used for communications over AMQP, used in <see cref="MessagingClient"/>, <see cref="MessageFeedbackProcessorClient"/>,
+        /// and <see cref="FileUploadNotificationProcessorClient"/>.
         /// </remarks>
         public IotHubTransportProtocol Protocol { get; set; } = IotHubTransportProtocol.Tcp;
 
