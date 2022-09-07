@@ -11,14 +11,14 @@ function IsPullRequestBuild
 	return !($env:TARGET_BRANCH -and $env:TARGET_BRANCH.toLower().Contains("system.pullrequest.targetbranch"))
 }
 
-function ShouldSkipIotHubTests 
+function ShouldSkipIotHubTests
 {	
 	return !(DoChangesAffectAnyOfFolders @("iothub", "common", "shared", "vsts"))
 }
 
-function ShouldSkipDPSTests 
+function ShouldSkipDPSTests
 {
-	if (ShouldSkipIotHubTests) 
+	if (ShouldSkipIotHubTests)
 	{
 		return !(DoChangesAffectAnyOfFolders @("provisioning", "security"))
 	}
@@ -29,18 +29,18 @@ function ShouldSkipDPSTests
 
 # $folderNames is an array of strings where each string is the name of a folder within the codebase to look for in the git diff between the source and target branches
 # For instance, $folderNames can be "iothub", "common", "shared" if you want to see if any changes happened within the iothub folder, the common folder, or in the shared folder
-function DoChangesAffectAnyOfFolders($folderNames) 
+function DoChangesAffectAnyOfFolders($folderNames)
 {
 	#TARGET_BRANCH is defined by the yaml file that calls this script. It is equal to the azure devops pre-defined variable "$(System.PullRequest.TargetBranch)" which contains either
 	# the target branch of the pull request build if it is a pull request build, or a default value "system.pullrequest.targetbranch" if it is not a pull request build.
 	$GitDiff = & git diff origin/$env:TARGET_BRANCH --name-only
-	ForEach ($line in $($GitDiff -split "`r`n")) 
+	ForEach ($line in $($GitDiff -split "`r`n"))
 	{
-		if ($line.EndsWith(".md", "CurrentCultureIgnoreCase") -or $line.EndsWith(".png", "CurrentCultureIgnoreCase")) 
+		if ($line.EndsWith(".md", "CurrentCultureIgnoreCase") -or $line.EndsWith(".png", "CurrentCultureIgnoreCase"))
 		{
 			# These file types are ignored when determining if source code changes require running e2e tests
 		}
-		elseif ($line.toLower().Contains("sample")) 
+		elseif ($line.toLower().Contains("sample"))
 		{
 			# Sample changes don't necessitate running e2e tests
 		}
@@ -68,11 +68,11 @@ function DoChangesAffectAnyOfFolders($folderNames)
 				}
 			}
 		}
-		else 
+		else
 		{
-			foreach ($folderName in $folderNames) 
+			foreach ($folderName in $folderNames)
 			{
-				if ($line.toLower().Contains($folderName.toLower())) 
+				if ($line.toLower().Contains($folderName.toLower()))
 				{
 					return $true
 				}
