@@ -269,10 +269,10 @@ jobs:
           FRAMEWORK: netcoreapp2.1.30
           SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
         .NET 4.7.2:
-          FRAMEWORK: net4.7.2
+          FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
         .NET 4.5.1:
-          FRAMEWORK: net4.5.1
+          FRAMEWORK: net451
           SHOULD_RUN: ${{ eq(variables['testNet451'], 'True') }}
 
     condition: succeeded()
