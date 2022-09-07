@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices
             },
             {
                 (HttpStatusCode)429,
-                async (response) => new ThrottlingException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             }

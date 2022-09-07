@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceContainerThrottled))
             {
-                retException = new IotHubThrottledException(message, (Exception)null);
+                retException = new IotHubServiceException(IotHubStatusCode.ThrottlingException, message, (Exception)null);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.QuotaExceeded))
             {

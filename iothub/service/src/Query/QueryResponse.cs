@@ -108,8 +108,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// If this method made a request to IoT hub to get the next page of items but IoT hub responded to
         /// the request with a non-successful status code. For example, if the provided request was throttled,
-        /// <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible error cases,
-        /// see <see cref="Common.Exceptions"/>.
+        /// <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. For a complete list of possible error cases,
+        /// see <see cref="Common.Exceptions.IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If this method made a request to IoT hub to get the next page of items but the HTTP request fails due to

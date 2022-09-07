@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         twinUpdateOptions)
                     .ConfigureAwait(false);
             }
-            catch (ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.ThrottlingException)
             {
                 // Concurrent jobs can be rejected, but it still means authentication was successful. Ignore the exception.
             }

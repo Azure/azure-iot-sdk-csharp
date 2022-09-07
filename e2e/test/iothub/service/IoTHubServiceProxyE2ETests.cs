@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (ThrottlingException) when (++tryCount < MaxIterationWait)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.ThrottlingException && ++tryCount < MaxIterationWait)
                 {
                     Logger.Trace($"ThrottlingException... waiting.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);
