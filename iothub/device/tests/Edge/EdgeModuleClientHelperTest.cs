@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
     [TestClass]
     [TestCategory("Unit")]
     [DoNotParallelize()]
-    public class EdgeModuleClientFactoryTest
+    public class EdgeModuleClientHelperTest
     {
         private const string ServerUrl = "http://localhost:8080";
 
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public async Task TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync();
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync();
 
             Assert.IsNotNull(dc);
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
 
             // act
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(clientOptions);
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(clientOptions);
 
             Assert.IsNotNull(dc);
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, s_iotHubConnectionString);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
+            using IotHubModuleClient dc = await IotHubModuleClient.CreateFromEnvironmentAsync(options);
 
             Assert.IsNotNull(dc);
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async Task TestCreate_FromEnvironment_MissingVariable_ShouldThrow()
+        public void TestCreate_FromEnvironment_MissingVariable_ShouldThrow()
         {
             try
             {
@@ -94,42 +94,25 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 Environment.SetEnvironmentVariable(DeviceIdVariableName, null);
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, null);
 
-                var trustBundle = Substitute.For<ITrustBundleProvider>();
-                var settings = new IotHubClientMqttSettings();
-
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
                 Environment.SetEnvironmentVariable(IotEdgedUriVariableName, ServerUrl);
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
-
-                Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
-
-                Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
                 Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
+
+                Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
+
+                Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
 
                 Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
-                await TestAssert.ThrowsAsync<InvalidOperationException>(() => new EdgeModuleClientFactory(trustBundle)
-                    .CreateAsync()).
-                    ConfigureAwait(false);
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
             }
             finally
             {
@@ -142,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async Task TestCreate_FromEnvironment_UnsupportedAuth_ShouldThrow()
+        public void TestCreate_FromEnvironment_UnsupportedAuth_ShouldThrow()
         {
             try
             {
@@ -153,11 +136,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
                 Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
 
                 Environment.SetEnvironmentVariable(AuthSchemeVariableName, "x509Cert");
-                var settings = new IotHubClientMqttSettings();
-                var trustBundle = Substitute.For<ITrustBundleProvider>();
-                await TestAssert
-                    .ThrowsAsync<InvalidOperationException>(async () => await new EdgeModuleClientFactory(trustBundle).CreateAsync().ConfigureAwait(false))
-                    .ConfigureAwait(false);
+                TestAssert.Throws<InvalidOperationException>(() => EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment());
             }
             finally
             {
@@ -170,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async Task TestCreate_FromEnvironment_ShouldCreateClient()
+        public async Task TestCreate_FromEnvironment_SetAmqpTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, ServerUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
@@ -181,8 +160,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             var settings = new IotHubClientAmqpSettings();
+            var options = new IotHubClientOptions(settings);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            IotHubModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
+            IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
+            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             Assert.IsNotNull(dc);
 
@@ -195,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         }
 
         [TestMethod]
-        public async Task TestCreate_FromEnvironment_SetTransportSettings_ShouldCreateClient()
+        public async Task TestCreate_FromEnvironment_SetMqttTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, ServerUrl);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
@@ -206,8 +188,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             var settings = new IotHubClientMqttSettings();
+            var options = new IotHubClientOptions(settings);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            IotHubModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
+            IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
+            using IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             Assert.IsNotNull(dc);
 
@@ -230,8 +215,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             var settings = new IotHubClientAmqpSettings();
+            var options = new IotHubClientOptions(settings);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            IotHubModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
+            IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
+
+            // This client is being used by the test methods. It will be disposed by the respective tests.
+            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
         }
@@ -247,8 +237,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             var settings = new IotHubClientMqttSettings();
+            var options = new IotHubClientOptions(settings);
             var trustBundle = Substitute.For<ITrustBundleProvider>();
-            IotHubModuleClient dc = await new EdgeModuleClientFactory(trustBundle).CreateAsync();
+            IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
+            ICertificateValidator certValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(trustBundle, options).ConfigureAwait(false);
+
+            // This client is being used by the test methods. It will be disposed by the respective tests.
+            IotHubModuleClient dc = new IotHubModuleClient(creds, options, certValidator);
 
             return dc;
         }
@@ -256,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -271,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -299,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -313,7 +308,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
-            IotHubModuleClient moduleClient = await CreateMqttModuleClient();
+            using IotHubModuleClient moduleClient = await CreateMqttModuleClient();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -332,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -346,7 +341,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -371,7 +366,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -385,7 +380,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback_Amqp()
         {
-            IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
+            using IotHubModuleClient moduleClient = await CreateAmqpModuleClientAsync();
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 

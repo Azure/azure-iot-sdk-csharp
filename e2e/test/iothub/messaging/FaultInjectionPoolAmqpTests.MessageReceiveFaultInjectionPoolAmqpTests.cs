@@ -649,6 +649,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
+                await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
                 await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 Logger.Trace($"{nameof(FaultInjectionPoolAmqpTests)}: Sent message to device {testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
 

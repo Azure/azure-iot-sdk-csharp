@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Utilities;
 
@@ -108,18 +106,6 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Exit(this, iotHubClientOptions.TransportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
-        private static IDeviceClientPipelineBuilder BuildPipeline()
-        {
-            var transporthandlerFactory = new TransportHandlerFactory();
-            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
-                .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
-
-            return pipelineBuilder;
-        }
-
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
         /// A value of 0 means no message will carry on diagnostics info.
@@ -144,179 +130,9 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal X509Certificate2 Certificate { get; set; }
-
         internal IDelegatingHandler InnerHandler { get; set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
-
-        /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate.
-        /// </summary>
-        /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
-        public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
-        {
-            if (Logging.IsEnabled)
-                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeHandler));
-
-            _connectionStatusChangeHandler = statusChangeHandler;
-        }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a status update
-        /// (desired or reported) from the service.
-        /// Set callback value to null to clear.
-        /// </summary>
-        /// <remarks>
-        /// This has the side-effect of subscribing to the PATCH topic on the service.
-        /// </remarks>
-        /// <param name="callback">Callback to call after the status update has been received and applied</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<TwinCollection, object, Task> callback,
-            object userContext,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
-            await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (callback != null && !_twinPatchSubscribedWithService)
-                {
-                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                    _twinPatchSubscribedWithService = true;
-                }
-                else if (callback == null && _twinPatchSubscribedWithService)
-                {
-                    await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
-                }
-
-                _desiredPropertyUpdateCallback = callback;
-                _twinPatchCallbackContext = userContext;
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-            finally
-            {
-                _twinDesiredPropertySemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
-            }
-        }
-
-        /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with
-        /// the named method, it will be replaced with the new delegate.
-        /// A method handler can be unset by passing a null MethodCallback.
-        /// </summary>
-        /// <param name="methodName">The name of the method to associate with the delegate.</param>
-        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
-        /// of cancellation.</param>
-        public async Task SetMethodHandlerAsync(
-            string methodName,
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
-
-            Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (methodHandler != null)
-                {
-                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceMethods[methodName] = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
-                }
-                else
-                {
-                    _deviceMethods.Remove(methodName);
-                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-            finally
-            {
-                _methodsSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
-            }
-        }
-
-        /// <summary>
-        /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
-        /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method handler can be unset by passing a null MethodCallback.
-        /// </summary>
-        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no
-        /// delegate registered for that method name.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
-        /// of cancellation.</param>
-        public async Task SetMethodDefaultHandlerAsync(
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (methodHandler != null)
-                {
-                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-
-                    _deviceDefaultMethodCallback = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
-                }
-                else
-                {
-                    _deviceDefaultMethodCallback = null;
-
-                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-            finally
-            {
-                _methodsSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
-            }
-        }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -337,6 +153,19 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
+        /// it will be replaced with the new delegate.
+        /// </summary>
+        /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
+        public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
+        {
+            if (Logging.IsEnabled)
+                Logging.Info(this, statusChangeHandler, nameof(SetConnectionStatusChangeHandler));
+
+            _connectionStatusChangeHandler = statusChangeHandler;
+        }
+
+        /// <summary>
         /// Explicitly open the client instance.
         /// </summary>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
@@ -347,25 +176,6 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Close the client instance
-        /// </summary>
-        /// <param name="cancellationToken">A token to cancel the operation.</param>
-        public async Task CloseAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -424,49 +234,6 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the device twin properties for the current device.
-        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
-        /// </summary>
-        /// <returns>The device twin object for the current device</returns>
-        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
-            try
-            {
-                return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Push reported property changes up to the service.
-        /// </summary>
-        /// <param name="reportedProperties">Reported properties to push</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            try
-            {
-                await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -595,6 +362,223 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
+            }
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Sets a new delegate for the named method. If a delegate is already associated with
+        /// the named method, it will be replaced with the new delegate.
+        /// A method handler can be unset by passing a null MethodCallback.
+        /// </summary>
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
+        /// of cancellation.</param>
+        public async Task SetMethodHandlerAsync(
+            string methodName,
+            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (methodHandler != null)
+                {
+                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
+                    _deviceMethods[methodName] = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
+                }
+                else
+                {
+                    _deviceMethods.Remove(methodName);
+                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+            finally
+            {
+                _methodsSemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
+            }
+        }
+
+        /// <summary>
+        /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
+        /// If a default delegate is already registered it will replace with the new delegate.
+        /// A method handler can be unset by passing a null MethodCallback.
+        /// </summary>
+        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no
+        /// delegate registered for that method name.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice
+        /// of cancellation.</param>
+        public async Task SetMethodDefaultHandlerAsync(
+            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
+            object userContext,
+            CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (methodHandler != null)
+                {
+                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
+
+                    _deviceDefaultMethodCallback = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
+                }
+                else
+                {
+                    _deviceDefaultMethodCallback = null;
+
+                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+            finally
+            {
+                _methodsSemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the device twin properties for the current device.
+        /// For the complete device twin object, use Microsoft.Azure.Devices.RegistryManager.GetTwinAsync(string deviceId).
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
+            try
+            {
+                return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
+        {
+            Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
+            try
+            {
+                await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+            }
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a status update
+        /// (desired or reported) from the service.
+        /// Set callback value to null to clear.
+        /// </summary>
+        /// <remarks>
+        /// This has the side-effect of subscribing to the PATCH topic on the service.
+        /// </remarks>
+        /// <param name="callback">Callback to call after the status update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        public async Task SetDesiredPropertyUpdateCallbackAsync(
+            Func<TwinCollection, object, Task> callback,
+            object userContext,
+            CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Wait to acquire the _twinSemaphore. This ensures that concurrently invoked SetDesiredPropertyUpdateCallbackAsync calls are invoked in a thread-safe manner.
+            await _twinDesiredPropertySemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (callback != null && !_twinPatchSubscribedWithService)
+                {
+                    await InnerHandler.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                    _twinPatchSubscribedWithService = true;
+                }
+                else if (callback == null && _twinPatchSubscribedWithService)
+                {
+                    await InnerHandler.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                _desiredPropertyUpdateCallback = callback;
+                _twinPatchCallbackContext = userContext;
+            }
+            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
+            }
+            finally
+            {
+                _twinDesiredPropertySemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, callback, userContext, nameof(SetDesiredPropertyUpdateCallbackAsync));
+            }
+        }
+
+        /// <summary>
+        /// Close the client instance
+        /// </summary>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        public async Task CloseAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -969,7 +953,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientHelper"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(
@@ -1033,7 +1017,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientFactory"/> creates the module.</param>
+        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientHelper"/> creates the module.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(
@@ -1211,6 +1195,18 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        private static IDeviceClientPipelineBuilder BuildPipeline()
+        {
+            var transporthandlerFactory = new TransportHandlerFactory();
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
+
+            return pipelineBuilder;
+        }
+
         private T GetDelegateHandler<T>() where T : DefaultDelegatingHandler
         {
             var handler = InnerHandler as DefaultDelegatingHandler;
@@ -1231,7 +1227,7 @@ namespace Microsoft.Azure.Devices.Client
             return !isFound ? default : (T)handler;
         }
 
-        internal bool IsE2eDiagnosticSupportedProtocol()
+        private bool IsE2eDiagnosticSupportedProtocol()
         {
             if (_clientOptions.TransportSettings is IotHubClientAmqpSettings
                 || _clientOptions.TransportSettings is IotHubClientMqttSettings)

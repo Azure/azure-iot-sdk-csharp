@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
         private bool messagedFeedbackReceived;
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
@@ -49,9 +49,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await deviceClient.CompleteMessageAsync(receivedMessage.LockToken).ConfigureAwait(false);
 
             var timer = Stopwatch.StartNew();
-            while (!messagedFeedbackReceived && timer.ElapsedMilliseconds < 60000)
+            while (!messagedFeedbackReceived && timer.ElapsedMilliseconds < 200000)
             {
-                await Task.Delay(200);
+                await Task.Delay(800);
             }
             timer.Stop();
 
