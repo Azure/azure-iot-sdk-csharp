@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices
             },
             {
                 HttpStatusCode.Unauthorized,
-                async (response) => new UnauthorizedException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
@@ -150,8 +150,15 @@ namespace Microsoft.Azure.Devices
                                 {
                                     string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
 
-                                    // Only taing the first 6 characters of 'errorCodeFields[1]' as the IoT hub error code has 6 digits only.
-                                    if (Enum.TryParse(errorCodeFields[1].Substring(0, 6), out IotHubStatusCode errorCode))
+                                    string returnedErrorCode = errorCodeFields[1];
+
+                                    // When the returned error code is numeric, only taing the first 6 characters as the numeric code contains 6 digits.
+                                    if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
+                                    {
+                                        returnedErrorCode = code.ToString();
+                                    }
+
+                                    if (Enum.TryParse(returnedErrorCode, out IotHubStatusCode errorCode))
                                     {
                                         errorCodeValue = (int)errorCode;
                                     }

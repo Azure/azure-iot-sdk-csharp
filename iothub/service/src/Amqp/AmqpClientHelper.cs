@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (exception is UnauthorizedAccessException)
             {
-                return new UnauthorizedException(exception.Message);
+                return new IotHubServiceException(IotHubStatusCode.IotHubUnauthorizedAccess, exception.Message);
             }
             else
             {
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.UnauthorizedAccess))
             {
-                retException = new UnauthorizedException(message);
+                retException = new IotHubServiceException(IotHubStatusCode.IotHubUnauthorizedAccess, message);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.ArgumentError))
             {
