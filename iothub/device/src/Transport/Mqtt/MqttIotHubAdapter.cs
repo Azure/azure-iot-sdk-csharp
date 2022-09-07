@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Received a non-fatal exception while writing data to the MQTT transport layer, will shut down: {ex}", nameof(WriteAsync));
+                    Logging.Error(this, $"Received a non-fatal exception while writing data to the MQTT transport layer; will shut down: {ex}", nameof(WriteAsync));
 
                 ShutdownOnErrorAsync(context, ex);
                 throw;
