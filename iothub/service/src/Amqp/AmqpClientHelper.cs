@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.MessageLockLostError))
             {
-                retException = new DeviceMessageLockLostException(message);
+                retException = new IotHubServiceException(IotHubStatusCode.DeviceMessageLockLost, message);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotAllowed))
             {

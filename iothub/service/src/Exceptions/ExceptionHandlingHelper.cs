@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices
             },
             {
                 HttpStatusCode.PreconditionFailed,
-                async (response) => new DeviceMessageLockLostException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },

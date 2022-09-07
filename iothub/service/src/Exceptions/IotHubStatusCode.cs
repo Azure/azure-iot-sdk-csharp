@@ -211,6 +211,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         ServiceUnavailable = 503001,
 
+        // Errors not returned by the hub
+
+        /// <summary>
+        /// This is converted from the status code HttpStatusCode.PreconditionFailed. Not directly returned by the service for service client operations.
+        /// </summary>
+        DeviceMessageLockLost,
+
         /// <summary>
         /// The operation failed when an attempt to communicate with the IoT hub service fails due to transient
         /// network issues or operation timeouts.
