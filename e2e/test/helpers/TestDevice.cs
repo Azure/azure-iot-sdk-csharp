@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     {
         private const int MaxRetryCount = 5;
         private static readonly HashSet<Type> s_throttlingExceptions = new HashSet<Type> { typeof(ThrottlingException), };
-        private static readonly HashSet<Type> s_getRetryableExceptions = new HashSet<Type>(s_throttlingExceptions) { typeof(DeviceNotFoundException) };
+        private static readonly HashSet<Type> s_getRetryableExceptions = new HashSet<Type>(s_throttlingExceptions) { typeof(IotHubServiceException) };
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                         if (device is null)
                         {
-                            throw new DeviceNotFoundException(ErrorCode.DeviceNotFound, $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
+                            throw new IotHubServiceException(ErrorCode.DeviceNotFound, $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
                         }
                     },
                     s_exponentialBackoffRetryStrategy,

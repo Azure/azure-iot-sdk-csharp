@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public IotHubServiceException(ErrorCode code, string message, Exception innerException = null)
             : this(message, innerException, false, string.Empty)
         {
-            Code = code;
+            StatusCode = code;
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         protected IotHubServiceException(ErrorCode code, string message, bool isTransient, Exception innerException = null)
             : this(message, innerException, isTransient, trackingId: string.Empty)
         {
-            Code = code;
+            StatusCode = code;
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// The error code associated with the exception.
         /// </summary>
-        public ErrorCode Code { get; private set; }
+        public ErrorCode StatusCode { get; private set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

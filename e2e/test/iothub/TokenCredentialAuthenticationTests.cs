@@ -131,7 +131,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Func<Task> act = async () => await serviceClient.Messaging.SendAsync(ghostDevice, message).ConfigureAwait(false);
 
             // assert
-            await act.Should().ThrowAsync<DeviceNotFoundException>();
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.StatusCode.Should().Be(ErrorCode.DeviceNotFound);
 
             await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }

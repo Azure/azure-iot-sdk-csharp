@@ -148,9 +148,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
             }
-            catch (DeviceNotFoundException ex)
+            catch (IotHubServiceException ex) when (ex.StatusCode is ErrorCode.DeviceNotFound)
             {
-                actualErrorCode = ex.Code;
+                actualErrorCode = ex.StatusCode;
             }
 
             Assert.AreEqual(ErrorCode.DeviceNotFound, actualErrorCode);
@@ -217,19 +217,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             // act
-            ErrorCode actualErrorCode = ErrorCode.InvalidErrorCode;
-            try
+            Func<Task> act = async () =>
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", directMethodRequest).ConfigureAwait(false);
-            }
-            catch (DeviceNotFoundException ex)
-            {
-                // Although the exception is called "Device" not found, it is used for all 404's, including the 404010 that denotes a module was not found
-                actualErrorCode = ex.Code;
-            }
+            };
 
-            actualErrorCode.Should().Be(ErrorCode.ModuleNotFound);
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.StatusCode.Should().Be(ErrorCode.ModuleNotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -313,7 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .InvokeAsync(deviceId, directMethodRequest)
                     .ConfigureAwait(false);
             }
-            catch (DeviceNotFoundException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is ErrorCode.DeviceNotOnline)
             {
             }
         }

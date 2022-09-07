@@ -23,19 +23,19 @@ namespace Microsoft.Azure.Devices
         {
             {
                 HttpStatusCode.NoContent,
-                async (response) => new DeviceNotFoundException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
             {
                 HttpStatusCode.NotFound,
-                async (response) => new DeviceNotFoundException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
             {
                 HttpStatusCode.Conflict,
-                async (response) => new DeviceAlreadyExistsException(
+                async (response) => new IotHubServiceException(
                     code: await GetExceptionCodeAsync(response).ConfigureAwait(false),
                     message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
             },
@@ -149,7 +149,9 @@ namespace Microsoft.Azure.Devices
                                 if (messageField.IndexOf(errorCodeDelimiter) >= 0)
                                 {
                                     string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
-                                    if (Enum.TryParse(errorCodeFields[1], out ErrorCode errorCode))
+
+                                    // Only taing the first 6 characters of 'errorCodeFields[1]' as the IoT hub error code has 6 digits only.
+                                    if (Enum.TryParse(errorCodeFields[1].Substring(0, 6), out ErrorCode errorCode))
                                     {
                                         errorCodeValue = (int)errorCode;
                                     }
