@@ -184,14 +184,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         ThrottlingException = 429001,
 
-        /// <summary>
-        /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// <para>
-        /// For more information, see <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
-        /// </para>
-        /// </summary>
-        ThrottleBacklogLimitExceeded = 429002,
-
         // InternalServerError - 500
 
         /// <summary>
@@ -212,11 +204,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ServiceUnavailable = 503001,
 
         // Errors not returned by the hub
-
-        /// <summary>
-        /// This is converted from the status code HttpStatusCode.PreconditionFailed. Not directly returned by the service for service client operations.
-        /// </summary>
-        DeviceMessageLockLost,
 
         /// <summary>
         /// The operation failed when an attempt to communicate with the IoT hub service fails due to transient

@@ -523,7 +523,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
                     throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceMessageLockLost)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.PreconditionFailed)
                 {
                     // expected thrown exception, continue the test without throwing anything
                 }
@@ -533,7 +533,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                     device = await serviceClient.Devices.SetAsync(device, false).ConfigureAwait(false);
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceMessageLockLost)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.PreconditionFailed)
                 {
                     throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
                 }
@@ -545,7 +545,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
                     await serviceClient.Devices.SetAsync(device, true).ConfigureAwait(false);
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceMessageLockLost)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.PreconditionFailed)
                 {
                     throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
                 }
@@ -589,7 +589,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Devices.DeleteAsync(device, true).ConfigureAwait(false);
                     throw new AssertFailedException("Expected test to throw a precondition failed exception since it updated a device with an out of date ETag");
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceMessageLockLost)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.PreconditionFailed)
                 {
                     // expected thrown exception, continue the test without throwing anything
                 }
@@ -599,7 +599,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                     await serviceClient.Devices.DeleteAsync(device, false).ConfigureAwait(false);
                 }
-                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.DeviceMessageLockLost)
+                catch (IotHubServiceException ex) when (ex.StatusCode is IotHubStatusCode.PreconditionFailed)
                 {
                     throw new AssertFailedException("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
                 }
