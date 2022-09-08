@@ -66,12 +66,30 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
             }
 
+            // Validate certs.
+            if (IotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
+                && x509CertificateAuth.ChainCertificates != null)
+            {
+                if (_clientOptions.TransportSettings is not IotHubClientAmqpSettings
+                        && _clientOptions.TransportSettings is not IotHubClientMqttSettings
+                        || _clientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                {
+                    throw new ArgumentException("Certificate chains for devices are only supported on MQTT over TCP and AMQP over TCP.");
+                }
+            }
+
             IClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
             _pipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
             InnerHandler = pipelineBuilder.Build(_pipelineContext);
 
             _fileUploadHttpTransportHandler = new HttpTransportHandler(_pipelineContext, _clientOptions.FileUploadTransportSettings);
+
+            if (Logging.IsEnabled)
+                Logging.CreateClient(
+                    this,
+                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId}",
+                    _clientOptions);
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ using Microsoft.Azure.Devices.Client.Utilities;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Contains methods that a device can use to send messages to and receive messages from the service,
+    /// Contains methods that a client can use to send messages to and receive messages from the service,
     /// respond to direct method invocations from the service, and send and receive twin property updates.
     /// </summary>
     public class InternalClient2 : IDisposable
@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Client
         private protected readonly IotHubClientOptions _clientOptions;
 
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
-        private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
 
         // Connection status change information
@@ -43,11 +42,6 @@ namespace Microsoft.Azure.Devices.Client
 
         private object _twinPatchCallbackContext;
         private Func<TwinCollection, object, Task> _desiredPropertyUpdateCallback;
-
-        // Cloud-to-module message callback information
-        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
-
-        private volatile Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>> _receiveEventEndpoints;
 
         // Diagnostic information
 
@@ -69,18 +63,6 @@ namespace Microsoft.Azure.Devices.Client
                 iotHubClientOptions = new();
             }
 
-            // Validate certs.
-            if (iotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
-                && x509CertificateAuth.ChainCertificates != null)
-            {
-                if (iotHubClientOptions.TransportSettings is not IotHubClientAmqpSettings
-                        && iotHubClientOptions.TransportSettings is not IotHubClientMqttSettings
-                        || iotHubClientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
-                {
-                    throw new ArgumentException("Certificate chains are only supported on MQTT over TCP and AMQP over TCP.");
-                }
-            }
-
             IotHubConnectionCredentials = iotHubConnectionCredentials;
             _clientOptions = iotHubClientOptions;
 
@@ -99,14 +81,7 @@ namespace Microsoft.Azure.Devices.Client
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
-                ModuleEventCallback = OnModuleEventMessageReceivedAsync,
             };
-
-            if (Logging.IsEnabled)
-                Logging.CreateClient(
-                    this,
-                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId}",
-                    _clientOptions);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, _clientOptions.TransportSettings, nameof(InternalClient) + "_ctor");
@@ -211,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
-        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
@@ -247,9 +222,12 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages
         /// one after the other. The client instance must be opened already.
         /// </summary>
+        /// <remarks>
+        /// For more information on IoT Edge module routing for <see cref="IotHubModuleClient"/> see <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </remarks>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         public async Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default)
@@ -440,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// A method handler can be unset by passing a null method handler.
+        /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -491,7 +469,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
         /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method handler can be unset by passing a null method handler.
+        /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is
         /// no delegate registered for that method name.</param>
@@ -545,7 +523,7 @@ namespace Microsoft.Azure.Devices.Client
         /// or Microsoft.Azure.Devices.IotHubServiceClient.Twins.GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken).
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if DeviceClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
         /// <returns>The device twin object for the current device</returns>
@@ -590,8 +568,8 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service. Set callback value to null to clear.
+        /// Set a callback that will be called whenever the client receives a desired state update
+        /// from the service. A desired property handler can be unset by setting <paramref name="callback"/> to null.
         /// </summary>
         /// <remarks>
         /// This has the side-effect of subscribing to the PATCH topic on the service.
@@ -662,6 +640,61 @@ namespace Microsoft.Azure.Devices.Client
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the client and optionally disposes of the managed resources.
+        /// </summary>
+        /// <remarks>
+        /// The method <see cref="CloseAsync(CancellationToken)"/> should be called before disposing.
+        /// </remarks>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the client and allows for any derived class to override and
+        /// provide custom implementation.
+        /// </summary>
+        /// <param name="disposing">Setting to true will release both managed and unmanaged resources. Setting to
+        /// false will only release the unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                InnerHandler?.Dispose();
+                _methodsSemaphore?.Dispose();
+                _twinDesiredPropertySemaphore?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// The delegate for handling disrupted connection/links in the transport layer.
+        /// </summary>
+        internal void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
+        {
+            var status = connectionStatusInfo.Status;
+            var reason = connectionStatusInfo.ChangeReason;
+
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
+
+                if (ConnectionStatusInfo.Status != status
+                    || ConnectionStatusInfo.ChangeReason != reason)
+                {
+                    ConnectionStatusInfo = new ConnectionStatusInfo(status, reason);
+                    _connectionStatusChangeHandler?.Invoke(ConnectionStatusInfo);
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, status, reason, nameof(OnConnectionStatusChanged));
             }
         }
 
@@ -804,343 +837,10 @@ namespace Microsoft.Azure.Devices.Client
             _isDeviceMethodEnabled = false;
         }
 
-        #region Module Specific API
-
-        /// <summary>
-        /// Sends an event (message) to the hub
-        /// </summary>
-        /// <param name="outputName">The output target for sending the given message</param>
-        /// <param name="message">The message to send</param>
-        /// <param name="cancellationToken">A cancellation token</param>
-        /// <returns>The message containing the event</returns>
-        public async Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, outputName, message, nameof(SendEventAsync));
-
-                ValidateModuleTransportHandler("SendEventAsync for a named output");
-
-                Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
-                Argument.AssertNotNull(message, nameof(message));
-
-                message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
-
-                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, message, nameof(SendEventAsync));
-            }
-        }
-
-        /// <summary>
-        /// Sends a batch of events to device hub
-        /// </summary>
-        /// <param name="outputName">The output target for sending the given message</param>
-        /// <param name="messages">A list of one or more messages to send</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>The task containing the event</returns>
-        public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
-
-                ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
-
-                Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
-                var messagesList = messages?.ToList();
-                Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
-
-                messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
-
-                await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, outputName, messages, nameof(SendEventBatchAsync));
-            }
-        }
-
-        /// <summary>
-        /// Sets a new delegate for the particular input. If a delegate is already associated with
-        /// the input, it will be replaced with the new delegate.
-        /// Set messageHandler value to null to clear.
-        /// </summary>
-        /// <param name="inputName">The name of the input to associate with the delegate.</param>
-        /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientHelper"/> creates the module.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>The task containing the event</returns>
-        public async Task SetInputMessageHandlerAsync(
-            string inputName,
-            Func<Message, object, Task<MessageResponse>> messageHandler,
-            object userContext,
-            bool isAnEdgeModule,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
-
-            ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
-
-            cancellationToken.ThrowIfCancellationRequested();
-            await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (messageHandler != null)
-                {
-                    // When using a device module we need to enable the 'deviceBound' message link
-                    await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-
-                    if (_receiveEventEndpoints == null)
-                    {
-                        _receiveEventEndpoints = new Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>>();
-                    }
-
-                    _receiveEventEndpoints[inputName] = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
-                }
-                else
-                {
-                    if (_receiveEventEndpoints != null)
-                    {
-                        _receiveEventEndpoints.Remove(inputName);
-                        if (_receiveEventEndpoints.Count == 0)
-                        {
-                            _receiveEventEndpoints = null;
-                        }
-                    }
-
-                    await DisableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _moduleReceiveMessageSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
-            }
-        }
-
-        /// <summary>
-        /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
-        /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
-        /// it will be overwritten.
-        /// Set messageHandler value to null to clear.
-        /// </summary>
-        /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// <param name="isAnEdgeModule">Parameter to correctly select a device module path. This is set by the
-        /// <see cref="IotHubModuleClient"/> when a <see cref="EdgeModuleClientHelper"/> creates the module.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>The task containing the event</returns>
-        public async Task SetMessageHandlerAsync(
-            Func<Message, object, Task<MessageResponse>> messageHandler,
-            object userContext,
-            bool isAnEdgeModule,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-            await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (messageHandler != null)
-                {
-                    await EnableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
-                }
-                else
-                {
-                    _defaultEventCallback = null;
-                    await DisableEventReceiveAsync(isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _moduleReceiveMessageSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
-            }
-        }
-
-        /// <summary>
-        /// The delegate for handling event messages received
-        /// </summary>
-        /// <param name="input">The input on which a message is received</param>
-        /// <param name="message">The message received</param>
-        internal async Task OnModuleEventMessageReceivedAsync(string input, Message message)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
-
-            if (message == null)
-            {
-                return;
-            }
-
-            try
-            {
-                Tuple<Func<Message, object, Task<MessageResponse>>, object> callback = null;
-                await _moduleReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
-                try
-                {
-                    if (_receiveEventEndpoints == null
-                        || string.IsNullOrWhiteSpace(input)
-                        || !_receiveEventEndpoints.TryGetValue(input, out callback))
-                    {
-                        callback = _defaultEventCallback;
-                    }
-                }
-                finally
-                {
-                    _moduleReceiveMessageSemaphore.Release();
-                }
-
-                MessageResponse response = MessageResponse.Completed;
-                if (callback?.Item1 != null)
-                {
-                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = callback.Item1;
-                    object userContext = callback.Item2;
-
-                    response = await userSuppliedCallback
-                        .Invoke(message, userContext)
-                        .ConfigureAwait(false);
-                }
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
-
-                try
-                {
-                    switch (response)
-                    {
-                        case MessageResponse.Completed:
-                            await CompleteMessageAsync(message).ConfigureAwait(false);
-                            break;
-
-                        case MessageResponse.Abandoned:
-                            await AbandonMessageAsync(message).ConfigureAwait(false);
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-                catch (Exception ex) when (Logging.IsEnabled)
-                {
-                    Logging.Error(this, ex, nameof(OnModuleEventMessageReceivedAsync));
-                    throw;
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
-            }
-        }
-
-        // Enable telemetry downlink for modules
-        private Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
-        {
-            // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
-            return _receiveEventEndpoints == null && _defaultEventCallback == null
-                ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : Task.CompletedTask;
-        }
-
-        // Disable telemetry downlink for modules
-        private Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
-        {
-            // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
-            return _receiveEventEndpoints == null && _defaultEventCallback == null
-                ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
-                : Task.CompletedTask;
-        }
-
-        private void ValidateModuleTransportHandler(string apiName)
-        {
-            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
-            {
-                throw new InvalidOperationException("{0} is available for Modules only.".FormatInvariant(apiName));
-            }
-        }
-
-        #endregion Module Specific API
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the client and optionally disposes of the managed resources.
-        /// </summary>
-        /// <remarks>
-        /// The method <see cref="CloseAsync(CancellationToken)"/> should be called before disposing.
-        /// </remarks>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the client and allows for any derived class to override and
-        /// provide custom implementation.
-        /// </summary>
-        /// <param name="disposing">Setting to true will release both managed and unmanaged resources. Setting to
-        /// false will only release the unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                InnerHandler?.Dispose();
-                _methodsSemaphore?.Dispose();
-                _moduleReceiveMessageSemaphore?.Dispose();
-                _twinDesiredPropertySemaphore?.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// The delegate for handling disrupted connection/links in the transport layer.
-        /// </summary>
-        internal void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
-        {
-            var status = connectionStatusInfo.Status;
-            var reason = connectionStatusInfo.ChangeReason;
-
-            try
-            {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, status, reason, nameof(OnConnectionStatusChanged));
-
-                if (ConnectionStatusInfo.Status != status
-                    || ConnectionStatusInfo.ChangeReason != reason)
-                {
-                    ConnectionStatusInfo = new ConnectionStatusInfo(status, reason);
-                    _connectionStatusChangeHandler?.Invoke(ConnectionStatusInfo);
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, status, reason, nameof(OnConnectionStatusChanged));
-            }
-        }
-
         private protected static IClientPipelineBuilder BuildPipeline()
         {
             var transporthandlerFactory = new TransportHandlerFactory();
-            IClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+            IClientPipelineBuilder pipelineBuilder = new ClientPipelineBuilder()
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))

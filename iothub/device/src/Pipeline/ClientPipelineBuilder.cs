@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class DeviceClientPipelineBuilder : IClientPipelineBuilder
+    internal class ClientPipelineBuilder : IClientPipelineBuilder
     {
         private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();
 
