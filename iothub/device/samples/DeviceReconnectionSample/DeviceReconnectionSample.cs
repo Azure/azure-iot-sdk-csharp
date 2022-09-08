@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (deviceConnectionStrings == null
                 || !deviceConnectionStrings.Any())
             {
-                throw new ArgumentException("At least one connection string must be provided.", nameof(deviceConnectionStrings));
+                throw new InvalidOperationException("At least one connection string must be provided.");
             }
             _deviceConnectionStrings = deviceConnectionStrings;
             Console.WriteLine($"Supplied with {_deviceConnectionStrings.Count} connection string(s).");
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     if (ShouldClientBeInitialized())
                     {
-                        var status = ConnectionStatus.Disconnected;
+                        ConnectionStatus status = ConnectionStatus.Disconnected;
                         if (s_deviceClient != null)
                         {
                             status = s_deviceClient.ConnectionStatusInfo.Status;
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string messageData = Encoding.ASCII.GetString(message.Payload);
             var formattedMessage = new StringBuilder($"Received message: [{messageData}]");
 
-            foreach (var prop in message.Properties)
+            foreach (KeyValuePair<string, string> prop in message.Properties)
             {
                 formattedMessage.AppendLine($"\n\tProperty: key={prop.Key}, value={prop.Value}");
             }
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
         {
-            CancellationToken cancellationToken = (CancellationToken)userContext;
+            var cancellationToken = (CancellationToken)userContext;
 
             if (!cancellationToken.IsCancellationRequested)
             {
@@ -314,8 +314,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static Message PrepareTelemetryMessage(int messageId)
         {
-            var temperature = s_randomGenerator.Next(20, 35);
-            var humidity = s_randomGenerator.Next(60, 80);
+            int temperature = s_randomGenerator.Next(20, 35);
+            int humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
             var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
@@ -335,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // If the client reports Disabled status, you will need to dispose and recreate the client.
         private bool ShouldClientBeInitialized()
         {
-            return (s_deviceClient == null)
+            return s_deviceClient == null
                 || (s_deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Disconnected || s_deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Closed)
                 && _deviceConnectionStrings.Any();
         }

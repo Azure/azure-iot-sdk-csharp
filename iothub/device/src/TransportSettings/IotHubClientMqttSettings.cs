@@ -35,11 +35,6 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientMqttSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            if (Protocol == IotHubClientTransportProtocol.WebSocket)
-            {
-                Proxy = DefaultWebProxySettings.Instance;
-            }
-
             CleanSession = DefaultCleanSession;
             ConnectArrivalTimeout = s_defaultConnectArrivalTimeout;
             HasWill = DefaultHasWill;
