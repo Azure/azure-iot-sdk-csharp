@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal static Query CreateQuery(
             ServiceConnectionString provisioningConnectionString,
             QuerySpecification querySpecification,
-            ProvisioningServiceHttpSettings httpTransportSettings,
+            IContractApiHttp contractApiHttp,
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
 
-            return new Query(provisioningConnectionString, ServiceName, querySpecification, httpTransportSettings, pageSize, cancellationToken);
+            return new Query(provisioningConnectionString, ServiceName, querySpecification, contractApiHttp, pageSize, cancellationToken);
         }
 
         private static Uri GetEnrollmentUri(string enrollmentGroupId)

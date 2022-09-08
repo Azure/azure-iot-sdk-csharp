@@ -224,29 +224,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
         /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, ProvisioningServiceHttpSettings httpTransportSettings)
-        {
-            return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
-                querySpecification,
-                httpTransportSettings,
-                CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Factory to create a individualEnrollment query.
-        /// </summary>
-        /// <remarks>
-        /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
-        /// as a <see cref="Query"/> iterator.
-        ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <c>"SELECT * FROM enrollments"</c>.
-        /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
@@ -255,7 +232,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                _options.ProvisioningServiceHttpSettings,
+                _contractApiHttp,
                 cancellationToken);
         }
 
@@ -283,37 +260,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                _options.ProvisioningServiceHttpSettings,
+                _contractApiHttp,
                 cancellationToken,
-                pageSize);
-        }
-
-        /// <summary>
-        /// Factory to create a individualEnrollment query.
-        /// </summary>
-        /// <remarks>
-        /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
-        /// as a <see cref="Query"/> iterator.
-        ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <c>"SELECT * FROM enrollments"</c>.
-        ///
-        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
-        /// number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
-        /// default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification, CancellationToken)"/>.
-        /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
-        /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, ProvisioningServiceHttpSettings httpTransportSettings)
-        {
-            return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString,
-                querySpecification,
-                httpTransportSettings,
-                CancellationToken.None,
                 pageSize);
         }
 
@@ -437,29 +385,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
         /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
-        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, ProvisioningServiceHttpSettings httpTransportSettings)
-        {
-            return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
-                querySpecification,
-                httpTransportSettings,
-                CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Factory to create an enrollment group query.
-        /// </summary>
-        /// <remarks>
-        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
-        /// a <see cref="Query"/> iterator.
-        ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <c>"SELECT * FROM enrollments"</c>.
-        /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
@@ -468,7 +393,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                _options.ProvisioningServiceHttpSettings,
+                _contractApiHttp,
                 cancellationToken);
         }
 
@@ -496,37 +421,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                _options.ProvisioningServiceHttpSettings,
+                _contractApiHttp,
                 cancellationToken,
-                pageSize);
-        }
-
-        /// <summary>
-        /// Factory to create an enrollment group query.
-        /// </summary>
-        /// <remarks>
-        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
-        /// a <see cref="Query"/> iterator.
-        ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <c>"SELECT * FROM enrollments"</c>.
-        ///
-        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
-        /// number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
-        /// default pageSize or use the API <see cref="CreateEnrollmentGroupQuery(QuerySpecification, CancellationToken)"/>.
-        /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
-        /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, ProvisioningServiceHttpSettings httpTransportSettings)
-        {
-            return EnrollmentGroupManager.CreateQuery(
-                _provisioningConnectionString,
-                querySpecification,
-                httpTransportSettings,
-                CancellationToken.None,
                 pageSize);
         }
 
@@ -625,30 +521,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
-        public Query CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification querySpecification, string enrollmentGroupId, ProvisioningServiceHttpSettings httpTransportSettings)
-        {
-            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
-                querySpecification,
-                httpTransportSettings,
-                CancellationToken.None,
-                enrollmentGroupId);
-        }
-
-        /// <summary>
-        /// Factory to create a registration status query.
-        /// </summary>
-        /// <remarks>
-        /// This method will create a new registration status query for a specific enrollment group on the Device
-        /// Provisioning Service and return it as a <see cref="Query"/> iterator.
-        ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <c>"SELECT * FROM enrollments"</c>.
-        /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
-        /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
@@ -659,7 +531,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                _options.ProvisioningServiceHttpSettings,
+                _contractApiHttp,
                 cancellationToken,
                 enrollmentGroupId);
         }
@@ -680,41 +552,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
-        /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
-        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
-        /// <returns>The <see cref="Query"/> iterator.</returns>
-        /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateEnrollmentGroupRegistrationStateQuery(
-            QuerySpecification querySpecification,
-            string enrollmentGroupId,
-            int pageSize,
-            ProvisioningServiceHttpSettings httpTransportSettings)
-        {
-            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
-                _provisioningConnectionString,
-                querySpecification,
-                httpTransportSettings,
-                CancellationToken.None,
-                enrollmentGroupId,
-                pageSize);
-        }
-
-        /// <summary>
-        /// Factory to create a registration status query.
-        /// </summary>
-        /// <remarks>
-        /// This method will create a new registration status query for a specific enrollment group on the Device
-        /// Provisioning Service and return it as a <see cref="Query"/> iterator.
-        ///
-        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
-        /// <c>"SELECT * FROM enrollments"</c>.
-        ///
-        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
-        /// number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
-        /// default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification, CancellationToken)"/>.
-        /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
-        /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
@@ -728,7 +565,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
-                _options.ProvisioningServiceHttpSettings,
+                _contractApiHttp,
                 cancellationToken,
                 enrollmentGroupId,
                 pageSize);

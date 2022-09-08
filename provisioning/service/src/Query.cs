@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ServiceConnectionString serviceConnectionString,
             string serviceName,
             QuerySpecification querySpecification,
-            ProvisioningServiceHttpSettings httpTransportSettings,
+            IContractApiHttp contractApiHttp,
             int pageSize,
             CancellationToken cancellationToken)
         {
@@ -97,10 +97,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
-            // TODO: Refactor ContractApiHttp being created again
-            _contractApiHttp = new ContractApiHttp(
-                serviceConnectionString.HttpsEndpoint,
-                serviceConnectionString, httpTransportSettings);
+            _contractApiHttp = contractApiHttp;
 
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
