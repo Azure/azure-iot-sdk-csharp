@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
-        /// 0 means no message will carry on diagnostics info
+        /// A value of 0 means no message will carry on diagnostics info.
         /// </summary>
         public int DiagnosticSamplingPercentage
         {
