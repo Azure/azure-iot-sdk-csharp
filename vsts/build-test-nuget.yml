@@ -289,16 +289,16 @@ jobs:
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
   
-      - task: DockerInstaller@0
-        displayName: "Cert Validation - Install Docker CLI"
-        inputs:
-          dockerVersion: '20.10.17'
-
       - task: Docker@2
         displayName: "Login to ACR"
         inputs:
           command: "login"
           containerRegistry: "Azure IoT ACR"
+
+      - task: DockerInstaller@0
+        displayName: "Cert Validation - Install Docker CLI"
+        inputs:
+          dockerVersion: '20.10.17'
 
       - task: PowerShell@2
         displayName: 'Cert Validation - Setup Certificate Proxy'
