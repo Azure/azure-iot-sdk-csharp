@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client
         /// and then dispose the message.
         /// </summary>
         /// <remarks>
-        /// You cannot reject or abandon messages over MQTT protocol. For more details, see
+        /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
