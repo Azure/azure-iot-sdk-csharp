@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Deletes a received message from the client queue and indicates to the server that the message could not be processed.
+        /// Deletes a received message from the client's service-side queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <remarks>
         /// You cannot reject or abandon messages over MQTT protocol. For more details, see
