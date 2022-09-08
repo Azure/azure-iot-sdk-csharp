@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.IO;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -16,7 +17,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
-    [Ignore("TODO: Enable when invalid cert server is back online.")]
+    //[Ignore("TODO: Enable when invalid cert server is back online.")]
     [TestCategory("InvalidServiceCertificate")]
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
@@ -26,7 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static void TestClassSetup(TestContext _)
         {
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningCertificateValidationE2ETest)}-{Guid.NewGuid()}");
+            string s_folderName = "x509-" + nameof(ProvisioningCertificateValidationE2ETest).Split('.').Last() + "-" + Guid.NewGuid().ToString().Split('-').Last();
+            s_x509CertificatesFolder = Directory.CreateDirectory(s_folderName);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -110,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
-            string certificateSubject = $"{nameof(ProvisioningCertificateValidationE2ETest)}-{Guid.NewGuid()}";
+            string certificateSubject = "cert-" + Guid.NewGuid().ToString();
             X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_x509CertificatesFolder, Logger);
 
             using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);
