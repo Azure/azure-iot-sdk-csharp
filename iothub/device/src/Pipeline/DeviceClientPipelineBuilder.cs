@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal class DeviceClientPipelineBuilder : IDeviceClientPipelineBuilder
+    internal class DeviceClientPipelineBuilder : IClientPipelineBuilder
     {
         private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();
 
-        public IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> handlerCreator)
+        public IClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> handlerCreator)
         {
             _pipeline.Add(handlerCreator);
             return this;

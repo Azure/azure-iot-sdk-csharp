@@ -32,7 +32,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await innerHandler.
                 Received(1).
                 EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.AreEqual(client.InternalClient._desiredPropertyUpdateCallback, myCallback);
         }
 
         [TestMethod]
@@ -144,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // act
-            client.InternalClient.OnDesiredStatePatchReceived(myPatch);
+            client.OnDesiredStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);

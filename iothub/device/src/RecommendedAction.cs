@@ -41,8 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This is a terminal state of the client where it is unclear if the device will ever be able to connect, and may require manual intervention.
         /// </summary>
         /// <remarks>
-        /// This can occur when the client has been closed gracefully (by calling <see cref="IotHubDeviceClient.CloseAsync(CancellationToken)"/>
-        /// or the <see cref="IotHubModuleClient"/> equivalent).
+        /// This can occur when the client has been closed gracefully (by calling <see cref="InternalClient2.CloseAsync(CancellationToken)"/>.
         /// Other terminal states include when the client has been disconnected due to non-retryable exceptions. The disconnection reasons include:
         /// <list type="bullet">
         /// <item><see cref="ConnectionStatusChangeReason.BadCredential"/></item>
