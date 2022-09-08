@@ -46,10 +46,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public ContractApiHttp(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
-            ProvisioningServiceHttpSettings httpSettings)
+            ProvisioningServiceClientOptions options)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
+
+            if (options.HttpClient != null)
+            {
+                _httpClientObj = options.HttpClient;
+                _httpClientHandler = null;
+                return;
+            }
 
             _httpClientHandler = new HttpClientHandler
             {
@@ -58,13 +65,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                 //SslProtocols = TlsVersions.Preferred,
-                CheckCertificateRevocationList = httpSettings.CertificateRevocationCheck
+                CheckCertificateRevocationList = options.CertificateRevocationCheck
             };
 
-            if (httpSettings.Proxy != null)
+            if (options.Proxy != null)
             {
                 _httpClientHandler.UseProxy = true;
-                _httpClientHandler.Proxy = httpSettings.Proxy;
+                _httpClientHandler.Proxy = options.Proxy;
             }
 
             _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
