@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -14,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// It is an internal class that creates a JSON for the bulk operations
     ///     over the IndividualEnrollment. To use bulk operations, please use
-    ///     the external API <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment})"/>.
+    ///     the external API <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
     ///
     /// The following JSON is an example of the result of this serializer.
     /// </remarks>
@@ -74,9 +75,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates a <c>string</c>, whose content represents the mode and the collection of
         ///     individualEnrollments in a JSON format.
         /// </remarks>
-        /// <param name="mode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the 
+        /// <param name="mode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the
         ///     individualEnrollments.</param>
-        /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description 
+        /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description
         ///     of each individualEnrollment.</param>
         /// <returns>The <c>string</c> with the content of this class.</returns>
         /// <exception cref="ArgumentNullException">if the individualEnrollments is null.</exception>

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -11,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This error is returned as a result of the
-    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, System.Collections.Generic.IEnumerable{IndividualEnrollment})"/>
+    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, System.Collections.Generic.IEnumerable{IndividualEnrollment}, CancellationToken)"/>
     ///     as part of the <see cref="BulkEnrollmentOperationResult"/>.
     /// </remarks>
     /// <example>
