@@ -308,12 +308,12 @@ jobs:
             Write-Host "============"
             Write-Host "check docker"
             Write-Host "============"
-            gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
             docker images
             docker ps -a
-            Write-Host "============================="
-            Write-Host "uncompressed self-signed cert"
-            Write-Host "============================="
+            gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
+            Write-Host "==========================="
+            Write-Host "uncompress self-signed cert"
+            Write-Host "==========================="
             gzip -d -N -S ".bin" $(Build.SourcesDirectory)/e2e/test/docker/haproxy/haproxy.bin
             gci -Path $(Build.SourcesDirectory)/e2e/test/docker -Recurse -Force -Name
             Write-Host "====================="
