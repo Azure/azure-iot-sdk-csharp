@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
             IotHubClientOptions iotHubClientOptions)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, iotHubClientOptions.TransportSettings, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(InternalClient) + "_ctor");
 
             // Make sure client options is initialized.
             if (iotHubClientOptions == default)
