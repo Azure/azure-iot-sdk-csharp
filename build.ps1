@@ -354,10 +354,12 @@ try
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
+        if (!isWindows) 
+        {
+            $testCategory += "|"
+            $testCategory += "TestCategory=InvalidServiceCertificate"
+        }
         $testCategory += ")"
-
 
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
