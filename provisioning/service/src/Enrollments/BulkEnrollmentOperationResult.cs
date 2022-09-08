@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -10,8 +11,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Representation of a single Device Provisioning Service bulk operation result with a JSON deserializer.
     /// </summary>
     /// <remarks>
-    /// This error is returned as a result of the 
-    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment})"/>.
+    /// This error is returned as a result of the
+    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment}, CancellationToken)"/>.
     ///
     /// The provisioning service provides general bulk result in the isSuccessful, and a individual error result
     ///     for each enrollment in the bulk.

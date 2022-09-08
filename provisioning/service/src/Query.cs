@@ -19,17 +19,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <list type="bullet">
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)">IndividualEnrollment</see>
+    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int, CancellationToken)">IndividualEnrollment</see>
     ///     </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)">EnrollmentGroup</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int, CancellationToken)">EnrollmentGroup</see>
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, String, int)">RegistrationStatus</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, string, int, CancellationToken)">RegistrationStatus</see>
     ///         </description>
     ///     </item>
     /// </list>
