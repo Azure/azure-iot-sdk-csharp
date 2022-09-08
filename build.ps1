@@ -73,6 +73,11 @@ Param(
     [switch] $noBuildBeforeTesting
 )
 
+Function IsWindows()
+{
+	return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
+}
+
 Function CheckSignTools()
 {
     $commands = $("SignDotNetBinary", "SignBinary", "SignNuGetPackage", "SignMSIPackage")
@@ -354,7 +359,7 @@ try
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=E2E"
-        if (!isWindows) 
+        if (-not(IsWindows)) 
         {
             $testCategory += "|"
             $testCategory += "TestCategory=InvalidServiceCertificate"
