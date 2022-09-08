@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 try
                 {
-                    // If this fails, we shall let it throw an exception and fail the test
+                    // If this fails, it won't fail the test
                     await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
                 catch (DeviceNotFoundException)
