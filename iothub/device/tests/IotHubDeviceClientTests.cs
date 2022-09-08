@@ -1407,14 +1407,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var auth = new DeviceAuthenticationWithConnectionString(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            var pipelineBuilderSubstitute = Substitute.For<IClientPipelineBuilder>();
 
             // act
             DateTime startTime = DateTime.UtcNow;
             using InternalClient internalClient = new InternalClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
-                options,
-                pipelineBuilderSubstitute);
+                options);
 
             // assert
             var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
@@ -1443,14 +1441,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var auth = new TestDeviceAuthenticationWithTokenRefresh(sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            var pipelineBuilderSubstitute = Substitute.For<IClientPipelineBuilder>();
 
             // act
             DateTime startTime = DateTime.UtcNow;
             using InternalClient internalClient = new InternalClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
-                options,
-                pipelineBuilderSubstitute);
+                options);
 
             // assert
             var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;

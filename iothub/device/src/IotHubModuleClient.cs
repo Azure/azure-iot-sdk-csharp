@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
-    public class IotHubModuleClient : InternalClient2, IDisposable
+    public class IotHubModuleClient : InternalClient, IDisposable
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionCredentials.ModuleId, nameof(iotHubConnectionCredentials.ModuleId));
 
-            IClientPipelineBuilder pipelineBuilder = BuildPipeline();
+            ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
             _pipelineContext.ModuleEventCallback = OnModuleEventMessageReceivedAsync;
             InnerHandler = pipelineBuilder.Build(_pipelineContext);
