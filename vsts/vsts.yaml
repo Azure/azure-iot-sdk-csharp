@@ -259,9 +259,9 @@ jobs:
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
-          imageName: aziotbld/testtpm
+          azureContainerRegistry: aziotacr.azurecr.io
+          imageName: aziotacr.azurecr.io/aziotbld/testtpm
           containerName: "testtpm-instance"
-
           ports: |
             127.0.0.1:2321:2321
             127.0.0.1:2322:2322
@@ -273,7 +273,8 @@ jobs:
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
-          imageName: aziotbld/testproxy
+          azureContainerRegistry: aziotacr.azurecr.io
+          imageName: aziotacr.azurecr.io/aziotbld/testproxy
           containerName: "testproxy-instance"
           ports: "127.0.0.1:8888:8888"
           restartPolicy: unlessStopped
@@ -449,11 +450,10 @@ jobs:
           inputs:
             script: 'choco install dotnet4.5.1'
 
-      - script: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-          sn.exe -Vr *,31bf3856ad364e35
-
-        displayName: "Disable strong name validation"
+#      - script: |
+#          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+#          sn.exe -Vr *,31bf3856ad364e35
+#        displayName: "Disable strong name validation"
 
       - script: |
           choco install -y squid

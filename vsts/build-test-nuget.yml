@@ -288,8 +288,7 @@ jobs:
           version: 2.1.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
- 
- 
+  
       - task: DockerInstaller@0
         displayName: "Cert Validation - Install Docker CLI"
         inputs:
@@ -403,7 +402,8 @@ jobs:
         inputs:
           containerregistrytype: "Container Registry"
           command: "Run an image"
-          imageName: aziotbld/testtpm
+          azureContainerRegistry: aziotacr.azurecr.io
+          imageName: aziotacr.azurecr.io/aziotbld/testtpm
           containerName: "testtpm-instance"
           ports: |
             127.0.0.1:2321:2321
@@ -415,7 +415,8 @@ jobs:
         inputs:
           containerregistrytype: 'Container Registry'
           command: 'Run an image'
-          imageName: aziotbld/testproxy
+          azureContainerRegistry: aziotacr.azurecr.io
+          imageName: aziotacr.azurecr.io/aziotbld/testproxy
           containerName: 'testproxy-instance'
           ports: '127.0.0.1:8888:8888'
           restartPolicy: unlessStopped
