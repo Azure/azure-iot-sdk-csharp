@@ -66,12 +66,6 @@ namespace Microsoft.Azure.Devices.Client
             IotHubConnectionCredentials = iotHubConnectionCredentials;
             _clientOptions = iotHubClientOptions;
 
-            if (!_clientOptions.ModelId.IsNullOrWhiteSpace()
-                && _clientOptions.TransportSettings is IotHubClientHttpSettings)
-            {
-                throw new InvalidOperationException("Plug and Play is not supported over the HTTP transport.");
-            }
-
             _pipelineContext = new PipelineContext
             {
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
@@ -139,8 +133,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use
-        /// HTTP, as that protocol is stateless.
+        /// it will be replaced with the new delegate.
         /// </summary>
         /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
         public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
@@ -519,14 +512,13 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Retrieve the twin properties for the current client. The client instance must be opened already.
-        /// For the complete twin object, use Microsoft.Azure.Devices.IotHubServiceClient.Twins.GetAsync(string deviceId, CancellationToken cancellationToken)
-        /// or Microsoft.Azure.Devices.IotHubServiceClient.Twins.GetAsync(string deviceId, string moduleId, CancellationToken cancellationToken).
+        /// This API gives you the client's view of the twin. For more information on twins in IoT hub, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins"/>.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
-        /// <returns>The device twin object for the current device</returns>
+        /// <returns>The twin object for the current client.</returns>
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
