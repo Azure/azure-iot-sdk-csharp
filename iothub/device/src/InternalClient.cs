@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Deletes a received message from the client queue.
+        /// Deletes a received message from the client's service-side queue.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
