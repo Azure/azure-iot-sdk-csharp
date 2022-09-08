@@ -61,12 +61,13 @@ namespace Microsoft.Azure.Devices.Client
         private IotHubDeviceClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options)
             : base(iotHubConnectionCredentials, options)
         {
+            // Validate
             if (iotHubConnectionCredentials.ModuleId != null)
             {
                 throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
             }
 
-            // Validate certs.
+            // Validate certificates
             if (IotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.ChainCertificates != null)
             {
