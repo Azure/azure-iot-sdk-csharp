@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
@@ -54,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 addResult.TargetCondition.Should().Be(expected.TargetCondition);
                 addResult.Content.DeviceContent.First().Should().Be(expected.Content.DeviceContent.First());
                 addResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
-                addResult.ETag.Should().NotBeNullOrEmpty();
+                addResult.ETag.ToString().Should().NotBeNullOrEmpty();
 
                 Configuration getResult = await sc.Configurations.GetAsync(configurationId).ConfigureAwait(false);
                 getResult.Id.Should().Be(configurationId);
@@ -75,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 updateResult.TargetCondition.Should().Be(expected.TargetCondition);
                 updateResult.Content.DeviceContent.First().Should().Be(expected.Content.DeviceContent.First());
                 updateResult.Metrics.Queries.First().Should().Be(expected.Metrics.Queries.First());
-                updateResult.ETag.Should().NotBeNullOrEmpty().And.Should().NotBe(getResult.ETag, "The ETag should have changed after update");
+                updateResult.ETag.ToString().Should().NotBeNullOrEmpty().And.Should().NotBe(getResult.ETag, "The ETag should have changed after update");
             }
             finally
             {
@@ -83,6 +85,124 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     // If this fails, we shall let it throw an exception and fail the test
                     await sc.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
+                }
+            }
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ConfigurationsClient_SetETag_Works()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
+            try
+            {
+                var configuration = new Configuration(configurationId)
+                {
+                    Priority = 2,
+                    Labels = { { "labelName", "labelValue" } },
+                    TargetCondition = "deviceId='fakeDevice'",
+                    Content = new ConfigurationContent(),
+                    Metrics = new ConfigurationMetrics(),
+                };
+
+                configuration = await serviceClient.Configurations.CreateAsync(configuration).ConfigureAwait(false);
+                ETag oldEtag = configuration.ETag;
+
+                configuration.Priority = 3;
+
+                configuration = await serviceClient.Configurations.SetAsync(configuration).ConfigureAwait(false);
+                configuration.ETag = oldEtag;
+
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
+
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () => { configuration = await serviceClient.Configurations.SetAsync(configuration, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                configuration.Priority = 2;
+                FluentActions
+                .Invoking(async () => { await serviceClient.Configurations.SetAsync(configuration, true).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
+            }
+            finally
+            {
+                try
+                {
+                    // If this fails, it won't fail the test
+                    await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // configuration was already deleted during the normal test flow
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up configuration due to {ex}");
+                }
+            }
+        }
+
+        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        public async Task ConfigurationsClient_DeleteETag_Works()
+        {
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
+            try
+            {
+                var configuration = new Configuration(configurationId)
+                {
+                    Priority = 2,
+                    Labels = { { "labelName", "labelValue" } },
+                    TargetCondition = "deviceId='fakeDevice'",
+                    Content = new ConfigurationContent(),
+                    Metrics = new ConfigurationMetrics(),
+                };
+
+                configuration = await serviceClient.Configurations.CreateAsync(configuration).ConfigureAwait(false);
+                ETag oldEtag = configuration.ETag;
+
+                configuration.Priority = 3;
+
+                configuration = await serviceClient.Configurations.SetAsync(configuration).ConfigureAwait(false);
+
+                configuration.ETag = oldEtag;
+
+                // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+                FluentActions
+                .Invoking(async () => { await serviceClient.Configurations.DeleteAsync(configuration, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
+
+                // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+                FluentActions
+                .Invoking(async () =>
+                {
+                    await serviceClient.Configurations.DeleteAsync(configuration, false).ConfigureAwait(false);
+                })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+            }
+            finally
+            {
+                try
+                {
+                    await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
+                }
+                catch (DeviceNotFoundException)
+                {
+                    // configuration was already deleted during the normal test flow
+                }
+                catch (Exception ex)
+                {
+                    Logger.Trace($"Failed to clean up configuration due to {ex}");
                 }
             }
         }

@@ -5,8 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -454,7 +457,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await _serviceClient.Twins.UpdateAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
+            await _serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(IotHubClientTransportSettings transportSettings, object propValue)
@@ -538,7 +541,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
-            await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
+            await _serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             Client.Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
@@ -653,6 +656,51 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             Twin serviceTwin = await serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
             Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+        }
+
+        [DataTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        [TestCategory("LongRunning")]
+        public async Task Twin_Client_SetETag_Works(IotHubClientTransportProtocol transportProtocol)
+        {
+            // arrange
+
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings(transportProtocol));
+            using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            string propName = Guid.NewGuid().ToString();
+            string propValue = Guid.NewGuid().ToString();
+
+            Twin twin = await _serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            ETag oldEtag = twin.ETag;
+
+            twin.Properties.Desired[propName] = propValue;
+
+            twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false);
+
+            twin.ETag = oldEtag;
+
+            // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
+            FluentActions
+                .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
+                .Should()
+                .Throw<DeviceMessageLockLostException>("Expected test to throw a precondition failed exception since it updated a twin with an out of date ETag");
+
+            // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+            FluentActions
+                .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, false).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
+
+            // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
+            twin.Properties.Desired[propName] = propValue + "1";
+            twin.ETag = new ETag("*");
+            FluentActions
+                .Invoking(async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
+                .Should()
+                .NotThrow<DeviceMessageLockLostException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
         }
     }
 

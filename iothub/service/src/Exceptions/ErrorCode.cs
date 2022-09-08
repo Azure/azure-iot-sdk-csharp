@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using Azure;
 using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
@@ -51,7 +52,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         ArgumentNull = 400005,
 
         /// <summary>
-        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, Twin, string, System.Threading.CancellationToken)"/> is invalid.
+        /// Returned by the service if a JSON object provided by this library cannot be parsed, for instance, if the JSON provided for <see cref="TwinsClient.UpdateAsync(string, Twin, bool, System.Threading.CancellationToken)"/> is invalid.
         /// </summary>
         IotHubFormatError = 400006,
 
@@ -135,7 +136,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
         /// <summary>
         /// The operation failed because it attempted to add a module to a device when that device already has a module registered to it with the same Id. This issue can be
-        /// fixed by removing the existing module from the device first with <see cref="ModulesClient.DeleteAsync(Module, System.Threading.CancellationToken)"/>. This error code is only returned from
+        /// fixed by removing the existing module from the device first with <see cref="ModulesClient.DeleteAsync(Module, bool, System.Threading.CancellationToken)"/>. This error code is only returned from
         /// methods like <see cref="ModulesClient.CreateAsync(Module, System.Threading.CancellationToken)"/>.
         /// </summary>
         ModuleAlreadyExistsOnDevice = 409301,

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -91,7 +92,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Twin's ETag.
         /// </summary>
-        public string ETag { get; set; }
+        [JsonProperty(PropertyName = "etag")]
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// Twin's version.

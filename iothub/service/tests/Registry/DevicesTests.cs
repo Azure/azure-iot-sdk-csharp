@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwinsAsyncWithETagMissingTest()
         {
-            var goodTwin = new Twin("123") { ETag = "234" };
+            var goodTwin = new Twin("123") { ETag = new ETag("234") };
             var badTwin = new Twin("234");
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UpdateTwinsAsyncWithNullTwinTest()
         {
-            var goodTwin = new Twin("123") { ETag = "234" };
+            var goodTwin = new Twin("123") { ETag = new ETag("234") };
             Twin badTwin = null;
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.Tests
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwinsAsyncWithDeviceIdNullTest()
         {
-            var goodTwin = new Twin("123") { ETag = "234" };
+            var goodTwin = new Twin("123") { ETag = new ETag("234") };
             var badTwin = new Twin();
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
@@ -465,8 +465,8 @@ namespace Microsoft.Azure.Devices.Tests
         [TestMethod]
         public async Task UpdateTwinsAsyncForceUpdateFalseTest()
         {
-            var goodTwin1 = new Twin("123") { ETag = "234" };
-            var goodTwin2 = new Twin("234") { ETag = "123" };
+            var goodTwin1 = new Twin("123") { ETag = new ETag("234") };
+            var goodTwin2 = new Twin("234") { ETag = new ETag("234") };
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             mockCredentialProvider.Setup(getCredential => getCredential.GetAuthorizationHeader()).Returns(validMockAuthenticationHeaderValue);
             var mockHttpRequestFactory = new HttpRequestMessageFactory(HttpUri, "");

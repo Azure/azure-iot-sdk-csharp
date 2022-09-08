@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices
 
                 if (!string.IsNullOrWhiteSpace(requestOptions?.IfMatch))
                 {
-                    HttpMessageHelper.ConditionallyInsertETag(request, requestOptions?.IfMatch);
+                    HttpMessageHelper.ConditionallyInsertETag(request, new ETag(requestOptions?.IfMatch), false);
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);

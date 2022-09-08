@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await serviceClient.Twins.UpdateAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
+            await serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceDesiredPropertyUpdateRecoveryAsync(
