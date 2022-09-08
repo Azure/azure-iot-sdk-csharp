@@ -22,13 +22,12 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class InternalClient2 : IDisposable
     {
-        private protected PipelineContext _pipelineContext;
+        private protected readonly PipelineContext _pipelineContext;
+        private protected readonly IotHubClientOptions _clientOptions;
 
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
-
-        private readonly IotHubClientOptions _clientOptions;
 
         // Connection status change information
         private volatile Action<ConnectionStatusInfo> _connectionStatusChangeHandler;

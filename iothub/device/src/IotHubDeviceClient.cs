@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
             _pipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
             InnerHandler = pipelineBuilder.Build(_pipelineContext);
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(_pipelineContext, options.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(_pipelineContext, _clientOptions.FileUploadTransportSettings);
         }
 
         /// <summary>
