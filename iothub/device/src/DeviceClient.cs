@@ -575,6 +575,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
         /// </summary>
+        /// <remarks>
+        /// This API has been deprecated. Users should migrate to the new workflow which involves calling
+        /// <see cref="GetFileUploadSasUriAsync(FileUploadSasUriRequest, CancellationToken)"/>, using an Azure Storage library
+        /// of your choice to upload the file, and calling <see cref="CompleteFileUploadAsync(FileUploadCompletionNotification, CancellationToken)"/>.
+        /// <para>
+        /// This method uses a very outdated Azure Storage SDK version that is otherwise unused by this client. When users
+        /// move to the new method, they are in control of the file upload operation and can keep their choice of Azure Storage SDK
+        /// up to date.
+        /// </para>
+        /// </remarks>
         /// <param name="blobName">The name of the blob to upload.</param>
         /// <param name="source">A stream with blob contents. Should be disposed after upload completes.</param>
         [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
@@ -584,6 +594,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
         /// </summary>
+        /// <remarks>
+        /// This API has been deprecated. Users should migrate to the new workflow which involves calling
+        /// <see cref="GetFileUploadSasUriAsync(FileUploadSasUriRequest, CancellationToken)"/>, using an Azure Storage library
+        /// of your choice to upload the file, and calling <see cref="CompleteFileUploadAsync(FileUploadCompletionNotification, CancellationToken)"/>.
+        /// <para>
+        /// This method uses a very outdated Azure Storage SDK version that is otherwise unused by this client. When users
+        /// move to the new method, they are in control of the file upload operation and can keep their choice of Azure Storage SDK
+        /// up to date.
+        /// </para>
+        /// </remarks>
         /// <param name="blobName">The name of the blob to upload</param>
         /// <param name="source">A stream with blob contents.. Should be disposed after upload completes.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
