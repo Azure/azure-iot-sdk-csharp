@@ -27,7 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static void TestClassSetup(TestContext _)
         {
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            string s_folderName = "x509-" + nameof(ProvisioningCertificateValidationE2ETest).Split('.').Last() + "-" + Guid.NewGuid().ToString().Split('-').Last();
+            // Shorten the folder name to avoid overall file path become too long and cause error in the test
+            string s_folderName = "x509-" + nameof(ProvisioningCertificateValidationE2ETest).Split('.').Last() + "-" + Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '.').Trim('=');
             s_x509CertificatesFolder = Directory.CreateDirectory(s_folderName);
         }
 
@@ -112,7 +113,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private async Task TestInvalidServiceCertificate(ProvisioningTransportHandler transport)
         {
-            string certificateSubject = "cert-" + Guid.NewGuid().ToString();
+            // Shorten the file name to avoid overall file path become too long and cause error in the test
+            string certificateSubject = "cert-"+Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '.').Trim('=');
             X509Certificate2Helper.GenerateSelfSignedCertificateFiles(certificateSubject, s_x509CertificatesFolder, Logger);
 
             using X509Certificate2 cert = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(certificateSubject, s_x509CertificatesFolder);

@@ -359,6 +359,7 @@ try
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=E2E"
+        # Invalid Cert tests currently require docker on linux (docker on windows do not allow the same networking setup)
         if (-not(IsWindows)) 
         {
             $testCategory += "|"

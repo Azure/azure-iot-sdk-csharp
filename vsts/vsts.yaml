@@ -206,18 +206,18 @@ jobs:
             #echo "##vso[task.setvariable variable=AGENT_SUBNET;isoutput=true;]$CVTEST_HOST_SUBNET"
             #echo "##vso[task.setvariable variable=AGENT_SUBNET_MASK;isoutput=true;]$CVTEST_HOST_SUBNET_MASK"
             #echo "##vso[task.setvariable variable=AGENT_CONTAINER;isoutput=true;]$CVTEST_CONTAINER_IP"
-            echo "=========="
-            echo "Ping hosts"
-            echo "=========="
-            ping -c 5 $CVTEST_HOST_IP
-            ping -c 5 $CVTEST_CONTAINER_IP
-            echo "=================="
-            echo "Inspect containers"
-            echo "=================="
-            docker ps -a
-            docker inspect invalid-gde
-            docker inspect invalid-dps
-            docker inspect invalid-hub
+            #echo "=========="
+            #echo "Ping hosts"
+            #echo "=========="
+            #ping -c 5 $CVTEST_HOST_IP
+            #ping -c 5 $CVTEST_CONTAINER_IP
+            #echo "=================="
+            #echo "Inspect containers"
+            #echo "=================="
+            #docker ps -a
+            #docker inspect invalid-gde
+            #docker inspect invalid-dps
+            #docker inspect invalid-hub
             export CVTEST_GDE_IP=$(docker inspect invalid-gde | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
             export CVTEST_DPS_IP=$(docker inspect invalid-dps | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
             export CVTEST_HUB_IP=$(docker inspect invalid-hub | grep -Po -m 1 '"IPAddress": "\K[\d.]+')
@@ -230,11 +230,11 @@ jobs:
             #echo "==============="
             #echo "Ping containers"
             #echo "==============="
-            docker ps -a
-            ping -c 2 $CVTEST_GDE_IP
-            ping -c 2 $CVTEST_DPS_IP
-            ping -c 2 $CVTEST_HUB_IP
-            cat /etc/hosts
+            #docker ps -a
+            #ping -c 2 $CVTEST_GDE_IP
+            #ping -c 2 $CVTEST_DPS_IP
+            #ping -c 2 $CVTEST_HUB_IP
+            #cat /etc/hosts
             echo "================="
             echo "Update hosts file"
             echo "================="
@@ -454,11 +454,6 @@ jobs:
           displayName: 'Install .NET 4.5.1'
           inputs:
             script: 'choco install dotnet4.5.1'
-
-#      - script: |
-#          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-#          sn.exe -Vr *,31bf3856ad364e35
-#        displayName: "Disable strong name validation"
 
       - script: |
           choco install -y squid
