@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The latest connection status information since the last status change.
         /// </summary>
-        public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new ConnectionStatusInfo();
+        public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
