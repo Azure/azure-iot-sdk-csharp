@@ -203,23 +203,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         ServiceUnavailable = 503001,
 
-        // Errors not returned by the hub
-
-        /// <summary>
-        /// The operation failed when an attempt to communicate with the IoT hub service fails due to transient
-        /// network issues or operation timeouts.
-        /// </summary>
-        /// <remarks>
-        /// Retrying failed operations could resolve the error.
-        /// </remarks>
-        NetworkErrors,
-
         /// <summary>
         /// The operation failed because the IoT hub has been suspended. 
         /// </summary>
         /// <remarks>
         /// This is likely due to exceeding Azure spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
         /// </remarks>
-        HubSuspended,
+        HubSuspended, // to-do: brycewang - check the error code returned by the hub service while sending requests to a suspended hub.
     }
 }

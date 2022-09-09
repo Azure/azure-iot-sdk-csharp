@@ -82,8 +82,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Open this instance. Must be done before any cloud-to-device messages can be sent.
         /// </summary>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown if the client encounters a transient retriable exception.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown when the operation has been canceled. The inner exception will be
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
         /// <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
@@ -119,8 +119,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The instance can be re-opened after closing.
         /// </remarks>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown if the client encounters a transient retriable exception.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown when the operation has been canceled. The inner exception will be
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
         /// <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
+        /// For a complete list of possible error cases, see <see cref="IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
+        /// For a complete list of possible error cases, see <see cref="IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, string moduleId, Message message, CancellationToken cancellationToken = default)
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
+        /// For a complete list of possible error cases, see <see cref="IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
