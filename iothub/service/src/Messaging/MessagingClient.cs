@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
+        /// For a complete list of possible error cases, see <see cref="IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
+        /// For a complete list of possible error cases, see <see cref="IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, string moduleId, Message message, CancellationToken cancellationToken = default)
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
+        /// For a complete list of possible error cases, see <see cref="IotHubStatusCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
