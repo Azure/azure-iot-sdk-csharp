@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Deletes a received message from the client's service-side queue.
+        /// Deletes the received message from the service's cloud to device message queue for this client.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -382,7 +382,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Deletes a received message from the client's service-side queue and indicates to the server that the message could not be processed.
+        /// Deletes the received message from the service's cloud to device message queue for this client and indicates to the server that the message could not be processed.
         /// </summary>
         /// <remarks>
         /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
