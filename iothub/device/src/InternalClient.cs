@@ -144,8 +144,8 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Open the client instance. Must be done before any operation can begin.
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
         {
@@ -407,15 +407,18 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with
+        /// Sets a new delegate for the named method.
+        /// </summary>
+        /// <remarks>
+        /// If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
         /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
+        /// </remarks>
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// </summary>
         public async Task SetMethodHandlerAsync(
             string methodName,
             Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
@@ -459,9 +462,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
+        /// </summary>
+        /// <remarks>
         /// If a default delegate is already registered it will replace with the new delegate.
         /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
-        /// </summary>
+        /// </remarks>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is
         /// no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
@@ -510,8 +515,10 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Retrieve the twin properties for the current client. The client instance must be opened already.
-        /// This API gives you the client's view of the twin. For more information on twins in IoT hub, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins"/>.
         /// </summary>
+        /// <remarks>
+        /// This API gives you the client's view of the twin. For more information on twins in IoT hub, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins"/>.
+        /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>

@@ -72,7 +72,11 @@ namespace Microsoft.Azure.Devices.Client
         internal IotHubModuleClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options, ICertificateValidator certificateValidator)
             : base(iotHubConnectionCredentials, options)
         {
-            Argument.AssertNotNullOrWhiteSpace(iotHubConnectionCredentials.ModuleId, nameof(iotHubConnectionCredentials.ModuleId));
+            // Validate
+            if (iotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
+            {
+                throw new InvalidOperationException("A valid module Id should be specified in the authentication credentails to create an IotHubModuleClient.");
+            }
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
@@ -160,9 +164,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// ModuleClient instance must be opened already.
         /// </summary>
+        /// <remarks>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </remarks>
         /// <param name="outputName">The output target for sending the given message.</param>
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -194,10 +200,13 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the particular input. If a delegate is already associated with
+        /// Sets a new delegate for the particular input.
+        /// </summary>
+        /// <remarks>
+        /// If a delegate is already associated with
         /// the input, it will be replaced with the new delegate.
         /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
-        /// </summary>
+        /// </remarks>
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
@@ -256,11 +265,14 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
+        /// Sets a new default delegate which applies to all endpoints.
+        /// </summary>
+        /// <remarks>
+        /// If a delegate is already associated with
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
         /// it will be overwritten.
         /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
-        /// </summary>
+        /// </remarks>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

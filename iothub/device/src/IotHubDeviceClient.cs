@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
             // Validate
             if (iotHubConnectionCredentials.ModuleId != null)
             {
-                throw new ArgumentException("A module Id was specified in the connection string - please use IotHubModuleClient for modules.");
+                throw new InvalidOperationException("A module Id was specified in the authentication credentials supplied - please use IotHubModuleClient for modules.");
             }
 
             // Validate certificates
@@ -95,13 +95,15 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Receive a message from the device queue using the cancellation token. IotHubDeviceClient instance must be opened already.
+        /// </summary>
+        /// <remarks>
         /// After handling a received message, a client should call <see cref="InternalClient.CompleteMessageAsync(Message, CancellationToken)"/>,
         /// <see cref="InternalClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="InternalClient.RejectMessageAsync(Message, CancellationToken)"/>,
         /// and then dispose the message.
-        /// </summary>
-        /// <remarks>
+        /// <para>
         /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
         /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
+        /// </para>
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
@@ -192,8 +194,10 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device
-        /// See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>.
         /// </summary>
+        /// <remarks>
+        /// See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>.
+        /// </remarks>
         /// <param name="request">The request details for getting the SAS URI, including the destination blob name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
