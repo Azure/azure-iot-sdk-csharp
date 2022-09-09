@@ -359,7 +359,7 @@ try
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=E2E"
-        # Invalid Cert tests currently require docker on linux (docker on windows do not allow the same networking setup)
+        # Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
         if (-not(IsWindows)) 
         {
             $testCategory += "|"
