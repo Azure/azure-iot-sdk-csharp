@@ -19,17 +19,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <list type="bullet">
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int, CancellationToken)">IndividualEnrollment</see>
+    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(string, int, CancellationToken)">IndividualEnrollment</see>
     ///     </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int, CancellationToken)">EnrollmentGroup</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(string, int, CancellationToken)">EnrollmentGroup</see>
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, string, int, CancellationToken)">RegistrationStatus</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(string, string, int, CancellationToken)">RegistrationStatus</see>
     ///         </description>
     ///     </item>
     /// </list>
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal Query(
             ServiceConnectionString serviceConnectionString,
             string serviceName,
-            QuerySpecification querySpecification,
+            string query,
             IContractApiHttp contractApiHttp,
             int pageSize,
             CancellationToken cancellationToken)
@@ -87,9 +87,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
             }
 
-            if (querySpecification == null)
+            if (query == null)
             {
-                throw new ArgumentNullException(nameof(querySpecification));
+                throw new ArgumentNullException(nameof(query));
             }
 
             if (pageSize < 0)
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
 
-            _querySpecificationJson = JsonConvert.SerializeObject(querySpecification);
+            _querySpecificationJson = JsonConvert.SerializeObject(new QuerySpecification(query));
 
             _queryPath = GetQueryUri(serviceName);
 

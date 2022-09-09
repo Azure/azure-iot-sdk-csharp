@@ -153,14 +153,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal static Query CreateQuery(
             ServiceConnectionString provisioningConnectionString,
-            QuerySpecification querySpecification,
+            string query,
             IContractApiHttp contractApiHttp,
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            if (querySpecification == null)
+            if (query == null)
             {
-                throw new ArgumentNullException(nameof(querySpecification));
+                throw new ArgumentNullException(nameof(query));
             }
 
             if (pageSize < 0)
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
 
-            return new Query(provisioningConnectionString, ServiceName, querySpecification, contractApiHttp, pageSize, cancellationToken);
+            return new Query(provisioningConnectionString, ServiceName, query, contractApiHttp, pageSize, cancellationToken);
         }
 
         private static Uri GetEnrollmentUri(string registrationId)
