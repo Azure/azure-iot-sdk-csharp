@@ -114,10 +114,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
             if (pageSize < 0)
             {
