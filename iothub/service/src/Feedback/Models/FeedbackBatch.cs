@@ -8,28 +8,31 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Contains a batch of feedback records.
-    /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
     /// </summary>
+    /// <remarks>
+    /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
+    /// </remarks>
     public class FeedbackBatch
     {
         /// <summary>
         /// Date and time that indicates when the feedback message was received by the IoT hub.
-        /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
         /// </summary>
+        /// <remarks>
+        /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
+        /// </remarks>
         public DateTime EnqueuedTime { get; set; }
 
         /// <summary>
         /// A collection of feedback records of C2D messages across multiple devices in the IoT hub.
-        /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
         /// </summary>
+        /// <remarks>
+        /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
+        /// </remarks>
         public IEnumerable<FeedbackRecord> Records { get; set; }
 
         /// <summary>
         /// The IoT hub host name.
         /// </summary>
-        /// <remarks>
-        /// Despite the name of this member, the value will be the IoT hub host name.
-        /// </remarks>
-        public string UserId { get; set; }
+        public string IotHubHostName { get; set; }
     }
 }

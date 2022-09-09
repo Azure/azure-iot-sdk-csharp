@@ -154,28 +154,35 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         public async Task Message_ClientThrowsForMqttTopicNameTooLong()
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-
-            var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
-            //Mqtt topic name consists of, among other things, system properties and user properties
-            // setting lots of very long user properties should cause a MessageTooLargeException explaining
-            // that the topic name is too long to publish over mqtt
-            for (int i = 0; i < 100; i++)
+            try
             {
-                msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
+                using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
+
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
+                //Mqtt topic name consists of, among other things, system properties and user properties
+                // setting lots of very long user properties should cause a MessageTooLargeException explaining
+                // that the topic name is too long to publish over mqtt
+                for (int i = 0; i < 100; i++)
+                {
+                    msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
+                }
+
+                // act
+                Func<Task> act = async () =>
+                {
+                    await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
+                };
+
+                // assert
+                var error = await act.Should().ThrowAsync<IotHubClientException>();
+                error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
             }
-
-            // act
-            Func<Task> act = async () =>
+            finally
             {
-                await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
+                await testDevice.RemoveDeviceAsync();
+            }
         }
 
         [DataTestMethod]

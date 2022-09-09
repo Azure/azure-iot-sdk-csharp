@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Amqp
     /// </summary>
     internal class AmqpSessionHandler
     {
-        private AmqpSession _session;
-        private AmqpSendingLinkHandler _sendingLinkHandler;
-        private AmqpReceivingLinkHandler _receivingLinkHandler;
-        private EventHandler _connectionLossHandler;
+        private readonly AmqpSendingLinkHandler _sendingLinkHandler;
+        private readonly AmqpReceivingLinkHandler _receivingLinkHandler;
+        private readonly EventHandler _connectionLossHandler;
+        private readonly string _linkAddress;
 
-        private string _linkAddress;
+        private AmqpSession _session;
 
         /// <summary>
         /// Construct an AMQP session for handling sending cloud to device messaging, receiving file
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// The handler for received feedback messages or file upload notifications. If this session is used
         /// for sending cloud to device messages, then this argument is ignored.
         /// </param>
-        public AmqpSessionHandler(string linkAddress, EventHandler connectionLossHandler, Action<AmqpMessage> messageHandler = null)
+        internal AmqpSessionHandler(string linkAddress, EventHandler connectionLossHandler, Action<AmqpMessage> messageHandler = null)
         {
             _linkAddress = linkAddress;
 
@@ -56,11 +56,29 @@ namespace Microsoft.Azure.Devices.Amqp
         }
 
         /// <summary>
+        /// Returns true if this session and its link are open. Returns false otherwise.
+        /// </summary>
+        /// <returns>True if this session and its link are open. False otherwise.</returns>
+        internal bool IsOpen
+        {
+            get
+            {
+                // If one link is not null and open. The other link is not expected to be non-null.
+                bool linkIsOpen = _receivingLinkHandler != null && _receivingLinkHandler.IsOpen
+                    || _sendingLinkHandler != null && _sendingLinkHandler.IsOpen;
+
+                return _session != null
+                    && _session.State == AmqpObjectState.Opened
+                    && linkIsOpen;
+            }
+        }
+
+        /// <summary>
         /// Opens the session and then opens the worker link.
         /// </summary>
         /// <param name="connection">The connection to open this session on.</param>
         /// <param name="cancellationToken">The timeout for the open operation.</param>
-        public async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
+        internal async Task OpenAsync(AmqpConnection connection, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening worker session.");
@@ -98,7 +116,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// Closes the session then closes the worker link.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task CloseAsync(CancellationToken cancellationToken)
+        internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening worker session.");
@@ -133,7 +151,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <param name="message">The message to send.</param>
         /// <param name="deliveryTag">The message delivery tag. Used for correlating messages and acknowledgements.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
+        internal async Task<Outcome> SendAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, CancellationToken cancellationToken)
         {
             if (_sendingLinkHandler == null)
             {
@@ -151,7 +169,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// <param name="deliveryTag">The delivery tag of the message to acknowledge.</param>
         /// <param name="outcome">The acknowledgement type.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (_receivingLinkHandler == null)
             {
@@ -161,21 +179,6 @@ namespace Microsoft.Azure.Devices.Amqp
             }
 
             await _receivingLinkHandler.AcknowledgeMessageAsync(deliveryTag, outcome, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Returns true if this session and its link are open. Returns false otherwise.
-        /// </summary>
-        /// <returns>True if this session and its link are open. False otherwise.</returns>
-        public bool IsOpen()
-        {
-            // If one link is not null and open. The other link is not expected to be non-null.
-            bool linkIsOpen = (_receivingLinkHandler != null && _receivingLinkHandler.IsOpen())
-                || (_sendingLinkHandler != null && _sendingLinkHandler.IsOpen());
-
-            return _session != null
-                && _session.State == AmqpObjectState.Opened
-                && linkIsOpen;
         }
     }
 }
