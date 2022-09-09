@@ -121,7 +121,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                         if (device is null)
                         {
-                            throw new IotHubServiceException(IotHubStatusCode.DeviceNotFound, $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
+                            throw new IotHubServiceException(
+                                System.Net.HttpStatusCode.NotFound, 
+                                IotHubStatusCode.DeviceNotFound, 
+                                $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
                         }
                     },
                     s_exponentialBackoffRetryStrategy,

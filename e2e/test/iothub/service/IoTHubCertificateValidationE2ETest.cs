@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Threading.Tasks;
@@ -23,7 +24,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
             var exception = await Assert.ThrowsExceptionAsync<IotHubServiceException>(
                 () => sc.Query.CreateAsync<Twin>("select * from devices")).ConfigureAwait(false);
-            exception.IotHubStatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
 
 #if NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
@@ -80,7 +80,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var exception = await Assert.ThrowsExceptionAsync<IotHubServiceException>(
                 () => sc.ScheduledJobs.ScheduleTwinUpdateAsync(
                     twinUpdate, ScheduledTwinUpdateOptions)).ConfigureAwait(false);
-            exception.IotHubStatusCode.Should().Be(IotHubStatusCode.NetworkErrors);
 
 #if NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));

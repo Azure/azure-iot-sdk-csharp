@@ -143,18 +143,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             // act
-            IotHubStatusCode actualErrorCode = IotHubStatusCode.Unknown;
+            HttpStatusCode errorCode = HttpStatusCode.OK;
+            IotHubStatusCode iotHubStatusCode = IotHubStatusCode.Unknown;
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
             }
-            catch (IotHubServiceException ex) when (ex.IotHubStatusCode is IotHubStatusCode.DeviceNotFound)
+            catch (IotHubServiceException ex) when (ex.ErrorCode is HttpStatusCode.NotFound)
             {
-                actualErrorCode = ex.IotHubStatusCode;
+                errorCode = ex.ErrorCode;
+                iotHubStatusCode = ex.IotHubStatusCode;
             }
 
-            Assert.AreEqual(IotHubStatusCode.DeviceNotFound, actualErrorCode);
+            // assert
+            Assert.AreEqual(HttpStatusCode.NotFound, errorCode);
+            Assert.AreEqual(IotHubStatusCode.DeviceNotFound, iotHubStatusCode);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -226,6 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.ErrorCode.Should().Be(HttpStatusCode.NotFound);
             error.And.IotHubStatusCode.Should().Be(IotHubStatusCode.ModuleNotFound);
         }
 
@@ -298,21 +303,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodTimeoutMinutes : responseTimeout;
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-            try
-            {
-                var directMethodRequest = new DirectMethodRequest
-                {
-                    MethodName = methodName,
-                    ResponseTimeout = methodTimeout,
-                };
 
-                DirectMethodResponse response = await serviceClient.DirectMethods
-                    .InvokeAsync(deviceId, directMethodRequest)
-                    .ConfigureAwait(false);
-            }
-            catch (IotHubServiceException ex) when (ex.IotHubStatusCode is IotHubStatusCode.DeviceNotOnline)
+            var directMethodRequest = new DirectMethodRequest
             {
-            }
+                MethodName = methodName,
+                ResponseTimeout = methodTimeout,
+            };
+
+            // act
+            Func<Task> act = async () =>
+            {
+                await serviceClient.DirectMethods.InvokeAsync(deviceId, directMethodRequest).ConfigureAwait(false);
+            };
+
+            // assert
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.ErrorCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.IotHubStatusCode.Should().Be(IotHubStatusCode.DeviceNotOnline);
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(
