@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             using var provisioningServiceClient = new ProvisioningServiceClient(
                 TestConfiguration.Provisioning.ConnectionStringInvalidServiceCertificate);
             Query q = provisioningServiceClient.CreateEnrollmentGroupQuery(
-                new QuerySpecification("SELECT * FROM enrollmentGroups"));
+                "SELECT * FROM enrollmentGroups");
 
             ProvisioningServiceClientTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
                 () => q.NextAsync()).ConfigureAwait(false);
