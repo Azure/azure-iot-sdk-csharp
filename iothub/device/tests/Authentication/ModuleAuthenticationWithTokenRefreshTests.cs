@@ -36,9 +36,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(TestDeviceId, null));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation("   ", TestModuleId));
             TestAssert.Throws<ArgumentNullException>(() => new TestImplementation(TestDeviceId, "  "));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, -1, 10));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, 60, -1));
-            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, 60, 101));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(-1), 10));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), -1));
+            TestAssert.Throws<ArgumentOutOfRangeException>(() => new TestImplementation(TestDeviceId, TestModuleId, TimeSpan.FromSeconds(60), 101));
         }
 
         [TestMethod]
@@ -59,48 +59,44 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ModuleAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId, TestModuleId);
-            var csBuilder = new IotHubConnectionStringBuilder(refresher, TestIotHubName);
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(refresher, TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(TestDeviceId, csBuilder.DeviceId);
-            Assert.AreEqual(TestModuleId, csBuilder.ModuleId);
-            Assert.AreEqual(null, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(TestModuleId, iotHubConnectionCredentials.ModuleId);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
 
             string token = await refresher.GetTokenAsync(TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(TestDeviceId, csBuilder.DeviceId);
-            Assert.AreEqual(TestModuleId, csBuilder.ModuleId);
-            Assert.AreEqual(token, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
+            Assert.AreEqual(TestModuleId, iotHubConnectionCredentials.ModuleId);
+            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
         }
 
         [TestMethod]
         public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var csBuilder = new IotHubConnectionStringBuilder(
+            IConnectionCredentials iotHubConnectionCredentials = new IotHubConnectionCredentials(
                 new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey),
                 TestIotHubName);
 
-            var clientOptions = new IotHubClientOptions();
-            ClientConfiguration connInfo = new ClientConfiguration(csBuilder, clientOptions);
+            Assert.IsNotNull(iotHubConnectionCredentials.SasTokenRefresher);
+            Assert.IsInstanceOfType(iotHubConnectionCredentials.SasTokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
 
-            Assert.IsNotNull(connInfo.TokenRefresher);
-            Assert.IsInstanceOfType(connInfo.TokenRefresher, typeof(ModuleAuthenticationWithSakRefresh));
+            var cbsAuth = new AmqpIotCbsTokenProvider(iotHubConnectionCredentials);
 
-            var auth = (IAuthorizationProvider)connInfo;
-            var cbsAuth = new AmqpIotCbsTokenProvider(connInfo);
-
-            string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
+            string token1 = await iotHubConnectionCredentials.GetPasswordAsync().ConfigureAwait(false);
             CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIotHubName), "testAppliesTo", null).ConfigureAwait(false);
 
-            Assert.IsNull(connInfo.SharedAccessSignature);
-            Assert.AreEqual(TestDeviceId, connInfo.DeviceId);
+            Assert.IsNull(iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(TestDeviceId, iotHubConnectionCredentials.DeviceId);
 
             Assert.IsNotNull(token1);
             Assert.IsNotNull(token2);
@@ -122,15 +118,9 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             private int _callCount = 0;
 
-            public int SafeCreateNewTokenCallCount
-            {
-                get
-                {
-                    return _callCount;
-                }
-            }
+            public int SafeCreateNewTokenCallCount => _callCount;
 
-            public int ActualTimeToLive { get; set; } = 0;
+            public int ActualTimeToLive { get; set; }
 
             public TestImplementation(string deviceId, string moduleId) : base(deviceId, moduleId)
             {
@@ -139,20 +129,20 @@ namespace Microsoft.Azure.Devices.Client.Test
             public TestImplementation(
                 string deviceId,
                 string moduleId,
-                int suggestedTimeToLive,
+                TimeSpan suggestedTimeToLive,
                 int timeBufferPercentage)
                 : base(deviceId, moduleId, suggestedTimeToLive, timeBufferPercentage)
             {
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 
                 await Task.Delay(10).ConfigureAwait(false);
 
-                int ttl = suggestedTimeToLive;
+                int ttl = (int)suggestedTimeToLive.TotalSeconds;
                 if (ActualTimeToLive > 0)
                 {
                     ttl = ActualTimeToLive;

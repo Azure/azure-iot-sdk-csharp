@@ -12,18 +12,56 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithRegistrySymmetricKey : IAuthenticationMethod
     {
+        private const int DefaultSasRenewalBufferPercentage = 15;
+        private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
+
+        private readonly TimeSpan _suggestedTimeToLive;
+        private readonly int _timeBufferPercentage;
+
         private string _deviceId;
         private byte[] _key;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithRegistrySymmetricKey"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="key">Symmetric key associated with the device.</param>
-        public DeviceAuthenticationWithRegistrySymmetricKey(string deviceId, string key)
+        /// <param name="suggestedTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
+        ///</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
+        /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
+        public DeviceAuthenticationWithRegistrySymmetricKey(
+            string deviceId,
+            string key,
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default)
         {
+            if (suggestedTimeToLive < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
+            }
+
+            if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
+            }
+
             SetDeviceId(deviceId);
             SetKeyFromBase64String(key);
+
+            _suggestedTimeToLive = suggestedTimeToLive == default
+                ? s_defaultSasTimeToLive
+                : suggestedTimeToLive;
+
+            _timeBufferPercentage = timeBufferPercentage == default
+                ? DefaultSasRenewalBufferPercentage
+                : timeBufferPercentage;
         }
 
         /// <summary>
@@ -58,23 +96,25 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on the properties of the current instance.
+        /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.SharedAccessKey = KeyAsBase64String;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = null;
-            iotHubConnectionStringBuilder.SharedAccessSignature = null;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
+            iotHubConnectionCredentials.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SharedAccessSignature = null;
+            iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         private void SetKey(byte[] key)
@@ -86,12 +126,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException("Shared access key cannot be null or white space.", nameof(key));
             }
 
             if (!StringValidationHelper.IsBase64String(key))
             {
-                throw new ArgumentException("Key must be base64 encoded");
+                throw new ArgumentException("Key must be base64 encoded", nameof(key));
             }
 
             _key = Convert.FromBase64String(key);
@@ -101,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Device Id cannot be null or white space.");
+                throw new ArgumentException("Device Id cannot be null or white space.", nameof(deviceId));
             }
 
             _deviceId = deviceId;

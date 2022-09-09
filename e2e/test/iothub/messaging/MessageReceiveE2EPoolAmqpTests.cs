@@ -112,14 +112,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var messagesSent = new Dictionary<string, Tuple<Message, string>>();
 
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
 
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
@@ -133,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task CleanupOperationAsync()
             {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
                 serviceClient.Dispose();
                 messagesSent.Clear();
             }
@@ -160,8 +161,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize the service client
-            var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
-
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 (Message msg, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2dTestMessage(Logger);
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
 
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
@@ -182,8 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task CleanupOperationAsync()
             {
-                await serviceClient.CloseAsync().ConfigureAwait(false);
-                serviceClient.Dispose();
+                await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
             }
 
             await PoolingOverAmqp

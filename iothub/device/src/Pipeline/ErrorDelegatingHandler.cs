@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
@@ -121,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(message, cancellationToken));
         }
 
-        public override Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
@@ -183,17 +182,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (IsSecurityExceptionChain(ex))
                     {
-                        Exception innerException = (ex is IotHubException) ? ex.InnerException : ex;
+                        Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
                         throw new AuthenticationException("TLS authentication error.", innerException);
                     }
                     // For historic reasons, part of the Error handling is done within the transport handlers.
-                    else if (ex is IotHubCommunicationException)
+                    else if (ex is IotHubClientException hubEx && hubEx.StatusCode is IotHubStatusCode.NetworkErrors)
                     {
                         throw;
                     }
                     else if (IsNetworkExceptionChain(ex))
                     {
-                        throw new IotHubCommunicationException("Transient network error occurred, please retry.", ex);
+                        throw new IotHubClientException("Transient network error occurred, please retry.", ex, true, IotHubStatusCode.NetworkErrors);
                     }
                     else
                     {

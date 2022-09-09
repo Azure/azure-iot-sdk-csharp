@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _hostName = hostName;
         }
 
-        public async Task<AmqpIotConnection> OpenConnectionAsync(CancellationToken cancellationToken)
+        public async Task<AmqpIotConnection> OpenConnectionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(OpenConnectionAsync));
@@ -41,12 +41,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             var amqpConnectionSettings = new AmqpConnectionSettings
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = CommonResources.GetNewStringGuid(),
+                ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 HostName = _hostName,
                 IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
 
-            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
+            _amqpIotTransport = new AmqpIotTransport(connectionCredentials, amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try

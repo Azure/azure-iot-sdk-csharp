@@ -17,7 +17,7 @@
   <!-- delay sign the assembly for Release build -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
     <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>true</DelaySign>
+    <PublicSign>true</PublicSign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
@@ -49,6 +49,7 @@
   <!--Project reference dependencies-->
   <ItemGroup>
     <ProjectReference Include="..\..\..\authentication\src\Microsoft.Azure.Devices.Authentication.csproj" />
+    <ProjectReference Include="..\..\service\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
   <!--Nuget package dependencies-->

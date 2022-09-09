@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Common.Service.Auth
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Authentication method that uses a shared access policy token. 
+    /// Authentication method that uses a shared access policy token.
     /// </summary>
     internal sealed class ServiceAuthenticationWithSharedAccessPolicyToken : IAuthenticationMethod
     {
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
+        /// Creates an instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
         /// </summary>
         /// <param name="policyName">Name of the shared access policy to use.</param>
         /// <param name="token">Token associated with the shared access policy.</param>

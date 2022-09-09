@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
@@ -14,13 +15,16 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     [Serializable]
     public class IotHubSuspendedException : IotHubException
     {
+        private const string SuspendedException = "IotHubSuspendedException";
+        private const string IotHubSuspended = "IoT hub {0} is suspended.";
+
         /// <summary>
         /// Creates an instance of this class with a name of the suspended IoT hub
         /// and marks it as non-transient.
         /// </summary>
         /// <param name="iotHubName">The name of the IoT hub that has been suspended.</param>
         public IotHubSuspendedException(string iotHubName)
-            : base(Resources.IotHubSuspendedException.FormatInvariant(iotHubName))
+            : base(string.Format(CultureInfo.InvariantCulture, IotHubSuspended, iotHubName))
         {
         }
 
@@ -31,7 +35,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <param name="iotHubName">The name of the IoT hub that has been suspended.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         public IotHubSuspendedException(string iotHubName, string trackingId)
-            : base(Resources.IotHubSuspendedException.FormatInvariant(iotHubName), trackingId)
+            : base(string.Format(CultureInfo.InvariantCulture, IotHubSuspended, iotHubName), trackingId: trackingId)
         {
         }
 

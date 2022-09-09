@@ -120,9 +120,6 @@
   <data name="ConnectionStringIsNotWellFormed" xml:space="preserve">
     <value>The connection string is not well formed.</value>
   </data>
-  <data name="HostNameIsNull" xml:space="preserve">
-    <value>The HostName is null.</value>
-  </data>
   <data name="ETagNotSetWhileUpdatingDevice" xml:space="preserve">
     <value>The ETag should be set while updating the device.</value>
   </data>

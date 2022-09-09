@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
@@ -58,22 +58,22 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.ModuleId = ModuleId;
-            iotHubConnectionStringBuilder.SharedAccessSignature = Token;
-            iotHubConnectionStringBuilder.SharedAccessKey = null;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
+            iotHubConnectionCredentials.SharedAccessSignature = Token;
+            iotHubConnectionCredentials.SharedAccessKey = null;
+            iotHubConnectionCredentials.SharedAccessKeyName = null;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         private void SetDeviceId(string deviceId)
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Token must be of type SharedAccessSignature");
+                throw new ArgumentException("Token must be of type SharedAccessSignature", nameof(token));
             }
 
             _token = token;

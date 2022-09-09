@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="value">The value to validate.</param>
         /// <param name="name">The name of the parameter.</param>
         /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-        public static void AssertNotNull<T>(T value, string name)
+        internal static void AssertNotNull<T>(T value, string name)
         {
             if (value is null)
             {
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="name">The name of the parameter.</param>
         /// <exception cref="ArgumentException"><paramref name="value"/> is an empty string or consists only of white-space characters.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-        public static void AssertNotNullOrWhiteSpace(string value, string name)
+        internal static void AssertNotNullOrWhiteSpace(string value, string name)
         {
             if (value is null)
             {
@@ -47,6 +48,46 @@ namespace Microsoft.Azure.Devices.Client
             if (string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("Value cannot be empty or contain only white-space characters.", name);
+            }
+        }
+
+        /// <summary>
+        /// Checks an argument to ensure that its value doesn't exceed the specified ceiling baseline.
+        /// </summary>
+        /// <param name="argumentValue">The value of the argument.</param>
+        /// <param name="ceilingValue">The ceiling value of the argument.</param>
+        /// <param name="argumentName">The name of the argument for diagnostic purposes.</param>
+        public static void AssertNotGreaterThan(double argumentValue, double ceilingValue, string argumentName)
+        {
+            if (argumentValue > ceilingValue)
+            {
+                throw new ArgumentOutOfRangeException(
+                    argumentName,
+                    argumentValue,
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        "ArgumentCannotBeGreaterThanBaseline",
+                        new object[]
+                        {
+                            argumentName,
+                            ceilingValue
+                        }));
+            }
+        }
+
+        /// <summary>
+        /// Checks an argument to ensure that its 64-bit signed value isn't negative.
+        /// </summary>
+        /// <param name="argumentValue">The value of the argument.</param>
+        /// <param name="argumentName">The name of the argument for diagnostic purposes.</param>
+        internal static void AssertNotNegativeValue(long argumentValue, string argumentName)
+        {
+            if (argumentValue < 0)
+            {
+                throw new ArgumentOutOfRangeException(argumentName, argumentValue, string.Format(CultureInfo.CurrentCulture, "ArgumentCannotBeNegative", new object[]
+                {
+                    argumentName
+                }));
             }
         }
 

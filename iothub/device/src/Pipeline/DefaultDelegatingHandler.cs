@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task OpenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.OpenAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.OpenAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task CloseAsync(CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (NextHandler == null)
             {
-                return TaskHelpers.CompletedTask;
+                return Task.CompletedTask;
             }
 
             Task closeTask = NextHandler.CloseAsync(cancellationToken);
@@ -93,61 +93,61 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.CompleteMessageAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.CompleteMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.AbandonMessageAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.AbandonMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.RejectMessageAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.RejectMessageAsync(lockToken, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendEventAsync(message, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.SendEventAsync(message, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.SendEventAsync(messages, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnableMethodsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.EnableMethodsAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.DisableMethodsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.DisableMethodsAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
-        public virtual Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public virtual Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.EnableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.DisableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.DisableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
@@ -159,19 +159,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
+            return NextHandler?.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual bool IsUsable => NextHandler?.IsUsable ?? true;

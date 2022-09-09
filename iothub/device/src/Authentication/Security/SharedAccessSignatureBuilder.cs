@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -19,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="SharedAccessSignatureBuilder"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         public SharedAccessSignatureBuilder()
         {

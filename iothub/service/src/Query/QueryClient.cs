@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Http2;
 
 namespace Microsoft.Azure.Devices
 {
@@ -20,6 +20,8 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-query-language"/>
     public class QueryClient
     {
+        private const string JobTypeFormat = "&jobType={0}";
+        private const string JobStatusFormat = "&jobStatus={0}";
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string PageSizeHeader = "x-ms-max-item-count";
         private const string DevicesQueryUriFormat = "/devices/query";
@@ -101,7 +103,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Creating query", nameof(CreateAsync));
             try
             {
-                Argument.RequireNotNullOrEmpty(query, nameof(query));
+                Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -118,7 +120,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var page = new QueriedPage<T>(response, responsePayload);
                 return new QueryResponse<T>(this, query, page.Items, page.ContinuationToken, options?.PageSize);
@@ -188,7 +190,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper2.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 QueriedPage<ScheduledJob> page = new QueriedPage<ScheduledJob>(response, responsePayload);
                 return new QueryResponse<ScheduledJob>(this, jobType, jobStatus, page.Items, page.ContinuationToken, options?.PageSize);
@@ -217,12 +219,12 @@ namespace Microsoft.Azure.Devices
 
             if (jobType != null)
             {
-                stringBuilder.Append("&jobType={0}".FormatInvariant(WebUtility.UrlEncode(jobType.ToString())));
+                stringBuilder.Append(string.Format(CultureInfo.InvariantCulture, JobTypeFormat, jobType.ToString()));
             }
 
             if (jobStatus != null)
             {
-                stringBuilder.Append("&jobStatus={0}".FormatInvariant(WebUtility.UrlEncode(jobStatus.ToString())));
+                stringBuilder.Append(string.Format(CultureInfo.InvariantCulture, JobStatusFormat, jobStatus.ToString()));
             }
 
             return stringBuilder.ToString();

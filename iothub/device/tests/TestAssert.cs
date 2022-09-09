@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     ex);
             }
 
-            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
+            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException)));
         }
 
         public static async Task<TException> ThrowsAsync<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     ex);
             }
 
-            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
+            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException)));
         }
     }
 }

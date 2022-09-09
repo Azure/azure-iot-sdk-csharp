@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Common.Security;
 
 namespace Microsoft.Azure.Devices
 {
@@ -15,7 +14,7 @@ namespace Microsoft.Azure.Devices
         private string _token;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceAuthenticationWithSharedAccessPolicyToken"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="policyName">Name of the shared access policy to use.</param>
         /// <param name="token">Token associated with the shared access policy.</param>
@@ -26,7 +25,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The name of the policy
+        /// The name of the policy.
         /// </summary>
         public string PolicyName
         {
@@ -35,7 +34,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The SAS token
+        /// The SAS token.
         /// </summary>
         public string Token
         {
@@ -44,9 +43,9 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Updates the specified connection string builder with policy name and token
+        /// Updates the specified connection string builder with policy name and token.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">The connection string builder to update</param>
+        /// <param name="iotHubConnectionStringBuilder">The connection string builder to update.</param>
         /// <returns>The populated connection string builder object.</returns>
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {

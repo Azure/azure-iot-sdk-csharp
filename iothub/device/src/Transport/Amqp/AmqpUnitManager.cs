@@ -11,10 +11,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpUnitManager : IAmqpUnitManager
     {
-        private static readonly AmqpUnitManager s_instance = new AmqpUnitManager();
+        private static readonly AmqpUnitManager s_instance = new();
 
         private readonly IDictionary<string, IAmqpUnitManager> _amqpConnectionPools;
-        private readonly object _connectionPoolLock = new object();
+        private readonly object _connectionPoolLock = new();
 
         internal AmqpUnitManager()
         {
@@ -27,16 +27,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         public AmqpUnit CreateAmqpUnit(
-            IClientConfiguration clientConfiguration,
-            Func<MethodRequestInternal, Task> onMethodCallback,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener,
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation additionalClientInformation,
+            IotHubClientAmqpSettings amqpSettings,
+            Func<DirectMethodRequest, Task> onMethodCallback,
+            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
             Func<string, Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(clientConfiguration.GatewayHostName);
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.HostName);
             return amqpConnectionPool.CreateAmqpUnit(
-                clientConfiguration,
+                connectionCredentials,
+                additionalClientInformation,
+                amqpSettings,
                 onMethodCallback,
                 twinMessageListener,
                 onModuleMessageReceivedCallback,
@@ -46,7 +50,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
-            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(amqpUnit.GetClientConfiguration().GatewayHostName);
+            (IConnectionCredentials connectionCredentials, IotHubClientAmqpSettings _) = amqpUnit.GetConnectionCredentialsAndAmqpSettings();
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(connectionCredentials.HostName);
             amqpConnectionPool.RemoveAmqpUnit(amqpUnit);
             amqpUnit.Dispose();
         }

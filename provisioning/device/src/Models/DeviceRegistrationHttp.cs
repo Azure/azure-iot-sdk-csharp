@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -9,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     internal class DeviceRegistrationHttp : DeviceRegistration
     {
         /// <summary>
-        /// Initializes a new instance of the DeviceRegistration class.
+        /// Creates an instance of the DeviceRegistration class.
         /// </summary>
         public DeviceRegistrationHttp(JRaw payload = default, string registrationId = default, TpmAttestation tpm = default)
             : base(payload)

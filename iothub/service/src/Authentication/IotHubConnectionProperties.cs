@@ -5,18 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The properties required for authentication to IoT hub that are independent of the authentication type.
     /// </summary>
-    internal abstract class IotHubConnectionProperties
-        : IAuthorizationHeaderProvider, ICbsTokenProvider
+    internal abstract class IotHubConnectionProperties : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
         private const string HostNameSeparator = ".";
         private const string HttpsEndpointPrefix = "https";
+        private const string AmqpsScheme = "amqps";
 
         /// <summary>
         /// Constructor for mocking purposes only.
@@ -34,7 +33,7 @@ namespace Microsoft.Azure.Devices
 
             HostName = hostName;
             IotHubName = GetIotHubName(hostName);
-            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
+            AmqpEndpoint = new UriBuilder(AmqpsScheme, HostName, AmqpConstants.DefaultSecurePort).Uri;
             HttpsEndpoint = new UriBuilder(HttpsEndpointPrefix, HostName).Uri;
         }
 
@@ -70,7 +69,9 @@ namespace Microsoft.Azure.Devices
             }
 
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-            string iotHubName = index >= 0 ? hostName.Substring(0, index) : hostName;
+            string iotHubName = index >= 0
+                ? hostName.Substring(0, index)
+                : hostName;
             return iotHubName;
         }
     }

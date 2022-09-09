@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
         private X509Thumbprint _x509Thumbprint;
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public AuthenticationMechanism()
         {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="SymmetricKey"/> used for Authentication
+        /// Gets or sets the symmetric key used for authentication.
         /// </summary>
         [JsonProperty(PropertyName = "symmetricKey")]
         public SymmetricKey SymmetricKey

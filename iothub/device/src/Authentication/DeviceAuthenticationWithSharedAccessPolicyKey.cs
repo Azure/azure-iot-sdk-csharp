@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Extensions;
 using System;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         private string _key;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithSharedAccessPolicyKey"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="policyName">Name of the shared access policy to use.</param>
@@ -58,28 +58,28 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.SharedAccessKey = Key;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = PolicyName;
-            iotHubConnectionStringBuilder.SharedAccessSignature = null;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.SharedAccessKey = Key;
+            iotHubConnectionCredentials.SharedAccessKeyName = PolicyName;
+            iotHubConnectionCredentials.SharedAccessSignature = null;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         private void SetDeviceId(string deviceId)
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Device Id cannot be null or white space.");
+                throw new ArgumentException("Device Id cannot be null or white space.", nameof(deviceId));
             }
 
             _deviceId = deviceId;
@@ -89,12 +89,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Shared access key cannot be null or white space.");
+                throw new ArgumentException("Shared access key cannot be null or white space.", nameof(key));
             }
 
             if (!StringValidationHelper.IsBase64String(key))
             {
-                throw new ArgumentException("Key must be base64 encoded");
+                throw new ArgumentException("Key must be base64 encoded", nameof(key));
             }
 
             _key = key;
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (policyName.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Policy name cannot be null or white space.");
+                throw new ArgumentException("Policy name cannot be null or white space.", nameof(policyName));
             }
 
             _policyName = policyName;

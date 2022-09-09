@@ -5,6 +5,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -29,7 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             _hostName = GetHostName(TestConfiguration.IoTHub.ConnectionString);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings()).ConfigureAwait(false);
@@ -41,53 +43,49 @@ namespace Microsoft.Azure.Devices.E2ETests
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("LongRunning")]
+        // TODO: there is a problem with DotNetty on net6.0 with gatewayv2. Wait for transition to MqttNet to re-enable and try this test out.
+#if !NET6_0_OR_GREATER
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_MqttTcp()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings()).ConfigureAwait(false);
         }
+#endif
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException__MqttWs()
         {
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task X509_Enable_CertificateRevocationCheck_Httt_Tcp()
-        {
-            IotHubClientTransportSettings transportSetting
-                = CreateHttpTransportSettingWithCertificateRevocationCheck();
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_MqttTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck__MqttWs()
         {
             IotHubClientTransportSettings transportSetting = CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpTcp()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.Tcp);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Enable_CertificateRevocationCheck_AmqpWs()
         {
             IotHubClientTransportSettings transportSetting = CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol.WebSocket);
-            await SendMessageTest(transportSetting).ConfigureAwait(false);
+            await SendMessageTestAsync(transportSetting).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -104,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestConfiguration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using var deviceClient = IotHubDeviceClient.Create(
+            using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
                 new IotHubClientOptions(new IotHubClientMqttSettings()));
@@ -117,7 +115,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             DeviceClientX509AuthenticationE2ETests.ValidateCertsAreInstalled(chainCerts);
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
+        [LoggedTestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_Cert_Chain_Install_Test_AmqpTcp()
         {
             // arrange
@@ -125,13 +124,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 TestConfiguration.CommonCertificates.GetRootCaCertificate(),
                 TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
-                TestConfiguration.CommonCertificates.GetIntermediate2Certificate()
+                TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
             };
             using var auth = new DeviceAuthenticationWithX509Certificate(
                 TestConfiguration.IoTHub.X509ChainDeviceName,
                 s_chainCertificateWithPrivateKey,
                 chainCerts);
-            using var deviceClient = IotHubDeviceClient.Create(
+            using var deviceClient = new IotHubDeviceClient(
                 _hostName,
                 auth,
                 new IotHubClientOptions(new IotHubClientAmqpSettings()));
@@ -164,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             store?.Dispose();
         }
 
-        private async Task SendMessageTest(IotHubClientTransportSettings transportSetting)
+        private async Task SendMessageTestAsync(IotHubClientTransportSettings transportSetting)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
@@ -193,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = IotHubDeviceClient.Create(_hostName, auth, new IotHubClientOptions(transportSettings));
+            using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             try
             {
@@ -201,25 +200,27 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 Assert.Fail("Should throw UnauthorizedException but didn't.");
             }
-            catch (UnauthorizedException)
+            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
             {
-                // It should always throw UnauthorizedException
+                // It should always throw IotHubClientException with status code Unauthorized
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is TaskCanceledException)
+            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.NetworkErrors && ex.InnerException is TaskCanceledException)
             {
                 Assert.Fail("Call to OpenAsync timed out.");
             }
 
-            // Check TCP connection to verify there is no connection leak
+            // Manual check option: check TCP connection to verify there is no connection leak.
+            // Uncomment this to give you enough time:
+            //await Task.Delay(TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+            // To run:
             // netstat -na | find "[Your Hub IP]" | find "ESTABLISHED"
-            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
         }
 
         private async Task X509InvalidDeviceIdOpenAsyncTwiceTest(IotHubClientTransportSettings transportSettings)
         {
             string deviceName = $"DEVICE_NOT_EXIST_{Guid.NewGuid()}";
             using var auth = new DeviceAuthenticationWithX509Certificate(deviceName, s_selfSignedCertificateWithPrivateKey);
-            using var deviceClient = IotHubDeviceClient.Create(_hostName, auth, new IotHubClientOptions(transportSettings));
+            using var deviceClient = new IotHubDeviceClient(_hostName, auth, new IotHubClientOptions(transportSettings));
 
             for (int i = 0; i < 2; i++)
             {
@@ -228,9 +229,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.OpenAsync().ConfigureAwait(false);
                     Assert.Fail("Should throw UnauthorizedException but didn't.");
                 }
-                catch (UnauthorizedException)
+                catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
                 {
-                    // It should always throw UnauthorizedException
+                    // It should always throw IotHubClientException with status code Unauthorized
                 }
             }
 

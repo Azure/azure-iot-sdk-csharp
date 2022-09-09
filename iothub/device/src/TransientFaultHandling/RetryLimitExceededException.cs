@@ -1,9 +1,7 @@
-//Copyright(c) Microsoft.All rights reserved.
-//Microsoft would like to thank its contributors, a list
-//of whom are at http://aka.ms/entlib-contributors
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 
 //Licensed under the Apache License, Version 2.0 (the "License"); you
 //may not use this file except in compliance with the License. You may
@@ -21,7 +19,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The special type of exception that provides managed exit from a retry loop. The user code can use this
@@ -35,15 +33,15 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 #pragma warning restore CA1064 // Exceptions should be public
     {
         /// <summary>
-        /// Initializes a new instance of this class with a default error message.
+        /// Creates an instance of this class with a default error message.
         /// </summary>
         public RetryLimitExceededException()
-            : this(Resources.RetryLimitExceeded)
+            : this("RetryLimitExceeded")
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with a specified error message.
+        /// Creates an instance of this class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public RetryLimitExceededException(string message)
@@ -52,17 +50,17 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with a reference to the inner exception
+        /// Creates an instance of this class with a reference to the inner exception
         /// that is the cause of this exception.
         /// </summary>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public RetryLimitExceededException(Exception innerException)
-            : base((innerException != null) ? innerException.Message : Resources.RetryLimitExceeded, innerException)
+            : base((innerException != null) ? innerException.Message : "RetryLimitExceeded", innerException)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with a specified error message and inner exception.
+        /// Creates an instance of this class with a specified error message and inner exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>

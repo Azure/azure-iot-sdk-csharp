@@ -107,10 +107,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     MaxPoolSize = 10,
                 },
             };
-            var clientOptions1 = new IotHubClientOptions(transportSettings1);
             var pipelineContext1 = new PipelineContext
             {
-                ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions1),
+                IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
+                IotHubClientTransportSettings = transportSettings1,
             };
 
             var amqpTransportHandler1 = new AmqpTransportHandler(
@@ -128,10 +128,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                         MaxPoolSize = 7, // different pool size
                     },
                 };
-                var clientOptions2 = new IotHubClientOptions(transportSettings2);
                 var pipelineContext2 = new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), clientOptions2),
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
+                    IotHubClientTransportSettings = transportSettings2,
                 };
 
                 var amqpTransportHandler2 = new AmqpTransportHandler(
@@ -161,7 +161,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             var pipelineContext = new PipelineContext
             {
-                ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+                IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
+                IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
             };
 
             return new AmqpTransportHandler(

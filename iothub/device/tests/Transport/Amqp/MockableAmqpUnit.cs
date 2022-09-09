@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Threading;
@@ -18,21 +18,27 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         public MockableAmqpUnit()
             : this(
-                  new ClientConfiguration(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings)),
-                  new AmqpConnectionHolder(
-                      new ClientConfiguration(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(s_transportSettings))))
+                  new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString),
+                  new AdditionalClientInformation(),
+                  s_transportSettings,
+                  new AmqpConnectionHolder(new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString), s_transportSettings))
         {
         }
 
-        public MockableAmqpUnit(IClientConfiguration clientConfiguration,
+        public MockableAmqpUnit(
+            IConnectionCredentials connectionCredentials,
+            AdditionalClientInformation additionalClientInformation,
+            IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
-            Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<Twin, string, TwinCollection, IotHubException> twinMessageListener = null,
+            Func<DirectMethodRequest, Task> onMethodCallback = null,
+            Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null,
             Action onUnitDisconnected = null)
             : base(
-                  clientConfiguration,
+                  connectionCredentials,
+                  additionalClientInformation,
+                  amqpSettings,
                   amqpConnectionHolder,
                   onMethodCallback,
                   twinMessageListener,
@@ -46,7 +52,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             await Task.Yield();
         }
-
 
         public new async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {

@@ -28,15 +28,15 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task AuthenticationWithTokenRefresh_InitializedToken_GetProperties_Ok()
         {
-            int ttl = 5;
+            TimeSpan ttl = TimeSpan.FromSeconds(5);
             int buffer = 20;  // Token should refresh after 4 seconds.
 
             var refresher = new TestImplementation(ttl, buffer);
             await refresher.GetTokenAsync(TestIotHubName);
 
             DateTime currentTime = DateTime.UtcNow;
-            DateTime expectedExpiryTime = currentTime.AddSeconds(ttl);
-            DateTime expectedRefreshTime = expectedExpiryTime.AddSeconds(-((double)buffer / 100) * ttl);
+            DateTime expectedExpiryTime = currentTime.AddSeconds(ttl.TotalSeconds);
+            DateTime expectedRefreshTime = expectedExpiryTime.AddSeconds(-((double)buffer / 100) * ttl.TotalSeconds);
 
             int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"ExpiresOn time delta is {timeDelta}");
@@ -57,40 +57,26 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task AuthenticationWithTokenRefresh_NonExpiredToken_GetTokenCached_Ok()
-        {
-            var refresher = new TestImplementation();
-            string expectedToken = CreateToken(DefaultTimeToLiveSeconds);
-
-            string token1 = await refresher.GetTokenAsync(TestIotHubName);
-            string token2 = await refresher.GetTokenAsync(TestIotHubName);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
-            Assert.AreEqual(expectedToken, token1);
-            Assert.AreEqual(token1, token2);
-        }
-
-        [TestMethod]
         public async Task AuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation();
-            var csBuilder = new IotHubConnectionStringBuilder(
+            var iotHubConnectionCredentials = new IotHubConnectionCredentials(
                 new ModuleAuthenticationWithRegistrySymmetricKey("deviceId", "moduleid", TestSharedAccessKey),
                 TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(null, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
 
             string token = await refresher.GetTokenAsync(TestIotHubName);
 
-            refresher.Populate(csBuilder);
+            refresher.Populate(iotHubConnectionCredentials);
 
-            Assert.AreEqual(token, csBuilder.SharedAccessSignature);
-            Assert.AreEqual(null, csBuilder.SharedAccessKey);
-            Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
+            Assert.AreEqual(token, iotHubConnectionCredentials.SharedAccessSignature);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKey);
+            Assert.AreEqual(null, iotHubConnectionCredentials.SharedAccessKeyName);
         }
 
         [TestMethod]
@@ -101,30 +87,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task AuthenticationWithTokenRefresh_GetTokenAsync_ConcurrentUpdate_Ok()
-        {
-            var refresher = new TestImplementation();
-
-            var tasks = new Task[5];
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = refresher.GetTokenAsync(TestIotHubName);
-            }
-
-            await Task.WhenAll(tasks);
-
-            Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount);
-        }
-
-        [TestMethod]
         public async Task AuthenticationWithTokenRefresh_GetTokenAsync_NewTtl_Ok()
         {
-            int ttl = 1;
+            TimeSpan ttl = TimeSpan.FromSeconds(1);
 
             var refresher = new TestImplementation(ttl, 90);
             await refresher.GetTokenAsync(TestIotHubName);
 
-            DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
+            DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
             int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"Expiration time delta is {timeDelta}");
 
@@ -135,12 +105,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
 
             // Configure the test token refresher to ignore the suggested TTL.
-            ttl = 10;
-            refresher.ActualTimeToLive = ttl;
+            ttl = TimeSpan.FromSeconds(10);
+            refresher.ActualTimeToLive = (int)ttl.TotalSeconds;
 
             await refresher.GetTokenAsync(TestIotHubName);
 
-            expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
+            expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl.TotalSeconds);
             timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
             Assert.IsTrue(Math.Abs(timeDelta) < 3, $"Expiration time delta is {timeDelta}");
         }
@@ -158,8 +128,8 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         private class TestImplementation : AuthenticationWithTokenRefresh
         {
-            private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
             private const int DefaultBufferPercentage = 15;
+            private static readonly TimeSpan DefaultTimeToLiveSeconds = TimeSpan.FromHours(1);
 
             private int _callCount = 0;
 
@@ -173,23 +143,23 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             public int ActualTimeToLive { get; set; } = 0;
 
-            public TestImplementation() : this(DefaultTimeToLiveSeconds, DefaultBufferPercentage)
+            public TestImplementation() : base(DefaultTimeToLiveSeconds, DefaultBufferPercentage)
             {
             }
 
-            public TestImplementation(int suggestedTimeToLiveSeconds, int timeBufferPercentage)
-                : base(suggestedTimeToLiveSeconds, timeBufferPercentage)
+            public TestImplementation(TimeSpan suggestedTimeToLive, int timeBufferPercentage)
+                : base(suggestedTimeToLive, timeBufferPercentage)
             {
             }
 
             ///<inheritdoc/>
-            protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+            protected override async Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
             {
                 _callCount++;
 
                 await Task.Delay(10).ConfigureAwait(false);
 
-                int ttl = suggestedTimeToLive;
+                int ttl = (int)suggestedTimeToLive.TotalSeconds;
                 if (ActualTimeToLive > 0)
                 {
                     ttl = ActualTimeToLive;

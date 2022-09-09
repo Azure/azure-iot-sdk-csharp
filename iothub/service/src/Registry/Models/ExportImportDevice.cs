@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Azure;
+using Azure.Core.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -11,15 +13,11 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class ExportImportDevice
     {
-        private string _eTag;
-        private string _twinETag;
-
         /// <summary>
         /// The desired and reported properties of the twin.
         /// </summary>
         /// <remarks>
         /// Type definition for the <see cref="Properties"/> property.
-        /// 
         /// The maximum depth of the object is 10.
         /// </remarks>
         public sealed class PropertyContainer
@@ -48,14 +46,14 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         public ExportImportDevice()
         {
         }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         /// <param name="device">Device properties</param>
         /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
@@ -67,7 +65,7 @@ namespace Microsoft.Azure.Devices
             }
 
             Id = device.Id;
-            _eTag = SanitizeETag(device.ETag);
+            ETag = device.ETag;
             ImportMode = importmode;
             Status = device.Status;
             StatusReason = device.StatusReason;
@@ -96,11 +94,8 @@ namespace Microsoft.Azure.Devices
         ///  only if this ETag matches the value maintained by the server.
         /// </remarks>
         [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
-        public string ETag
-        {
-            get => _eTag;
-            set => _eTag = SanitizeETag(value);
-        }
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// The type of registry operation and ETag preferences.
@@ -144,11 +139,8 @@ namespace Microsoft.Azure.Devices
         /// performed only if this ETag matches the value maintained by the server.
         /// </remarks>
         [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
-        public string TwinETag
-        {
-            get => _twinETag;
-            set => _twinETag = SanitizeETag(value);
-        }
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag TwinETag { get; set; }
 
         /// <summary>
         /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
@@ -175,38 +167,10 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For leaf devices, the value to set a parent edge device can be retrieved from the parent
         /// edge device's device scope property.
-        ///
         /// For more information, see
         /// <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Include)]
         public string DeviceScope { get; set; }
-
-        private static string SanitizeETag(string eTag)
-        {
-            if (!string.IsNullOrWhiteSpace(eTag))
-            {
-                string localETag = eTag;
-
-                if (eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove only the first char
-                    localETag = eTag.Substring(1);
-                }
-
-                if (localETag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove only the last char
-                    localETag = localETag.Remove(localETag.Length - 1);
-                }
-
-                return localETag;
-            }
-            else
-            {
-                // In case it is empty or contains whitespace
-                return eTag;
-            }
-        }
     }
 }

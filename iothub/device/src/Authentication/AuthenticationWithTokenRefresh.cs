@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
@@ -11,53 +10,37 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh.
     /// </summary>
-    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod, IDisposable
+    public abstract class AuthenticationWithTokenRefresh : IAuthenticationMethod
     {
-        private readonly int _suggestedTimeToLiveSeconds;
+        private const int DefaultSasRenewalBufferPercentage = 15;
+        private static readonly TimeSpan s_defaultSasTimeToLive = TimeSpan.FromHours(1);
+
+        private readonly TimeSpan _suggestedTimeToLive;
         private readonly int _timeBufferPercentage;
 
         private int _bufferSeconds;
-        private SemaphoreSlim _lock = new(1);
         private string _token;
-        private bool _isDisposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
+        /// Creates an instance of this class.
         /// </summary>
-        /// <remarks>
-        /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated device/ module client instance is disposed. To reuse the authentication method instance across
-        /// multiple client instance lifetimes, use the <see cref="AuthenticationWithTokenRefresh(int, int, bool)"/>
-        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
-        /// </remarks>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
+        /// <param name="suggestedTimeToLive">
+        /// The suggested time to live value for the generated SAS tokens.
+        /// The default value is 1 hour.
+        /// </param>
+        /// <param name="timeBufferPercentage">
+        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
+        /// The default behavior is that the token will be renewed when it has <see cref="DefaultSasRenewalBufferPercentage"/> percent or less of its lifespan left.
+        ///</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if
+        /// <paramref name="timeBufferPercentage"/> is outside the range 0-100.</exception>
         public AuthenticationWithTokenRefresh(
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage)
-            : this(suggestedTimeToLiveSeconds, timeBufferPercentage, true)
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
-        /// </summary>
-        /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
-        /// may choose to ignore this value.</param>
-        /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as
-        /// a percentage of the time to live.</param>
-        /// <param name="disposeWithClient "><c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.</param>
-        public AuthenticationWithTokenRefresh(
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage,
-            bool disposeWithClient)
-        {
-            if (suggestedTimeToLiveSeconds < 0)
+            if (suggestedTimeToLive < TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLiveSeconds));
+                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
             }
 
             if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
@@ -65,13 +48,17 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(timeBufferPercentage));
             }
 
-            _suggestedTimeToLiveSeconds = suggestedTimeToLiveSeconds;
-            _timeBufferPercentage = timeBufferPercentage;
-            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLiveSeconds);
-            Debug.Assert(IsExpiring);
-            UpdateTimeBufferSeconds(_suggestedTimeToLiveSeconds);
+            _suggestedTimeToLive = suggestedTimeToLive == default
+                ? s_defaultSasTimeToLive
+                : suggestedTimeToLive;
 
-            DisposalWithClient = disposeWithClient;
+            _timeBufferPercentage = timeBufferPercentage == default
+                ? DefaultSasRenewalBufferPercentage
+                : timeBufferPercentage;
+
+            ExpiresOn = DateTime.UtcNow.AddSeconds(-_suggestedTimeToLive.TotalSeconds);
+            Debug.Assert(IsExpiring);
+            UpdateTimeBufferSeconds(_suggestedTimeToLive.TotalSeconds);
         }
 
         /// <summary>
@@ -89,135 +76,73 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public bool IsExpiring => (ExpiresOn - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
-        // This internal property is used by the sdk to determine if the authentication method
-        // should be disposed when the client that it is initialized with is disposed.
-        internal bool DisposalWithClient { get; }
-
         /// <summary>
-        /// Gets a snapshot of the security token associated with the device. This call is thread-safe.
+        /// Gets a snapshot of the security token associated with the device.
         /// </summary>
         public async Task<string> GetTokenAsync(string iotHub)
         {
-            if (_isDisposed)
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Error(
-                        this,
-                        $"Encountered {nameof(ObjectDisposedException)} - The authentication method instance has already been disposed, so this client is no longer usable.",
-                        nameof(GetTokenAsync));
-                }
-
-                throw new ObjectDisposedException(GetType().Name, "The authentication method instance has already been disposed, so this client is no longer usable. " +
-                    "Please close and dispose your current client instance. To continue carrying out operations from your device/ module, " +
-                    "create a new authentication method instance and use it for reinitializing your client.");
-            }
+            // We realize that this code does not ensure a new token is not generated multiple times during this window,
+            // if multiple calls are made very near each other. The cost of ensuring it means having a SemaphoreSlim
+            // class member, which is IDisposable and requires that the class also be IDisposable. That causes
+            // a bunch of downstream problems for customers that we think is not worth the trade off.
+            // Also, over MQTT we only renew the token on connect (an expired token causes a disconnect) which is
+            // already forced to be one thread doing the connecting. Over AMQP, we proactively renew the token, which
+            // is also forced to be one thread renewing. As we've deprecated HTTP, we're left with no chance of this
+            // happening, when used by a single client.
 
             if (!IsExpiring)
             {
                 return _token;
             }
 
-            await _lock.WaitAsync().ConfigureAwait(false);
+            string token = await SafeCreateNewTokenAsync(iotHub, _suggestedTimeToLive).ConfigureAwait(false);
 
-            try
-            {
-                if (!IsExpiring)
-                {
-                    return _token;
-                }
+            SharedAccessSignature sas = SharedAccessSignatureParser.Parse(token);
 
-                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
+            _token = token;
+            ExpiresOn = sas.ExpiresOn;
 
-                var sas = SharedAccessSignature.Parse(".", _token);
-                ExpiresOn = sas.ExpiresOn;
-                UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
+            UpdateTimeBufferSeconds((int)(ExpiresOn - DateTime.UtcNow).TotalSeconds);
 
-                if (Logging.IsEnabled)
-                    Logging.GenerateToken(this, ExpiresOn);
+            if (Logging.IsEnabled)
+                Logging.GenerateToken(this, ExpiresOn);
 
-                return _token;
-            }
-            finally
-            {
-                _lock.Release();
-            }
+            return _token;
         }
 
         /// <summary>
-        /// Populates an <see cref="IotHubConnectionStringBuilder"/> instance based on a snapshot of the properties of
+        /// Populates an <see cref="IotHubConnectionCredentials"/> instance based on a snapshot of the properties of
         /// the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public virtual IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        public virtual IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.SharedAccessSignature = _token;
-            iotHubConnectionStringBuilder.SharedAccessKey = null;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SharedAccessSignature = _token;
+            iotHubConnectionCredentials.SharedAccessKey = null;
+            iotHubConnectionCredentials.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SasTokenTimeToLive = _suggestedTimeToLive;
+            iotHubConnectionCredentials.SasTokenRenewalBuffer = _timeBufferPercentage;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         /// <summary>
-        /// Creates a new token with a suggested TTL. This method is thread-safe.
+        /// Creates a new token with a suggested TTL.
         /// </summary>
         /// <param name="iotHub">The IoT hub domain name.</param>
         /// <param name="suggestedTimeToLive">The suggested TTL.</param>
         /// <returns>The token string.</returns>
-        /// <remarks>This is an asynchronous method and should be awaited.</remarks>
-        protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
+        protected abstract Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive);
 
-        private void UpdateTimeBufferSeconds(int ttl)
+        private void UpdateTimeBufferSeconds(double ttl)
         {
             _bufferSeconds = (int)(ttl * ((float)_timeBufferPercentage / 100));
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Enter(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AuthenticationWithTokenRefresh)}.{nameof(Dispose)}");
-                }
-
-                if (!_isDisposed)
-                {
-                    if (disposing)
-                    {
-                        _lock?.Dispose();
-                        _lock = null;
-                    }
-
-                    _isDisposed = true;
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AuthenticationWithTokenRefresh)}.{nameof(Dispose)}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Dispose resources
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

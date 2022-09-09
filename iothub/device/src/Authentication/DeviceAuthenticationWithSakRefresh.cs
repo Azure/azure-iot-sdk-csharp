@@ -10,41 +10,39 @@ namespace Microsoft.Azure.Devices.Client
     // Implementing SAS Token refresh based on a SharedAccessKey (SAK).
     internal class DeviceAuthenticationWithSakRefresh : DeviceAuthenticationWithTokenRefresh
     {
-        private readonly ClientConfiguration _clientConfiguration;
-
-        public DeviceAuthenticationWithSakRefresh(
-            string deviceId,
-            ClientConfiguration clientConfiguration) : base(deviceId)
-        {
-            _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
-        }
+        private readonly string _sharedAccessKey;
+        private readonly string _sharedAccessKeyName;
 
         internal DeviceAuthenticationWithSakRefresh(
             string deviceId,
-            ClientConfiguration clientConfiguration,
-            TimeSpan sasTokenTimeToLive,
-            int sasTokenRenewalBuffer,
-            bool disposeWithClient)
-            : base(deviceId, (int)sasTokenTimeToLive.TotalSeconds, sasTokenRenewalBuffer, disposeWithClient)
+            string sharedAccessKey,
+            string sharedAccessKeyName = default,
+            TimeSpan sasTokenTimeToLive = default,
+            int sasTokenRenewalBuffer = default)
+            : base(
+                deviceId,
+                sasTokenTimeToLive,
+                sasTokenRenewalBuffer)
         {
-            _clientConfiguration = clientConfiguration ?? throw new ArgumentNullException(nameof(clientConfiguration));
+            _sharedAccessKey = sharedAccessKey ?? throw new ArgumentNullException(nameof(sharedAccessKey));
+            _sharedAccessKeyName = sharedAccessKeyName;
         }
 
         ///<inheritdoc/>
-        protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
+        protected override Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewToken));
+                    Logging.Enter(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewTokenAsync));
 
                 var builder = new SharedAccessSignatureBuilder
                 {
-                    Key = _clientConfiguration.SharedAccessKey,
-                    TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLive),
+                    Key = _sharedAccessKey,
+                    TimeToLive = suggestedTimeToLive,
                 };
 
-                if (_clientConfiguration.SharedAccessKeyName == null)
+                if (_sharedAccessKeyName == null)
                 {
                     builder.Target = "{0}/devices/{1}".FormatInvariant(
                         iotHub,
@@ -52,8 +50,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    builder.KeyName = _clientConfiguration.SharedAccessKeyName;
-                    builder.Target = _clientConfiguration.IotHubHostName;
+                    builder.KeyName = _sharedAccessKeyName;
+                    builder.Target = iotHub;
                 }
 
                 return Task.FromResult(builder.ToSignature());
@@ -61,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewToken));
+                    Logging.Exit(this, iotHub, suggestedTimeToLive, nameof(SafeCreateNewTokenAsync));
             }
         }
     }

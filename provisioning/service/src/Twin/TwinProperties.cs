@@ -6,30 +6,21 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Represents <see cref="Twin"/> properties.
+    /// Represents properties on a <see cref="Twin"/>.
     /// </summary>
     public class TwinProperties
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="TwinProperties"/>
-        /// </summary>
-        public TwinProperties()
-        {
-            Desired = new TwinCollection();
-            Reported = new TwinCollection();
-        }
-
-        /// <summary>
         /// Gets and sets the <see cref="Twin"/> desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public TwinCollection Desired { get; set; }
+        public TwinCollection Desired { get; set; } = new TwinCollection();
 
         /// <summary>
         /// Gets and sets the <see cref="Twin"/> reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public TwinCollection Reported { get; set; }
+        public TwinCollection Reported { get; set; } = new TwinCollection();
     }
 }
 

@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     Twin = twin,
                     QueryCondition = query,
-                    StartTimeUtc = DateTime.UtcNow
+                    StartOn = DateTime.UtcNow
                 };
                 ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
                 {
@@ -121,18 +121,19 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             string ghostDevice = $"{nameof(Service_Amqp_TokenCredentialAuth_Success)}_{Guid.NewGuid()}";
-            using var serviceClient = ServiceClient.Create(
+            using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
-                TestConfiguration.IoTHub.GetClientSecretCredential(),
-                TransportType.Amqp);
-            await serviceClient.OpenAsync().ConfigureAwait(false);
-            using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
+                TestConfiguration.IoTHub.GetClientSecretCredential());
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+            var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
             // act
-            Func<Task> act = async () => await serviceClient.SendAsync(ghostDevice, message).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Messaging.SendAsync(ghostDevice, message).ConfigureAwait(false);
 
             // assert
             await act.Should().ThrowAsync<DeviceNotFoundException>();
+
+            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }
     }
 }

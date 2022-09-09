@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Amqp.Transport
 {
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.Amqp.Transport
                 return false;
             }
 
-            taskResult.ToAsyncResult(s_onWriteComplete, args);
+            ToAsyncResult(taskResult, s_onWriteComplete, args);
             return true;
         }
 
@@ -90,7 +91,7 @@ namespace Microsoft.Azure.Amqp.Transport
                 return false;
             }
 
-            taskResult.ToAsyncResult(s_onReadComplete, args);
+            ToAsyncResult(taskResult, s_onReadComplete, args);
             return true;
         }
 
@@ -151,10 +152,6 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
-            catch (TaskCanceledException taskCanceledException)
-            {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
-            }
             finally
             {
                 if (!succeeded)
@@ -199,10 +196,6 @@ namespace Microsoft.Azure.Amqp.Transport
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
-            }
-            catch (TaskCanceledException taskCanceledException)
-            {
-                throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
             }
             finally
             {
@@ -356,6 +349,91 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new ArgumentOutOfRangeException(nameof(size));
             }
+        }
+
+
+        private static IAsyncResult ToAsyncResult(Task task, AsyncCallback callback, object state)
+        {
+            if (task.AsyncState == state)
+            {
+                if (callback != null)
+                {
+                    task.ContinueWith(
+                        t => callback(task),
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
+                }
+
+                return task;
+            }
+
+            var tcs = new TaskCompletionSource<object>(state);
+            task.ContinueWith(
+                _ =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        tcs.TrySetException(task.Exception.InnerExceptions);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        tcs.TrySetCanceled();
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(null);
+                    }
+
+                    callback?.Invoke(tcs.Task);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+            return tcs.Task;
+        }
+
+        private static IAsyncResult ToAsyncResult<TResult>(Task<TResult> task, AsyncCallback callback, object state)
+        {
+            if (task.AsyncState == state)
+            {
+                if (callback != null)
+                {
+                    task.ContinueWith(
+                        t => callback(task),
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
+                }
+
+                return task;
+            }
+
+            var tcs = new TaskCompletionSource<TResult>(state);
+            task.ContinueWith(
+                _ =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        tcs.TrySetException(task.Exception.InnerExceptions);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        tcs.TrySetCanceled();
+                    }
+                    else
+                    {
+                        tcs.TrySetResult(task.Result);
+                    }
+
+                    callback?.Invoke(tcs.Task);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+
+            return tcs.Task;
         }
     }
 }

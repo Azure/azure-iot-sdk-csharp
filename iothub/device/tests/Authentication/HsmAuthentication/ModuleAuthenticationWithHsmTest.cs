@@ -23,22 +23,22 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public async Task TestSafeCreateNewToken_ShouldReturnSasToken()
         {
-            // Arrange
+            // arrange
             var httpClient = new Mock<ISignatureProvider>();
             httpClient.Setup(p => p.SignAsync(this.moduleId, this.generationId, It.IsAny<string>())).Returns(Task.FromResult(this.signature));
 
             var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId, this.generationId);
 
-            // Act
+            // act
             string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
-            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasToken);
 
             string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
                 this.iotHub,
                 WebUtility.UrlEncode(this.deviceId),
                 WebUtility.UrlEncode(this.moduleId));
 
-            // Assert
+            // assert
             httpClient.Verify();
             Assert.IsNotNull(sasToken);
             Assert.AreEqual(this.signature, token.Signature);
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         [TestMethod]
         public async Task TestSafeCreateNewToken_ShouldReturnSasToken_DeviceIdWithChars()
         {
-            // Arrange
+            // arrange
             string deviceId = "n@m.et#st";
             string moduleId = "$edgeAgent";
             var httpClient = new Mock<ISignatureProvider>();
@@ -57,16 +57,16 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 
             var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, deviceId, moduleId, this.generationId);
 
-            // Act
+            // act
             string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
-            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasToken);
 
             string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
                 this.iotHub,
                 WebUtility.UrlEncode(deviceId),
                 WebUtility.UrlEncode(moduleId));
 
-            // Assert
+            // assert
             httpClient.Verify();
             Assert.IsNotNull(sasToken);
             Assert.AreEqual(this.signature, token.Signature);

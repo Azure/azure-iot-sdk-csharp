@@ -69,12 +69,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return TestSecurityMessageModuleAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket));
         }
 
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public Task SecurityMessage_DeviceSendSingleMessage_Http()
-        {
-            return TestSecurityMessageAsync(new IotHubClientHttpSettings());
-        }
-
         private Client.Message ComposeD2CSecurityTestMessage()
         {
             string eventId = Guid.NewGuid().ToString();
@@ -137,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix, Logger).ConfigureAwait(false);
 
             var options = new IotHubClientOptions(transportSettings);
-            using var moduleClient = IotHubModuleClient.CreateFromConnectionString(testModule.ConnectionString, options);
+            using var moduleClient = new IotHubModuleClient(testModule.ConnectionString, options);
             try
             {
                 await SendSingleSecurityMessageModuleAsync(moduleClient).ConfigureAwait(false);

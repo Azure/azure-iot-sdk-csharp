@@ -5,7 +5,7 @@ using System;
 using System.Net.Http;
 using Azure;
 using Azure.Core;
-using Microsoft.Azure.Devices.Http2;
+using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices
 {
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown when the provided connection string is empty or whitespace.</exception>
         public IotHubServiceClient(string connectionString, IotHubServiceClientOptions options = default)
         {
-            Argument.RequireNotNullOrEmpty(connectionString, nameof(connectionString));
+            Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
 
             if (options == null)
             {
@@ -60,8 +60,7 @@ namespace Microsoft.Azure.Devices
             _hostName = iotHubConnectionString.HostName;
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
-
-            InitializeSubclients();
+            InitializeSubclients(options);
         }
 
         /// <summary>
@@ -77,12 +76,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub.</param>
         /// <param name="options">The optional client settings.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided hostName or credential is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided hostName is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="hostName"/> or <paramref name="credential"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="hostName"/> is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, TokenCredential credential, IotHubServiceClientOptions options = default)
         {
-            Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
-            Argument.RequireNotNull(credential, nameof(credential));
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNull(credential, nameof(credential));
 
             if (options == null)
             {
@@ -94,7 +93,7 @@ namespace Microsoft.Azure.Devices
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
 
-            InitializeSubclients();
+            InitializeSubclients(options);
         }
 
         /// <summary>
@@ -109,12 +108,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="hostName">IoT hub host name. For instance: "my-iot-hub.azure-devices.net".</param>
         /// <param name="credential">Credential that generates a SAS token to authenticate with IoT hub. See <see cref="AzureSasCredential"/>.</param>
         /// <param name="options">The optional client settings.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided hostName or credential is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided hostName is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="hostName"/> or <paramref name="credential"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="hostName"/> is empty or whitespace.</exception>
         public IotHubServiceClient(string hostName, AzureSasCredential credential, IotHubServiceClientOptions options = default)
         {
-            Argument.RequireNotNullOrEmpty(hostName, nameof(hostName));
-            Argument.RequireNotNull(credential, nameof(credential));
+            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNull(credential, nameof(credential));
 
             if (options == null)
             {
@@ -126,7 +125,7 @@ namespace Microsoft.Azure.Devices
             _httpClient = HttpClientFactory.Create(_hostName, options);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(_credentialProvider.HttpsEndpoint, ApiVersion);
 
-            InitializeSubclients();
+            InitializeSubclients(options);
         }
 
         /// <summary>
@@ -181,6 +180,24 @@ namespace Microsoft.Azure.Devices
         public TwinsClient Twins { get; protected set; }
 
         /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for receiving cloud-to-device message feedback.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
+        public MessageFeedbackProcessorClient MessageFeedbackProcessor { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for receiving file upload notifications.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#service-file-upload-notifications"/>.
+        public FileUploadNotificationProcessorClient FileUploadNotificationProcessor { get; protected set; }
+
+        /// <summary>
+        /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
+        /// </summary>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
+        public MessagingClient Messaging { get; protected set; }
+
+        /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
         /// created by or given to this client.
         /// </summary>
@@ -189,7 +206,7 @@ namespace Microsoft.Azure.Devices
             _httpClient?.Dispose();
         }
 
-        private void InitializeSubclients()
+        private void InitializeSubclients(IotHubServiceClientOptions _options)
         {
             Devices = new DevicesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Modules = new ModulesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
@@ -199,6 +216,13 @@ namespace Microsoft.Azure.Devices
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
+            Messaging = new MessagingClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _options);
+
+            MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
+            FileUploadNotificationProcessor = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
+
+            // Adds additional logging to the AMQP connections created by this client
+            AmqpTrace.Provider = new AmqpTransportLog();
         }
     }
 }

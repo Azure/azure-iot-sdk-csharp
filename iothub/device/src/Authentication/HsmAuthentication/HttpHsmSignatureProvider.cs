@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -67,7 +66,11 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                     BaseUrl = HttpClientHelper.GetBaseUrl(_providerUri)
                 };
 
-                SignResponse response = await SignAsyncWithRetryAsync(hsmHttpClient, moduleId, generationId, signRequest)
+                SignResponse response = await SignWithRetryAsync(
+                        hsmHttpClient,
+                        moduleId,
+                        generationId,
+                        signRequest)
                     .ConfigureAwait(false);
 
                 return Convert.ToBase64String(response.Digest);
@@ -92,17 +95,16 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
         }
 
-        private async Task<SignResponse> SignAsyncWithRetryAsync(
+        private async Task<SignResponse> SignWithRetryAsync(
             HttpHsmClient hsmHttpClient,
             string moduleId,
             string generationId,
             SignRequest signRequest)
         {
             var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
-            SignResponse response = await transientRetryPolicy
+            return await transientRetryPolicy
                 .RunWithRetryAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest))
                 .ConfigureAwait(false);
-            return response;
         }
 
         private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy

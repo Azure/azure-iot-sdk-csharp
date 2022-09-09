@@ -16,11 +16,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
-    public class MessageFeedbackE2eTests : E2EMsTestBase
+    public class MessageFeedbackE2ETests : E2EMsTestBase
     {
         private const int MessageCount = 3;
 
-        private static readonly string s_devicePrefix = $"{nameof(MessageFeedbackE2eTests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(MessageFeedbackE2ETests)}_";
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
 
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(logger, s_devicePrefix, type).ConfigureAwait(false);
             using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-            using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IoTHub.ConnectionString);
+            using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -44,14 +44,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Assert.Fail("Message completion out of order not supported outside of AMQP");
             }
 
-            await serviceClient.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
 
             var messages = new List<Client.Message>(MessageCount);
             for (int i = 0; i < MessageCount; i++)
             {
                 (Message msg, string _, string _) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
-                await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                msg.Dispose();
+                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
                 Client.Message message = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
@@ -77,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await serviceClient.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }
     }
 }

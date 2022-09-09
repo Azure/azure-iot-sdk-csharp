@@ -3,11 +3,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Service.Auth;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -83,15 +83,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Justification = "Public API cannot change parameter order.")]
         internal static Query CreateEnrollmentGroupQuery(
             ServiceConnectionString provisioningConnectionString,
-            QuerySpecification querySpecification,
-            ProvisioningServiceHttpSettings httpTransportSettings,
+            string query,
+            IContractApiHttp contractApiHttp,
             CancellationToken cancellationToken,
             string enrollmentGroupId,
             int pageSize = 0)
         {
-            if (querySpecification == null)
+            if (query == null)
             {
-                throw new ArgumentNullException(nameof(querySpecification));
+                throw new ArgumentNullException(nameof(query));
             }
 
             if (pageSize < 0)
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new Query(
                 provisioningConnectionString,
                 GetGetDeviceRegistrationStatus(enrollmentGroupId),
-                querySpecification,
-                httpTransportSettings,
+                query,
+                contractApiHttp,
                 pageSize,
                 cancellationToken);
         }
@@ -112,13 +112,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             id = WebUtility.UrlEncode(id);
             return new Uri(
-                DeviceRegistrationStatusUriFormat.FormatInvariant(ServiceName, id, SdkUtils.ApiVersionQueryString),
+                string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusUriFormat, ServiceName, id, SdkUtils.ApiVersionQueryString),
                 UriKind.Relative);
         }
 
         private static string GetGetDeviceRegistrationStatus(string id)
         {
-            return DeviceRegistrationStatusFormat.FormatInvariant(ServiceName, id);
+            return string.Format(CultureInfo.InvariantCulture, DeviceRegistrationStatusFormat, ServiceName, id);
         }
     }
 }

@@ -49,23 +49,35 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetMethodHandlerAsync(methodName,
                 (request, context) =>
                 {
                     try
                     {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.Name} {request.ResponseTimeout}.");
-                        request.Name.Should().Be(methodName, "The expected method name should match what was sent from service");
-                        request.DataAsJson.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
+                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} {request.ResponseTimeout}.");
+                        request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
+                        request.Payload.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 
-                        return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = 200,
+                            Payload = Encoding.UTF8.GetBytes(deviceResponseJson)
+                        };
+                        return Task.FromResult(response);
                     }
                     catch (Exception ex)
                     {
                         _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
 
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
-                        return Task.FromResult(new MethodResponse(500));
+
+                        var response = new Client.DirectMethodResponse()
+                        {
+                            Status = 500,
+                        };
+
+                        return Task.FromResult(response);
                     }
                     finally
                     {
@@ -86,6 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             string userContext = "myContext";
 
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch, context) =>
                 {
@@ -93,6 +106,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
+                        bool containsProperty = patch.Contains(expectedPropName);
+                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDevice.Id} to be {expectedPropName} but was: {patch.ToJson()}");
+
                         string propertyValue = patch[expectedPropName];
                         propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
                         context.Should().Be(userContext, "The context should match what was set by service");
@@ -119,11 +135,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public async Task SetMessageReceiveCallbackHandlerAsync()
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetReceiveMessageHandlerAsync(OnC2dMessageReceivedAsync, null).ConfigureAwait(false);
         }
 
         public async Task UnSetMessageReceiveCallbackHandlerAsync()
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetReceiveMessageHandlerAsync(null, null).ConfigureAwait(false);
         }
 
@@ -156,6 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private async Task CompleteMessageAsync(Client.Message message)
         {
+            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.CompleteMessageAsync(message).ConfigureAwait(false);
         }
 

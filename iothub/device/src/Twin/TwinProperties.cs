@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     public class TwinProperties
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="TwinProperties"/>
+        /// Creates an instance of this class.
         /// </summary>
         public TwinProperties()
         {

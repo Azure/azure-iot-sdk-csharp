@@ -11,38 +11,12 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class ModuleAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
-        private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
-        private const int DefaultBufferPercentage = 15;
-
         /// <summary>
-        /// Initializes a new instance of this class using default TTL and TTL buffer time settings.
+        /// Creates an instance of this class.
         /// </summary>
-        /// <remarks>
-        /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated module client instance is disposed. To reuse the authentication method instance across multiple
-        /// client instance lifetimes, use the <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/>
-        /// constructor and set <c>disposeWithClient</c> to <c>false</c>.
-        /// </remarks>
-        /// <param name="deviceId">The Id of the device.</param>
-        /// <param name="moduleId">The Id of the module.</param>
-        public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
-            : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of this class.
-        /// </summary>
-        /// <remarks>
-        /// This constructor will create an authentication method instance that will be disposed when its
-        /// associated module client instance is disposed. To reuse the authentication method instance across multiple
-        /// client instance lifetimes,
-        /// use the <see cref="ModuleAuthenticationWithTokenRefresh(string, string, int, int, bool)"/> constructor and set
-        /// <c>disposeWithClient</c> to <c>false</c>.
-        /// </remarks>
         /// <param name="deviceId">The device Id.</param>
         /// <param name="moduleId">The module Id.</param>
-        /// <param name="suggestedTimeToLiveSeconds">
+        /// <param name="suggestedTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
         /// The default value is 1 hour.
         /// </param>
@@ -53,39 +27,10 @@ namespace Microsoft.Azure.Devices.Client
         public ModuleAuthenticationWithTokenRefresh(
             string deviceId,
             string moduleId,
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage)
-            : this(deviceId, moduleId, suggestedTimeToLiveSeconds, timeBufferPercentage, true)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of this class.
-        /// </summary>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="moduleId">The module Id.</param>
-        /// <param name="suggestedTimeToLiveSeconds">
-        /// The suggested time to live value for the generated SAS tokens.
-        /// The default value is 1 hour.
-        /// </param>
-        /// <param name="timeBufferPercentage">
-        /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
-        /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
-        ///</param>
-        ///<param name="disposeWithClient ">
-        ///<c>true</c> if the authentication method should be disposed of by the client
-        /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
-        /// </param>
-        public ModuleAuthenticationWithTokenRefresh(
-            string deviceId,
-            string moduleId,
-            int suggestedTimeToLiveSeconds,
-            int timeBufferPercentage,
-            bool disposeWithClient)
-            : base(
-                  SetSasTokenSuggestedTimeToLiveSeconds(suggestedTimeToLiveSeconds),
-                  SetSasTokenRenewalBufferPercentage(timeBufferPercentage),
-                  disposeWithClient)
+            TimeSpan suggestedTimeToLive = default,
+            int timeBufferPercentage = default)
+            : base(suggestedTimeToLive,
+                  timeBufferPercentage)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
@@ -114,28 +59,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public override IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>A populated class instance.</returns>
+        public override IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.ModuleId = ModuleId;
-            return iotHubConnectionStringBuilder;
-        }
-
-        private static int SetSasTokenSuggestedTimeToLiveSeconds(int suggestedTimeToLiveSeconds)
-        {
-            return suggestedTimeToLiveSeconds == 0
-                ? DefaultTimeToLiveSeconds
-                : suggestedTimeToLiveSeconds;
-        }
-
-        private static int SetSasTokenRenewalBufferPercentage(int timeBufferPercentage)
-        {
-            return timeBufferPercentage == 0
-                ? DefaultBufferPercentage
-                : timeBufferPercentage;
+            iotHubConnectionCredentials = base.Populate(iotHubConnectionCredentials);
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
+            return iotHubConnectionCredentials;
         }
     }
 }

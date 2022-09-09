@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_amqpConnection.IsClosing())
             {
-                throw new IotHubCommunicationException("Amqp connection is disconnected.");
+                throw new IotHubClientException("Amqp connection is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
             }
 
             var amqpSessionSettings = new AmqpSessionSettings
@@ -70,23 +70,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (ex is AmqpIotResourceException)
                 {
                     _amqpConnection.SafeClose();
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
                 }
 
                 throw ex;
             }
         }
 
-        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IClientConfiguration clientConfiguration, CancellationToken cancellationToken)
+        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
         {
             if (_amqpConnection.IsClosing())
             {
-                throw new IotHubCommunicationException("Amqp connection is disconnected.");
+                throw new IotHubClientException("Amqp connection is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
             }
 
             try
             {
-                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(clientConfiguration, _amqpIotCbsLink);
+                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(connectionCredentials, _amqpIotCbsLink);
                 await amqpAuthenticator.InitLoopAsync(cancellationToken).ConfigureAwait(false);
                 return amqpAuthenticator;
             }

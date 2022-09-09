@@ -22,14 +22,14 @@ using System;
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 // 7/12/2021 drwill Renamed class from ExponentialBackoff to ExponentialBackoffRetryStrategy to avoid naming internal conflict.
 
-namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// A retry strategy with back-off parameters for calculating the exponential delay between retries.
     /// </summary>
     internal class ExponentialBackoffRetryStrategy : RetryStrategy
     {
-        private static readonly Random s_random = new Random();
+        private static readonly Random s_random = new();
 
         private readonly int _retryCount;
         private readonly TimeSpan _minBackoff;
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         private readonly TimeSpan _deltaBackoff;
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         public ExponentialBackoffRetryStrategy()
             : this(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff)
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with the specified retry settings.
+        /// Creates an instance of this class with the specified retry settings.
         /// </summary>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
         /// <param name="minBackoff">The minimum back-off time</param>
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with the specified name and retry settings.
+        /// Creates an instance of this class with the specified name and retry settings.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of this class with the specified name, retry settings, and fast retry option.
+        /// Creates an instance of this class with the specified name, retry settings, and fast retry option.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
@@ -81,11 +81,11 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         public ExponentialBackoffRetryStrategy(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff, bool firstFastRetry)
             : base(name, firstFastRetry)
         {
-            Guard.ArgumentNotNegativeValue(retryCount, "retryCount");
-            Guard.ArgumentNotNegativeValue(minBackoff.Ticks, "minBackoff");
-            Guard.ArgumentNotNegativeValue(maxBackoff.Ticks, "maxBackoff");
-            Guard.ArgumentNotNegativeValue(deltaBackoff.Ticks, "deltaBackoff");
-            Guard.ArgumentNotGreaterThan(minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds, "minBackoff");
+            Argument.AssertNotNegativeValue(retryCount, "retryCount");
+            Argument.AssertNotNegativeValue(minBackoff.Ticks, "minBackoff");
+            Argument.AssertNotNegativeValue(maxBackoff.Ticks, "maxBackoff");
+            Argument.AssertNotNegativeValue(deltaBackoff.Ticks, "deltaBackoff");
+            Argument.AssertNotGreaterThan(minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds, "minBackoff");
             _retryCount = retryCount;
             _minBackoff = minBackoff;
             _maxBackoff = maxBackoff;

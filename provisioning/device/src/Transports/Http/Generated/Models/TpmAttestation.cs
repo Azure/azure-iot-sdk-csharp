@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     internal class TpmAttestation
     {
         /// <summary>
-        /// Initializes a new instance of the TpmAttestation class.
+        /// Creates an instance of this class.
         /// </summary>
         public TpmAttestation(string endorsementKey = default, string storageRootKey = default)
         {

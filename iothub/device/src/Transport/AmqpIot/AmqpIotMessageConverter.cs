@@ -12,7 +12,6 @@ using System.Text;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Common.Api;
 using Microsoft.Azure.Devices.Client.Utilities;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
@@ -31,6 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
+        private const string FailedToSerializeUnsupportedType = "Failed to serialize an unsupported type of '{0}'.";
 
         #region AmqpMessage <--> Message
 
@@ -263,20 +263,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region AmqpMessage <--> Methods
 
-        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal)
+        public static AmqpMessage ConvertDirectMethodResponseToAmqpMessage(DirectMethodResponse directMethodResponse)
         {
-            AmqpMessage amqpMessage = methodResponseInternal.Payload == null
+            AmqpMessage amqpMessage = directMethodResponse.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(new MemoryStream(methodResponseInternal.Payload), true);
+                : AmqpMessage.Create(new MemoryStream(directMethodResponse.Payload), true);
 
-            PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponseInternal);
+            PopulateAmqpMessageFromMethodResponse(amqpMessage, directMethodResponse);
             return amqpMessage;
         }
 
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
+        public static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)
             {
@@ -298,21 +298,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             using var ms = new MemoryStream();
             amqpMessage.BodyStream.CopyTo(ms);
             amqpMessage.Dispose();
-            return new MethodRequestInternal(methodName, methodRequestId, ms.ToArray());
+            var directMethodRequest = new DirectMethodRequest()
+            {
+                MethodName = methodName,
+                Payload = Encoding.UTF8.GetString(ms.ToArray())
+            };
+
+            directMethodRequest.RequestId = methodRequestId;
+            return directMethodRequest;
         }
 
         /// <summary>
         /// Copies the Method instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponseInternal methodResponseInternal)
+        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse DirectMethodResponse)
         {
-            Debug.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
+            Debug.Assert(DirectMethodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
 
-            amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
+            amqpMessage.Properties.CorrelationId = new Guid(DirectMethodResponse.RequestId);
 
             amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
-            amqpMessage.ApplicationProperties.Map[Status] = methodResponseInternal.Status;
+            amqpMessage.ApplicationProperties.Map[Status] = DirectMethodResponse.Status;
         }
 
         #endregion AmqpMessage <--> Methods
@@ -385,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
                         throw FxTrace.Exception.AsError(new SerializationException(
-                            IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
+                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
                     }
                     else if (amqpObject is AmqpMap map)
                     {
@@ -467,7 +474,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         throw FxTrace.Exception.AsError(
                             new SerializationException(
-                                IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
+                                string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {

@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
 
         Task DisableMethodsAsync(CancellationToken cancellationToken);
 
-        Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
+        Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken);
 
         // Twin.
         Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken);

@@ -8,13 +8,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Representation of a single Device Provisioning Service query specification with a JSON serializer.
     /// </summary>
-    public class QuerySpecification
+    internal class QuerySpecification
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="query"></param>
-        public QuerySpecification(string query)
+        internal QuerySpecification(string query)
         {
             Query = query;
         }
@@ -23,6 +23,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Operation mode
         /// </summary>
         [JsonProperty(PropertyName = "query", Required = Required.Always)]
-        public string Query { get; set; }
+        internal string Query { get; set; }
     }
 }

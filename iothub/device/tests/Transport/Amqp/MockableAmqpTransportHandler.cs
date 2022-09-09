@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             : this(
                 new PipelineContext
                 {
-                    ClientConfiguration = new ClientConfiguration(new IotHubConnectionStringBuilder(AmqpTransportHandlerTests.TestConnectionString), new IotHubClientOptions(new IotHubClientAmqpSettings())),
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString),
+                    IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
                 },
                 new IotHubClientAmqpSettings())
         {
@@ -22,18 +23,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         internal MockableAmqpTransportHandler(
             PipelineContext context,
-            IotHubClientAmqpSettings transportSettings,
-            Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
-            Func<string, Message, Task> onModuleMessageReceivedCallback = null,
-            Func<Message, Task> onDeviceMessageReceivedCallback = null)
+            IotHubClientAmqpSettings transportSettings)
             : base(
                   context,
-                  transportSettings,
-                  onMethodCallback,
-                  onDesiredStatePatchReceivedCallback,
-                  onModuleMessageReceivedCallback,
-                  onDeviceMessageReceivedCallback)
+                  transportSettings)
         {
             _amqpUnit = new MockableAmqpUnit();
         }

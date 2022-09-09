@@ -16,6 +16,27 @@ namespace Microsoft.Azure.Devices.Client.Test
         private const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Client.Test\\TestCertsPassword.txt";
 
         [TestMethod]
+        public void IotHubClientOptions_Mqtt_DoesNotThrow()
+        {
+            // should not throw
+            var options = new IotHubClientOptions(new IotHubClientMqttSettings());
+        }
+
+        [TestMethod]
+        public void IotHubClientOptions_Amqp_DoesNotThrow()
+        {
+            // should not throw
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void IotHubClientOptions_Http_Throws()
+        {
+            var options = new IotHubClientOptions(new IotHubClientHttpSettings());
+        }
+
+        [TestMethod]
         public void AmqpTransportSettings_DefaultPropertyValues()
         {
             // arrange
@@ -170,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
 
             // act
-            _ = IotHubDeviceClient.Create(hostName, authMethod, options);
+            using var dc = new IotHubDeviceClient(hostName, authMethod, options);
         }
     }
 }

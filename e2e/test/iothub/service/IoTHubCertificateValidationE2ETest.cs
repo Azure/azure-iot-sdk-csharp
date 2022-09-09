@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [Ignore("TODO: Enable when invalid cert server is back online.")]
     [TestCategory("InvalidServiceCertificate")]
-    public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
+    public class IotHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()
@@ -33,28 +33,31 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpTcp_Fails()
         {
-            TransportType transport = TransportType.Amqp;
+            IotHubTransportProtocol protocol = IotHubTransportProtocol.Tcp;
             await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestServiceClientInvalidServiceCertificate(protocol)).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpWs_Fails()
         {
-            TransportType transport = TransportType.Amqp_WebSocket_Only;
+            IotHubTransportProtocol protocol = IotHubTransportProtocol.WebSocket;
             WebSocketException exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
-                () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+                () => TestServiceClientInvalidServiceCertificate(protocol)).ConfigureAwait(false);
 
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        private static async Task TestServiceClientInvalidServiceCertificate(TransportType transport)
+        private static async Task TestServiceClientInvalidServiceCertificate(IotHubTransportProtocol protocol)
         {
-            using var service = ServiceClient.CreateFromConnectionString(
-                TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate,
-                transport);
-            using var testMessage = new Message();
-            await service.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
+            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            {
+                Protocol = protocol
+            };
+            using var service = new IotHubServiceClient(
+                TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate, options);
+            var testMessage = new Message();
+            await service.Messaging.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -65,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 QueryCondition = "DeviceId IN ['testDevice']",
                 Twin = new Twin(),
-                StartTimeUtc = DateTime.UtcNow
+                StartOn = DateTime.UtcNow
             };
             var ScheduledTwinUpdateOptions = new ScheduledJobsOptions
             {
@@ -98,19 +101,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateHttp_Fails()
-        {
-            AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                () => TestDeviceClientInvalidServiceCertificate(new IotHubClientHttpSettings())).ConfigureAwait(false);
-
-#if NET472
-            Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
-            Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
-#endif
-        }
-
-        [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
@@ -131,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static async Task TestDeviceClientInvalidServiceCertificate(IotHubClientTransportSettings transportSettings)
         {
             using var deviceClient =
-                IotHubDeviceClient.CreateFromConnectionString(
+                new IotHubDeviceClient(
                     TestConfiguration.IoTHub.DeviceConnectionStringInvalidServiceCertificate,
                     new IotHubClientOptions(transportSettings));
             var testMessage = new Client.Message();

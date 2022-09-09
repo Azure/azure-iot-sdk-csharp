@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     {
         public static TException Throws<TException>(Action action, string errorMessage = null) where TException : Exception
         {
-            errorMessage = errorMessage?? "Failed";
+            errorMessage = errorMessage ?? "Failed";
             try
             {
                 action();
@@ -24,12 +24,10 @@ namespace Microsoft.Azure.Devices.Api.Test
             }
             catch (Exception ex)
             {
-                throw new AssertFailedException(
-                    "{0}. Expected:<{1}> Actual<{2}>".FormatInvariant(errorMessage, typeof(TException).ToString(), ex.GetType().ToString()), 
-                    ex); 
+                throw new AssertFailedException($"{errorMessage}. Expected:{typeof(TException).ToString()} Actual:{ex.GetType().ToString()}", ex);
             }
 
-            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
+            throw new AssertFailedException($"{errorMessage}. Expected {typeof(TException).ToString()} exception but no exception is thrown.");
         }
 
         public static TException Throws<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
@@ -37,7 +35,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             return Throws<TException>(() => action().Wait(), errorMessage);
         }
 
-        public async static Task<TException> ThrowsAsync<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
+        public static async Task<TException> ThrowsAsync<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
         {
             errorMessage = errorMessage ?? "Failed";
             try
@@ -51,11 +49,10 @@ namespace Microsoft.Azure.Devices.Api.Test
             catch (Exception ex)
             {
                 throw new AssertFailedException(
-                    "{0}. Expected:<{1}> Actual<{2}>".FormatInvariant(errorMessage, typeof(TException).ToString(), ex.GetType().ToString()),
-                    ex);
+                    $"{errorMessage}. Expected:{typeof(TException).ToString()} Actual:{ex.GetType().ToString()}", ex);
             }
 
-            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
+            throw new AssertFailedException($"{errorMessage}. Expected {typeof(TException).ToString()} exception but no exception is thrown");
         }
     }
 }

@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpTransportHandler : TransportHandler
     {
-        private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
         protected AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
@@ -38,22 +37,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         internal AmqpTransportHandler(
             PipelineContext context,
-            IotHubClientAmqpSettings transportSettings,
-            Func<MethodRequestInternal, Task> onMethodCallback = null,
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
-            Func<string, Message, Task> onModuleMessageReceivedCallback = null,
-            Func<Message, Task> onDeviceMessageReceivedCallback = null)
+            IotHubClientAmqpSettings transportSettings)
             : base(context, transportSettings)
         {
             _operationTimeout = transportSettings.OperationTimeout;
-            _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
+            _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
+
+            var additionalClientInformation = new AdditionalClientInformation
+            {
+                ProductInfo = context.ProductInfo,
+                ModelId = context.ModelId,
+            };
 
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
-                context.ClientConfiguration,
-                onMethodCallback,
+                context.IotHubConnectionCredentials,
+                additionalClientInformation,
+                transportSettings,
+                context.MethodCallback,
                 TwinMessageListener,
-                onModuleMessageReceivedCallback,
-                onDeviceMessageReceivedCallback,
+                context.ModuleEventCallback,
+                context.DeviceEventCallback,
                 OnDisconnected);
 
             if (Logging.IsEnabled)
@@ -261,7 +264,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
@@ -386,25 +389,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 Task<Twin> receivingTask = taskCompletionSource.Task;
 
-                if (await Task
-                    .WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds), cancellationToken))
-                    .ConfigureAwait(false) == receivingTask)
+                if (receivingTask.Exception?.InnerException != null)
                 {
-                    if (receivingTask.Exception?.InnerException != null)
-                    {
-                        throw receivingTask.Exception.InnerException;
-                    }
+                    throw receivingTask.Exception.InnerException;
+                }
 
-                    // Task completed within timeout.
-                    // Consider that the task may have faulted or been canceled.
-                    // We re-await the task so that any exceptions/cancellation is re-thrown.
-                    response = await receivingTask.ConfigureAwait(false);
-                }
-                else
-                {
-                    // Timeout happen
-                    throw new TimeoutException();
-                }
+                // Consider that the task may have faulted or been canceled.
+                // We re-await the task so that any exceptions/cancellation is re-thrown.
+                response = await receivingTask.ConfigureAwait(false);
             }
             finally
             {
@@ -521,7 +513,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubException ex = default)
+        private void TwinMessageListener(Twin twin, string correlationId, TwinCollection twinCollection, IotHubClientException ex = default)
         {
             if (correlationId == null)
             {

@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -15,18 +14,20 @@ namespace Microsoft.Azure.Devices.Client
         private string _deviceId;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithX509Certificate"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="certificate">X.509 Certificate.</param>
         /// <param name="chainCertificates">Certificates in the device certificate chain.</param>
+        /// <exception cref="ArgumentException"><paramref name="certificate"/> is null.</exception>
         public DeviceAuthenticationWithX509Certificate(
             string deviceId,
             X509Certificate2 certificate,
             X509Certificate2Collection chainCertificates = null)
         {
             SetDeviceId(deviceId);
-            Certificate = certificate;
+            Certificate = certificate
+                ?? throw new ArgumentException("No certificate was found. To use certificate authentication certificate must be present.", nameof(certificate));
             ChainCertificates = chainCertificates;
         }
 
@@ -40,11 +41,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Gets or sets the X.509 certificate associated with this device.
+        /// The X.509 certificate associated with this device.
         /// The private key should be available in the <see cref="X509Certificate2"/> object,
         /// or should be available in the certificate store of the system where the client will be authenticated from.
         /// </summary>
-        public X509Certificate2 Certificate { get; set; }
+        public X509Certificate2 Certificate { get; }
 
         /// <summary>
         /// Full chain of certificates from the one used to sign the device certificate to the one uploaded to the
@@ -56,24 +57,23 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.UsingX509Cert = true;
-            iotHubConnectionStringBuilder.Certificate = Certificate;
-            iotHubConnectionStringBuilder.ChainCertificates = ChainCertificates;
-            iotHubConnectionStringBuilder.SharedAccessSignature = null;
-            iotHubConnectionStringBuilder.SharedAccessKey = null;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.Certificate = Certificate;
+            iotHubConnectionCredentials.ChainCertificates = ChainCertificates;
+            iotHubConnectionCredentials.SharedAccessSignature = null;
+            iotHubConnectionCredentials.SharedAccessKey = null;
+            iotHubConnectionCredentials.SharedAccessKeyName = null;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         private void SetDeviceId(string deviceId)

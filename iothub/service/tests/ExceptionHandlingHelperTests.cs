@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Test
     [TestCategory("Unit")]
     public class ExceptionHandlingHelperTests
     {
+        private const string HttpErrorCodeName = "iothub-errorcode";
+
         [TestMethod]
         public async Task GetExceptionCodeAsync_ContentAndHeadersMatch_ValidErrorCode()
         {
@@ -24,7 +26,7 @@ namespace Microsoft.Azure.Devices.Test
                 Message = "{\"errorCode\":404001}"
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
-            httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DeviceNotFound");
+            httpResponseMessage.Headers.Add(HttpErrorCodeName, "DeviceNotFound");
 
             // act
             ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
@@ -43,7 +45,7 @@ namespace Microsoft.Azure.Devices.Test
                 Message = "{\"errorCode\":404001}"
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
-            httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DummyErrorCode");
+            httpResponseMessage.Headers.Add(HttpErrorCodeName, "DummyErrorCode");
 
             // act
             ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
@@ -62,7 +64,7 @@ namespace Microsoft.Azure.Devices.Test
                 Message = ""
             };
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
-            httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DeviceNotFound");
+            httpResponseMessage.Headers.Add(HttpErrorCodeName, "DeviceNotFound");
 
             // act
             ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);

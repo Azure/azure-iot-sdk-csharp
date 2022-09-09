@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
-
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -11,26 +9,26 @@ namespace Microsoft.Azure.Devices
     public class DigitalTwinUpdateResponse
     {
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="location">URI of the digital twin.</param>
-        public DigitalTwinUpdateResponse(string eTag = default(string), string location = default(string))
+        internal DigitalTwinUpdateResponse(string eTag = default, string location = default)
         {
             ETag = eTag;
             Location = location;
         }
 
         /// <summary>
-        /// Gets or sets weak ETag of the modified resource.
+        /// Gets the weak ETag of the modified resource.
         /// </summary>
-        [JsonProperty(PropertyName = "ETag")]
-        public string ETag { get; internal set; }
+        /// <seealso href="https://www.rfc-editor.org/rfc/rfc7232#section-3.2" />
+        /// <seealso href="https://www.rfc-editor.org/rfc/rfc7232#section-2.1" />
+        public string ETag { get; }
 
         /// <summary>
         /// Gets the URI of the digital twin.
         /// </summary>
-        [JsonProperty(PropertyName = "Location")]
-        public string Location { get; internal set; }
+        public string Location { get; }
     }
 }

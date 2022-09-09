@@ -11,13 +11,13 @@ namespace Microsoft.Azure.Devices
     public sealed class SymmetricKey
     {
         /// <summary>
-        /// Gets or sets the PrimaryKey
+        /// Gets or sets the primary key.
         /// </summary>
         [JsonProperty(PropertyName = "primaryKey")]
         public string PrimaryKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the SecondaryKey
+        /// Gets or sets the secondary key.
         /// </summary>
         [JsonProperty(PropertyName = "secondaryKey")]
         public string SecondaryKey { get; set; }

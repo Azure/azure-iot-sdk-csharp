@@ -7,8 +7,6 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Service.Auth;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -21,17 +19,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <list type="bullet">
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)">IndividualEnrollment</see>
+    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(string, int, CancellationToken)">IndividualEnrollment</see>
     ///     </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)">EnrollmentGroup</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(string, int, CancellationToken)">EnrollmentGroup</see>
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, String, int)">RegistrationStatus</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(string, string, int, CancellationToken)">RegistrationStatus</see>
     ///         </description>
     ///     </item>
     /// </list>
@@ -39,18 +37,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     Query Language for the Device Provisioning Service.
     ///
     /// Optionally, an <c>Integer</c> with the <b>page size</b>, can determine the maximum number of the items in the
-    ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it 
+    ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it
     ///     contains 0, the Device Provisioning Service will ignore it and use a standard page size.
     ///
     /// You can use this Object as a standard iterator, just using the <c>HasNext</c> and <c>NextAsync</c> in a
-    ///     <c>while</c> loop, up to the point where the <c>HasNext</c> contains <c>false</c>. But, keep 
-    ///     in mind that the <see cref="QueryResult"/> can contain a empty list, even if the <c>HasNext</c> contained 
-    ///     <c>true</c>. For example, image that you have 10 IndividualEnrollment in the Device Provisioning Service 
-    ///     and you created new query with the <c>PageSize</c> equals 5. In the first iteration, <c>HasNext</c> 
-    ///     will contains <c>true</c>, and the first <c>NextAsync</c> will return a <c>QueryResult</c> with 
-    ///     5 items. After, your code will check the <c>HasNext</c>, which will contains <c>true</c> again. Now, 
-    ///     before you get the next page, somebody deletes all the IndividualEnrollment. What happened, when you call the 
-    ///     <c>NextAsync</c>, it will return a valid <c>QueryResult</c>, but the <see cref="QueryResult.Items"/> 
+    ///     <c>while</c> loop, up to the point where the <c>HasNext</c> contains <c>false</c>. But, keep
+    ///     in mind that the <see cref="QueryResult"/> can contain a empty list, even if the <c>HasNext</c> contained
+    ///     <c>true</c>. For example, image that you have 10 IndividualEnrollment in the Device Provisioning Service
+    ///     and you created new query with the <c>PageSize</c> equals 5. In the first iteration, <c>HasNext</c>
+    ///     will contains <c>true</c>, and the first <c>NextAsync</c> will return a <c>QueryResult</c> with
+    ///     5 items. After, your code will check the <c>HasNext</c>, which will contains <c>true</c> again. Now,
+    ///     before you get the next page, somebody deletes all the IndividualEnrollment. What happened, when you call the
+    ///     <c>NextAsync</c>, it will return a valid <c>QueryResult</c>, but the <see cref="QueryResult.Items"/>
     ///     will contain an empty list.
     ///
     /// Besides the <c>Items</c>, the <c>QueryResult</c> contains the <see cref="QueryResult.ContinuationToken"/>.
@@ -58,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
     ///     the <see cref="NextAsync(string)"/> passing the stored <c>ContinuationToken</c>.
     /// </remarks>
-    public class Query : IDisposable
+    public class Query
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
         private const string ItemTypeHeaderKey = "x-ms-item-type";
@@ -74,8 +72,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal Query(
             ServiceConnectionString serviceConnectionString,
             string serviceName,
-            QuerySpecification querySpecification,
-            ProvisioningServiceHttpSettings httpTransportSettings,
+            string query,
+            IContractApiHttp contractApiHttp,
             int pageSize,
             CancellationToken cancellationToken)
         {
@@ -89,9 +87,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
             }
 
-            if (querySpecification == null)
+            if (query == null)
             {
-                throw new ArgumentNullException(nameof(querySpecification));
+                throw new ArgumentNullException(nameof(query));
             }
 
             if (pageSize < 0)
@@ -99,15 +97,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
-            // TODO: Refactor ContractApiHttp being created again
-            _contractApiHttp = new ContractApiHttp(
-                serviceConnectionString.HttpsEndpoint,
-                serviceConnectionString, httpTransportSettings);
+            _contractApiHttp = contractApiHttp;
 
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
 
-            _querySpecificationJson = JsonConvert.SerializeObject(querySpecification);
+            _querySpecificationJson = JsonConvert.SerializeObject(new QuerySpecification(query));
 
             _queryPath = GetQueryUri(serviceName);
 
@@ -204,34 +199,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return result;
         }
 
-        /// <summary>
-        /// Dispose the HTTP resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_contractApiHttp != null)
-                {
-                    _contractApiHttp.Dispose();
-                    _contractApiHttp = null;
-                }
-            }
-        }
-
         private static Uri GetQueryUri(string path)
         {
-            return new Uri(QueryUriFormat.FormatInvariant(path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, QueryUriFormat, path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }

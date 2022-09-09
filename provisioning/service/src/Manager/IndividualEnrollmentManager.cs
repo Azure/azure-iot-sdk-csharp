@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common.Service.Auth;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -153,14 +153,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal static Query CreateQuery(
             ServiceConnectionString provisioningConnectionString,
-            QuerySpecification querySpecification,
-            ProvisioningServiceHttpSettings httpTransportSettings,
+            string query,
+            IContractApiHttp contractApiHttp,
             CancellationToken cancellationToken,
             int pageSize = 0)
         {
-            if (querySpecification == null)
+            if (query == null)
             {
-                throw new ArgumentNullException(nameof(querySpecification));
+                throw new ArgumentNullException(nameof(query));
             }
 
             if (pageSize < 0)
@@ -168,18 +168,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
 
-            return new Query(provisioningConnectionString, ServiceName, querySpecification, httpTransportSettings, pageSize, cancellationToken);
+            return new Query(provisioningConnectionString, ServiceName, query, contractApiHttp, pageSize, cancellationToken);
         }
 
         private static Uri GetEnrollmentUri(string registrationId)
         {
             registrationId = WebUtility.UrlEncode(registrationId);
-            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, registrationId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentIdUriFormat, ServiceName, registrationId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetEnrollmentUri()
         {
-            return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, EnrollmentUriFormat, ServiceName, SdkUtils.ApiVersionQueryString), UriKind.Relative);
         }
 
         internal static async Task<AttestationMechanism> GetEnrollmentAttestationAsync(
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
             return new Uri(
-                EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
+                string.Format(CultureInfo.InvariantCulture, EnrollmentAttestationUriFormat, ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
                 UriKind.Relative);
         }
     }

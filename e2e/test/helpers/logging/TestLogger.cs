@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class TestLogger
     {
-        public static readonly TestLogger Instance = new TestLogger();
+        public static readonly TestLogger Instance = new();
 
         public const string SdkLanguage = ".NET";
         public const string Service = "IotHub";

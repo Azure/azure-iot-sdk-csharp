@@ -29,17 +29,12 @@ namespace Microsoft.Azure.Devices.Client
         public const uint DefaultPrefetchCount = 50;
 
         /// <summary>
-        /// Initializes a new instance of this class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
         public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
-            if (Protocol == IotHubClientTransportProtocol.WebSocket)
-            {
-                Proxy = DefaultWebProxySettings.Instance;
-            }
-
             DefaultReceiveTimeout = DefaultOperationTimeout;
         }
 

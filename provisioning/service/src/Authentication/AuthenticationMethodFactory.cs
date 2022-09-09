@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Common.Service.Auth
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Creates an instance of an implementation of <see cref="IAuthenticationMethod"/> based on known authentication parameters.
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                     iotHubConnectionStringBuilder.SharedAccessKey);
             }
 
-            throw new InvalidOperationException($"Unsupported Authentication Method {iotHubConnectionStringBuilder}");
+            throw new InvalidOperationException($"Unsupported authentication method {iotHubConnectionStringBuilder}");
         }
     }
 }

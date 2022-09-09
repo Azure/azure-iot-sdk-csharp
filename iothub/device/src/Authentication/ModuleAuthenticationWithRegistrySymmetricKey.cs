@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         private byte[] _key;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithRegistrySymmetricKey"/> class.
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
@@ -72,22 +72,22 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
-        /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
-        /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
+        /// <returns>The populated <see cref="IotHubConnectionCredentials"/> instance.</returns>
+        public IotHubConnectionCredentials Populate(IotHubConnectionCredentials iotHubConnectionCredentials)
         {
-            if (iotHubConnectionStringBuilder == null)
+            if (iotHubConnectionCredentials == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException(nameof(iotHubConnectionCredentials));
             }
 
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
-            iotHubConnectionStringBuilder.ModuleId = ModuleId;
-            iotHubConnectionStringBuilder.SharedAccessKey = KeyAsBase64String;
-            iotHubConnectionStringBuilder.SharedAccessKeyName = null;
-            iotHubConnectionStringBuilder.SharedAccessSignature = null;
+            iotHubConnectionCredentials.DeviceId = DeviceId;
+            iotHubConnectionCredentials.ModuleId = ModuleId;
+            iotHubConnectionCredentials.SharedAccessKey = KeyAsBase64String;
+            iotHubConnectionCredentials.SharedAccessKeyName = null;
+            iotHubConnectionCredentials.SharedAccessSignature = null;
 
-            return iotHubConnectionStringBuilder;
+            return iotHubConnectionCredentials;
         }
 
         private void SetKey(byte[] key)
@@ -99,12 +99,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (key.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentException("Shared access key cannot be null or white space.", nameof(key));
             }
 
             if (!StringValidationHelper.IsBase64String(key))
             {
-                throw new ArgumentException("Key must be base64 encoded");
+                throw new ArgumentException("Key must be base64 encoded", nameof(key));
             }
 
             _key = Convert.FromBase64String(key);

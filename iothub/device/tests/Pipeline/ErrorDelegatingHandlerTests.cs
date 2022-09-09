@@ -24,43 +24,24 @@ namespace Microsoft.Azure.Devices.Client.Test
     {
         internal static readonly HashSet<Type> NonTransientExceptions = new HashSet<Type>
         {
-            typeof(MessageTooLargeException),
-            typeof(DeviceMessageLockLostException),
-            typeof(UnauthorizedException),
-            typeof(DeviceNotFoundException),
-            typeof(QuotaExceededException),
-            typeof(IotHubException),
+            typeof(IotHubClientException),
         };
 
         private const string ErrorMessage = "Error occurred.";
 
         private static readonly Dictionary<Type, Func<Exception>> ExceptionFactory = new Dictionary<Type, Func<Exception>>
         {
-            { typeof(UnauthorizedException), () => new UnauthorizedException(ErrorMessage) },
-            { typeof(DeviceNotFoundException), () => new DeviceNotFoundException(ErrorMessage) },
-            { typeof(QuotaExceededException), () => new QuotaExceededException(ErrorMessage) },
-            { typeof(IotHubCommunicationException), () => new IotHubCommunicationException(ErrorMessage) },
-            { typeof(MessageTooLargeException), () => new MessageTooLargeException(ErrorMessage) },
-            { typeof(DeviceMessageLockLostException), () => new DeviceMessageLockLostException(ErrorMessage) },
-            { typeof(ServerBusyException), () => new ServerBusyException(ErrorMessage) },
-            { typeof(IotHubException), () => new IotHubException(ErrorMessage) },
+            { typeof(IotHubClientException), () => new IotHubClientException(ErrorMessage) },
             { typeof(IOException), () => new IOException(ErrorMessage) },
-            { typeof(TimeoutException), () => new TimeoutException(ErrorMessage) },
             { typeof(ObjectDisposedException), () => new ObjectDisposedException(ErrorMessage) },
             { typeof(OperationCanceledException), () => new OperationCanceledException(ErrorMessage) },
             { typeof(TaskCanceledException), () => new TaskCanceledException(ErrorMessage) },
-            { typeof(IotHubThrottledException), () => new IotHubThrottledException(ErrorMessage, null) },
             { typeof(SocketException), () => new SocketException(1) },
             { typeof(HttpRequestException), () => new HttpRequestException() },
             { typeof(WebException), () => new WebException() },
-            { typeof(AmqpException), () => new AmqpException(new Amqp.Framing.Error()) },
+            { typeof(AmqpException), () => new AmqpException(new Azure.Amqp.Framing.Error()) },
             { typeof(WebSocketException), () => new WebSocketException(1) },
-            { typeof(TestSecurityException), () => new Exception(
-                                                            "Test top level",
-                                                            new Exception(
-                                                                "Inner exception",
-                                                                new AuthenticationException()))
-            },
+            { typeof(TestSecurityException), () => new Exception("Test top level", new Exception("Inner exception", new AuthenticationException())) },
             { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
@@ -68,11 +49,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(IotHubCommunicationException),
+            typeof(IotHubClientException),
             typeof(WebSocketException),
             typeof(TestDerivedException),
         };
@@ -101,8 +81,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
-            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             var cancellationToken = new CancellationToken();
@@ -118,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             foreach (Type exceptionType in s_networkExceptions)
             {
-                await TestExceptionThrown(exceptionType, typeof(IotHubCommunicationException)).ConfigureAwait(false);
+                await TestExceptionThrown(exceptionType, typeof(IotHubClientException)).ConfigureAwait(false);
             }
         }
 
@@ -202,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
 
             //set initial operation result that throws
@@ -241,7 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = Substitute.For<PipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(TaskHelpers.CompletedTask);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var sut = new ErrorDelegatingHandler(contextMock, innerHandler);
 
             //initial OpenAsync to emulate Gatekeeper behavior
@@ -255,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 if (setup[0])
                 {
-                    return TaskHelpers.CompletedTask; ;
+                    return Task.CompletedTask; ;
                 }
                 throw ExceptionFactory[thrownExceptionType]();
             });
@@ -265,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //override outcome
             setup[0] = true;//otherwise previously setup call will happen and throw;
-            mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
+            mockSetup(innerHandler).Returns(Task.CompletedTask);
 
             //act
             await act(sut).ConfigureAwait(false);
@@ -303,7 +283,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //override outcome
             setup[0] = true;//otherwise previously setup call will happen and throw;
-            mockSetup(innerHandler).Returns(TaskHelpers.CompletedTask);
+            mockSetup(innerHandler).Returns(Task.CompletedTask);
 
             //act
             await act(sut).ConfigureAwait(false);
