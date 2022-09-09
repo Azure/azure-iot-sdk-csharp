@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
 
@@ -17,88 +16,6 @@ namespace Microsoft.Azure.Devices
     {
         private const string MessageFieldErrorCode = "errorCode";
         private const string HttpErrorCodeName = "iothub-errorcode";
-
-        private static readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> s_mappings =
-            new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
-        {
-            {
-                HttpStatusCode.NoContent,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.NotFound,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.Conflict,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.BadRequest, async (response) => new ArgumentException(
-                message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.Unauthorized,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.Forbidden,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.PreconditionFailed,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.RequestEntityTooLarge,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.InternalServerError,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                HttpStatusCode.ServiceUnavailable,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            },
-            {
-                (HttpStatusCode)429,
-                async (response) => new IotHubServiceException(
-                    errorCode: response.StatusCode,
-                    iotHubStatusCode: await GetExceptionCodeAsync(response).ConfigureAwait(false),
-                    message: await GetExceptionMessageAsync(response).ConfigureAwait(false))
-            }
-        };
-
-        public static IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> GetDefaultErrorMapping() =>
-            s_mappings;
 
         public static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {

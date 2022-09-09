@@ -59,15 +59,6 @@ namespace Microsoft.Azure.Devices
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
-                IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping =
-                    ExceptionHandlingHelper.GetDefaultErrorMapping();
-
-                if (defaultErrorMapping.TryGetValue(responseMessage.StatusCode, out Func<HttpResponseMessage, Task<Exception>> mappedException))
-                {
-                    throw await mappedException.Invoke(responseMessage);
-                }
-
-                // Default case for when defaultErrorMapping doesn't contain the 3-digit HTTP status code returned in responseMessage.
                 IotHubStatusCode iotHubStatusCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(responseMessage);
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
                 throw new IotHubServiceException(responseMessage.StatusCode, iotHubStatusCode, errorMessage);
