@@ -249,8 +249,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(string proxyServerAddress)
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
-            var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
-            Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
+            var queryString = "SELECT * FROM enrollments";
+            Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(queryString);
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
