@@ -686,7 +686,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
             Func<Task> act = async () => { twin = await _serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); };
             var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a twin with an out of date ETag");
-            error.And.StatusCode.Should().Be(Common.Exceptions.IotHubStatusCode.PreconditionFailed);
+            error.And.IotHubStatusCode.Should().Be(Common.Exceptions.IotHubStatusCode.PreconditionFailed);
 
             // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
             FluentActions

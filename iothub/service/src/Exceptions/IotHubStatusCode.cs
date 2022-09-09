@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Used when the error code returned by the hub is unrecognized. If encountered, please report the issue so it can be added here.
         /// </summary>
-        InvalidErrorCode = 0,
+        Unknown = 0,
 
         // BadRequest - 400
 

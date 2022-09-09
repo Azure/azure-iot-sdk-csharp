@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Test
             IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(IotHubStatusCode.InvalidErrorCode, errorCode);
+            Assert.AreEqual(IotHubStatusCode.Unknown, errorCode);
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Test
             IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(IotHubStatusCode.InvalidErrorCode, errorCode);
+            Assert.AreEqual(IotHubStatusCode.Unknown, errorCode);
         }
 
         [TestMethod]
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Test
             IotHubStatusCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
 
             // assert
-            Assert.AreEqual(IotHubStatusCode.InvalidErrorCode, errorCode);
+            Assert.AreEqual(IotHubStatusCode.Unknown, errorCode);
         }
     }
 }

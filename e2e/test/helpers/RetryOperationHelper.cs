@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     await asyncOperation().ConfigureAwait(false);
                     break;
                 }
-                catch (Exception ex) when (ex is IotHubServiceException serviceEx && retryableStatusCodes.Contains(serviceEx.StatusCode))
+                catch (Exception ex) when (ex is IotHubServiceException serviceEx && retryableStatusCodes.Contains(serviceEx.IotHubStatusCode))
                 {
                     shouldRetry = retryPolicy.ShouldRetry(++counter, ex, out retryInterval);
                     logger.Trace($"Attempt {counter}: operation did not succeed: {ex}");
