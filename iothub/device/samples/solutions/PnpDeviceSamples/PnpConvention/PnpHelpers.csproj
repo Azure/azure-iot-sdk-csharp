@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsTestProject>True</IsTestProject>
 	<LangVersion>9.0</LangVersion>
+	<IsTestProject>False</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
