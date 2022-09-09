@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
             Action act = () => new IotHubDeviceClient(FakeConnectionStringWithModuleId);
-            act.Should().Throw<ArgumentException>();
+            act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]

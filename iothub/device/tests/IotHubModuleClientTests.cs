@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
             using var mc = new IotHubModuleClient(ConnectionStringWithoutModuleId);
