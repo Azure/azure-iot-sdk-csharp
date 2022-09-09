@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private MqttQualityOfServiceLevel publishingQualityOfService;
         private MqttQualityOfServiceLevel receivingQualityOfService;
 
-        private readonly Func<MethodRequestInternal, Task> _methodListener;
+        private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
@@ -115,9 +115,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly string _deviceId;
         private readonly string _moduleId;
         private readonly string _hostName;
+        private readonly string _modelId;
+        private readonly ProductInfo _productInfo;
         private bool _isSymmetricKeyAuthenticated;
         private readonly IotHubClientMqttSettings _mqttTransportSettings;
-        private readonly ClientConfiguration _clientConfiguration;
+        private readonly IotHubConnectionCredentials _connectionCredentials;
 
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
@@ -186,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         internal MqttTransportHandler(
             PipelineContext context,
             IotHubClientMqttSettings settings,
-            Func<MethodRequestInternal, Task> onMethodCallback = null,
+            Func<DirectMethodRequest, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onModuleMessageReceivedCallback = null,
             Func<Message, Task> onDeviceMessageReceivedCallback = null)
@@ -202,8 +204,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             : base(context, settings)
         {
             _mqttTransportSettings = settings;
-            _deviceId = context.ClientConfiguration.DeviceId;
-            _moduleId = context.ClientConfiguration.ModuleId;
+            _deviceId = context.IotHubConnectionCredentials.DeviceId;
+            _moduleId = context.IotHubConnectionCredentials.ModuleId;
 
             _deviceToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, DeviceToCloudMessagesTopicFormat, _deviceId);
             _moduleToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, ModuleToCloudMessagesTopicFormat, _deviceId, _moduleId);
@@ -211,18 +213,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _moduleEventMessageTopic = string.Format(CultureInfo.InvariantCulture, ModuleEventMessageTopicFormat, _deviceId, _moduleId);
             _edgeModuleInputEventsTopic = string.Format(CultureInfo.InvariantCulture, EdgeModuleInputEventsTopicFormat, _deviceId, _moduleId);
 
+            _modelId = context.ModelId;
+            _productInfo = context.ProductInfo;
+
             var mqttFactory = new MqttFactory(new MqttLogger());
 
             _mqttClient = mqttFactory.CreateMqttClient();
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
-            _hostName = context.ClientConfiguration.IotHubHostName;
-            if (context.ClientConfiguration.SharedAccessKey != null || context.ClientConfiguration.TokenRefresher != null)
+            _hostName = context.IotHubConnectionCredentials.IotHubHostName;
+            if (context.IotHubConnectionCredentials.SharedAccessKey != null)
             {
                 _isSymmetricKeyAuthenticated = true;
             }
 
-            _clientConfiguration = context.ClientConfiguration;
+            _connectionCredentials = context.IotHubConnectionCredentials;
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.WebSocket)
             {
@@ -230,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _mqttClientOptionsBuilder.WithWebSocketServer(uri);
 
                 IWebProxy proxy = _transportSettings.Proxy;
-                if (proxy != null && !(proxy is DefaultWebProxySettings))
+                if (proxy != null)
                 {
                     var serviceUri = new Uri(uri);
                     var proxyUri = _transportSettings.Proxy.GetProxy(serviceUri);
@@ -257,9 +262,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttClientOptionsBuilderTlsParameters tlsParameters = new MqttClientOptionsBuilderTlsParameters();
 
-            List<X509Certificate> certs = _mqttTransportSettings.ClientCertificate == null
+            //TODO chain certs?
+            List<X509Certificate> certs = _connectionCredentials.Certificate == null
                 ? new List<X509Certificate>(0)
-                : new List<X509Certificate> { settings.ClientCertificate };
+                : new List<X509Certificate> { _connectionCredentials.Certificate };
 
             tlsParameters.Certificates = certs;
 
@@ -319,11 +325,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string clientId = _moduleId == null ? _deviceId : _deviceId + "/" + _moduleId;
             _mqttClientOptionsBuilder.WithClientId(clientId);
 
-            string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_clientConfiguration.ClientOptions.ProductInfo.ToString())}";
+            string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
 
-            if (!string.IsNullOrWhiteSpace(_clientConfiguration.ClientOptions?.ModelId))
+            if (!string.IsNullOrWhiteSpace(_modelId))
             {
-                username += $"&{ModelIdParam}={Uri.EscapeDataString(_clientConfiguration.ClientOptions.ModelId)}";
+                username += $"&{ModelIdParam}={Uri.EscapeDataString(_modelId)}";
             }
 
             if (!string.IsNullOrWhiteSpace(_mqttTransportSettings?.AuthenticationChain))
@@ -334,7 +340,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (_isSymmetricKeyAuthenticated)
             {
                 // Symmetric key authenticated connections need to set client Id, username, and password
-                string password = await _clientConfiguration.TokenRefresher.GetTokenAsync(_clientConfiguration.IotHubHostName);
+                string password = await _connectionCredentials.SasTokenRefresher.GetTokenAsync(_connectionCredentials.IotHubHostName);
                 _mqttClientOptionsBuilder.WithCredentials(username, password);
             }
             else
@@ -357,19 +363,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case MqttClientConnectResultCode.BadUserNameOrPassword:
                     case MqttClientConnectResultCode.NotAuthorized:
                     case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new UnauthorizedException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to incorrect or unauthorized credentials", cfe, false, IotHubStatusCode.Unauthorized);
                     case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                         // Should never happen since the protocol version (3.1.1) is hardcoded
-                        throw new IotHubCommunicationException("Failed to open the MQTT connection due to an unsupported MQTT version", cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection due to an unsupported MQTT version", cfe);
                     case MqttClientConnectResultCode.ServerUnavailable:
-                        throw new ServerBusyException("MQTT connection rejected because the server was unavailable", cfe);
+                        throw new IotHubClientException("MQTT connection rejected because the server was unavailable", cfe, true, IotHubStatusCode.ServerBusy);
                     default:
                         // MQTT 3.1.1 only supports the above connect return codes, so this default case
                         // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
                         // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
                         // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
                         // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                        throw new IotHubCommunicationException("Failed to open the MQTT connection", cfe);
+                        throw new IotHubClientException("Failed to open the MQTT connection", cfe);
                 }
             }
         }
@@ -405,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for message with correlation id {message.CorrelationId} with reason code {result.ReasonCode}");
+                throw new IotHubClientException($"Failed to publish the mqtt packet for message with correlation id {message.CorrelationId} with reason code {result.ReasonCode}", true);
             }
         }
 
@@ -443,7 +449,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken);
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
             var topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
 
@@ -457,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubCommunicationException($"Failed to publish the mqtt packet for direct method response with reason code {result.ReasonCode}");
+                throw new IotHubClientException($"Failed to publish the mqtt packet for direct method response with reason code {result.ReasonCode}", true);
             }
         }
 
@@ -533,7 +539,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubCommunicationException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}");
+                    throw new IotHubClientException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}", true);
                 }
             }
             catch (Exception)
@@ -557,8 +563,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinStatus}.");
             if (getTwinStatus != 200)
             {
-                //TODO tim
-                throw new IotHubException("Failed to get twin");
+                //TODO pass in status code to error, need mapping to IotHubStatusCode
+                throw new IotHubClientException("Failed to get twin");
             }
 
             return getTwinResponse.Twin;
@@ -592,7 +598,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new IotHubCommunicationException($"Failed to publish the mqtt packet for patching this client's twin with reason code {result.ReasonCode}");
+                    throw new IotHubClientException($"Failed to publish the mqtt packet for patching this client's twin with reason code {result.ReasonCode}", true);
                 }
             }
             catch (Exception)
@@ -617,7 +623,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (patchTwinResponse.Status != 204)
             {
                 //TODO tim
-                throw new IotHubException("Failed to send twin patch");
+                throw new IotHubClientException("Failed to send twin patch");
             }
 
             //TODO new twin version should be returned here, but API surface doesn't currently allow it
@@ -638,12 +644,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             _getTwinSemaphore?.Dispose();
             _reportedPropertyUpdateResponsesSemaphore?.Dispose();
-
-            if (_clientConfiguration?.TokenRefresher != null
-                && _clientConfiguration.TokenRefresher.DisposalWithClient)
-            {
-                _clientConfiguration.TokenRefresher.Dispose();
-            }
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
@@ -675,7 +675,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (subscribeResults == null || subscribeResults.Items == null)
             {
-                throw new IotHubCommunicationException("Failed to subscribe to topic " + fullTopic);
+                throw new IotHubClientException("Failed to subscribe to topic " + fullTopic, true);
             }
 
             // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
@@ -683,13 +683,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
                 {
-                    throw new IotHubCommunicationException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
+                    throw new IotHubClientException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic, true);
                 }
 
                 return;
             }
 
-            throw new IotHubCommunicationException("Service did not acknowledge the subscription request for topic " + fullTopic);
+            throw new IotHubClientException("Service did not acknowledge the subscription request for topic " + fullTopic, true);
         }
 
         private async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
@@ -702,7 +702,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (unsubscribeResults == null || unsubscribeResults.Items == null || unsubscribeResults.Items.Count != 1)
             {
-                throw new IotHubCommunicationException("Failed to unsubscribe to topic " + topic);
+                throw new IotHubClientException("Failed to unsubscribe to topic " + topic, true);
             }
 
             // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
@@ -710,18 +710,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (!unsubscribeResult.TopicFilter.Equals(topic))
                 {
-                    throw new IotHubCommunicationException("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter);
+                    throw new IotHubClientException("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter, true);
                 }
 
                 if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
                 {
-                    throw new IotHubCommunicationException("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode);
+                    throw new IotHubClientException("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode, true);
                 }
 
                 return;
             }
 
-            throw new IotHubCommunicationException("Service did not acknowledge the unsubscribe request for topic " + topic);
+            throw new IotHubClientException("Service did not acknowledge the unsubscribe request for topic " + topic, true);
         }
 
         private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
@@ -809,7 +809,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId = queryStringKeyValuePairs.Get("$rid");
             string methodName = tokens[3];
 
-            var methodRequest = new MethodRequestInternal(methodName, requestId, payload);
+            var methodRequest = new DirectMethodRequest()
+            {
+                MethodName = methodName,
+                RequestId = requestId,
+                Payload = Encoding.UTF8.GetString(payload)
+            };
 
             // We are intentionally not awaiting _methodListener callback.
             // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
@@ -976,9 +981,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
             {
-                throw new MessageTooLargeException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
+                throw new IotHubClientException($"TopicName for MQTT packet cannot be larger than {MaxTopicNameLength} bytes, " +
                     $"current length is {Encoding.UTF8.GetByteCount(msg)}." +
-                    $" The probable cause is the list of message.Properties and/or message.systemProperties is too long. ");
+                    $" The probable cause is the list of message.Properties and/or message.systemProperties is too long.", false, IotHubStatusCode.MessageTooLarge);
             }
 
             return msg;

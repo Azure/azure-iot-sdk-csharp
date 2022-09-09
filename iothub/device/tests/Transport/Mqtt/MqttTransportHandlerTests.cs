@@ -39,9 +39,10 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
             var pipelineContext = new PipelineContext();
             var clientOptionsMock = new Mock<IotHubClientOptions>();
             clientOptionsMock.SetupGet(x => x.ProductInfo).Returns(new ProductInfo());
-            var clientConfigurationMock = new Mock<ClientConfiguration>();
-            clientConfigurationMock.SetupGet(x => x.ClientOptions).Returns(clientOptionsMock.Object);
-            pipelineContext.ClientConfiguration = clientConfigurationMock.Object;
+            var clientConfigurationMock = new IotHubConnectionCredentials();
+            //clientConfigurationMock.SetupGet(x => x.ClientOptions).Returns(clientOptionsMock.Object);
+            pipelineContext.IotHubConnectionCredentials = clientConfigurationMock;
+            pipelineContext.ProductInfo = new ProductInfo();
 
             var transportHandler = new MqttTransportHandler(
                 pipelineContext,

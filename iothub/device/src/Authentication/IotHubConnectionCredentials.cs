@@ -15,6 +15,11 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class IotHubConnectionCredentials : IConnectionCredentials
     {
+        // for mocking purposes only
+        internal IotHubConnectionCredentials()
+        {
+        }
+
         /// <summary>
         /// Creates an instance of this class based on an authentication method, the host name of the IoT hub and an optional gateway host name.
         /// </summary>
