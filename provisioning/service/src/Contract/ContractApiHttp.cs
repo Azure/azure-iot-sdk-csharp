@@ -54,7 +54,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if (options.HttpClient != null)
             {
                 _httpClientObj = options.HttpClient;
-                _httpClientHandler = null;
                 return;
             }
 
