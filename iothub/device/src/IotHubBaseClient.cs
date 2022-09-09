@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a client can use to send messages to and receive messages from the service,
     /// respond to direct method invocations from the service, and send and receive twin property updates.
     /// </summary>
-    public class IotHubBaseClient : IDisposable
+    public abstract class IotHubBaseClient : IDisposable
     {
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
@@ -63,6 +63,8 @@ namespace Microsoft.Azure.Devices.Client
             IotHubConnectionCredentials = iotHubConnectionCredentials;
             ClientOptions = iotHubClientOptions;
 
+            ClientPipelineBuilder pipelineBuilder = BuildPipeline();
+
             PipelineContext = new PipelineContext
             {
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
@@ -73,6 +75,9 @@ namespace Microsoft.Azure.Devices.Client
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
             };
+
+            AddToPipelineContext();
+            InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, ClientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -667,6 +672,8 @@ namespace Microsoft.Azure.Devices.Client
                 _twinDesiredPropertySemaphore?.Dispose();
             }
         }
+
+        internal abstract void AddToPipelineContext();
 
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.

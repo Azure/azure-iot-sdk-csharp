@@ -1410,12 +1410,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            using IotHubBaseClient internalClient = new IotHubBaseClient(
-                new IotHubConnectionCredentials(auth, FakeHostName),
-                options);
+            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
-            var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
+            var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
             sasTokenRefresher.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
@@ -1444,12 +1442,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            using IotHubBaseClient internalClient = new IotHubBaseClient(
-                new IotHubConnectionCredentials(auth, FakeHostName),
-                options);
+            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
-            var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
+            var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.

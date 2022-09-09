@@ -71,18 +71,11 @@ namespace Microsoft.Azure.Devices.Client
             if (IotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.ChainCertificates != null)
             {
-                if (ClientOptions.TransportSettings is not IotHubClientAmqpSettings
-                        && ClientOptions.TransportSettings is not IotHubClientMqttSettings
-                        || ClientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                if (ClientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
                 {
                     throw new ArgumentException("Certificate chains for devices are only supported on MQTT over TCP and AMQP over TCP.");
                 }
             }
-
-            ClientPipelineBuilder pipelineBuilder = BuildPipeline();
-
-            PipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
-            InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, ClientOptions.FileUploadTransportSettings);
 
@@ -232,6 +225,11 @@ namespace Microsoft.Azure.Devices.Client
 
             // Call the base class implementation.
             base.Dispose(disposing);
+        }
+
+        internal override void AddToPipelineContext()
+        {
+            PipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
         }
 
         // The delegate for handling c2d messages received
