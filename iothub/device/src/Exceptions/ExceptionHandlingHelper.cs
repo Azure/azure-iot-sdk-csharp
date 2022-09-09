@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
             var mappings = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
+                { HttpStatusCode.NoContent, async (response) => new IotHubClientException(CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)), innerException: null, isTransient: false, trackingId: null, IotHubStatusCode.DeviceNotFound) },
                 { HttpStatusCode.NotFound, async (response) => new IotHubClientException(CreateMessageWhenDeviceNotFound(await GetExceptionMessageAsync(response).ConfigureAwait(false)), innerException: null, isTransient: false, trackingId: null, IotHubStatusCode.DeviceNotFound) },
                 { HttpStatusCode.BadRequest, async (response) => new ArgumentException(await GetExceptionMessageAsync(response).ConfigureAwait(false)) },
                 { HttpStatusCode.Unauthorized, async (response) => new IotHubClientException(await GetExceptionMessageAsync(response).ConfigureAwait(false), innerException: null, isTransient: false, IotHubStatusCode.Unauthorized) },
