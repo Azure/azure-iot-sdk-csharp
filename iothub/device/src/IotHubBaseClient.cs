@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
-        internal PipelineContext PipelineContext { get; private set; }
+        protected private PipelineContext PipelineContext { get; private set; }
 
         internal IotHubClientOptions ClientOptions { get; private set; }
 
