@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -59,7 +60,8 @@ namespace Microsoft.Azure.Devices
         /// Module's ETag.
         /// </summary>
         [JsonProperty(PropertyName = "etag")]
-        public string ETag { get; set; }
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// Modules's connection state.

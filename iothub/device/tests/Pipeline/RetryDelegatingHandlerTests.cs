@@ -381,14 +381,17 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task RetryCancellationTokenCanceledComplete()
         {
             // arrange
-            var contextMock = Substitute.For<PipelineContext>();
-            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
-            var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             const string lockToken = "fakeLockToken";
+
             using var cts = new CancellationTokenSource();
             cts.Cancel();
+
+            var contextMock = Substitute.For<PipelineContext>();
+            contextMock.ConnectionStatusChangeHandler = (connectionInfo) => { };
+
+            var nextHandlerMock = Substitute.For<IDelegatingHandler>();
             nextHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            nextHandlerMock.CompleteMessageAsync(lockToken, cts.Token).Returns(Task.CompletedTask);
+            nextHandlerMock.CompleteMessageAsync(lockToken, Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
             var sut = new RetryDelegatingHandler(contextMock, nextHandlerMock);
             await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);

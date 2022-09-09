@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -113,8 +114,9 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The ETag of the configuration.
         /// </summary>
-        [JsonProperty(PropertyName = "etag", NullValueHandling = NullValueHandling.Ignore)]
-        public string ETag { get; set; }
+        [JsonProperty(PropertyName = "etag")]
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// For use in serialization.

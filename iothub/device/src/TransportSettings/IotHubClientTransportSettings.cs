@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel;
 using System.Net;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -28,35 +27,32 @@ namespace Microsoft.Azure.Devices.Client
         /// The web proxy that will be used to connect to IoT hub using a web socket connection for AMQP, MQTT, or when using the
         /// HTTP protocol.
         /// </summary>
-        /// <value>
-        /// An instance of a class that implements <see cref="IWebProxy"/>.
-        /// </value>
         /// <remarks>
-        /// This setting will only be used when the client connects over web sockets or HTTPS.
+        /// If you wish to bypass OS-specified proxy settings, set this to <see cref="GlobalProxySelection.GetEmptyWebProxy()"/>.
         /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/dotnet/api/system.net.http.httpclienthandler.proxy?view=net-6.0"/>
         /// <example>
-        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from
-        /// <see cref="IWebProxy"/>. The snippet below shows a method that returns a device using a proxy that connects to localhost
-        /// on port 8888.
+        /// To set a proxy you must instantiate an instance of the <see cref="WebProxy"/> class--or any class that derives from <see cref="IWebProxy"/>.
+        /// The snippet below shows a method that returns a device using a proxy that connects to localhost on port 8888.
         /// <c>
-        /// static DeviceClient GetClientWithProxy()
+        /// IotHubDeviceClient GetDeviceClient()
         /// {
-        ///     try
+        ///     var proxy = new WebProxy("localhost", "8888");
+        ///     var mqttSettings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
         ///     {
-        ///         var proxyHost = "localhost";
-        ///         var proxyPort = 8888;
-        ///         // Specify the WebProxy to be used for the web socket connection
-        ///         var transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_WebSocket_Only)
-        ///         {
-        ///             Proxy = new WebProxy(proxyHost, proxyPort)
-        ///         };
-        ///         return DeviceClient.CreateFromConnectionString("a connection string", new TransportSettings[] { transportSettings });
-        ///     }
-        ///     catch (Exception)
+        ///         // Specify the WebProxy to be used for the connection
+        ///         Proxy = proxy,
+        ///     };
+        ///     var fileUploadSettings = new IotHubClientHttpSettings
         ///     {
-        ///         Console.WriteLine("Error creating client.");
-        ///         throw;
-        ///     }
+        ///         // Also configure the proxy for file uploads.
+        ///         Proxy = proxy,
+        ///     };
+        ///     var options = new IotHubClientOptions(mqttSettings)
+        ///     {
+        ///         FileUploadTransportSettings = fileUploadSettings,
+        ///     };
+        ///     return new IotHubDeviceClient("a connection string", options);
         /// }
         /// </c>
         /// </example>

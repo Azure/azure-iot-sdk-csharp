@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
@@ -140,32 +141,10 @@ namespace Microsoft.Azure.Devices
         /// Replace a module identity's state with the provided module identity's state.
         /// </summary>
         /// <param name="module">The module identity's new state.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>The newly updated module identity including its new ETag.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="Common.Exceptions.IotHubStatusCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Module> SetAsync(Module module, CancellationToken cancellationToken = default)
-        {
-            return await SetAsync(module, false, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Replace a module identity's state with the provided module identity's state.
-        /// </summary>
-        /// <param name="module">The module identity's new state.</param>
-        /// <param name="forceUpdate">
-        /// If true, this update operation will execute even if the provided module identity has an out of date ETag. 
-        /// If false, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
-        /// if the provided module identity has an out of date ETag. An up-to-date ETag can be
+        /// <param name="onlyIfUnchanged">
+        /// If false, this operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
+        /// if the provided module has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
@@ -181,24 +160,18 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task<Module> SetAsync(Module module, bool forceUpdate, CancellationToken cancellationToken = default)
+        public virtual async Task<Module> SetAsync(Module module, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
 
             try
             {
                 Argument.AssertNotNull(module, nameof(module));
-
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (string.IsNullOrWhiteSpace(module.ETag) && !forceUpdate)
-                {
-                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
-                }
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
-                HttpMessageHelper.ConditionallyInsertETag(request, module.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Module>(response).ConfigureAwait(false);
@@ -212,7 +185,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
             }
         }
 
@@ -240,8 +213,8 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
             var module = new Module(deviceId, moduleId);
-            module.ETag = HttpMessageHelper.ETagForce;
-            await DeleteAsync(module, cancellationToken).ConfigureAwait(false);
+            module.ETag = new ETag(HttpMessageHelper.ETagForce);
+            await DeleteAsync(module, default, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -253,6 +226,12 @@ namespace Microsoft.Azure.Devices
         /// An up-to-date ETag can be retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// To force the operation to execute regardless of ETag, set the module identity's ETag to "*" or
         /// use <see cref="DeleteAsync(string, string, CancellationToken)"/>.
+        /// </param>
+        /// <param name="onlyIfUnchanged">
+        /// If false, this delete operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubStatusCode.PreconditionFailed"/>
+        /// if the provided module has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
@@ -266,24 +245,18 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task DeleteAsync(Module module, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(Module module, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
             try
             {
                 Argument.AssertNotNull(module, nameof(module));
-
-                if (module.ETag == null)
-                {
-                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
-                HttpMessageHelper.ConditionallyInsertETag(request, module.ETag);
+                HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
             }
@@ -296,7 +269,7 @@ namespace Microsoft.Azure.Devices
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
             }
         }
 

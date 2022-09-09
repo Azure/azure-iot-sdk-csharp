@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
-            using Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
+            Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);

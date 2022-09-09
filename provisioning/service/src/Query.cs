@@ -19,17 +19,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <list type="bullet">
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)">IndividualEnrollment</see>
+    ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int, CancellationToken)">IndividualEnrollment</see>
     ///     </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)">EnrollmentGroup</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int, CancellationToken)">EnrollmentGroup</see>
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, String, int)">RegistrationStatus</see>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, string, int, CancellationToken)">RegistrationStatus</see>
     ///         </description>
     ///     </item>
     /// </list>
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
     ///     the <see cref="NextAsync(string)"/> passing the stored <c>ContinuationToken</c>.
     /// </remarks>
-    public class Query : IDisposable
+    public class Query
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
         private const string ItemTypeHeaderKey = "x-ms-item-type";
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ServiceConnectionString serviceConnectionString,
             string serviceName,
             QuerySpecification querySpecification,
-            ProvisioningServiceHttpSettings httpTransportSettings,
+            IContractApiHttp contractApiHttp,
             int pageSize,
             CancellationToken cancellationToken)
         {
@@ -97,10 +97,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
-            // TODO: Refactor ContractApiHttp being created again
-            _contractApiHttp = new ContractApiHttp(
-                serviceConnectionString.HttpsEndpoint,
-                serviceConnectionString, httpTransportSettings);
+            _contractApiHttp = contractApiHttp;
 
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
@@ -200,31 +197,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             var result = new QueryResult(type, httpResponse.Body, ContinuationToken);
 
             return result;
-        }
-
-        /// <summary>
-        /// Dispose the HTTP resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_contractApiHttp != null)
-                {
-                    _contractApiHttp.Dispose();
-                    _contractApiHttp = null;
-                }
-            }
         }
 
         private static Uri GetQueryUri(string path)
