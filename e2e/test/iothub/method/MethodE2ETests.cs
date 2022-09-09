@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             // act
             HttpStatusCode errorCode = HttpStatusCode.OK;
-            IotHubStatusCode iotHubStatusCode = IotHubStatusCode.Unknown;
+            IotHubErrorCode iotHubStatusCode = IotHubErrorCode.Unknown;
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             // assert
             Assert.AreEqual(HttpStatusCode.NotFound, errorCode);
-            Assert.AreEqual(IotHubStatusCode.DeviceNotFound, iotHubStatusCode);
+            Assert.AreEqual(IotHubErrorCode.DeviceNotFound, iotHubStatusCode);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubStatusCode.ModuleNotFound);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.ModuleNotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubStatusCode.DeviceNotOnline);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync(

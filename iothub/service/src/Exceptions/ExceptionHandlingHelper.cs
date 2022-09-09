@@ -35,15 +35,15 @@ namespace Microsoft.Azure.Devices
             return GetIotHubErrorCode(responseContentStr);
         }
 
-        // There are two things to consider when surfacing service errors to the user, the 6-digit error iotHubStatusCode and
-        // the iotHubStatusCode description. Ideally, when a backend service returns an error, both of these fields are set
-        // in the same place. However, IoT hub is returning the 6-digit iotHubStatusCode in the response content, while
-        // the error description in the response header. Therefore, there is a chance that the 6-digit error iotHubStatusCode
+        // There are two things to consider when surfacing service errors to the user, the 6-digit error code and
+        // the error description. Ideally, when a backend service returns an error, both of these fields are set
+        // in the same place. However, IoT hub is returning the 6-digit code in the response content, while
+        // the error description in the response header. Therefore, there is a chance that the 6-digit error code
         // does not match the error description. For that reason, the SDK will do its best to decide what to surface to the user.
-        // The SDK will attempt to retrieve the integer error iotHubStatusCode from the response content and the error description
-        // from the response header. Through a 'description' to 'error iotHubStatusCode' enum mapping, the SDK will check if
+        // The SDK will attempt to retrieve the integer error code from the response content and the error description
+        // from the response header. Through a 'description' to 'error code' enum mapping, the SDK will check if
         // both values are a match. If so, the SDK will populate the exception with the proper Code. In the case where
-        // there is a mismatch between the error iotHubStatusCode and the description, the SDK returns
+        // there is a mismatch between the error code and the description, the SDK returns
         // IotHubStatusCode.Unknown and log a warning.
         internal static IotHubErrorCode GetIotHubErrorCode(string responseBody)
         {

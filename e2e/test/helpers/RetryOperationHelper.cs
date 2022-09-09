@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <param name="retryableStatusCodes">The errors to be retried on.</param>
         /// <param name="logger">The <see cref="MsTestLogger"/> instance to be used.</param>
         /// <returns></returns>
-        public static async Task RetryOperationsAsync1(Func<Task> asyncOperation, IRetryPolicy retryPolicy, HashSet<IotHubStatusCode> retryableStatusCodes, MsTestLogger logger)
+        public static async Task RetryOperationsAsync1(Func<Task> asyncOperation, IRetryPolicy retryPolicy, HashSet<IotHubErrorCode> retryableStatusCodes, MsTestLogger logger)
         {
             int counter = 0;
             bool shouldRetry;

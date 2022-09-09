@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     done = true;
                 }
                 catch (IotHubServiceException ex) 
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubStatusCode.DeviceNotFound)
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");

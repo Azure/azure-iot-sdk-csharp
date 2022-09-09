@@ -68,6 +68,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         BulkRegistryOperationFailure = 400013,
 
+        /// <summary>
+        /// The operation failed because the IoT hub has been suspended. 
+        /// </summary>
+        /// <remarks>
+        /// This is likely due to exceeding Azure spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
+        /// </remarks>
+        IotHubSuspended = 400020,
+
         // Unauthorized - 401
 
         /// <summary>
@@ -202,13 +210,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// IoT hub is currently unable to process the request. This is a transient, retryable error.
         /// </summary>
         ServiceUnavailable = 503001,
-
-        /// <summary>
-        /// The operation failed because the IoT hub has been suspended. 
-        /// </summary>
-        /// <remarks>
-        /// This is likely due to exceeding Azure spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
-        /// </remarks>
-        HubSuspended, // to-do: brycewang - check the error code returned by the hub service while sending requests to a suspended hub.
     }
 }

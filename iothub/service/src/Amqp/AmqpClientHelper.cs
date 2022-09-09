@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
             {
-                retException = new IotHubServiceException(IotHubErrorCode.HubSuspended, message);
+                retException = new IotHubServiceException(HttpStatusCode.BadRequest, IotHubErrorCode.IotHubSuspended, message);
             }
             else
             {

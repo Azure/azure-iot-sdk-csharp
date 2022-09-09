@@ -28,8 +28,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class TestDevice : IDisposable
     {
         private const int MaxRetryCount = 5;
-        private static readonly HashSet<IotHubStatusCode> s_throttlingStatusCodes = new HashSet<IotHubStatusCode> { IotHubStatusCode.ThrottlingException };
-        private static readonly HashSet<IotHubStatusCode> s_retryableStatusCodes = new HashSet<IotHubStatusCode>(s_throttlingStatusCodes) { IotHubStatusCode.DeviceNotFound };
+        private static readonly HashSet<IotHubErrorCode> s_throttlingStatusCodes = new HashSet<IotHubErrorCode> { IotHubErrorCode.ThrottlingException };
+        private static readonly HashSet<IotHubErrorCode> s_retryableStatusCodes = new HashSet<IotHubErrorCode>(s_throttlingStatusCodes) { IotHubErrorCode.DeviceNotFound };
         private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
