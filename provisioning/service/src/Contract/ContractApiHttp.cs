@@ -65,13 +65,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                 //SslProtocols = TlsVersions.Preferred,
-                CheckCertificateRevocationList = options.CertificateRevocationCheck
+                CheckCertificateRevocationList = options.ProvisioningServiceHttpSettings.CertificateRevocationCheck
             };
 
-            if (options.Proxy != null)
+            if (options.ProvisioningServiceHttpSettings.Proxy != null)
             {
                 _httpClientHandler.UseProxy = true;
-                _httpClientHandler.Proxy = options.Proxy;
+                _httpClientHandler.Proxy = options.ProvisioningServiceHttpSettings.Proxy;
             }
 
             _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;

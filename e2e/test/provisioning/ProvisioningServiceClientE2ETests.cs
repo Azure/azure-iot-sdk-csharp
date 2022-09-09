@@ -621,10 +621,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         public static ProvisioningServiceClient CreateProvisioningService(string proxyServerAddress = null)
         {
             var options = new ProvisioningServiceClientOptions();
+            var transportSettings = options.ProvisioningServiceHttpSettings;
 
             if (!string.IsNullOrWhiteSpace(proxyServerAddress))
             {
-                options.Proxy = new WebProxy(proxyServerAddress);
+                transportSettings.Proxy = new WebProxy(proxyServerAddress);
             }
 
             return new ProvisioningServiceClient(TestConfiguration.Provisioning.ConnectionString, options);
