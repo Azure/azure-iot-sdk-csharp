@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         /// Error code associated with the error.
         /// </summary>
         [JsonProperty(PropertyName = "errorCode", NullValueHandling = NullValueHandling.Ignore)]
-        public IotHubStatusCode ErrorCode { get; internal set; }
+        public IotHubErrorCode ErrorCode { get; internal set; }
 
         /// <summary>
         /// Additional details associated with the error.

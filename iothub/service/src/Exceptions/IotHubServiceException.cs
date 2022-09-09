@@ -77,27 +77,27 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubStatusCode"/>, error message and an
+        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message and an
         /// optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(IotHubStatusCode iotHubStatusCode, string message, Exception innerException = null)
+        public IotHubServiceException(IotHubErrorCode iotHubStatusCode, string message, Exception innerException = null)
             : this(message, innerException, false, string.Empty)
         {
             IotHubStatusCode = iotHubStatusCode;
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubStatusCode"/>, 
+        /// Creates an instance of <see cref="IotHubServiceException"/> with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
         /// error message and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
         /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(HttpStatusCode errorCode, IotHubStatusCode iotHubStatusCode, string message, Exception innerException = null)
+        public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, Exception innerException = null)
             : this(message, innerException, false, string.Empty)
         {
             ErrorCode = errorCode;
@@ -117,14 +117,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubStatusCode"/>, error message, a flag
+        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message, a flag
         /// indicating if the error was transient, and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected IotHubServiceException(IotHubStatusCode iotHubStatusCode, string message, bool isTransient, Exception innerException = null)
+        protected IotHubServiceException(IotHubErrorCode iotHubStatusCode, string message, bool isTransient, Exception innerException = null)
             : this(message, innerException, isTransient, trackingId: string.Empty)
         {
             IotHubStatusCode = iotHubStatusCode;
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <remarks>
         /// This is usually included in the content of hub service response. For more details, see <see href="https://docs.microsoft.com/rest/api/iothub/common-error-codes"/>.
         /// </remarks>
-        public IotHubStatusCode IotHubStatusCode { get; private set; }
+        public IotHubErrorCode IotHubStatusCode { get; private set; }
 
         /// <summary>
         /// The 3-digit error iotHubStatusCode returned back in the hub service response.
