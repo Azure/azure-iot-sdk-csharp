@@ -73,6 +73,11 @@ Param(
     [switch] $noBuildBeforeTesting
 )
 
+Function IsWindows()
+{
+	return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
+}
+
 Function CheckSignTools()
 {
     $commands = $("SignDotNetBinary", "SignBinary", "SignNuGetPackage", "SignMSIPackage")
@@ -292,8 +297,6 @@ try
         $testCategory += "TestCategory=Unit"
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=InvalidServiceCertificate"
         $testCategory += ")"
 
         # test categories to exclude
@@ -353,11 +356,22 @@ try
             Write-Host -ForegroundColor Magenta "IMPORTANT: Using local packages."
         }
 
+        # Tests categories to include
+        $testCategory = "("
+        $testCategory += "TestCategory=E2E"
+        # Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
+        if (-not(IsWindows)) 
+        {
+            $testCategory += "|"
+            $testCategory += "TestCategory=InvalidServiceCertificate"
+        }
+        $testCategory += ")"
+
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests "E2E tests" -framework $framework "TestCategory=E2E"
+        RunTests "E2E tests" -filterTestCategory $testCategory -framework $framework
 
         $verbosity = $oldVerbosity
 
