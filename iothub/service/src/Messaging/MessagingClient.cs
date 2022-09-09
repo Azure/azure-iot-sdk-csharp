@@ -82,8 +82,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Open this instance. Must be done before any cloud-to-device messages can be sent.
         /// </summary>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown if the client encounters a transient retriable exception.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown when the operation has been canceled. The inner exception will be
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
         /// <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
@@ -119,8 +119,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The instance can be re-opened after closing.
         /// </remarks>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown if the client encounters a transient retriable exception.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="IotHubStatusCode.NetworkErrors"/>Thrown when the operation has been canceled. The inner exception will be
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
         /// <see cref="OperationCanceledException"/>.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
