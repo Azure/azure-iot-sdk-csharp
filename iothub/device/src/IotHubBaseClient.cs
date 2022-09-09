@@ -109,13 +109,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
-        protected private PipelineContext PipelineContext { get; private set; }
-
         internal IotHubClientOptions ClientOptions { get; private set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
 
         internal IDelegatingHandler InnerHandler { get; set; }
+
+        private protected PipelineContext PipelineContext { get; private set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
