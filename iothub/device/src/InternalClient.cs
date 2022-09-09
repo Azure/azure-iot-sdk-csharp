@@ -185,8 +185,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception and should be retried,
+        /// but if <c>false</c> then it is a non-transient exception and should probably not be retried.</exception>
         public async Task SendEventAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
