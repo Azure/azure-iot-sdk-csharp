@@ -71,9 +71,9 @@ namespace Microsoft.Azure.Devices.Client
             if (IotHubConnectionCredentials.AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.ChainCertificates != null)
             {
-                if (_clientOptions.TransportSettings is not IotHubClientAmqpSettings
-                        && _clientOptions.TransportSettings is not IotHubClientMqttSettings
-                        || _clientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                if (ClientOptions.TransportSettings is not IotHubClientAmqpSettings
+                        && ClientOptions.TransportSettings is not IotHubClientMqttSettings
+                        || ClientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
                 {
                     throw new ArgumentException("Certificate chains for devices are only supported on MQTT over TCP and AMQP over TCP.");
                 }
@@ -81,16 +81,16 @@ namespace Microsoft.Azure.Devices.Client
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
-            _pipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
-            InnerHandler = pipelineBuilder.Build(_pipelineContext);
+            PipelineContext.DeviceEventCallback = OnDeviceMessageReceivedAsync;
+            InnerHandler = pipelineBuilder.Build(PipelineContext);
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(_pipelineContext, _clientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, ClientOptions.FileUploadTransportSettings);
 
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
                     $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId}",
-                    _clientOptions);
+                    ClientOptions);
         }
 
         /// <summary>

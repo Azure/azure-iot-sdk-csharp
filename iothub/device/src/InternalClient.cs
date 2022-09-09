@@ -22,9 +22,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class InternalClient : IDisposable
     {
-        private protected readonly PipelineContext _pipelineContext;
-        private protected readonly IotHubClientOptions _clientOptions;
-
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
 
@@ -64,21 +61,21 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubConnectionCredentials = iotHubConnectionCredentials;
-            _clientOptions = iotHubClientOptions;
+            ClientOptions = iotHubClientOptions;
 
-            _pipelineContext = new PipelineContext
+            PipelineContext = new PipelineContext
             {
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
-                ProductInfo = _clientOptions.ProductInfo,
-                IotHubClientTransportSettings = _clientOptions.TransportSettings,
-                ModelId = _clientOptions.ModelId,
+                ProductInfo = ClientOptions.ProductInfo,
+                IotHubClientTransportSettings = ClientOptions.TransportSettings,
+                ModelId = ClientOptions.ModelId,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
             };
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, _clientOptions.TransportSettings, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, ClientOptions.TransportSettings, nameof(InternalClient) + "_ctor");
         }
 
         /// <summary>
@@ -98,10 +95,7 @@ namespace Microsoft.Azure.Devices.Client
                         "The range of diagnostic sampling percentage should between [0,100].");
                 }
 
-                if (IsE2eDiagnosticSupportedProtocol())
-                {
-                    _diagnosticSamplingPercentage = value;
-                }
+                _diagnosticSamplingPercentage = value;
             }
         }
 
@@ -110,9 +104,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public ConnectionStatusInfo ConnectionStatusInfo { get; private set; } = new();
 
-        internal IDelegatingHandler InnerHandler { get; set; }
+        internal PipelineContext PipelineContext { get; private set; }
+
+        internal IotHubClientOptions ClientOptions { get; private set; }
 
         internal IotHubConnectionCredentials IotHubConnectionCredentials { get; private set; }
+
+        internal IDelegatingHandler InnerHandler { get; set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -192,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            if (ClientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
             {
                 message.MessageId = Guid.NewGuid().ToString();
             }
@@ -228,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
+            if (ClientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
             {
                 foreach (Message message in messages)
                 {
@@ -859,17 +857,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return !isFound ? default : (T)handler;
-        }
-
-        private bool IsE2eDiagnosticSupportedProtocol()
-        {
-            if (_clientOptions.TransportSettings is IotHubClientAmqpSettings
-                || _clientOptions.TransportSettings is IotHubClientMqttSettings)
-            {
-                return true;
-            }
-
-            throw new NotSupportedException($"The {_clientOptions.TransportSettings.GetType().Name} transport doesn't support E2E diagnostic.");
         }
     }
 }

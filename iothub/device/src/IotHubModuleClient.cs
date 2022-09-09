@@ -76,8 +76,8 @@ namespace Microsoft.Azure.Devices.Client
 
             ClientPipelineBuilder pipelineBuilder = BuildPipeline();
 
-            _pipelineContext.ModuleEventCallback = OnModuleEventMessageReceivedAsync;
-            InnerHandler = pipelineBuilder.Build(_pipelineContext);
+            PipelineContext.ModuleEventCallback = OnModuleEventMessageReceivedAsync;
+            InnerHandler = pipelineBuilder.Build(PipelineContext);
 
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the receiver link for AMQP on a Module Twin. This does not affect MQTT.
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.CreateClient(
                     this,
                     $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
-                    _clientOptions);
+                    ClientOptions);
         }
 
         /// <summary>
