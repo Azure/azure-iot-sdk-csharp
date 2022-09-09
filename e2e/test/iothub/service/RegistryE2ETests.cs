@@ -12,7 +12,6 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {

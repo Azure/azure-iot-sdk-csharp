@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
                     if (Logging.IsEnabled)
                         Logging.Error(null, $"Failed to deserialize error message into a dictionary: {ex}. Message body: '{responseContentStr}.'");
 
-                    // In some scenarios, the error response string is a ';' delimited string with the service-returned error iotHubStatusCode.
+                    // In some scenarios, the error response string is a ';' delimited string with the service-returned error code.
                     const char errorFieldsDelimiter = ';';
                     string[] messageFields = responseContent.Message?.Split(errorFieldsDelimiter);
 
@@ -112,20 +112,20 @@ namespace Microsoft.Azure.Devices
                 return IotHubStatusCode.Unknown;
             }
 
-            // Now that we retrieved the integer error iotHubStatusCode from the response content, we will retrieve the error description from the header.
+            // Now that we retrieved the integer error code from the response content, we will retrieve the error description from the header.
             string headerErrorCodeString = response.Headers.GetFirstValueOrNull(HttpErrorCodeName);
             if (headerErrorCodeString != null
                 && Enum.TryParse(headerErrorCodeString, out IotHubStatusCode headerErrorCode))
             {
                 if ((int)headerErrorCode == errorCodeValue)
                 {
-                    // We have a match. Therefore, return the proper error iotHubStatusCode.
+                    // We have a match. Therefore, return the proper error code.
                     return headerErrorCode;
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Error(null, $"There is a mismatch between the error iotHubStatusCode retrieved from the response content and the response header." +
-                        $"Content error iotHubStatusCode: {errorCodeValue}. Header error iotHubStatusCode description: {(int)headerErrorCode}.");
+                    Logging.Error(null, $"There is a mismatch between the error code retrieved from the response content and the response header." +
+                        $"Content error code: {errorCodeValue}. Header error code description: {(int)headerErrorCode}.");
             }
 
             return IotHubStatusCode.Unknown;
