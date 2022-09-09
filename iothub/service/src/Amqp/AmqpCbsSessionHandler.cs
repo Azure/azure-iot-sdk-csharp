@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Amqp
@@ -14,7 +13,7 @@ namespace Microsoft.Azure.Devices.Amqp
     /// Handles a single CBS session including the inital authentication and scheduling all subsequent
     /// authentication attempts.
     /// </summary>
-    internal class AmqpCbsSessionHandler
+    internal class AmqpCbsSessionHandler : IDisposable
     {
         // There is no AmqpSession object to track here because it is encapsulated by the AmqpCbsLink class.
         private IotHubConnectionProperties _credential;
@@ -69,6 +68,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
+                _refreshTokenTimer?.Cancel();
                 _cbsLink?.Close();
             }
             finally
@@ -86,6 +86,11 @@ namespace Microsoft.Azure.Devices.Amqp
         public bool IsOpen()
         {
             return _cbsLink != null;
+        }
+
+        public void Dispose()
+        {
+            _refreshTokenTimer?.Dispose();
         }
 
         private async Task SendCbsTokenAsync(CancellationToken cancellationToken)
