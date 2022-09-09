@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a client can use to send messages to and receive messages from the service,
     /// respond to direct method invocations from the service, and send and receive twin property updates.
     /// </summary>
-    public class InternalClient : IDisposable
+    public class IotHubBaseClient : IDisposable
     {
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
@@ -47,12 +47,12 @@ namespace Microsoft.Azure.Devices.Client
 
         private int _diagnosticSamplingPercentage;
 
-        internal InternalClient(
+        internal IotHubBaseClient(
             IotHubConnectionCredentials iotHubConnectionCredentials,
             IotHubClientOptions iotHubClientOptions)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(InternalClient) + "_ctor");
+                Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
 
             // Make sure client options is initialized.
             if (iotHubClientOptions == default)
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
             };
 
             if (Logging.IsEnabled)
-                Logging.Exit(this, ClientOptions.TransportSettings, nameof(InternalClient) + "_ctor");
+                Logging.Exit(this, ClientOptions.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
         }
 
         /// <summary>

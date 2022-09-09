@@ -1410,7 +1410,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            using InternalClient internalClient = new InternalClient(
+            using IotHubBaseClient internalClient = new IotHubBaseClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
                 options);
 
@@ -1444,7 +1444,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            using InternalClient internalClient = new InternalClient(
+            using IotHubBaseClient internalClient = new IotHubBaseClient(
                 new IotHubConnectionCredentials(auth, FakeHostName),
                 options);
 

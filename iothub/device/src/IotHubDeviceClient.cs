@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     /// <threadsafety static="true" instance="true" />
-    public class IotHubDeviceClient : InternalClient
+    public class IotHubDeviceClient : IotHubBaseClient
     {
         // Cloud-to-device message callback information
         private readonly SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
@@ -97,8 +97,8 @@ namespace Microsoft.Azure.Devices.Client
         /// Receive a message from the device queue using the cancellation token. IotHubDeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// After handling a received message, a client should call <see cref="InternalClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="InternalClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="InternalClient.RejectMessageAsync(Message, CancellationToken)"/>,
+        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
+        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
         /// and then dispose the message.
         /// <para>
         /// Messages cannot be rejected or abandoned over the MQTT protocol. For more details, see
@@ -128,8 +128,8 @@ namespace Microsoft.Azure.Devices.Client
         /// IotHubDeviceClient instance must be opened already.
         /// </summary>
         /// <remarks>
-        /// After handling a received message, a client should call <see cref="InternalClient.CompleteMessageAsync(Message, CancellationToken)"/>,
-        /// <see cref="InternalClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="InternalClient.RejectMessageAsync(Message, CancellationToken)"/>,
+        /// After handling a received message, a client should call <see cref="IotHubBaseClient.CompleteMessageAsync(Message, CancellationToken)"/>,
+        /// <see cref="IotHubBaseClient.AbandonMessageAsync(Message, CancellationToken)"/>, or <see cref="IotHubBaseClient.RejectMessageAsync(Message, CancellationToken)"/>,
         /// and then dispose the message.
         /// <para>
         /// If a delegate is already registered it will be replaced with the new delegate.
