@@ -33,10 +33,9 @@ namespace Microsoft.Azure.Devices
         /// <returns>The serialized HttpContent.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="payload"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="payload"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -59,17 +58,9 @@ namespace Microsoft.Azure.Devices
         {
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
-                IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping =
-                    ExceptionHandlingHelper.GetDefaultErrorMapping();
-                if (defaultErrorMapping.TryGetValue(responseMessage.StatusCode, out Func<HttpResponseMessage, Task<Exception>> mappedException))
-                {
-                    throw await mappedException.Invoke(responseMessage);
-                }
-
-                // Default case for when the mapping of this error code to an exception does not exist yet
-                ErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(responseMessage);
-                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
-                throw new IotHubException(errorCode, errorMessage);
+                string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
+                IotHubErrorCode errorCode = ExceptionHandlingHelper.GetIotHubErrorCode(errorMessage);
+                throw new IotHubServiceException(errorCode, errorMessage);
             }
         }
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
+using System.Net;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -121,10 +122,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         device = await serviceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                         if (device is null)
                         {
-                            throw new IotHubServiceException(
-                                System.Net.HttpStatusCode.NotFound, 
-                                IotHubStatusCode.DeviceNotFound, 
-                                $"Created device {requestDevice.Id} not yet gettable from IoT hub.");
+                            throw new IotHubServiceException($"Created device {requestDevice.Id} not yet gettable from IoT hub.")
+                            {
+                                StatusCode = HttpStatusCode.NotFound,
+                                ErrorCode = IotHubErrorCode.DeviceNotFound,
+                            };
                         }
                     },
                     s_exponentialBackoffRetryStrategy,

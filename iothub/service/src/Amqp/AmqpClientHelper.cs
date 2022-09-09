@@ -127,11 +127,11 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.MessageSizeExceeded))
             {
-                retException = new IotHubServiceException(HttpStatusCode.RequestEntityTooLarge, IotHubErrorCodeIotHubErrorCodeMessageTooLarge, message);
+                retException = new IotHubServiceException(HttpStatusCode.RequestEntityTooLarge, IotHubErrorCode.MessageTooLarge, message);
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
-                retException = new IotHubServiceException(HttpStatusCode.Forbidden, IotHubStatusCode.DeviceMaximumQueueDepthExceeded, message);
+                retException = new IotHubServiceException(HttpStatusCode.Forbidden, IotHubErrorCode.DeviceMaximumQueueDepthExceeded, message);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceAlreadyExists))
             {

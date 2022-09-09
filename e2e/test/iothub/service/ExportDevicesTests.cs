@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (IotHubServiceException ex) when (ex.ErrorCode is (HttpStatusCode)492)
+                catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)492)
                 {
                     Logger.Trace($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);

@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 await jobsClient.ScheduleTwinUpdateAsync(scheduledTwinUpdate);
             }
-            catch (IotHubServiceException ex) when (ex.ErrorCode is (HttpStatusCode)429)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
                 // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
                 // tests in this suite are written to work even if the queried job isn't the one they created.

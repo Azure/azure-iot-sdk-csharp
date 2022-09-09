@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         twinUpdateOptions)
                     .ConfigureAwait(false);
             }
-            catch (IotHubServiceException ex) when (ex.ErrorCode is (HttpStatusCode)429)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
                 // Concurrent jobs can be rejected, but it still means authentication was successful. Ignore the exception.
             }
@@ -133,8 +133,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.ErrorCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.IotHubStatusCode.Should().Be(IotHubStatusCode.DeviceNotFound);
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(IotHubStatusCode.DeviceNotFound);
 
             await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }

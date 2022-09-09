@@ -20,8 +20,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// Creates an instance of <see cref="IotHubServiceException"/> with the supplied error message and marks it as non-transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public IotHubServiceException(string message)
-            : this(message, false)
+        /// <param name="innerException">An inner exception, if any.</param>
+        public IotHubServiceException(string message, Exception innerException = default)
+            : base(message, innerException)
         {
         }
 
@@ -47,36 +48,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with the supplied error message and a flag indicating if the error was transient.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        public IotHubServiceException(string message, bool isTransient)
-            : this(message, null, isTransient, trackingId: string.Empty)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with an empty error message and a reference to the inner exception that caused this exception.
-        /// </summary>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(Exception innerException)
-            : base(string.Empty, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified error message and
-        /// a reference to the inner exception that caused this exception, and marks it as non-transient.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(string message, Exception innerException)
-            : this(message, innerException, false, string.Empty)
-        {
-        }
-
-        /// <summary>
         /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message and an
         /// optional reference to the inner exception that caused this exception.
         /// </summary>
@@ -86,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public IotHubServiceException(IotHubErrorCode iotHubStatusCode, string message, Exception innerException = null)
             : this(message, innerException, false, string.Empty)
         {
-            IotHubStatusCode = iotHubStatusCode;
+            ErrorCode = iotHubStatusCode;
         }
 
         /// <summary>
@@ -100,34 +71,8 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, Exception innerException = null)
             : this(message, innerException, false, string.Empty)
         {
-            ErrorCode = errorCode;
-            IotHubStatusCode = iotHubStatusCode;
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified error message, a reference
-        /// to the inner exception that caused this exception and a flag indicating if the error was transient.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        protected IotHubServiceException(string message, Exception innerException, bool isTransient)
-            : this(message, innerException, isTransient, trackingId: string.Empty)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message, a flag
-        /// indicating if the error was transient, and an optional reference to the inner exception that caused this exception.
-        /// </summary>
-        /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        protected IotHubServiceException(IotHubErrorCode iotHubStatusCode, string message, bool isTransient, Exception innerException = null)
-            : this(message, innerException, isTransient, trackingId: string.Empty)
-        {
-            IotHubStatusCode = iotHubStatusCode;
+            StatusCode = errorCode;
+            ErrorCode = iotHubStatusCode;
         }
 
         /// <summary>
@@ -147,33 +92,9 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with the <see cref="SerializationInfo"/>
-        /// and <see cref="StreamingContext"/> associated with the exception.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected IotHubServiceException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdSerializationStoreName);
-            }
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with an empty error message and marks it as non-transient.
-        /// </summary>
-        internal IotHubServiceException()
-            : base()
-        {
-        }
-
-        /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; private set; }
+        public bool IsTransient { get; set; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
@@ -181,17 +102,15 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// The 6-digit error iotHubStatusCode representing a more specific error in details.
+        /// The status code returned back in the IoT hub service response.
         /// </summary>
-        /// <remarks>
-        /// This is usually included in the content of hub service response. For more details, see <see href="https://docs.microsoft.com/rest/api/iothub/common-error-codes"/>.
-        /// </remarks>
-        public IotHubErrorCode IotHubStatusCode { get; private set; }
+        public HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
-        /// The 3-digit error iotHubStatusCode returned back in the hub service response.
+        /// The specific error code in the IoT hub service response, if available.
         /// </summary>
-        public HttpStatusCode ErrorCode { get; private set; }
+        /// <seealso href="https://docs.microsoft.com/rest/api/iothub/common-error-codes"/>.
+        public IotHubErrorCode ErrorCode { get; set; }
 
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.

@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
         {
             // First we will attempt to retrieve the error iotHubStatusCode from the response content.
             string responseContentStr = await GetExceptionMessageAsync(response);
-            return FindErrorCode(responseContentStr);
+            return GetIotHubErrorCode(responseContentStr);
         }
 
         // There are two things to consider when surfacing service errors to the user, the 6-digit error iotHubStatusCode and
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices
         // both values are a match. If so, the SDK will populate the exception with the proper Code. In the case where
         // there is a mismatch between the error iotHubStatusCode and the description, the SDK returns
         // IotHubStatusCode.Unknown and log a warning.
-        internal static IotHubErrorCode FindErrorCode(string responseBody)
+        internal static IotHubErrorCode GetIotHubErrorCode(string responseBody)
         {
             IoTHubExceptionResult responseContent = null;
             try
