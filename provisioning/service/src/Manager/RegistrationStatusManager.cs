@@ -89,10 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string enrollmentGroupId,
             int pageSize = 0)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
             if (pageSize < 0)
             {
