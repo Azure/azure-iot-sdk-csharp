@@ -20,22 +20,25 @@ namespace Microsoft.Azure.Devices.Amqp
 
         public static Exception ToIotHubClientContract(Exception exception)
         {
-            if (exception is TimeoutException)
+            switch (exception)
             {
-                return new IotHubServiceException(HttpStatusCode.RequestTimeout, IotHubErrorCode.Unknown, exception.Message);
-            }
-            else if (exception is UnauthorizedAccessException)
-            {
-                return new IotHubServiceException(HttpStatusCode.Unauthorized, IotHubErrorCode.IotHubUnauthorizedAccess, exception.Message);
-            }
-            else
-            {
-                if (exception is AmqpException amqpException)
-                {
-                    return ToIotHubClientContract(amqpException.Error);
-                }
+                case TimeoutException:
+                    return new IotHubServiceException(
+                        HttpStatusCode.RequestTimeout,
+                        IotHubErrorCode.Unknown,
+                        exception.Message);
 
-                return exception;
+                case UnauthorizedAccessException:
+                    return new IotHubServiceException(
+                        HttpStatusCode.Unauthorized,
+                        IotHubErrorCode.IotHubUnauthorizedAccess,
+                        exception.Message);
+
+                case AmqpException amqpException:
+                    return ToIotHubClientContract(amqpException.Error);
+
+                default:
+                    return exception;
             }
         }
 
@@ -161,8 +164,7 @@ namespace Microsoft.Azure.Devices.Amqp
             if (trackingId != null
                 && retException is IotHubServiceException exHub)
             {
-                IotHubServiceException iotHubException = exHub;
-                iotHubException.TrackingId = trackingId;
+                exHub.TrackingId = trackingId;
                 // This is created but not assigned to `retException`. If we change that now, it might be a
                 // breaking change. If not for v1, consider for #v2.
             }

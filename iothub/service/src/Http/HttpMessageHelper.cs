@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -81,24 +80,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="requestMessage">The request to add the If-Match header to.</param>
         /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, string eTag)
-        {
-            ConditionallyInsertETag(requestMessage, new ETag(eTag), false);
-        }
-
-        /// <summary>
-        /// Adds the appropriate If-Match header value to the provided HTTP request.
-        /// </summary>
-        /// <param name="requestMessage">The request to add the If-Match header to.</param>
-        /// <param name="eTag">The If-Match header value to sanitize before adding.</param>
         /// <param name="onlyIfUnchanged">
         /// If true, the inserted IfMatch header value will be "*". If false, the IfMatch header value will be equal to the provided eTag.
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="requestMessage"/> or <paramref name="requestMessage"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
-        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged = false)
+        internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged)
         {
             Argument.AssertNotNull(requestMessage, nameof(requestMessage));
 

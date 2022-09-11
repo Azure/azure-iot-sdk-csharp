@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         private const string TrackingIdSerializationStoreName = "IoTHubException-TrackingId";
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with the supplied error message and marks it as non-transient.
+        /// Creates an instance of this class with the specified error message and optional inner exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">An inner exception, if any.</param>
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with the supplied error message and tracking Id, and marks it as non-transient.
+        /// Creates an instance of this class with the supplied error message and tracking Id.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with the supplied error message, tracking Id and a flag indicating if the error was transient.
+        /// Creates an instance of this class with the supplied error message, tracking Id and a flag indicating if the error was transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message and an
+        /// Creates an instance of this class with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message and an
         /// optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
+        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
         /// error message and an optional reference to the inner exception that caused this exception.
         /// </summary>
         /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IotHubServiceException"/> with a specified error message, a reference
+        /// Creates an instance of this class with a specified error message, a reference
         /// to the inner exception that caused this exception, a flag indicating if the error was transient
         /// and the service returned tracking Id associated with this particular error.
         /// </summary>
