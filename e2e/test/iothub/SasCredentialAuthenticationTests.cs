@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
-            catch (IotHubServiceException ex) when (ex.StatusCode is System.Net.HttpStatusCode.Unauthorized)
+            catch (IotHubServiceException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized)
             {
                 // Expected to be unauthorized exception.
             }

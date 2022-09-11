@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -143,22 +144,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             // act
-            HttpStatusCode errorCode = HttpStatusCode.OK;
-            IotHubErrorCode iotHubStatusCode = IotHubErrorCode.Unknown;
-            try
-            {
-                // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
-            }
-            catch (IotHubServiceException ex) when (ex.StatusCode is HttpStatusCode.NotFound)
-            {
-                errorCode = ex.StatusCode;
-                iotHubStatusCode = ex.ErrorCode;
-            }
+            // Invoke the direct method asynchronously and get the response from the simulated device.
+            Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync("SomeNonExistantDevice", methodInvocation);
 
             // assert
-            Assert.AreEqual(HttpStatusCode.NotFound, errorCode);
-            Assert.AreEqual(IotHubErrorCode.DeviceNotFound, iotHubStatusCode);
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -222,11 +214,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             };
 
             // act
+            // Invoke the direct method asynchronously and get the response from the simulated device.
             Func<Task> act = async () =>
-            {
-                // Invoke the direct method asynchronously and get the response from the simulated device.
                 await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, "someNonExistantModuleOnAnExistingDevice", directMethodRequest).ConfigureAwait(false);
-            };
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();

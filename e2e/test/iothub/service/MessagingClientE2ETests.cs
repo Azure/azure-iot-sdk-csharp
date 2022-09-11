@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessagingClient_SendsMessage(IotHubTransportProtocol protocol)
         {
             // arrange
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessagingClient_CanReopenClosedClient(IotHubTransportProtocol protocol)
         {
             // arrange
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessagingClient_CanSendMultipleMessagesInOneConnection(IotHubTransportProtocol protocol)
         {
             // arrange
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessagingClient_SendToNonexistentDevice_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
         {
             // arrange
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task MessagingClient_SendToNonexistentModule_ThrowIotHubServiceException(IotHubTransportProtocol protocol)
         {
             // arrange
-            IotHubServiceClientOptions options = new IotHubServiceClientOptions
+            var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
