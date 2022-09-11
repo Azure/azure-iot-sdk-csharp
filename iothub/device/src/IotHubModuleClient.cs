@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
@@ -24,12 +24,18 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
-    public class IotHubModuleClient : IDisposable
+    public class IotHubModuleClient : IotHubBaseClient
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private readonly bool _isAnEdgeModule;
         private readonly ICertificateValidator _certValidator;
+
+        private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
+
+        // Cloud-to-module message callback information
+        private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
+        private volatile Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>> _receiveEventEndpoints;
 
         /// <summary>
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
@@ -64,29 +70,26 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         internal IotHubModuleClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options, ICertificateValidator certificateValidator)
+            : base(iotHubConnectionCredentials, options)
         {
-            Argument.AssertNotNullOrWhiteSpace(iotHubConnectionCredentials.ModuleId, nameof(iotHubConnectionCredentials.ModuleId));
-
-            // Make sure client options is initialized.
-            if (options == default)
+            // Validate
+            if (iotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
-                options = new();
+                throw new InvalidOperationException("A valid module Id should be specified in the authentication credentails to create an IotHubModuleClient.");
             }
-
-            InternalClient = new InternalClient(iotHubConnectionCredentials, options, null);
 
             // There is a distinction between a Module Twin and and Edge module. We set this flag in order
             // to correctly select the receiver link for AMQP on a Module Twin. This does not affect MQTT.
             // We can determine that this is an edge module if the connection string is using a gateway host.
-            _isAnEdgeModule = !InternalClient.IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
+            _isAnEdgeModule = !IotHubConnectionCredentials.GatewayHostName.IsNullOrWhiteSpace();
 
             _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
 
             if (Logging.IsEnabled)
                 Logging.CreateClient(
-                    InternalClient,
-                    $"HostName={InternalClient.IotHubConnectionCredentials.HostName};DeviceId={InternalClient.IotHubConnectionCredentials.DeviceId};ModuleId={InternalClient.IotHubConnectionCredentials.ModuleId}",
-                    options);
+                    this,
+                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
+                    ClientOptions);
         }
 
         /// <summary>
@@ -109,95 +112,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The diagnostic sampling percentage.
-        /// </summary>
-        public int DiagnosticSamplingPercentage
-        {
-            get => InternalClient.DiagnosticSamplingPercentage;
-            set => InternalClient.DiagnosticSamplingPercentage = value;
-        }
-
-        /// <summary>
-        /// The latest connection status information since the last status change.
-        /// </summary>
-        public ConnectionStatusInfo ConnectionStatusInfo => InternalClient._connectionStatusInfo;
-
-        internal IDelegatingHandler InnerHandler
-        {
-            get => InternalClient.InnerHandler;
-            set => InternalClient.InnerHandler = value;
-        }
-
-        internal InternalClient InternalClient { get; private set; }
-
-        /// <summary>
-        /// Sets the retry policy used in the operation retries.
-        /// </summary>
-        /// <remarks>
-        /// The change will take effect after any in-progress operations.
-        /// The default is:
-        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c>
-        /// </remarks>
-        /// <param name="retryPolicy">The retry policy.</param>
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
-        {
-            InternalClient.SetRetryPolicy(retryPolicy);
-        }
-
-        /// <summary>
-        /// Sets a new delegate for the connection status changed callback. If a delegate is already associated,
-        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
-        /// <param name="statusChangeHandler">The name of the method to associate with the delegate.</param>
-        /// </summary>
-        public void SetConnectionStatusChangeHandler(Action<ConnectionStatusInfo> statusChangeHandler)
-            => InternalClient.SetConnectionStatusChangeHandler(statusChangeHandler);
-
-        /// <summary>
-        /// Open the ModuleClient instance. Must be done before any operation can begin.
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// </summary>
-        public Task OpenAsync(CancellationToken cancellationToken = default) => InternalClient.OpenAsync(cancellationToken);
-
-        /// <summary>
-        /// Sends an event to IoT hub. ModuleClient instance must be opened already.
-        /// </summary>
-        /// <remarks>
-        /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect
-        /// the error details and take steps accordingly.
-        /// Please note that the list of exceptions is not exhaustive.
-        /// </remarks>
-        /// <param name="message">The message to send. Should be disposed after sending.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// if the client encounters a transient retryable exception. </exception>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
-        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        public Task SendEventAsync(Message message, CancellationToken cancellationToken = default) => InternalClient.SendEventAsync(message, cancellationToken);
-
-        /// <summary>
-        /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
-        /// ModuleClient instance must be opened already.
-        /// </summary>
-        /// <param name="messages">An IEnumerable set of Message objects.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The task containing the event</returns>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default) => InternalClient.SendEventBatchAsync(messages, cancellationToken);
-
-        /// <summary>
-        /// Sends an event to IoT hub. ModuleClient instance must be opened already.
+        /// Sends an event to IoT hub. IotHubModuleClient instance must be opened already.
         /// </summary>
         /// <remarks>
         /// In case of a transient issue, retrying the operation should work. In case of a non-transient issue, inspect the error details and take steps accordingly.
@@ -217,125 +132,179 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
         /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
-        /// <returns>The message containing the event</returns>
-        public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken = default) =>
-            InternalClient.SendEventAsync(outputName, message, cancellationToken);
+        /// If <see cref="IotHubClientException.IsTransient"/> is set to <c>true</c> then it is a transient exception and should be retried,
+        /// but if <c>false</c> then it is a non-transient exception and should probably not be retried.</exception>
+        public async Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, outputName, message, nameof(SendEventAsync));
+
+                ValidateModuleTransportHandler("SendEventAsync for a named output");
+
+                Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
+                Argument.AssertNotNull(message, nameof(message));
+
+                message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
+
+                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, outputName, message, nameof(SendEventAsync));
+            }
+        }
 
         /// <summary>
         /// Sends a batch of events to IoT hub. Use AMQP or HTTPs for a true batch operation. MQTT will just send the messages one after the other.
-        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
         /// ModuleClient instance must be opened already.
         /// </summary>
+        /// <remarks>
+        /// For more information on IoT Edge module routing <see href="https://docs.microsoft.com/azure/iot-edge/module-composition?view=iotedge-2018-06#declare-routes"/>.
+        /// </remarks>
         /// <param name="outputName">The output target for sending the given message.</param>
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken = default) =>
-            InternalClient.SendEventBatchAsync(outputName, messages, cancellationToken);
+        public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
+
+                ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+
+                Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
+                var messagesList = messages?.ToList();
+                Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
+
+                messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
+
+                await InnerHandler.SendEventAsync(messagesList, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, outputName, messages, nameof(SendEventBatchAsync));
+            }
+        }
 
         /// <summary>
-        /// Sets a new delegate for the particular input. If a delegate is already associated with
-        /// the input, it will be replaced with the new delegate.
+        /// Sets a new delegate for the particular input.
         /// </summary>
+        /// <remarks>
+        /// If a delegate is already associated with
+        /// the input, it will be replaced with the new delegate.
+        /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
+        /// </remarks>
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetInputMessageHandlerAsync(
+        public async Task SetInputMessageHandlerAsync(
             string inputName,
             Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
-            => InternalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, _isAnEdgeModule, cancellationToken);
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
+
+            ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
+
+            cancellationToken.ThrowIfCancellationRequested();
+            await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (messageHandler != null)
+                {
+                    // When using a device module we need to enable the 'deviceBound' message link
+                    await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
+
+                    if (_receiveEventEndpoints == null)
+                    {
+                        _receiveEventEndpoints = new Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>>();
+                    }
+
+                    _receiveEventEndpoints[inputName] = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
+                }
+                else
+                {
+                    if (_receiveEventEndpoints != null)
+                    {
+                        _receiveEventEndpoints.Remove(inputName);
+                        if (_receiveEventEndpoints.Count == 0)
+                        {
+                            _receiveEventEndpoints = null;
+                        }
+                    }
+
+                    await DisableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _moduleReceiveMessageSemaphore.Release();
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
+            }
+        }
 
         /// <summary>
-        /// Sets a new default delegate which applies to all endpoints. If a delegate is already associated with
+        /// Sets a new default delegate which applies to all endpoints.
+        /// </summary>
+        /// <remarks>
+        /// If a delegate is already associated with
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
         /// it will be overwritten.
-        /// </summary>
+        /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
+        /// </remarks>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetMessageHandlerAsync(
+        public async Task SetMessageHandlerAsync(
             Func<Message, object, Task<MessageResponse>> messageHandler,
             object userContext,
             CancellationToken cancellationToken = default)
-            => InternalClient.SetMessageHandlerAsync(messageHandler, userContext, _isAnEdgeModule, cancellationToken);
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
 
-        /// <summary>
-        /// Deletes a received message from the module queue.
-        /// </summary>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The lock identifier for the previously received message</returns>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default) => InternalClient.CompleteMessageAsync(lockToken, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-        /// <summary>
-        /// Deletes a received message from the module queue.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <param name="message">The message.</param>
-        /// <returns>The previously received message</returns>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default) => InternalClient.CompleteMessageAsync(message, cancellationToken);
+            try
+            {
+                if (messageHandler != null)
+                {
+                    await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
+                    _defaultEventCallback = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
+                }
+                else
+                {
+                    _defaultEventCallback = null;
+                    await DisableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _moduleReceiveMessageSemaphore.Release();
 
-        /// <summary>
-        /// Puts a received message back onto the module queue.
-        /// </summary>
-        /// <param name="lockToken">The message lockToken.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The previously received message</returns>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default) => InternalClient.AbandonMessageAsync(lockToken, cancellationToken);
-
-        /// <summary>
-        /// Puts a received message back onto the module queue.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default) => InternalClient.AbandonMessageAsync(message, cancellationToken);
-
-        /// <summary>
-        /// Sets a new delegate for the named method. If a delegate is already associated with the named method, it will be replaced with the new delegate.
-        /// A method handler can be unset by passing a null MethodCallback.
-        /// </summary>
-        /// <param name="methodName">The name of the method to associate with the delegate.</param>
-        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetMethodHandlerAsync(
-            string methodName,
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
-            CancellationToken cancellationToken = default)
-            => InternalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
-
-        /// <summary>
-        /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
-        /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method handler can be unset by passing a null MethodCallback.
-        /// </summary>
-        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetMethodDefaultHandlerAsync(
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
-            CancellationToken cancellationToken = default)
-            => InternalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+            }
+        }
 
         /// <summary>
         /// Interactively invokes a method from an edge module to an edge device.
@@ -372,74 +341,123 @@ namespace Microsoft.Azure.Devices.Client
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
         }
 
-        /// <summary>
-        /// Retrieve a module twin object for the current module. ModuleClient instance must be opened already.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The module twin object for the current module</returns>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default) => InternalClient.GetTwinAsync(cancellationToken);
-
-        /// <summary>
-        /// Push reported property changes up to the service.
-        /// </summary>
-        /// <param name="reportedProperties">Reported properties to push.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default) =>
-            InternalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update
-        /// (desired or reported) from the service. Set callback value to null to clear.
-        /// </summary>
-        /// <remarks>
-        /// This has the side-effect of subscribing to the PATCH topic on the service.
-        /// </remarks>
-        /// <param name="callback">Callback to call after the state update has been received and applied.</param>
-        /// <param name="userContext">Context object that will be passed into callback.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<TwinCollection, object, Task> callback,
-            object userContext, CancellationToken cancellationToken = default)
-            => InternalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
-
-        /// <summary>
-        /// Close the client instance.
-        /// </summary>
-        /// <remarks>
-        /// The instance can be re-opened after closing and before disposing.
-        /// </remarks>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public Task CloseAsync(CancellationToken cancellationToken = default) => InternalClient.CloseAsync(cancellationToken);
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the ModuleClient and optionally disposes of the managed resources.
-        /// </summary>
-        /// <remarks>
-        /// The method <see cref="CloseAsync(CancellationToken)"/> should be called before disposing.
-        /// </remarks>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the ModuleClient and allows for any derived class to override and
-        /// provide custom implementation.
-        /// </summary>
-        /// <param name="disposing">Setting to true will release both managed and unmanaged resources. Setting to
-        /// false will only release the unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
+        /// <inheritdoc/>
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                InternalClient?.Dispose();
-                InternalClient = null;
+                _moduleReceiveMessageSemaphore?.Dispose();
+            }
+
+            // Call the base class implementation.
+            base.Dispose(disposing);
+        }
+
+        internal override void AddToPipelineContext()
+        {
+            PipelineContext.ModuleEventCallback = OnModuleEventMessageReceivedAsync;
+        }
+
+        private void ValidateModuleTransportHandler(string apiName)
+        {
+            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
+            {
+                throw new InvalidOperationException($"{apiName} is available for Modules only.");
+            }
+        }
+
+
+        // Enable telemetry downlink for modules
+        private Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
+        {
+            // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
+            return _receiveEventEndpoints == null && _defaultEventCallback == null
+                ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
+                : Task.CompletedTask;
+        }
+
+        // Disable telemetry downlink for modules
+        private Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
+        {
+            // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
+            return _receiveEventEndpoints == null && _defaultEventCallback == null
+                ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
+                : Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// The delegate for handling event messages received
+        /// </summary>
+        /// <param name="input">The input on which a message is received</param>
+        /// <param name="message">The message received</param>
+        internal async Task OnModuleEventMessageReceivedAsync(string input, Message message)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
+
+            if (message == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Tuple<Func<Message, object, Task<MessageResponse>>, object> callback = null;
+                await _moduleReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    if (_receiveEventEndpoints == null
+                        || string.IsNullOrWhiteSpace(input)
+                        || !_receiveEventEndpoints.TryGetValue(input, out callback))
+                    {
+                        callback = _defaultEventCallback;
+                    }
+                }
+                finally
+                {
+                    _moduleReceiveMessageSemaphore.Release();
+                }
+
+                MessageResponse response = MessageResponse.Completed;
+                if (callback?.Item1 != null)
+                {
+                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = callback.Item1;
+                    object userContext = callback.Item2;
+
+                    response = await userSuppliedCallback
+                        .Invoke(message, userContext)
+                        .ConfigureAwait(false);
+                }
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnModuleEventMessageReceivedAsync));
+
+                try
+                {
+                    switch (response)
+                    {
+                        case MessageResponse.Completed:
+                            await CompleteMessageAsync(message).ConfigureAwait(false);
+                            break;
+
+                        case MessageResponse.Abandoned:
+                            await AbandonMessageAsync(message).ConfigureAwait(false);
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex) when (Logging.IsEnabled)
+                {
+                    Logging.Error(this, ex, nameof(OnModuleEventMessageReceivedAsync));
+                    throw;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
             }
         }
 
@@ -463,7 +481,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 var pipelineContext = new PipelineContext
                 {
-                    IotHubConnectionCredentials = InternalClient.IotHubConnectionCredentials,
+                    IotHubConnectionCredentials = IotHubConnectionCredentials,
                 };
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);

@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
             using var mc = new IotHubModuleClient(ConnectionStringWithoutModuleId);
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     "custom data")
                 .ConfigureAwait(false);
 
-            await moduleClient.InternalClient.OnModuleEventMessageReceivedAsync(null, null).ConfigureAwait(false);
+            await moduleClient.OnModuleEventMessageReceivedAsync(null, null).ConfigureAwait(false);
             Assert.IsFalse(isMessageHandlerCalled);
         }
 
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 LockToken = "AnyLockToken",
             };
 
-            await moduleClient.InternalClient.OnModuleEventMessageReceivedAsync("endpoint1", testMessage).ConfigureAwait(false);
+            await moduleClient.OnModuleEventMessageReceivedAsync("endpoint1", testMessage).ConfigureAwait(false);
             Assert.IsTrue(isDefaultCallbackCalled);
             Assert.IsFalse(isSpecificCallbackCalled);
         }
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 LockToken = "AnyLockToken",
             };
 
-            await moduleClient.InternalClient.OnModuleEventMessageReceivedAsync("endpoint2", testMessage).ConfigureAwait(false);
+            await moduleClient.OnModuleEventMessageReceivedAsync("endpoint2", testMessage).ConfigureAwait(false);
             Assert.IsFalse(isDefaultCallbackCalled);
             Assert.IsTrue(isSpecificCallbackCalled);
         }
