@@ -21,20 +21,6 @@ namespace Microsoft.Azure.Devices
             return response.Content.ReadAsStringAsync();
         }
 
-        /// <summary>
-        /// Get the fully-qualified error code from the HTTP response message, if exists.
-        /// </summary>
-        /// <param name="response">The HTTP response message</param>
-        /// <returns>
-        /// The fully-qualified error code, or one derived from the response HTTP status code if no error code was provided.
-        /// </returns>
-        internal static async Task<IotHubErrorCode> GetIotHubErrorCodeAsync(HttpResponseMessage response)
-        {
-            // First we will attempt to retrieve the error iotHubStatusCode from the response content.
-            string responseContentStr = await GetExceptionMessageAsync(response);
-            return GetIotHubErrorCode(responseContentStr);
-        }
-
         // There are two things to consider when surfacing service errors to the user, the 6-digit error code and
         // the error description. Ideally, when a backend service returns an error, both of these fields are set
         // in the same place. However, IoT hub is returning the 6-digit code in the response content, while
@@ -45,8 +31,9 @@ namespace Microsoft.Azure.Devices
         // both values are a match. If so, the SDK will populate the exception with the proper Code. In the case where
         // there is a mismatch between the error code and the description, the SDK returns
         // IotHubStatusCode.Unknown and log a warning.
-        internal static IotHubErrorCode GetIotHubErrorCode(string responseBody)
+        internal static async Task<IotHubErrorCode> GetIotHubErrorCodeAsync(HttpResponseMessage response)
         {
+            string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             IoTHubExceptionResult responseContent = null;
             try
             {
@@ -70,7 +57,7 @@ namespace Microsoft.Azure.Devices
                     {
                         if (int.TryParse(errorCodeObj, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
                         {
-                            return (IotHubErrorCode)errorCodeInt;
+                            return CompareToResponseHeader(response, (IotHubErrorCode)errorCodeInt);
                         }
                     }
                 }
@@ -111,14 +98,14 @@ namespace Microsoft.Azure.Devices
                             // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
                             if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
                             {
-                                return (IotHubErrorCode)code;
+                                return CompareToResponseHeader(response, (IotHubErrorCode)code);
                             }
 
                             // Otherwise the error code might be a string (e.g., PreconditionFailed) in which case we'll try to
                             // find the matching IotHubErrorCode enum with that same name.
                             if (Enum.TryParse(returnedErrorCode, out IotHubErrorCode errorCode))
                             {
-                                return errorCode;
+                                return CompareToResponseHeader(response, errorCode);
                             }
                         }
                     }
@@ -129,6 +116,27 @@ namespace Microsoft.Azure.Devices
                 Logging.Error(
                     nameof(GetIotHubErrorCodeAsync),
                     $"Failed to derive any error code from the response message: {responseBody}");
+
+            return IotHubErrorCode.Unknown;
+        }
+
+        internal static IotHubErrorCode CompareToResponseHeader(HttpResponseMessage response, IotHubErrorCode contentErrorCode)
+        {
+            string headerErrorCodeString = response.Headers.GetFirstValueOrNull(HttpErrorCodeName);
+
+            if (headerErrorCodeString != null
+                && Enum.TryParse(headerErrorCodeString, out IotHubErrorCode headerErrorCode))
+            {
+                if ((int)headerErrorCode == (int)contentErrorCode)
+                {
+                    // We have a match. Therefore, return the proper error code.
+                    return headerErrorCode;
+                }
+
+                if (Logging.IsEnabled)
+                    Logging.Error(null, $"There is a mismatch between the error code retrieved from the response content and the response header." +
+                        $"Content error code: {(int)contentErrorCode}. Header error code description: {(int)headerErrorCode}.");
+            }
 
             return IotHubErrorCode.Unknown;
         }

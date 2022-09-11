@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                IotHubErrorCode errorCode = ExceptionHandlingHelper.GetIotHubErrorCode(errorMessage);
+                IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(responseMessage);
                 throw new IotHubServiceException(responseMessage.StatusCode, errorCode, errorMessage);
             }
         }

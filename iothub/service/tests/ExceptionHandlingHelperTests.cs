@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Test
         }
 
         [TestMethod]
-        public void GetExceptionCodeAsync_ContentAndHeadersMisMatch_InvalidErrorCode()
+        public async Task GetExceptionCodeAsync_ContentAndHeadersMisMatch_InvalidErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -46,16 +46,18 @@ namespace Microsoft.Azure.Devices.Test
             {
                 Message = "{\"errorCode\":404001}"
             };
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Headers.Add(HttpErrorCodeName, "DummyErrorCode");
 
             // act
-            IotHubErrorCode errorCode = ExceptionHandlingHelper.GetIotHubErrorCode(JsonConvert.SerializeObject(exceptionResult));
+            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.Unknown);
         }
 
         [TestMethod]
-        public void GetExceptionCodeAsync_NoContentErrorCode_InvalidErrorCode()
+        public async Task GetExceptionCodeAsync_NoContentErrorCode_InvalidErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -63,16 +65,18 @@ namespace Microsoft.Azure.Devices.Test
             {
                 Message = ""
             };
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Headers.Add(HttpErrorCodeName, "DeviceNotFound");
 
             // act
-            IotHubErrorCode errorCode = ExceptionHandlingHelper.GetIotHubErrorCode(JsonConvert.SerializeObject(exceptionResult));
+            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.Unknown);
         }
 
         [TestMethod]
-        public void GetExceptionCodeAsync_NoHeaderErrorCodeName_InvalidErrorCode()
+        public async Task GetExceptionCodeAsync_NoHeaderErrorCodeName_InvalidErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -80,9 +84,10 @@ namespace Microsoft.Azure.Devices.Test
             {
                 Message = "{\"errorCode\":404001}"
             };
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            IotHubErrorCode errorCode = ExceptionHandlingHelper.GetIotHubErrorCode(JsonConvert.SerializeObject(exceptionResult));
+            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.Unknown);
