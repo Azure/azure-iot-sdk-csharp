@@ -429,7 +429,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 sendTasks.Add(SendEventAsync(message, cancellationToken));
             }
 
-            await Task.WhenAll(sendTasks);
+            await Task.WhenAll(sendTasks).ConfigureAwait(false);
         }
 
         public override Task<Message> ReceiveMessageAsync(CancellationToken cancellationToken)
