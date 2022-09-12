@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (_isSymmetricKeyAuthenticated)
             {
                 // Symmetric key authenticated connections need to set client Id, username, and password
-                string password = await _connectionCredentials.SasTokenRefresher.GetTokenAsync(_connectionCredentials.IotHubHostName);
+                string password = await _connectionCredentials.SasTokenRefresher.GetTokenAsync(_connectionCredentials.IotHubHostName).ConfigureAwait(false);
                 _mqttClientOptionsBuilder.WithCredentials(username, password);
             }
             else
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken);
+                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
             }
             catch (MqttConnectingFailedException cfe)
             {
@@ -380,7 +380,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
-            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
+            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
@@ -417,12 +417,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(DirectMethodsRequestTopic, cancellationToken);
+            await SubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken);
+            await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
@@ -435,7 +435,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
-            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
+            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
@@ -445,23 +445,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken);
+            await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken);
+            await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             if (isAnEdgeModule)
             {
-                await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken);
+                await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await SubscribeAsync(_moduleEventMessageTopic, cancellationToken);
+                await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
             }
 
             _isSubscribedToDesiredPropertyPatches = true;
@@ -469,7 +469,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken);
+            await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
@@ -479,14 +479,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
-            await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken);
+            await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
 
             _isSubscribedToDesiredPropertyPatches = true;
         }
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken);
+            await UnsubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
 
             _isSubscribedToDesiredPropertyPatches = false;
         }
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!_isSubscribedToTwinResponses)
             {
-                await SubscribeAsync(TwinResponseTopic, cancellationToken);
+                await SubscribeAsync(TwinResponseTopic, cancellationToken).ConfigureAwait(false);
                 _isSubscribedToTwinResponses = true;
             }
 
@@ -511,7 +511,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                 // responds, this layer can correlate the request.
                 _inProgressGetTwinRequests.Add(requestId);
-                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
@@ -550,7 +550,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (!_isSubscribedToTwinResponses)
             {
-                await SubscribeAsync(TwinResponseTopic, cancellationToken);
+                await SubscribeAsync(TwinResponseTopic, cancellationToken).ConfigureAwait(false);
                 _isSubscribedToTwinResponses = true;
             }
 
@@ -570,7 +570,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                 // responds, this layer can correlate the request.
                 _inProgressUpdateReportedPropertiesRequests.Add(requestId);
-                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken);
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
@@ -626,7 +626,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             OnTransportClosedGracefully();
             MqttClientDisconnectOptions disconnectOptions = new MqttClientDisconnectOptions();
-            await _mqttClient.DisconnectAsync(disconnectOptions, cancellationToken);
+            await _mqttClient.DisconnectAsync(disconnectOptions, cancellationToken).ConfigureAwait(false);
         }
 
         #endregion Client operations
@@ -647,7 +647,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithTopicFilter(fullTopic, receivingQualityOfService)
                 .Build();
 
-            MqttClientSubscribeResult subscribeResults = await _mqttClient.SubscribeAsync(subscribeOptions, cancellationToken);
+            MqttClientSubscribeResult subscribeResults = await _mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
 
             if (subscribeResults == null || subscribeResults.Items == null)
             {
@@ -668,7 +668,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .WithTopicFilter(topic)
                     .Build();
 
-            MqttClientUnsubscribeResult unsubscribeResults = await _mqttClient.UnsubscribeAsync(unsubscribeOptions, cancellationToken);
+            MqttClientUnsubscribeResult unsubscribeResults = await _mqttClient.UnsubscribeAsync(unsubscribeOptions, cancellationToken).ConfigureAwait(false);
 
             if (unsubscribeResults == null || unsubscribeResults.Items == null || unsubscribeResults.Items.Count != 1)
             {
@@ -703,7 +703,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string topic = receivedEventArgs.ApplicationMessage.Topic;
             if (topic.StartsWith(_deviceBoundMessagesTopic))
             {
-                await HandleReceivedCloudToDeviceMessage(receivedEventArgs);
+                await HandleReceivedCloudToDeviceMessage(receivedEventArgs).ConfigureAwait(false);
             }
             else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic))
             {
@@ -722,7 +722,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // This works regardless of if the event is on a particular Edge module input or if
                 // the module is not an Edge module.
-                await HandleIncomingEventMessage(receivedEventArgs);
+                await HandleIncomingEventMessage(receivedEventArgs).ConfigureAwait(false);
             }
             else
             {
@@ -747,7 +747,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // We are intentionally not awaiting _deviceMessageReceivedListener callback.
                 // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
                 _ = _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
             }
             else
             {
@@ -879,7 +879,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Add the endpoint as a SystemProperty
             iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
 
-            await _moduleMessageReceivedListener?.Invoke(inputName, iotHubMessage);
+            await (_moduleMessageReceivedListener?.Invoke(inputName, iotHubMessage)).ConfigureAwait(false);
         }
 
         public void PopulateMessagePropertiesFromPacket(Message message, MqttApplicationMessage mqttMessage)
