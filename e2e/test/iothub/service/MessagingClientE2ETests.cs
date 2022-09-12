@@ -249,16 +249,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             await sender.Messaging.OpenAsync().ConfigureAwait(false);
 
-            // act
-            var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-            Func<Task> act = async () => await sender.Messaging.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
+            try
+            {
+                // act
+                var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
+                Func<Task> act = async () => await sender.Messaging.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
 
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
-
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+                // assert
+                var error = await act.Should().ThrowAsync<IotHubServiceException>();
+                error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+                error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+            }
+            finally
+            {
+                await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -275,20 +280,25 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
             await sender.Messaging.OpenAsync().ConfigureAwait(false);
 
-            // act
-            var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-            Func<Task> act = async () => await sender.Messaging.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
+            try
+            {
+                // act
+                var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
+                Func<Task> act = async () => await sender.Messaging.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
 
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+                // assert
+                var error = await act.Should().ThrowAsync<IotHubServiceException>();
+                error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
-            // AmqpErrorCode doesn't provide specific codes (6 digits) for the error NotFound 404,
-            // as a result, we are mapping all of NotFound errors to IotHubStatusCode.DeviceNotFound for AMQP operations.
-            // For more details of this error, see error message via IotHubServiceException.Message.
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
-
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+                // AmqpErrorCode doesn't provide specific codes (6 digits) for the error NotFound 404,
+                // as a result, we are mapping all of NotFound errors to IotHubStatusCode.DeviceNotFound for AMQP operations.
+                // For more details of this error, see error message via IotHubServiceException.Message.
+                error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+            }
+            finally
+            {
+                await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            }
         }
     }
 }
