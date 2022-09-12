@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public void Publish(MqttNetLogLevel logLevel, string source, string message, object[] parameters, Exception exception)
         {
-            var options = new EventSourceOptions()
+            var options = new EventSourceOptions
             {
                 Level = toEventLevel(logLevel)
             };
