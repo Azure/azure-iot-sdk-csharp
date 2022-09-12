@@ -48,19 +48,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of this class with a specified <see cref="Exceptions.IotHubErrorCode"/>, error message and an
-        /// optional reference to the inner exception that caused this exception.
-        /// </summary>
-        /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(IotHubErrorCode iotHubStatusCode, string message, Exception innerException = null)
-            : this(message, innerException, false, string.Empty)
-        {
-            ErrorCode = iotHubStatusCode;
-        }
-
-        /// <summary>
         /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
         /// error message and an optional reference to the inner exception that caused this exception.
         /// </summary>
