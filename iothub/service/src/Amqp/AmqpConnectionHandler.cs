@@ -343,6 +343,7 @@ namespace Microsoft.Azure.Devices.Amqp
         public void Dispose()
         {
             _openCloseSemaphore?.Dispose();
+            _cbsSession?.Dispose();
         }
     }
 }
