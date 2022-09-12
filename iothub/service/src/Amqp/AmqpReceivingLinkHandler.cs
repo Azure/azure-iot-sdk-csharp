@@ -14,22 +14,28 @@ namespace Microsoft.Azure.Devices.Amqp
     /// </summary>
     internal class AmqpReceivingLinkHandler
     {
+        private readonly Action<AmqpMessage> _messageHandler;
+        private readonly EventHandler _connectionLossHandler;
+        private readonly string _linkAddress;
+
         private ReceivingAmqpLink _receivingLink;
-        private Action<AmqpMessage> _messageHandler;
-
-        private EventHandler _connectionLossHandler;
-
-        private string _linkAddress;
         private string _linkName;
 
-        public AmqpReceivingLinkHandler(string linkAddress, Action<AmqpMessage> messageHandler, EventHandler connectionLossHandler)
+        internal AmqpReceivingLinkHandler(string linkAddress, Action<AmqpMessage> messageHandler, EventHandler connectionLossHandler)
         {
             _linkAddress = linkAddress;
             _messageHandler = messageHandler;
             _connectionLossHandler = connectionLossHandler;
         }
 
-        public async Task OpenAsync(AmqpSession session, CancellationToken cancellationToken)
+        /// <summary>
+        /// Returns true if this link is open. Returns false otherwise.
+        /// </summary>
+        /// <returns>True if this link is open. False otherwise.</returns>
+        internal bool IsOpen => _receivingLink != null
+            && _receivingLink.State == AmqpObjectState.Opened;
+
+        internal async Task OpenAsync(AmqpSession session, CancellationToken cancellationToken)
         {
             // By using a unique guid in the link's name, it becomes possible to correlate logs where a user
             // may have multiple instances of this type of link open. It also makes it easier to correlate
@@ -69,7 +75,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
         }
 
-        public async Task CloseAsync(CancellationToken cancellationToken)
+        internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing receiving link with address {_linkAddress} and link name {_linkName}");
@@ -88,7 +94,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
         }
 
-        public async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task AcknowledgeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}");
@@ -102,16 +108,6 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Acknowledging message with delivery tag {deliveryTag} on receiving link with address {_linkAddress} and link name {_linkName}");
             }
-        }
-
-        /// <summary>
-        /// Returns true if this link is open. Returns false otherwise.
-        /// </summary>
-        /// <returns>True if this link is open. False otherwise.</returns>
-        public bool IsOpen()
-        {
-            return _receivingLink != null
-                && _receivingLink.State == AmqpObjectState.Opened;
         }
     }
 }

@@ -64,7 +64,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
-        private readonly ProvisioningServiceClientOptions _options;
         private readonly IContractApiHttp _contractApiHttp;
 
         /// <summary>
@@ -93,11 +92,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
-            _options = options;
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
-                options.ProvisioningServiceHttpSettings);
+                options);
         }
 
         /// <summary>

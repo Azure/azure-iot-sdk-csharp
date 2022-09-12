@@ -2,35 +2,34 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using static Microsoft.Azure.Devices.E2ETests.Helpers.HostNameHelper;
-using Microsoft.Azure.Devices;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     public enum TestDeviceType
     {
         Sasl,
-        X509
+        X509,
     }
 
     public enum ConnectionStringAuthScope
     {
         IoTHub,
-        Device
+        Device,
     }
 
     public class TestDevice : IDisposable
     {
         private const int MaxRetryCount = 5;
-        private static readonly HashSet<Type> s_throttlingExceptions = new HashSet<Type> { typeof(ThrottlingException), };
-        private static readonly HashSet<Type> s_getRetryableExceptions = new HashSet<Type>(s_throttlingExceptions) { typeof(DeviceNotFoundException) };
-        private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+        private static readonly HashSet<Type> s_throttlingExceptions = new() { typeof(ThrottlingException), };
+        private static readonly HashSet<Type> s_getRetryableExceptions = new(s_throttlingExceptions) { typeof(DeviceNotFoundException) };
+        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
             retryCount: MaxRetryCount,

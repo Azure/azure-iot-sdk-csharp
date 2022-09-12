@@ -14,11 +14,10 @@ namespace Microsoft.Azure.Devices.Amqp
     /// </summary>
     internal class AmqpSendingLinkHandler
     {
+        private readonly EventHandler _connectionLossHandler;
+        private readonly string _linkAddress;
+
         private SendingAmqpLink _sendingLink;
-
-        private EventHandler _connectionLossHandler;
-
-        private string _linkAddress;
         private string _linkName;
 
         public AmqpSendingLinkHandler(string linkAddress, EventHandler connectionLossHandler)
@@ -26,6 +25,13 @@ namespace Microsoft.Azure.Devices.Amqp
             _linkAddress = linkAddress;
             _connectionLossHandler = connectionLossHandler;
         }
+
+        /// <summary>
+        /// Returns true if this link is open. Returns false otherwise.
+        /// </summary>
+        /// <returns>True if this link is open. False otherwise.</returns>
+        public bool IsOpen => _sendingLink != null
+            && _sendingLink.State == AmqpObjectState.Opened;
 
         public async Task OpenAsync(AmqpSession session, CancellationToken cancellationToken)
         {
@@ -98,16 +104,6 @@ namespace Microsoft.Azure.Devices.Amqp
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Sending message with correlation Id {message.Properties?.CorrelationId} and delivery tag {deliveryTag} on link with address {_linkAddress} and link name {_linkName}");
             }
-        }
-
-        /// <summary>
-        /// Returns true if this link is open. Returns false otherwise.
-        /// </summary>
-        /// <returns>True if this link is open. False otherwise.</returns>
-        public bool IsOpen()
-        {
-            return _sendingLink != null
-                && _sendingLink.State == AmqpObjectState.Opened;
         }
     }
 }

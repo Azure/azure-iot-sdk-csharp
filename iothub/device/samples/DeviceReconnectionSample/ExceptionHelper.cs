@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
             typeof(WebSocketException),

@@ -13,9 +13,7 @@ namespace Microsoft.Azure.Devices
         public override void AmqpAbortThrowingException(string exception)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Info(exception, "AmqpAbortThrowingException:", "AmqpTransportLog");
-            }
 
             base.AmqpAbortThrowingException(exception);
         }
