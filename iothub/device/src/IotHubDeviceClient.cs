@@ -105,15 +105,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or
             // unrecoverable (authentication, quota exceed) error occurs.
-            try
-            {
-                return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            return await InnerHandler.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -164,11 +156,6 @@ namespace Microsoft.Azure.Devices.Client
                     _deviceReceiveMessageCallback = null;
                     await DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
                 }
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
             }
             finally
             {
