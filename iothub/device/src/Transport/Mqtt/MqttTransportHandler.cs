@@ -463,7 +463,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubClientException($"Failed to publish the mqtt packet for direct method response with reason code {result.ReasonCode}", true);
+                throw new IotHubClientException($"Failed to publish the MQTT packet for direct method response with reason code {result.ReasonCode}", true);
             }
         }
 
