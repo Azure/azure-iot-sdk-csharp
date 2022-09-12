@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (result.ReasonCode != MqttClientPublishReasonCode.Success)
             {
-                throw new IotHubClientException($"Failed to publish the mqtt packet for message with correlation id {message.CorrelationId} with reason code {result.ReasonCode}", true);
+                throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", true);
             }
         }
 
