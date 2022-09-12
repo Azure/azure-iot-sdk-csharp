@@ -15,6 +15,13 @@ namespace Microsoft.Azure.Devices
     public class FeedbackRecord
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected FeedbackRecord()
+        {
+        }
+
+        /// <summary>
         /// The Id of the cloud-to-device message to which this feedback message relates.
         /// </summary>
         /// <remarks>

@@ -11,6 +11,13 @@ namespace Microsoft.Azure.Devices
     public class RegistryStatistics
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected RegistryStatistics()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the count of all devices.
         /// </summary>
         [JsonProperty(PropertyName = "totalDeviceCount")]

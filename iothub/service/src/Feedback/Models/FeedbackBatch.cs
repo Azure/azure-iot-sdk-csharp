@@ -15,6 +15,13 @@ namespace Microsoft.Azure.Devices
     public class FeedbackBatch
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        public FeedbackBatch()
+        {
+        }
+
+        /// <summary>
         /// Date and time that indicates when the feedback message was received by the IoT hub.
         /// </summary>
         /// <remarks>

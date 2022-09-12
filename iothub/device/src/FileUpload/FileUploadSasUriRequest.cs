@@ -11,6 +11,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     public class FileUploadSasUriRequest
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        public FileUploadSasUriRequest()
+        {
+        }
+
+        /// <summary>
         /// The name of the file for which a SAS URI will be generated. This field is mandatory.
         /// </summary>
         [JsonProperty(PropertyName = "blobName")]

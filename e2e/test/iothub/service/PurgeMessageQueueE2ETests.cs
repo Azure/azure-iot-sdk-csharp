@@ -29,11 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             PurgeMessageQueueResult result = await sc.Messaging.PurgeMessageQueueAsync(deviceId, CancellationToken.None).ConfigureAwait(false); // making sure the queue is empty
 
             Message testMessage = ComposeD2CTestMessage();
-            var expectedResult = new PurgeMessageQueueResult
-            {
-                DeviceId = deviceId,
-                TotalMessagesPurged = 3
-            };
+            var expectedResult = new PurgeMessageQueueResult(deviceId, 3);
 
             await sc.Messaging.OpenAsync().ConfigureAwait(false);
             for (int i = 0; i < 3; ++i)

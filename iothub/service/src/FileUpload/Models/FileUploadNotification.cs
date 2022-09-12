@@ -12,6 +12,13 @@ namespace Microsoft.Azure.Devices
     public class FileUploadNotification
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected FileUploadNotification()
+        {
+        }
+
+        /// <summary>
         /// Id of the device which uploaded the file.
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]

@@ -11,6 +11,21 @@ namespace Microsoft.Azure.Devices
     public sealed class PurgeMessageQueueResult
     {
         /// <summary>
+        /// Initializes an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        /// <param name="deviceId">
+        /// The Id of the device whose messages are being purged.
+        /// </param>
+        /// <param name="totalMessagesPurged">
+        /// The total number of messages that were purged from the device's queue.
+        /// </param>
+        public PurgeMessageQueueResult(string deviceId, int totalMessagesPurged)
+        {
+            DeviceId = deviceId;
+            TotalMessagesPurged = totalMessagesPurged;
+        }
+
+        /// <summary>
         /// The Id of the device whose messages are being purged.
         /// </summary>
         [JsonProperty(PropertyName = "deviceId", Required = Required.Always)]

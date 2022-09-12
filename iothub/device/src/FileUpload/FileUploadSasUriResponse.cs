@@ -13,6 +13,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     public class FileUploadSasUriResponse
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        public FileUploadSasUriResponse()
+        {
+        }
+
+        /// <summary>
         /// The correlation id to use when notifying IoT hub later once this file upload has completed.
         /// </summary>
         [JsonProperty(PropertyName = "correlationId")]

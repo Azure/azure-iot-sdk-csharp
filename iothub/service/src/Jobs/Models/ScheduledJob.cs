@@ -13,6 +13,13 @@ namespace Microsoft.Azure.Devices
     public class ScheduledJob
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected ScheduledJob()
+        {
+        }
+
+        /// <summary>
         /// System generated. Ignored at creation.
         /// </summary>
         [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]

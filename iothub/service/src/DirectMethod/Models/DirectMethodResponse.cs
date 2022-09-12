@@ -12,6 +12,13 @@ namespace Microsoft.Azure.Devices
     public class DirectMethodResponse
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected DirectMethodResponse()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the status of device method invocation.
         /// </summary>
         [JsonProperty("status")]

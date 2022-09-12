@@ -11,6 +11,13 @@ namespace Microsoft.Azure.Devices
     public sealed class BulkRegistryOperationResult
     {
         /// <summary>
+        /// Initialize an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        internal BulkRegistryOperationResult()
+        {
+        }
+
+        /// <summary>
         /// Whether or not the operation was successful.
         /// </summary>
         [JsonProperty(PropertyName = "isSuccessful", Required = Required.Always)]
