@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly ConcurrentDictionary<string, MqttApplicationMessageReceivedEventArgs> messagesToAcknowledge = new();
 
-        private readonly ConcurrentDictionary<string, GetTwinResponse> getTwinResponses = new();
+        private readonly ConcurrentDictionary<string, GetTwinResponse> _getTwinResponses = new();
         private SemaphoreSlim _getTwinSemaphore = new(0);
 
         private readonly ConcurrentDictionary<string, PatchTwinResponse> reportedPropertyUpdateResponses = new();
