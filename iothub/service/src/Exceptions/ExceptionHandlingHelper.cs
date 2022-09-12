@@ -39,11 +39,12 @@ namespace Microsoft.Azure.Devices
             {
                 responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseBody);
             }
-            catch (JsonReaderException ex) when (Logging.IsEnabled)
+            catch (JsonReaderException ex)
             {
-                Logging.Info(
-                    nameof(GetIotHubErrorCodeAsync),
-                    $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
+                if (Logging.IsEnabled)
+                    Logging.Info(
+                        nameof(GetIotHubErrorCodeAsync),
+                        $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
             }
 
             if (responseContent != null)
@@ -61,11 +62,12 @@ namespace Microsoft.Azure.Devices
                         }
                     }
                 }
-                catch (JsonReaderException ex) when (Logging.IsEnabled)
+                catch (JsonReaderException ex)
                 {
-                    Logging.Error(
-                        nameof(GetIotHubErrorCodeAsync),
-                        $"Failed to deserialize error message into a dictionary: {ex.Message}. Message body: '{responseBody}.'");
+                    if (Logging.IsEnabled)
+                        Logging.Info(
+                            nameof(GetIotHubErrorCodeAsync),
+                            $"Failed to deserialize error message into a dictionary: {ex.Message}. Message body: '{responseBody}.'");
                 }
             }
 

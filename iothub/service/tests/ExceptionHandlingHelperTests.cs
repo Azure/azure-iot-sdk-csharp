@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Test
         private const string HttpErrorCodeName = "iothub-errorcode";
 
         [TestMethod]
-        public async Task GetExceptionCodeAsync_ContentAndHeadersMatch_ValidErrorCode()
+        public async Task GetExceptionCodeAsync_ContentAndHeadersMatch_NumericErrorCode_ValidErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -38,7 +38,26 @@ namespace Microsoft.Azure.Devices.Test
         }
 
         [TestMethod]
-        public async Task GetExceptionCodeAsync_ContentAndHeadersMisMatch_InvalidErrorCode()
+        public async Task GetExceptionCodeAsync_ContentAndHeadersMatch_NonNumericErrorCode_ValidErrorCode()
+        {
+            // arrange
+            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
+            var exceptionResult = new IoTHubExceptionResult
+            {
+                Message = "errorCode:PreconditionFailed"
+            };
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Headers.Add(HttpErrorCodeName, "PreconditionFailed");
+
+            // act
+            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
+
+            // assert
+            errorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+        }
+
+        [TestMethod]
+        public async Task GetExceptionCodeAsync_ContentAndHeadersMisMatch_UnknownErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -57,7 +76,7 @@ namespace Microsoft.Azure.Devices.Test
         }
 
         [TestMethod]
-        public async Task GetExceptionCodeAsync_NoContentErrorCode_InvalidErrorCode()
+        public async Task GetExceptionCodeAsync_NoContentErrorCode_UnknownErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
@@ -76,7 +95,7 @@ namespace Microsoft.Azure.Devices.Test
         }
 
         [TestMethod]
-        public async Task GetExceptionCodeAsync_NoHeaderErrorCodeName_InvalidErrorCode()
+        public async Task GetExceptionCodeAsync_NoHeaderErrorCode_UnknownErrorCode()
         {
             // arrange
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
