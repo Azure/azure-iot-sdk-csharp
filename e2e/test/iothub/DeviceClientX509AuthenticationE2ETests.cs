@@ -204,10 +204,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 // It should always throw IotHubClientException with status code Unauthorized
             }
-            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.NetworkErrors && ex.InnerException is TaskCanceledException)
-            {
-                Assert.Fail("Call to OpenAsync timed out.");
-            }
 
             // Manual check option: check TCP connection to verify there is no connection leak.
             // Uncomment this to give you enough time:

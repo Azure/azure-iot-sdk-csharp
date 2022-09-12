@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(message, nameof(message));
 
-            if (!_amqpConnection.IsOpen())
+            if (!_amqpConnection.IsOpen)
             {
                 throw new IotHubServiceException("Must open client before sending messages.");
             }
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(message, nameof(message));
 
-            if (!_amqpConnection.IsOpen())
+            if (!_amqpConnection.IsOpen)
             {
                 throw new IotHubServiceException("Must open client before sending messages.");
             }

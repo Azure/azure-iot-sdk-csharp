@@ -365,7 +365,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     lockToken.Length != actualLockToken.Length + s_generationPrefixLength)
                 {
                     throw new IotHubClientException(
-                        $"Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
+                        "Client must send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. " +
+                        $"Expected lock token to end with: '{actualLockToken}'; actual lock token: '{lockToken}'.",
                         isTransient: false);
                 }
 

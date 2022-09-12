@@ -5,27 +5,26 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
     /// <summary>
-    /// Handles a single CBS session including the inital authentication and scheduling all subsequent
+    /// Handles a single CBS session (for SAS token renewal) including the inital authentication and scheduling all subsequent
     /// authentication attempts.
     /// </summary>
-    internal class AmqpCbsSessionHandler
+    internal class AmqpCbsSessionHandler : IDisposable
     {
         // There is no AmqpSession object to track here because it is encapsulated by the AmqpCbsLink class.
-        private IotHubConnectionProperties _credential;
+        private readonly IotHubConnectionProperties _credential;
 
         private AmqpCbsLink _cbsLink;
-        private EventHandler _connectionLossHandler;
+        private readonly EventHandler _connectionLossHandler;
 
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-        private IOThreadTimerSlim _refreshTokenTimer;
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromMinutes(1);
+        private readonly IOThreadTimerSlim _refreshTokenTimer;
 
         public AmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler)
         {
@@ -69,6 +68,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
+                _refreshTokenTimer?.Cancel();
                 _cbsLink?.Close();
             }
             finally
@@ -86,6 +86,11 @@ namespace Microsoft.Azure.Devices.Amqp
         public bool IsOpen()
         {
             return _cbsLink != null;
+        }
+
+        public void Dispose()
+        {
+            _refreshTokenTimer?.Dispose();
         }
 
         private async Task SendCbsTokenAsync(CancellationToken cancellationToken)

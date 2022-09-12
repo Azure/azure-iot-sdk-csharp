@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices
         [EditorBrowsable(EditorBrowsableState.Never)]
         public bool ShouldSerializeLabels()
         {
-            return Labels != null & Labels.Any();
+            return Labels != null && Labels.Any();
         }
     }
 }

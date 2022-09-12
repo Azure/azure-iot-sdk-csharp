@@ -24,26 +24,26 @@ namespace Microsoft.Azure.Devices.Amqp
     /// </remarks>
     internal class AmqpConnectionHandler : IDisposable
     {
-        private AmqpConnection _connection;
-        private AmqpCbsSessionHandler _cbsSession;
-        private AmqpSessionHandler _workerSession;
-        private TransportBase _transport;
-        private readonly bool _useWebSocketOnly;
-        private readonly IotHubServiceClientOptions _options;
-        private IotHubConnectionProperties _credential;
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
 
-        private EventHandler _connectionLossHandler;
+        private readonly AmqpCbsSessionHandler _cbsSession;
+        private readonly AmqpSessionHandler _workerSession;
+        private readonly bool _useWebSocketOnly;
+        private readonly IotHubServiceClientOptions _options;
+        private readonly IotHubConnectionProperties _credential;
+        private readonly EventHandler _connectionLossHandler;
+        private readonly string _linkAddress;
 
-        private string _linkAddress;
+        // The lock that prevents simultaneous open/close, open/open, and close/close operations
+        private readonly SemaphoreSlim _openCloseSemaphore = new(1, 1);
+
+        private AmqpConnection _connection;
+        private TransportBase _transport;
 
         // The current delivery tag. Increments after each send operation to give a unique value.
         private int _sendingDeliveryTag;
 
-        // The lock that prevents simultaneous open/close, open/open, and close/close operations
-        private SemaphoreSlim _openCloseSemaphore = new SemaphoreSlim(1, 1);
-
-        public AmqpConnectionHandler(
+        internal AmqpConnectionHandler(
             IotHubConnectionProperties credential,
             IotHubTransportProtocol protocol,
             string linkAddress,
@@ -63,11 +63,23 @@ namespace Microsoft.Azure.Devices.Amqp
         }
 
         /// <summary>
+        /// Returns true if this connection, its sessions and its sessions' links are all open.
+        /// Returns false otherwise.
+        /// </summary>
+        /// <returns>True if this connection, its sessions and its sessions' links are all open. False otherwise.</returns>
+        internal bool IsOpen => _connection != null
+            && _connection.State == AmqpObjectState.Opened
+            && _cbsSession != null
+            && _cbsSession.IsOpen()
+            && _workerSession != null
+            && _workerSession.IsOpen;
+
+        /// <summary>
         /// Opens the AMQP connection. This involves creating the needed TCP or Websocket transport and
         /// then opening all the required sessions and links.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task OpenAsync(CancellationToken cancellationToken)
+        internal async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening amqp connection.");
@@ -76,7 +88,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
-                if (IsOpen())
+                if (IsOpen)
                 {
                     return;
                 }
@@ -139,7 +151,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// Closes the AMQP connection. This closes all the open links and sessions prior to closing the connection.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task CloseAsync(CancellationToken cancellationToken)
+        internal async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing amqp connection.");
@@ -181,7 +193,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task<Outcome> SendAsync(AmqpMessage message, CancellationToken cancellationToken)
+        internal async Task<Outcome> SendAsync(AmqpMessage message, CancellationToken cancellationToken)
         {
             ArraySegment<byte> deliveryTag = GetNextDeliveryTag();
             return await _workerSession.SendAsync(message, deliveryTag, cancellationToken).ConfigureAwait(false);
@@ -192,7 +204,7 @@ namespace Microsoft.Azure.Devices.Amqp
         /// </summary>
         /// <param name="deliveryTag">The delivery tag of the message to acknowlege.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task CompleteMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
+        internal async Task CompleteMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
         {
             await _workerSession.AcknowledgeMessageAsync(deliveryTag, AmqpConstants.AcceptedOutcome, cancellationToken).ConfigureAwait(false);
         }
@@ -202,24 +214,9 @@ namespace Microsoft.Azure.Devices.Amqp
         /// </summary>
         /// <param name="deliveryTag">The delivery tag of the message to acknowlege.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public async Task AbandonMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
+        internal async Task AbandonMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
         {
             await _workerSession.AcknowledgeMessageAsync(deliveryTag, AmqpConstants.ReleasedOutcome, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Returns true if this connection, its sessions and its sessions' links are all open.
-        /// Returns false otherwise.
-        /// </summary>
-        /// <returns>True if this connection, its sessions and its sessions' links are all open. False otherwise.</returns>
-        public bool IsOpen()
-        {
-            return _connection != null
-                && _connection.State == AmqpObjectState.Opened
-                && _cbsSession != null
-                && _cbsSession.IsOpen()
-                && _workerSession != null
-                && _workerSession.IsOpen();
         }
 
         private ArraySegment<byte> GetNextDeliveryTag()
@@ -346,6 +343,7 @@ namespace Microsoft.Azure.Devices.Amqp
         public void Dispose()
         {
             _openCloseSemaphore?.Dispose();
+            _cbsSession?.Dispose();
         }
     }
 }

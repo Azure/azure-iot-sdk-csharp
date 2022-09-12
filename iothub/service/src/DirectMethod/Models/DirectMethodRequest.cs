@@ -86,10 +86,10 @@ namespace Microsoft.Azure.Devices
         }
 
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout != null ? (int)ResponseTimeout?.TotalSeconds : null;
+        internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout != null ? (int)ConnectionTimeout?.TotalSeconds : null;
+        internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }

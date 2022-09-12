@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
                 string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
-                var commandResponse = new InvokeDigitalTwinCommandResponse()
+                var commandResponse = new InvokeDigitalTwinCommandResponse
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
@@ -361,12 +361,12 @@ namespace Microsoft.Azure.Devices
             string queryStringParameters = "";
             if (requestOptions?.ConnectTimeout != null)
             {
-                queryStringParameters += string.Format($"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout?.TotalSeconds}");
+                queryStringParameters += string.Format($"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout.Value.TotalSeconds}");
             }
 
             if (requestOptions?.ResponseTimeout != null)
             {
-                queryStringParameters += string.Format($"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout?.TotalSeconds}");
+                queryStringParameters += string.Format($"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout.Value.TotalSeconds}");
             }
 
             return queryStringParameters;

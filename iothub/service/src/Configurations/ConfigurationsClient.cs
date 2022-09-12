@@ -69,15 +69,15 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
 
+            Argument.AssertNotNull(configuration, nameof(configuration));
+            if (!string.IsNullOrEmpty(configuration.ETag.ToString()))
+            {
+                throw new ArgumentException(ETagSetWhileCreatingConfiguration);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(configuration, nameof(configuration));
-                if (!string.IsNullOrEmpty(configuration.ETag.ToString()))
-                {
-                    throw new ArgumentException(ETagSetWhileCreatingConfiguration);
-                }
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);

@@ -156,15 +156,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -178,8 +170,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
@@ -201,17 +192,8 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             IotHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property
-            // expire or unrecoverable error(authentication or quota exceed) occurs.
-            try
-            {
-                await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+
+            await InnerHandler.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -224,8 +206,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
@@ -239,17 +220,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property
-            // expire or unrecoverable error (authentication or quota exceed) occurs.
-            try
-            {
-                await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -257,23 +228,14 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The lock identifier for the previously received message</returns>
         public async Task CompleteMessageAsync(string lockToken, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.CompleteMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -281,24 +243,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task CompleteMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
 
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds
-            // property expire or unrecoverable error(authentication, quota exceed) occurs.
-            try
-            {
-                await CompleteMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await CompleteMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -310,24 +261,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="lockToken">The message lockToken.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task AbandonMessageAsync(string lockToken, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
             cancellationToken.ThrowIfCancellationRequested();
 
-            // The asynchronous operation shall retry until time specified in OperationTimeoutInMilliseconds property
-            // expire or unrecoverable error(authentication, quota exceed) occurs.
-            try
-            {
-                await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.AbandonMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -339,22 +279,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="message">The message to abandon.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task AbandonMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await AbandonMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await AbandonMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -366,22 +297,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <param name="lockToken">The message lockToken.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task RejectMessageAsync(string lockToken, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(lockToken, nameof(lockToken));
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.RejectMessageAsync(lockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -393,22 +315,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="message">The message to reject.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task RejectMessageAsync(Message message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await RejectMessageAsync(message.LockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -450,11 +363,6 @@ namespace Microsoft.Azure.Devices.Client
                     _deviceMethods.Remove(methodName);
                     await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
             }
             finally
             {
@@ -504,11 +412,6 @@ namespace Microsoft.Azure.Devices.Client
                     await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
             finally
             {
                 _methodsSemaphore.Release();
@@ -526,23 +429,14 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <returns>The twin object for the current client.</returns>
         public async Task<Twin> GetTwinAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin status.
-            try
-            {
-                return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            return await InnerHandler.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -550,23 +444,14 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
-        /// when the operation has been canceled. The inner exception will be <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         public async Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
 
             // `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties.
-            try
-            {
-                await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -608,11 +493,6 @@ namespace Microsoft.Azure.Devices.Client
                 _desiredPropertyUpdateCallback = callback;
                 _twinPatchCallbackContext = userContext;
             }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
             finally
             {
                 _twinDesiredPropertySemaphore.Release();
@@ -634,15 +514,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.CloseAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -804,15 +676,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private async Task SendDirectMethodResponseAsync(DirectMethodResponse directMethodResponse, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                await InnerHandler.SendMethodResponseAsync(directMethodResponse, cancellationToken).ConfigureAwait(false);
-            }
-            catch (IotHubClientException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
+            await InnerHandler.SendMethodResponseAsync(directMethodResponse, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task HandleMethodEnableAsync(CancellationToken cancellationToken = default)

@@ -14,11 +14,14 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
-    internal class AmqpClientHelper
+    /// <summary>
+    /// Miscellaneous helpers for AMQP operations.
+    /// </summary>
+    internal static class AmqpClientHelper
     {
-        public delegate object ParseFunc<in T>(AmqpMessage amqpMessage, T data);
+        internal delegate object ParseFunc<in T>(AmqpMessage amqpMessage, T data);
 
-        public static Exception ToIotHubClientContract(Exception exception)
+        internal static Exception ToIotHubClientContract(Exception exception)
         {
             switch (exception)
             {
@@ -42,7 +45,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
         }
 
-        public static void ValidateContentType(AmqpMessage amqpMessage, string expectedContentType)
+        internal static void ValidateContentType(AmqpMessage amqpMessage, string expectedContentType)
         {
             string contentType = amqpMessage.Properties.ContentType.ToString();
             if (!string.Equals(contentType, expectedContentType, StringComparison.OrdinalIgnoreCase))
@@ -51,14 +54,14 @@ namespace Microsoft.Azure.Devices.Amqp
             }
         }
 
-        public static async Task<T> GetObjectFromAmqpMessageAsync<T>(AmqpMessage amqpMessage)
+        internal static async Task<T> GetObjectFromAmqpMessageAsync<T>(AmqpMessage amqpMessage)
         {
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
-        public static Exception GetExceptionFromOutcome(Outcome outcome)
+        internal static Exception GetExceptionFromOutcome(Outcome outcome)
         {
             if (outcome == null)
             {
@@ -83,7 +86,7 @@ namespace Microsoft.Azure.Devices.Amqp
             return retException;
         }
 
-        public static Exception ToIotHubClientContract(Error error)
+        internal static Exception ToIotHubClientContract(Error error)
         {
             if (error == null)
             {
@@ -172,7 +175,7 @@ namespace Microsoft.Azure.Devices.Amqp
             return retException;
         }
 
-        public static ErrorContext GetErrorContextFromException(AmqpException exception)
+        internal static ErrorContext GetErrorContextFromException(AmqpException exception)
         {
             Error error = exception.Error;
             AmqpSymbol amqpSymbol = error.Condition;

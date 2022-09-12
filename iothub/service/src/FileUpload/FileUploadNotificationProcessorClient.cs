@@ -25,10 +25,33 @@ namespace Microsoft.Azure.Devices
         private readonly AmqpConnectionHandler _amqpConnection;
 
         /// <summary>
+        /// Creates an instance of this class. Provided for unit testing purposes only.
+        /// </summary>
+        protected FileUploadNotificationProcessorClient()
+        {
+        }
+
+        internal FileUploadNotificationProcessorClient(
+            string hostName,
+            IotHubConnectionProperties credentialProvider,
+            IotHubServiceClientOptions options)
+        {
+            _hostName = hostName;
+            _credentialProvider = credentialProvider;
+            _amqpConnection = new AmqpConnectionHandler(
+                credentialProvider,
+                options.Protocol,
+                AmqpsConstants.FileUploadNotificationsAddress,
+                options,
+                OnConnectionClosed,
+                OnNotificationMessageReceivedAsync);
+        }
+
+        /// <summary>
         /// The callback to be executed each time file upload notification is received from the service.
         /// </summary>
         /// <remarks>
-        /// May not be null.
+        /// Must not be null.
         /// </remarks>
         /// <example>
         /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
@@ -62,29 +85,6 @@ namespace Microsoft.Azure.Devices
         public Action<ErrorContext> ErrorProcessor { get; set; }
 
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes only.
-        /// </summary>
-        protected FileUploadNotificationProcessorClient()
-        {
-        }
-
-        internal FileUploadNotificationProcessorClient(
-            string hostName,
-            IotHubConnectionProperties credentialProvider,
-            IotHubServiceClientOptions options)
-        {
-            _hostName = hostName;
-            _credentialProvider = credentialProvider;
-            _amqpConnection = new AmqpConnectionHandler(
-                credentialProvider,
-                options.Protocol,
-                AmqpsConstants.FileUploadNotificationsAddress,
-                options,
-                OnConnectionClosed,
-                OnNotificationMessageReceivedAsync);
-        }
-
-        /// <summary>
         /// Open the connection and start receiving file upload notifications.
         /// </summary>
         /// <remarks>
@@ -103,6 +103,8 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening FileUploadNotificationProcessorClient", nameof(OpenAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -146,6 +148,8 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 await _amqpConnection.CloseAsync(cancellationToken).ConfigureAwait(false);
@@ -175,20 +179,17 @@ namespace Microsoft.Azure.Devices
                     using (amqpMessage)
                     {
                         AmqpClientHelper.ValidateContentType(amqpMessage, AmqpsConstants.FileNotificationContentType);
-                        FileUploadNotification fileUploadNotification = await AmqpClientHelper.GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage).ConfigureAwait(false);
+                        FileUploadNotification fileUploadNotification = await AmqpClientHelper
+                            .GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage)
+                            .ConfigureAwait(false);
                         AcknowledgementType ack = FileUploadNotificationProcessor.Invoke(fileUploadNotification);
-                        switch (ack)
+                        if (ack == AcknowledgementType.Complete)
                         {
-                            case AcknowledgementType.Abandon:
-                                await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
-                                break;
-
-                            case AcknowledgementType.Complete:
-                                await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
-                                break;
-
-                            default:
-                                break;
+                            await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
+                        }
+                        else if (ack == AcknowledgementType.Abandon)
+                        {
+                            await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                         }
                     }
                 }
@@ -197,12 +198,14 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception: {ex}", nameof(OnNotificationMessageReceivedAsync));
-                if (ex is IotHubServiceException || ex is IOException)
+
+                if (ex is IotHubServiceException hubEx)
                 {
-                    if (ex is IotHubServiceException)
-                        ErrorProcessor?.Invoke(new ErrorContext((IotHubServiceException)ex));
-                    else
-                        ErrorProcessor?.Invoke(new ErrorContext((IOException)ex));
+                    ErrorProcessor?.Invoke(new ErrorContext(hubEx));
+                }
+                else if (ex is IOException ioEx)
+                {
+                    ErrorProcessor?.Invoke(new ErrorContext(ioEx));
                 }
             }
             finally
@@ -219,6 +222,7 @@ namespace Microsoft.Azure.Devices
                 ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
                 Exception exceptionToLog = errorContext.IOException != null ? errorContext.IOException : errorContext.IotHubException;
+
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
@@ -227,6 +231,7 @@ namespace Microsoft.Azure.Devices
                 var defaultException = new IOException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
                 ErrorContext errorContext = new ErrorContext(defaultException);
                 ErrorProcessor?.Invoke(errorContext);
+
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }

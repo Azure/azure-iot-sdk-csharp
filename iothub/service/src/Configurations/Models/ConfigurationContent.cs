@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices
         [EditorBrowsable(EditorBrowsableState.Never)]
         public bool ShouldSerializeModulesContent()
         {
-            return ModulesContent != null & ModulesContent.Any();
+            return ModulesContent != null && ModulesContent.Any();
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices
         [EditorBrowsable(EditorBrowsableState.Never)]
         public bool ShouldSerializeModuleContent()
         {
-            return ModuleContent != null & ModuleContent.Any();
+            return ModuleContent != null && ModuleContent.Any();
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices
         [EditorBrowsable(EditorBrowsableState.Never)]
         public bool ShouldSerializeDeviceContent()
         {
-            return DeviceContent != null & DeviceContent.Any();
+            return DeviceContent != null && DeviceContent.Any();
         }
     }
 }

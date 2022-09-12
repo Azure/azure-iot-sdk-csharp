@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -16,13 +16,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public enum TestDeviceType
     {
         Sasl,
-        X509
+        X509,
     }
 
     public enum ConnectionStringAuthScope
     {
         IoTHub,
-        Device
+        Device,
     }
 
     public class TestDevice : IDisposable
