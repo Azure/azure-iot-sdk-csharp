@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public interface IWillMessage
     {
         /// <summary>
-        /// The payload to be sent in the will message
+        /// The payload to be sent in the will message.
         /// </summary>
         byte[] Payload { get; }
 
