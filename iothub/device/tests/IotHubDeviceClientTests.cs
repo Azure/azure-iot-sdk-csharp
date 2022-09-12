@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void IotHubDeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
             Action act = () => new IotHubDeviceClient(FakeConnectionStringWithModuleId);
-            act.Should().Throw<ArgumentException>();
+            act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return Task.FromResult(directMethodResponseWithPayload);
             }, "custom data").ConfigureAwait(false);
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(null).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(null).ConfigureAwait(false);
             await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(isMethodHandlerCalled);
         }
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 MethodName = "TestMethodName",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -377,7 +377,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -401,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodDefaultHandlerCalled);
         }
@@ -431,7 +431,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(isMethodHandlerCalled);
             Assert.IsTrue(isMethodDefaultHandlerCalled);
@@ -462,7 +462,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
             Assert.IsFalse(isMethodDefaultHandlerCalled);
@@ -487,7 +487,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -505,7 +505,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = "{\"grade\":\"good\"}",
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<DirectMethodResponse>(resp => resp.Status == 501), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -559,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -600,7 +600,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -617,7 +617,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -658,7 +658,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -688,7 +688,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody2,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -729,7 +729,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -759,7 +759,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody2,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -800,7 +800,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -816,7 +816,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -854,7 +854,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -871,7 +871,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -887,7 +887,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
@@ -899,7 +899,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -937,7 +937,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -954,7 +954,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -970,7 +970,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
@@ -982,7 +982,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Payload = methodBody,
             };
 
-            await deviceClient.InternalClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
+            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -1015,7 +1015,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
             // Connection status change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionStatusInfo.Status);
@@ -1037,7 +1037,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(null);
 
             // Connection status change from disconnected to connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -1056,7 +1056,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
             // current status = disabled
 
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionStatusInfo.Status);
@@ -1064,7 +1064,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsFalse(handlerCalled);
         }
@@ -1086,7 +1086,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.SetConnectionStatusChangeHandler(statusChangeHandler);
 
             // current status = disabled
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, connectionStatusInfo.Status);
@@ -1094,7 +1094,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError));
+            deviceClient.OnConnectionStatusChanged(new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError));
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.DisconnectedRetrying, connectionStatusInfo.Status);
@@ -1407,17 +1407,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var auth = new DeviceAuthenticationWithConnectionString(FakeConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            using InternalClient internalClient = new InternalClient(
-                new IotHubConnectionCredentials(auth, FakeHostName),
-                options,
-                pipelineBuilderSubstitute);
+            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
-            var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
+            var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
             sasTokenRefresher.Should().BeAssignableTo<DeviceAuthenticationWithSakRefresh>();
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
@@ -1443,17 +1439,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             int sasTokenRenewalBuffer = 50;
             var auth = new TestDeviceAuthenticationWithTokenRefresh(sasTokenTimeToLive, sasTokenRenewalBuffer);
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            var pipelineBuilderSubstitute = Substitute.For<IDeviceClientPipelineBuilder>();
 
             // act
             DateTime startTime = DateTime.UtcNow;
-            using InternalClient internalClient = new InternalClient(
-                new IotHubConnectionCredentials(auth, FakeHostName),
-                options,
-                pipelineBuilderSubstitute);
+            using IotHubDeviceClient deviceClient = new IotHubDeviceClient(FakeHostName, auth, options);
 
             // assert
-            var sasTokenRefresher = internalClient.IotHubConnectionCredentials.SasTokenRefresher;
+            var sasTokenRefresher = deviceClient.IotHubConnectionCredentials.SasTokenRefresher;
 
             // The calculation of the sas token expiration will begin once the AuthenticationWithTokenRefresh object has been initialized.
             // Since the initialization is internal to the ClientFactory logic and is not observable, we will allow a buffer period to our assertions.

@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <see cref="CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment, CancellationToken)"/>.
     ///
     /// The IoT hub Device Provisioning Service supports SQL queries too. The application can create a new query using
-    /// one of the queries factories, for instance <see cref="CreateIndividualEnrollmentQuery(QuerySpecification, CancellationToken)"/>, passing
+    /// one of the queries factories, for instance <see cref="CreateIndividualEnrollmentQuery(string, CancellationToken)"/>, passing
     /// the <see cref="QuerySpecification"/>, with the SQL query. This factory returns a <see cref="Query"/> object, which is an
     /// active iterator.
     ///
@@ -64,7 +64,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
-        private readonly ProvisioningServiceClientOptions _options;
         private readonly IContractApiHttp _contractApiHttp;
 
         /// <summary>
@@ -93,11 +92,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
-            _options = options;
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
-                options.ProvisioningServiceHttpSettings);
+                options);
         }
 
         /// <summary>
@@ -223,15 +221,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
         /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
+        /// <param name="query">The SQL query. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, CancellationToken cancellationToken = default)
+        public Query CreateIndividualEnrollmentQuery(string query, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
-                querySpecification,
+                query,
                 _contractApiHttp,
                 cancellationToken);
         }
@@ -248,18 +246,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
         /// number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
-        /// default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification, CancellationToken)"/>.
+        /// default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(string, CancellationToken)"/>.
         /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
+        /// <param name="query">The SQL query. It cannot be <c>null</c>.</param>
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, CancellationToken cancellationToken = default)
+        public Query CreateIndividualEnrollmentQuery(string query, int pageSize, CancellationToken cancellationToken = default)
         {
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
-                querySpecification,
+                query,
                 _contractApiHttp,
                 cancellationToken,
                 pageSize);
@@ -384,15 +382,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
         /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
+        /// <param name="query">The SQL query. It cannot be <c>null</c>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameter is not correct.</exception>
-        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, CancellationToken cancellationToken = default)
+        public Query CreateEnrollmentGroupQuery(string query, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
-                querySpecification,
+                query,
                 _contractApiHttp,
                 cancellationToken);
         }
@@ -409,18 +407,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
         /// number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
-        /// default pageSize or use the API <see cref="CreateEnrollmentGroupQuery(QuerySpecification, CancellationToken)"/>.
+        /// default pageSize or use the API <see cref="CreateEnrollmentGroupQuery(string, CancellationToken)"/>.
         /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
+        /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
-        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, CancellationToken cancellationToken = default)
+        public Query CreateEnrollmentGroupQuery(string query, int pageSize, CancellationToken cancellationToken = default)
         {
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
-                querySpecification,
+                query,
                 _contractApiHttp,
                 cancellationToken,
                 pageSize);
@@ -519,18 +517,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
         /// <c>"SELECT * FROM enrollments"</c>.
         /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
+        /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
-            QuerySpecification querySpecification,
+            string query,
             string enrollmentGroupId,
             CancellationToken cancellationToken = default)
         {
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
-                querySpecification,
+                query,
                 _contractApiHttp,
                 cancellationToken,
                 enrollmentGroupId);
@@ -548,23 +546,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
         /// number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
-        /// default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification, CancellationToken)"/>.
+        /// default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(string, CancellationToken)"/>.
         /// </remarks>
-        /// <param name="querySpecification">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
+        /// <param name="query">The <see cref="QuerySpecification"/> with the SQL query. It cannot be <c>null</c>.</param>
         /// <param name="enrollmentGroupId">The <c>string</c> that identifies the enrollmentGroup. It cannot be <c>null</c> or empty.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="pageSize">The <c>int</c> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">If the provided parameters are not correct.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
-            QuerySpecification querySpecification,
+            string query,
             string enrollmentGroupId,
             int pageSize,
             CancellationToken cancellationToken = default)
         {
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
-                querySpecification,
+                query,
                 _contractApiHttp,
                 cancellationToken,
                 enrollmentGroupId,

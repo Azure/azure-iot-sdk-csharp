@@ -83,16 +83,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Justification = "Public API cannot change parameter order.")]
         internal static Query CreateEnrollmentGroupQuery(
             ServiceConnectionString provisioningConnectionString,
-            QuerySpecification querySpecification,
+            string query,
             IContractApiHttp contractApiHttp,
             CancellationToken cancellationToken,
             string enrollmentGroupId,
             int pageSize = 0)
         {
-            if (querySpecification == null)
-            {
-                throw new ArgumentNullException(nameof(querySpecification));
-            }
+            Argument.AssertNotNullOrWhiteSpace(query, nameof(query));
 
             if (pageSize < 0)
             {
@@ -102,7 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new Query(
                 provisioningConnectionString,
                 GetGetDeviceRegistrationStatus(enrollmentGroupId),
-                querySpecification,
+                query,
                 contractApiHttp,
                 pageSize,
                 cancellationToken);

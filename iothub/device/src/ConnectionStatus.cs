@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
@@ -32,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The device connection was closed gracefully.
         /// </summary>
         /// <remarks>
-        /// To perform more operations on the client, call <see cref="IotHubDeviceClient.Dispose()"/> and then re-initialize the client.
+        /// To perform more operations on the client, call <see cref="IDisposable.Dispose()"/> and then re-initialize the client.
         /// </remarks>
         Closed,
     }
