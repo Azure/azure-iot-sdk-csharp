@@ -13,16 +13,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         /// <inheritdoc />
         public QualityOfService QualityOfService { get; set; }
-
-        /// <summary>
-        /// Creates an instance of WillMessage
-        /// </summary>
-        /// <param name="qualityOfService">The quality of service</param>
-        /// <param name="payload">The payload to be sent in the will message</param>
-        public WillMessage(QualityOfService qualityOfService, byte[] payload)
-        {
-            QualityOfService = qualityOfService;
-            Payload = payload;
-        }
     }
 }
