@@ -13,6 +13,9 @@ using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices
 {
+    /// <summary>
+    /// Our web socket implementation based off of Azure.AMQP transport.
+    /// </summary>
     internal sealed class ClientWebSocketTransport : TransportBase, IDisposable
     {
         private static readonly AsyncCallback s_onReadComplete = OnReadComplete;
@@ -28,7 +31,7 @@ namespace Microsoft.Azure.Devices
         private readonly CancellationTokenSource _writeCancellationTokenSource;
         private bool _isDisposed;
 
-        public ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
+        internal ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
             : base("clientwebsocket")
         {
             _webSocket = webSocket;
@@ -365,11 +368,12 @@ namespace Microsoft.Azure.Devices
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;
         }
+
         private static IAsyncResult ToAsyncResult<TResult>(Task<TResult> task, AsyncCallback callback, object state)
         {
             if (task.AsyncState == state)
@@ -379,7 +383,7 @@ namespace Microsoft.Azure.Devices
                     task.ContinueWith(
                         t => callback(task),
                         CancellationToken.None,
-                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
                 }
 
@@ -406,7 +410,7 @@ namespace Microsoft.Azure.Devices
                     callback?.Invoke(tcs.Task);
                 },
                 CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
+                TaskContinuationOptions.RunContinuationsAsynchronously,
                 TaskScheduler.Default);
 
             return tcs.Task;

@@ -18,14 +18,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
     internal class ApplicationParameters
     {
         [Option(
-            'p',
+            'c',
             "PrimaryConnectionString",
             Required = true,
             HelpText = "The primary connection string for the device to simulate.")]
         public string PrimaryConnectionString { get; set; }
 
         [Option(
-            's',
             "SecondaryConnectionString",
             Required = false,
             HelpText = "The secondary connection string for the device to simulate.")]
