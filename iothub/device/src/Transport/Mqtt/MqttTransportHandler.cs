@@ -21,6 +21,7 @@ using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
+using MQTTnet.Server;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -124,26 +125,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
         // that is sent over the wire, so we increment this value locally instead.
         private int _nextLockToken;
-
-        private static class IotHubWirePropertyNames
-        {
-            public const string AbsoluteExpiryTime = "$.exp";
-            public const string CorrelationId = "$.cid";
-            public const string MessageId = "$.mid";
-            public const string To = "$.to";
-            public const string UserId = "$.uid";
-            public const string OutputName = "$.on";
-            public const string MessageSchema = "$.schema";
-            public const string CreationTimeUtc = "$.ctime";
-            public const string ContentType = "$.ct";
-            public const string ContentEncoding = "$.ce";
-            public const string ConnectionDeviceId = "$.cdid";
-            public const string ConnectionModuleId = "$.cmid";
-            public const string MqttDiagIdKey = "$.diagid";
-            public const string MqttDiagCorrelationContextKey = "$.diagctx";
-            public const string InterfaceId = "$.ifid";
-            public const string ComponentName = "$.sub";
-        }
 
         private static readonly Dictionary<string, string> s_toSystemPropertiesMap = new Dictionary<string, string>
         {
@@ -384,17 +365,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string TopicName;
-            if (_moduleId == null)
-            {
-                // sender is a device
-                TopicName = PopulateMessagePropertiesFromMessage(_deviceToCloudMessagesTopic, message);
-            }
-            else
-            {
-                // sender is a module
-                TopicName = PopulateMessagePropertiesFromMessage(_moduleToCloudMessagesTopic, message);
-            }
+            // Topic depends on if the client is a module client or a device client
+            string baseTopicName = _moduleId == null ? _deviceToCloudMessagesTopic : _moduleToCloudMessagesTopic;
+            string TopicName = PopulateMessagePropertiesFromMessage(baseTopicName, message);
 
             if (message.HasPayload && message.Payload.Length > MaxMessageSize)
             {
@@ -422,13 +395,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Note that this sends all messages at once and then waits for all the acknowledgements. This
             // is the recommended pattern for sending large numbers of messages over an asynchronous
             // protocol like MQTT
-            List<Task> sendTasks = new List<Task>();
+            int index = 0;
+            Task[] sendTasks = new Task[messages.Count()];
             foreach (Message message in messages)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                sendTasks.Add(SendEventAsync(message, cancellationToken));
+                sendTasks[index] = SendEventAsync(message, cancellationToken);
+                index++;
             }
 
+            // There is no need to check cancellation token here since each task being waited on here
+            // has the cancellation token and will finish when the cancellation token is cancelled.
             await Task.WhenAll(sendTasks).ConfigureAwait(false);
         }
 
@@ -678,18 +654,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new IotHubClientException("Failed to subscribe to topic " + fullTopic, true);
             }
 
-            // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
-            foreach (MqttClientSubscribeResultItem subscribeResult in subscribeResults.Items)
+            MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
+
+            if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
             {
-                if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
-                {
-                    throw new IotHubClientException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic, true);
-                }
-
-                return;
+                throw new IotHubClientException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic, true);
             }
-
-            throw new IotHubClientException("Service did not acknowledge the subscription request for topic " + fullTopic, true);
         }
 
         private async Task UnsubscribeAsync(string topic, CancellationToken cancellationToken)
@@ -705,23 +675,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new IotHubClientException("Failed to unsubscribe to topic " + topic, true);
             }
 
-            // Expecting only 1 result here so the foreach loop should return upon receiving the expected ack
-            foreach (MqttClientUnsubscribeResultItem unsubscribeResult in unsubscribeResults.Items)
+            MqttClientUnsubscribeResultItem unsubscribeResult = unsubscribeResults.Items.FirstOrDefault();
+            if (!unsubscribeResult.TopicFilter.Equals(topic))
             {
-                if (!unsubscribeResult.TopicFilter.Equals(topic))
-                {
-                    throw new IotHubClientException("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter, true);
-                }
-
-                if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
-                {
-                    throw new IotHubClientException("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode, true);
-                }
-
-                return;
+                throw new IotHubClientException("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter, true);
             }
 
-            throw new IotHubClientException("Service did not acknowledge the unsubscribe request for topic " + topic, true);
+            if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
+            {
+                throw new IotHubClientException("Failed to unsubscribe from topic " + topic + " with reason " + unsubscribeResult.ResultCode, true);
+            }
         }
 
         private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
@@ -852,7 +815,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         // Save the status code, but don't throw here. The thread waiting on the
                         // _getTwinSemaphore will check this value and throw if it wasn't successful
-                        getTwinResponses[receivedRequestId] = new GetTwinResponse(status);
+                        getTwinResponses[receivedRequestId] = new GetTwinResponse
+                        {
+                            Status = status,
+                        };
                     }
                     else
                     {
@@ -863,7 +829,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
                             };
 
-                            getTwinResponses[receivedRequestId] = new GetTwinResponse(status, twin);
+                            getTwinResponses[receivedRequestId] = new GetTwinResponse
+                            {
+                                Status = status,
+                                Twin = twin,
+                            };
                         }
                         catch (JsonReaderException ex)
                         {
@@ -879,7 +849,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.");
                     // This received message is in response to an update reported properties request.
                     _inProgressUpdateReportedPropertiesRequests.Remove(receivedRequestId);
-                    reportedPropertyUpdateResponses[receivedRequestId] = new PatchTwinResponse(status, version);
+                    reportedPropertyUpdateResponses[receivedRequestId] = new PatchTwinResponse()
+                    {
+                        Status = status,
+                        Version = version,
+                    };
+
                     _reportedPropertyUpdateResponsesSemaphore.Release();
                 }
                 else

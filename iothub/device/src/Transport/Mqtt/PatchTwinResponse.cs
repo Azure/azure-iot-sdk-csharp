@@ -4,24 +4,16 @@
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     /// <summary>
-    /// Data class that contains the service's response to a patch twin request.
+    /// The service's response to a patch twin request.
     /// </summary>
     internal class PatchTwinResponse
     {
         /// <summary>
-        /// Construct a new instance of this class.
+        /// The status the service responded with.
         /// </summary>
-        /// <param name="status">The status the service responded with. 204 indicates a successful patch twin request.</param>
-        /// <param name="version">The new version of the twin after the patch.</param>
-        internal PatchTwinResponse(int status, int version)
-        {
-            Status = status;
-            Version = version;
-        }
-
-        /// <summary>
-        /// The status the service responded with. 204 indicates a successful patch twin request.
-        /// </summary>
+        /// <remarks>
+        /// 204 indicates a successful patch twin request.
+        /// </remarks>
         internal int Status { get; set; }
 
         /// <summary>
