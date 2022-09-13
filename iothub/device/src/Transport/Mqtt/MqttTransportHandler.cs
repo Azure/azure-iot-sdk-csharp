@@ -94,9 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
-        private readonly ConcurrentDictionary<string, MqttApplicationMessageReceivedEventArgs> _messagesToAcknowledge = new();
-
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
 
         private bool _isSubscribedToDesiredPropertyPatches;
@@ -494,6 +492,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // responds, this layer can correlate the request.
                 var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>();
                 _getTwinResponseCompletions[requestId] = taskCompletionSource;
+
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
@@ -545,6 +544,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
+                // Note the request as "in progress" before actually sending it so that no matter how quickly the service
+                // responds, this layer can correlate the request.
                 var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>();
                 _reportedPropertyUpdateResponseCompletions[requestId] = taskCompletionSource;
 
@@ -584,11 +585,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             base.Dispose(disposing);
             _mqttClient?.Dispose();
-
-            // TODO notify the user for these that they failed? Clear these when closing instead?
-            _getTwinResponseCompletions?.Clear();
-            _reportedPropertyUpdateResponseCompletions?.Clear();
-            _messagesToAcknowledge?.Clear();
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
@@ -708,14 +704,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             PopulateMessagePropertiesFromPacket(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
-            // Save the received mqtt message instance so that it can be completed later
-            _messagesToAcknowledge[receivedCloudToDeviceMessage.LockToken] = receivedEventArgs;
-
             if (_deviceMessageReceivedListener != null)
             {
                 // We are intentionally not awaiting _deviceMessageReceivedListener callback.
                 // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
                 _ = _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
+
+                // note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
                 await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
             }
             else
@@ -808,6 +803,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (Logging.IsEnabled)
                                 Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+
+                            getTwinCompletion.SetException(ex);
                         }
                     }
                 }
