@@ -759,7 +759,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out int version))
             {
-                string body = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
+                byte[] payload = receivedEventArgs.ApplicationMessage.Payload ?? new byte[0];
+                string payloadString = Encoding.UTF8.GetString(payload);
 
                 if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
                 {
@@ -771,7 +772,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         var getTwinResponse = new GetTwinResponse
                         {
                             Status = status,
-                            Message = body,
+                            Message = payloadString,
                         };
 
                         getTwinCompletion.SetResult(getTwinResponse);
@@ -782,7 +783,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             Twin twin = new Twin
                             {
-                                Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
+                                Properties = JsonConvert.DeserializeObject<TwinProperties>(payloadString),
                             };
 
                             var getTwinResponse = new GetTwinResponse
@@ -796,7 +797,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{payload}'");
 
                             getTwinCompletion.SetException(ex);
                         }
@@ -812,7 +813,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         Status = status,
                         Version = version,
-                        Message = body,
+                        Message = payloadString,
                     };
 
                     patchTwinCompletion.SetResult(patchTwinResponse);
