@@ -59,7 +59,9 @@ namespace Microsoft.Azure.Devices
             {
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
                 IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(responseMessage);
-                throw new IotHubServiceException(responseMessage.StatusCode, errorCode, errorMessage);
+                bool isTransient = GetIsTransientFlag(responseMessage.StatusCode, errorCode);
+
+                throw new IotHubServiceException(responseMessage.StatusCode, errorCode, errorMessage, isTransient);
             }
         }
 
@@ -123,6 +125,29 @@ namespace Microsoft.Azure.Devices
             }
 
             return escapedETagBuilder.ToString();
+        }
+
+        private static bool GetIsTransientFlag(HttpStatusCode statusCode, IotHubErrorCode errorCode)
+        {
+            switch (errorCode)
+            {
+                case IotHubErrorCode.ThrottlingException:
+                case IotHubErrorCode.IotHubQuotaExceeded:
+                    return true;
+
+                case IotHubErrorCode.Unknown:
+                    if (statusCode == HttpStatusCode.RequestTimeout)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                default:
+                    return false;
+            }
         }
     }
 }

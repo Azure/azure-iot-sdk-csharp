@@ -63,6 +63,22 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
+        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
+        /// error message and an optional reference to the inner exception that caused this exception.
+        /// </summary>
+        /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
+        /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, bool isTransient, Exception innerException = null)
+            : this(message, innerException, isTransient, string.Empty)
+        {
+            StatusCode = errorCode;
+            ErrorCode = iotHubStatusCode;
+        }
+
+        /// <summary>
         /// Creates an instance of this class with a specified error message, a reference
         /// to the inner exception that caused this exception, a flag indicating if the error was transient
         /// and the service returned tracking Id associated with this particular error.
