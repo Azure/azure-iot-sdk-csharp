@@ -529,6 +529,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Sent twin get request with request id {requestId}. Now waiting for the service response.");
 
+            // Wait until this client receives a message from IoT hub that contains the requested twin.
             while (!_getTwinResponses.ContainsKey(requestId))
             {
                 // May need to wait multiple times. This semaphore is released each time a get twin
@@ -593,6 +594,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
 
+            // Wait until this client receives a message from IoT hub that contains the response to this patch operation.
             while (!reportedPropertyUpdateResponses.ContainsKey(requestId))
             {
                 // May need to wait multiple times. This semaphore is released each time a reported
@@ -608,7 +610,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (patchTwinResponse.Status != 204)
             {
-                //TODO tim
+                //TODO pass in status code to error, need mapping to IotHubStatusCode
                 throw new IotHubClientException("Failed to send twin patch");
             }
 
