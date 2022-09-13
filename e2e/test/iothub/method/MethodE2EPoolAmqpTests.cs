@@ -64,52 +64,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_Amqp()
-        {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_AmqpWs()
-        {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_Amqp()
-        {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync,
-                    authScope: ConnectionStringAuthScope.IoTHub)
-                .ConfigureAwait(false);
-        }
-
-        [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_AmqpWs()
-        {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodDefaultHandlerAsync,
-                    authScope: ConnectionStringAuthScope.IoTHub)
-                .ConfigureAwait(false);
-        }
-
         private async Task SendMethodAndRespondPoolOverAmqp(
             IotHubClientAmqpSettings transportSettings,
             int poolSize,

@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.Client
 
         // Cloud-to-module message callback information
         private volatile Tuple<Func<Message, object, Task<MessageResponse>>, object> _defaultEventCallback;
-        private volatile Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>> _receiveEventEndpoints;
 
         /// <summary>
         /// Creates a disposable <c>IotHubModuleClient</c> from the specified connection string.
@@ -194,77 +193,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the particular input.
-        /// </summary>
-        /// <remarks>
-        /// If a delegate is already associated with
-        /// the input, it will be replaced with the new delegate.
-        /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
-        /// </remarks>
-        /// <param name="inputName">The name of the input to associate with the delegate.</param>
-        /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The task containing the event</returns>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetInputMessageHandlerAsync(
-            string inputName,
-            Func<Message, object, Task<MessageResponse>> messageHandler,
-            object userContext,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
-
-            ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
-
-            cancellationToken.ThrowIfCancellationRequested();
-            await _moduleReceiveMessageSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (messageHandler != null)
-                {
-                    // When using a device module we need to enable the 'deviceBound' message link
-                    await EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-
-                    if (_receiveEventEndpoints == null)
-                    {
-                        _receiveEventEndpoints = new Dictionary<string, Tuple<Func<Message, object, Task<MessageResponse>>, object>>();
-                    }
-
-                    _receiveEventEndpoints[inputName] = new Tuple<Func<Message, object, Task<MessageResponse>>, object>(messageHandler, userContext);
-                }
-                else
-                {
-                    if (_receiveEventEndpoints != null)
-                    {
-                        _receiveEventEndpoints.Remove(inputName);
-                        if (_receiveEventEndpoints.Count == 0)
-                        {
-                            _receiveEventEndpoints = null;
-                        }
-                    }
-
-                    await DisableEventReceiveAsync(_isAnEdgeModule, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _moduleReceiveMessageSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
-            }
-        }
-
-        /// <summary>
         /// Sets a new default delegate which applies to all endpoints.
         /// </summary>
         /// <remarks>
-        /// If a delegate is already associated with
-        /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
-        /// it will be overwritten.
+        /// If a default delegate was set previously, it will be overwritten.
         /// A message handler can be unset by setting <paramref name="messageHandler"/> to null.
         /// </remarks>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
@@ -370,7 +302,7 @@ namespace Microsoft.Azure.Devices.Client
         private Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
         {
             // The telemetry downlink needs to be enabled only for the first time that the _defaultEventCallback delegate is set.
-            return _receiveEventEndpoints == null && _defaultEventCallback == null
+            return _defaultEventCallback == null
                 ? InnerHandler.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken)
                 : Task.CompletedTask;
         }
@@ -379,7 +311,7 @@ namespace Microsoft.Azure.Devices.Client
         private Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken = default)
         {
             // The telemetry downlink should be disabled only after _defaultEventCallback delegate has been removed.
-            return _receiveEventEndpoints == null && _defaultEventCallback == null
+            return _defaultEventCallback == null
                 ? InnerHandler.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken)
                 : Task.CompletedTask;
         }
@@ -387,12 +319,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The delegate for handling event messages received
         /// </summary>
-        /// <param name="input">The input on which a message is received</param>
         /// <param name="message">The message received</param>
-        internal async Task OnModuleEventMessageReceivedAsync(string input, Message message)
+        internal async Task OnModuleEventMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
+                Logging.Enter(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
 
             if (message == null)
             {
@@ -401,27 +332,11 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Tuple<Func<Message, object, Task<MessageResponse>>, object> callback = null;
-                await _moduleReceiveMessageSemaphore.WaitAsync().ConfigureAwait(false);
-                try
-                {
-                    if (_receiveEventEndpoints == null
-                        || string.IsNullOrWhiteSpace(input)
-                        || !_receiveEventEndpoints.TryGetValue(input, out callback))
-                    {
-                        callback = _defaultEventCallback;
-                    }
-                }
-                finally
-                {
-                    _moduleReceiveMessageSemaphore.Release();
-                }
-
                 MessageResponse response = MessageResponse.Completed;
-                if (callback?.Item1 != null)
+                if (_defaultEventCallback?.Item1 != null)
                 {
-                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = callback.Item1;
-                    object userContext = callback.Item2;
+                    Func<Message, object, Task<MessageResponse>> userSuppliedCallback = _defaultEventCallback.Item1;
+                    object userContext = _defaultEventCallback.Item2;
 
                     response = await userSuppliedCallback
                         .Invoke(message, userContext)
@@ -456,7 +371,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, input, message, nameof(OnModuleEventMessageReceivedAsync));
+                    Logging.Exit(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
             }
         }
 
