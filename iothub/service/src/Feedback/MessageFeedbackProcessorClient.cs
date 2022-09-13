@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices
 
                         var feedbackBatch = new FeedbackBatch
                         {
-                            EnqueuedTimeUtc = (DateTimeOffset)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedOn],
+                            EnqueuedOnUtc = (DateTimeOffset)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedOn],
                             Records = records,
                             IotHubHostName = Encoding.UTF8.GetString(
                                 amqpMessage.Properties.UserId.Array,

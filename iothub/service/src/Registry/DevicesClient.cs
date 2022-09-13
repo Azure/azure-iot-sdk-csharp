@@ -888,17 +888,6 @@ namespace Microsoft.Azure.Devices
                 UriKind.Relative);
         }
 
-        // TODO: why no references?
-        private static Uri GetAdminUri(string operation)
-        {
-            return new Uri(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    AdminUriFormat,
-                    operation),
-                UriKind.Relative);
-        }
-
         private static Uri GetJobUri(string jobId)
         {
             return new Uri(

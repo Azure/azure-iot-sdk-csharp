@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     Twin = twinUpdate,
                     QueryCondition = "DeviceId IN ['" + deviceId + "']",
-                    StartOnUtc = DateTime.UtcNow.AddMinutes(3),
+                    StartOnUtc = DateTimeOffset.UtcNow.AddMinutes(3),
                 };
 
                 await jobsClient.ScheduleTwinUpdateAsync(scheduledTwinUpdate);

@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 QueryCondition = "DeviceId IN ['testDevice']",
                 Twin = new Twin(),
-                StartOnUtc = DateTime.UtcNow
+                StartOnUtc = DateTimeOffset.UtcNow
             };
             var ScheduledTwinUpdateOptions = new ScheduledJobsOptions
             {

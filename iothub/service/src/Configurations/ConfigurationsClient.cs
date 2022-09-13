@@ -70,10 +70,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
-            if (!string.IsNullOrEmpty(configuration.ETag.ToString()))
-            {
-                throw new ArgumentException(ETagSetWhileCreatingConfiguration);
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -321,10 +317,6 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Deleting configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
-            if (string.IsNullOrWhiteSpace(configuration.ETag.ToString()) && onlyIfUnchanged)
-            {
-                throw new ArgumentException(ETagNotSetWhileDeletingConfiguration);
-            }
 
             cancellationToken.ThrowIfCancellationRequested();
 

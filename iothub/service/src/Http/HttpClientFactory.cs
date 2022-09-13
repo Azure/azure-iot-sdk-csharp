@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices
             var httpMessageHandler = new HttpClientHandler
             {
                 SslProtocols = options.SslProtocols,
-                CheckCertificateRevocationList = options.CertificateRevocationCheck
+                CheckCertificateRevocationList = options.CertificateRevocationCheck,
             };
 #pragma warning restore CA2000 // Dispose objects before losing scope
 

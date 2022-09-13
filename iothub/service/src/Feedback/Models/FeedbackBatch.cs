@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
     public class FeedbackBatch
     {
         /// <summary>
-        /// Date and time in UTC when the feedback message was received by the IoT hub.
+        /// When the feedback message was received by the IoT hub in UTC.
         /// </summary>
         /// <remarks>
         /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.

@@ -59,13 +59,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate
+                var twinUpdate = new ScheduledTwinUpdate
                 {
                     Twin = twin,
                     QueryCondition = query,
-                    StartOnUtc = DateTime.UtcNow
+                    StartOnUtc = DateTimeOffset.UtcNow
                 };
-                ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
+                var twinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
                     MaxExecutionTime = TimeSpan.FromMinutes(2)
