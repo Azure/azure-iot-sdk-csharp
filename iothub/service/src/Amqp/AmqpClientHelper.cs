@@ -7,7 +7,6 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
