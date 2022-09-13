@@ -8,8 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.38.1" />
     <PackageReference Include="System.Text.Json" Version="6.0.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+	<PackageReference Include="Microsoft.Azure.Devices" Version="1.38.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+	<ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
 </Project>
