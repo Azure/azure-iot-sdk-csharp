@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -21,7 +20,6 @@ using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
-using MQTTnet.Server;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
@@ -98,14 +96,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly ConcurrentDictionary<string, MqttApplicationMessageReceivedEventArgs> _messagesToAcknowledge = new();
 
-        private readonly ConcurrentDictionary<string, GetTwinResponse> _getTwinResponses = new();
-        private SemaphoreSlim _getTwinSemaphore = new(0);
-
-        private readonly ConcurrentDictionary<string, PatchTwinResponse> reportedPropertyUpdateResponses = new();
-        private SemaphoreSlim _reportedPropertyUpdateResponsesSemaphore = new(0);
-
-        private readonly List<string> _inProgressUpdateReportedPropertiesRequests = new();
-        private readonly List<string> _inProgressGetTwinRequests = new();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>>();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
 
         private bool _isSubscribedToDesiredPropertyPatches;
         private bool _isSubscribedToTwinResponses;
@@ -166,27 +158,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.ComponentName,IotHubWirePropertyNames.ComponentName }
         };
 
-        internal MqttTransportHandler(
-            PipelineContext context,
-            IotHubClientMqttSettings settings,
-            Func<DirectMethodRequest, Task> onMethodCallback = null,
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
-            Func<string, Message, Task> onModuleMessageReceivedCallback = null,
-            Func<Message, Task> onDeviceMessageReceivedCallback = null)
-            : this(context, settings)
-        {
-            _methodListener = onMethodCallback;
-            _deviceMessageReceivedListener = onDeviceMessageReceivedCallback;
-            _moduleMessageReceivedListener = onModuleMessageReceivedCallback;
-            _onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
-        }
-
         internal MqttTransportHandler(PipelineContext context, IotHubClientMqttSettings settings)
             : base(context, settings)
         {
             _mqttTransportSettings = settings;
             _deviceId = context.IotHubConnectionCredentials.DeviceId;
             _moduleId = context.IotHubConnectionCredentials.ModuleId;
+
+            _methodListener = context.MethodCallback;
+            _deviceMessageReceivedListener = context.DeviceEventCallback;
+            _moduleMessageReceivedListener = context.ModuleEventCallback;
+            _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
 
             _deviceToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, DeviceToCloudMessagesTopicFormat, _deviceId);
             _moduleToCloudMessagesTopic = string.Format(CultureInfo.InvariantCulture, ModuleToCloudMessagesTopicFormat, _deviceId, _moduleId);
@@ -510,46 +492,36 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                 // responds, this layer can correlate the request.
-                _inProgressGetTwinRequests.Add(requestId);
+                var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>();
+                _getTwinResponseCompletions[requestId] = taskCompletionSource;
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
                     throw new IotHubClientException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}", true);
                 }
+
+                // Wait until IoT hub sends a message to this client with the response to this patch twin request.
+                GetTwinResponse getTwinResponse = await taskCompletionSource.Task.ConfigureAwait(false);
+
+                int getTwinStatus = getTwinResponse.Status;
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinStatus}.");
+
+                if (getTwinStatus != 200)
+                {
+                    //TODO pass in status code to error, need mapping to IotHubStatusCode
+                    throw new IotHubClientException("Failed to get twin");
+                }
+
+                return getTwinResponse.Twin;
             }
-            catch (Exception)
+            finally
             {
-                // Since the request failed due to a network level issue or was rejected by the service, stop tracking
-                // this request id.
-                _inProgressGetTwinRequests.Remove(requestId);
-                throw;
+                // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
+                _getTwinResponseCompletions.TryRemove(requestId, out TaskCompletionSource<GetTwinResponse> _);
             }
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, $"Sent twin get request with request id {requestId}. Now waiting for the service response.");
-
-            // Wait until this client receives a message from IoT hub that contains the requested twin.
-            while (!_getTwinResponses.ContainsKey(requestId))
-            {
-                // May need to wait multiple times. This semaphore is released each time a get twin
-                // request gets a response, but it may not be in response to this particular get twin request.
-                _getTwinSemaphore.Wait(cancellationToken);
-            }
-
-            _getTwinResponses.TryRemove(requestId, out GetTwinResponse getTwinResponse);
-            int getTwinStatus = getTwinResponse.Status;
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinStatus}.");
-
-            if (getTwinStatus != 200)
-            {
-                //TODO pass in status code to error, need mapping to IotHubStatusCode
-                throw new IotHubClientException("Failed to get twin");
-            }
-
-            return getTwinResponse.Twin;
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
@@ -573,49 +545,39 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                // Note the request as "in progress" before actually sending it so that no matter how quickly the service
-                // responds, this layer can correlate the request.
-                _inProgressUpdateReportedPropertiesRequests.Add(requestId);
+                var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>();
+                _reportedPropertyUpdateResponseCompletions[requestId] = taskCompletionSource;
+
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
                 if (result.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
                     throw new IotHubClientException($"Failed to publish the mqtt packet for patching this client's twin with reason code {result.ReasonCode}", true);
                 }
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
+
+                // Wait until IoT hub sends a message to this client with the response to this patch twin request.
+                PatchTwinResponse patchTwinResponse = await taskCompletionSource.Task.ConfigureAwait(false);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.");
+
+                if (patchTwinResponse.Status != 204)
+                {
+                    //TODO pass in status code to error, need mapping to IotHubStatusCode
+                    throw new IotHubClientException("Failed to send twin patch");
+                }
+
+                //TODO new twin version should be returned here, but API surface doesn't currently allow it
+                //return patchTwinResponse.Version;
             }
-            catch (Exception)
+            finally
             {
-                // Since the request failed due to a network level issue or was rejected by the service, stop tracking
-                // this request id.
-                _inProgressUpdateReportedPropertiesRequests.Remove(requestId);
-                throw;
+                // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
+                _reportedPropertyUpdateResponseCompletions.TryRemove(requestId, out TaskCompletionSource<PatchTwinResponse> _);
             }
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
-
-            // Wait until this client receives a message from IoT hub that contains the response to this patch operation.
-            while (!reportedPropertyUpdateResponses.ContainsKey(requestId))
-            {
-                // May need to wait multiple times. This semaphore is released each time a reported
-                // properties update request gets a response, but it may not be in response to this
-                // particular reported properties request.
-                _reportedPropertyUpdateResponsesSemaphore.Wait(cancellationToken);
-            }
-
-            reportedPropertyUpdateResponses.TryRemove(requestId, out PatchTwinResponse patchTwinResponse);
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.");
-
-            if (patchTwinResponse.Status != 204)
-            {
-                //TODO pass in status code to error, need mapping to IotHubStatusCode
-                throw new IotHubClientException("Failed to send twin patch");
-            }
-
-            //TODO new twin version should be returned here, but API surface doesn't currently allow it
-            //return patchTwinResponse.Version;
         }
 
         protected override void Dispose(bool disposing)
@@ -624,14 +586,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _mqttClient?.Dispose();
 
             // TODO notify the user for these that they failed? Clear these when closing instead?
-            _getTwinResponses?.Clear();
-            reportedPropertyUpdateResponses?.Clear();
-            _inProgressGetTwinRequests?.Clear();
-            _inProgressUpdateReportedPropertiesRequests?.Clear();
+            _getTwinResponseCompletions?.Clear();
+            _reportedPropertyUpdateResponseCompletions?.Clear();
             _messagesToAcknowledge?.Clear();
-
-            _getTwinSemaphore?.Dispose();
-            _reportedPropertyUpdateResponsesSemaphore?.Dispose();
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
@@ -814,11 +771,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
 
-                if (_inProgressGetTwinRequests.Contains(receivedRequestId))
+                if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
                 {
-                    // This received message is in response to a GetTwin request
-                    _inProgressGetTwinRequests.Remove(receivedRequestId);
-
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.");
 
@@ -826,12 +780,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     if (status != 200)
                     {
-                        // Save the status code, but don't throw here. The thread waiting on the
-                        // _getTwinSemaphore will check this value and throw if it wasn't successful
-                        _getTwinResponses[receivedRequestId] = new GetTwinResponse
+                        var getTwinResponse = new GetTwinResponse
                         {
                             Status = status,
                         };
+
+                        getTwinCompletion.SetResult(getTwinResponse);
                     }
                     else
                     {
@@ -842,11 +796,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
                             };
 
-                            _getTwinResponses[receivedRequestId] = new GetTwinResponse
+                            var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
                                 Twin = twin,
                             };
+
+                            getTwinCompletion.SetResult(getTwinResponse);
                         }
                         catch (JsonReaderException ex)
                         {
@@ -854,23 +810,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
                         }
                     }
-
-                    _getTwinSemaphore.Release();
                 }
-                else if (_inProgressUpdateReportedPropertiesRequests.Contains(receivedRequestId))
+                else if (_reportedPropertyUpdateResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<PatchTwinResponse> patchTwinCompletion))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.");
 
                     // This received message is in response to an update reported properties request.
-                    _inProgressUpdateReportedPropertiesRequests.Remove(receivedRequestId);
-                    reportedPropertyUpdateResponses[receivedRequestId] = new PatchTwinResponse()
+                    var patchTwinResponse = new PatchTwinResponse()
                     {
                         Status = status,
                         Version = version,
                     };
 
-                    _reportedPropertyUpdateResponsesSemaphore.Release();
+                    patchTwinCompletion.SetResult(patchTwinResponse);
                 }
                 else
                 {

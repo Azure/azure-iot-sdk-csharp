@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             var options = new EventSourceOptions
             {
-                Level = toEventLevel(logLevel)
+                Level = ToEventLevel(logLevel)
             };
 
             string formattedMessage = message;
