@@ -160,14 +160,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
                 : null;
 
-            JobProperties jobProperties = JobProperties.CreateForExportJob(
-                containerUri,
-                true,
-                devicesFileName,
-                storageAuthenticationType,
-                identity);
-            jobProperties.IncludeConfigurations = true;
-            jobProperties.ConfigurationsBlobName = configsFileName;
+            var jobProperties = new JobProperties(containerUri, true)
+            {
+                OutputBlobName = devicesFileName,
+                StorageAuthenticationType = storageAuthenticationType,
+                Identity = identity,
+                IncludeConfigurations = true,
+                ConfigurationsBlobName = configsFileName,
+            };
 
             var sw = Stopwatch.StartNew();
 

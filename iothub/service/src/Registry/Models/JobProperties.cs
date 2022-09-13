@@ -21,13 +21,60 @@ namespace Microsoft.Azure.Devices
         };
 
         /// <summary>
+        /// Serialization constructor
+        /// </summary>
+        internal JobProperties() { }
+
+        /// <summary>
+        /// Creates an instance of this class for the import job.
+        /// </summary>
+        /// <remarks>
+        /// Other relevant, optional properties to set include:
+        /// <list type="bullet">
+        /// <item>InputBlobName, to override the default.</item>
+        /// <item>StorageAuthenticationType, if using identity-based instead of SAS in InputBlobContainerUri.</item>
+        /// <item>ManagedIdentity, if the IoT hub is not configured with a managed identity and the service app will specify
+        /// which identity has permissions to the storage account.</item>
+        /// <item>IncludeConfigurations, if the import job should also include configurations.</item>
+        /// <item>ConfigurationsBlobName, if the import job includes configurations and to override the default blob name.</item>
+        /// </list>
+        /// </remarks>
+        public JobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri)
+        {
+            Type = JobType.ImportDevices;
+            InputBlobContainerUri = inputBlobContainerUri;
+            OutputBlobContainerUri = outputBlobContainerUri;
+        }
+
+        /// <summary>
+        /// Creates an instance of this class for the export job.
+        /// </summary>
+        /// <remarks>
+        /// Other relevant, optional properties to set include:
+        /// <list type="bullet">
+        /// <item>OutputBlobName, to override the default.</item>
+        /// <item>StorageAuthenticationType, if using identity-based instead of SAS in InputBlobContainerUri.</item>
+        /// <item>ManagedIdentity, if the IoT hub is not configured with a managed identity and the service app will specify
+        /// which identity has permissions to the storage account.</item>
+        /// <item>IncludeConfigurations, if the export job should also include configurations.</item>
+        /// <item>ConfigurationsBlobName, if the export job includes configurations and to override the default blob name.</item>
+        /// </list>
+        /// </remarks>
+        public JobProperties(Uri outputBlobContainerUri, bool excludeKeysInExport)
+        {
+            Type = JobType.ImportDevices;
+            OutputBlobContainerUri = outputBlobContainerUri;
+            ExcludeKeysInExport = excludeKeysInExport;
+        }
+
+        /// <summary>
         /// The unique Id of the job.
         /// </summary>
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
-        public string JobId { get; set; }
+        public string JobId { get; internal set; }
 
         /// <summary>
         /// When the job started running.
@@ -77,17 +124,17 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </summary>
-        /// <remarks>
-        /// For import job, if there are errors they will be written to OutputBlobContainerUri to a file called "importerrors.log"
-        /// </remarks>
         [JsonProperty(PropertyName = "inputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
-        public string InputBlobContainerUri { get; set; }
+        public Uri InputBlobContainerUri { get; set; }
 
         /// <summary>
         /// URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
         /// </summary>
+        /// <remarks>
+        /// For import job, if there are errors they will be written to OutputBlobContainerUri to a file called "importerrors.log"
+        /// </remarks>
         [JsonProperty(PropertyName = "outputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
-        public string OutputBlobContainerUri { get; set; }
+        public Uri OutputBlobContainerUri { get; set; }
 
         /// <summary>
         /// The blob name to be used when importing from the provided input blob container.
@@ -161,62 +208,5 @@ namespace Microsoft.Azure.Devices
         /// <remarks>The service doesn't actually seem to set this, so not exposing it.</remarks>
         [JsonProperty(PropertyName = "progress", NullValueHandling = NullValueHandling.Ignore)]
         internal int Progress { get; set; }
-
-        /// <summary>
-        /// Creates an instance of this class with parameters ready to start an import job.
-        /// </summary>
-        /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the
-        /// <see cref="StorageAuthenticationType" /> parameter.</param>
-        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS
-        /// token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
-        /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container.</param>
-        /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account.</param>
-        /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
-        /// <returns>An instance of this class.</returns>
-        public static JobProperties CreateForImportJob(
-            Uri inputBlobContainerUri,
-            Uri outputBlobContainerUri,
-            string inputBlobName = null,
-            StorageAuthenticationType? storageAuthenticationType = null,
-            ManagedIdentity identity = null)
-        {
-            return new JobProperties
-            {
-                Type = JobType.ImportDevices,
-                InputBlobContainerUri = inputBlobContainerUri.ToString(),
-                OutputBlobContainerUri = outputBlobContainerUri.ToString(),
-                InputBlobName = inputBlobName,
-                StorageAuthenticationType = storageAuthenticationType,
-                Identity = identity,
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of this class with parameters ready to start an export job.
-        /// </summary>
-        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token
-        /// is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
-        /// <param name="excludeKeysInExport">Indicates if authorization keys are included in export output</param>
-        /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container</param>
-        /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>
-        /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
-        /// <returns>An instance of this class.</returns>
-        public static JobProperties CreateForExportJob(
-            Uri outputBlobContainerUri,
-            bool excludeKeysInExport,
-            string outputBlobName = null,
-            StorageAuthenticationType? storageAuthenticationType = null,
-            ManagedIdentity identity = null)
-        {
-            return new JobProperties
-            {
-                Type = JobType.ExportDevices,
-                OutputBlobContainerUri = outputBlobContainerUri.ToString(),
-                ExcludeKeysInExport = excludeKeysInExport,
-                OutputBlobName = outputBlobName,
-                StorageAuthenticationType = storageAuthenticationType,
-                Identity = identity,
-            };
-        }
     }
 }
