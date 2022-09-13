@@ -74,16 +74,21 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callback to handle root-level command invocation request.
                 int expectedCommandStatus = 200;
                 string commandName = "getMaxMinReport";
-                await deviceClient.SetMethodHandlerAsync(commandName,
+                await deviceClient.SetMethodHandlerAsync(
                     (request, context) =>
                     {
                         Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
-                        string payload = JsonConvert.SerializeObject(request.MethodName);
                         var response = new Client.DirectMethodResponse()
                         {
-                            Status = expectedCommandStatus,
-                            Payload = Encoding.UTF8.GetBytes(payload)
+                            Status = 404,
                         };
+
+                        if (request.MethodName == commandName)
+                        {
+                            string payload = JsonConvert.SerializeObject(request.MethodName);
+                            response.Status = expectedCommandStatus;
+                            response.Payload = Encoding.UTF8.GetBytes(payload);
+                        }
 
                         return Task.FromResult(response);
                     },
@@ -165,18 +170,28 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Set callbacks to handle command requests.
                 int expectedCommandStatus = 200;
 
-                // Set callback to handle root-level command invocation request.
+                // Set callback to handle both root-level and component-level command invocation requests.
+                // For a component-level command, the command name is in the format "<component-name>*<command-name>".
+
                 string rootCommandName = "reboot";
-                await deviceClient.SetMethodHandlerAsync(rootCommandName,
+                string componentCommandName = "getMaxMinReport";
+                string componentCommandNamePnp = $"{componentName}*{componentCommandName}";
+                await deviceClient.SetMethodHandlerAsync(
                     (request, context) =>
                     {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.MethodName} received.");
-                        string payload = JsonConvert.SerializeObject(request.MethodName);
+                        Logger.Trace($"{nameof(DigitalTwinWithOnlyRootComponentOperationsAsync)}: Digital twin command received: {request.MethodName}.");
                         var response = new Client.DirectMethodResponse()
                         {
-                            Status = expectedCommandStatus,
-                            Payload = Encoding.UTF8.GetBytes(payload)
+                            Status = 404,
                         };
+
+                        if (request.MethodName == rootCommandName
+                            || request.MethodName == componentCommandNamePnp)
+                        {
+                            string payload = JsonConvert.SerializeObject(request.MethodName);
+                            response.Status = expectedCommandStatus;
+                            response.Payload = Encoding.UTF8.GetBytes(payload);
+                        }
 
                         return Task.FromResult(response);
                     },
@@ -194,25 +209,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 rootCommandResponse.Status.Should().Be(expectedCommandStatus);
                 rootCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
-
-                // Set callback to handle component-level command invocation request.
-                // For a component-level command, the command name is in the format "<component-name>*<command-name>".
-                string componentCommandName = "getMaxMinReport";
-                string componentCommandNamePnp = $"{componentName}*{componentCommandName}";
-                await deviceClient.SetMethodHandlerAsync(componentCommandNamePnp,
-                    (request, context) =>
-                    {
-                        Logger.Trace($"{nameof(DigitalTwinWithComponentOperationsAsync)}: Digital twin command {request.MethodName} received.");
-                        string payload = JsonConvert.SerializeObject(request.MethodName);
-                        var response = new Client.DirectMethodResponse()
-                        {
-                            Status = expectedCommandStatus,
-                            Payload = Encoding.UTF8.GetBytes(payload)
-                        };
-
-                        return Task.FromResult(response);
-                    },
-                    null);
 
                 // Invoke the command "getMaxMinReport" under component "thermostat1" on the digital twin.
                 DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));

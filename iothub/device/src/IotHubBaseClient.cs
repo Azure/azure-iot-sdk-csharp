@@ -30,9 +30,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Method callback information
         private bool _isDeviceMethodEnabled;
-
         private volatile Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> _deviceDefaultMethodCallback;
-        private readonly Dictionary<string, Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>> _deviceMethods = new();
 
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
@@ -325,73 +323,23 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Sets a new delegate for the named method.
+        /// Sets the listener for all direct method calls from the service.
         /// </summary>
         /// <remarks>
-        /// If a delegate is already associated with
-        /// the named method, it will be replaced with the new delegate.
+        /// Calling this API more than once will result in the listener set last overwriting any previously set listener.
         /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
         /// </remarks>
-        /// <param name="methodName">The name of the method to associate with the delegate.</param>
-        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
-        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMethodHandlerAsync(
-            string methodName,
-            Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
-            object userContext,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
-
-            Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await _methodsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                if (methodHandler != null)
-                {
-                    await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-                    _deviceMethods[methodName] = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
-                }
-                else
-                {
-                    _deviceMethods.Remove(methodName);
-                    await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _methodsSemaphore.Release();
-
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
-            }
-        }
-
-        /// <summary>
-        /// Sets a new delegate that is called for a method that doesn't have a delegate registered for its name.
-        /// </summary>
-        /// <remarks>
-        /// If a default delegate is already registered it will replace with the new delegate.
-        /// A method handler can be unset by setting <paramref name="methodHandler"/> to null.
-        /// </remarks>
-        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is
-        /// no delegate registered for that method name.</param>
+        /// <param name="methodHandler">The delegate to be used when any method is called by the cloud service.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        public async Task SetMethodDefaultHandlerAsync(
+        public async Task SetMethodHandlerAsync(
             Func<DirectMethodRequest, object, Task<DirectMethodResponse>> methodHandler,
             object userContext,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
+                Logging.Enter(this, methodHandler, userContext, nameof(SetMethodHandlerAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -402,13 +350,11 @@ namespace Microsoft.Azure.Devices.Client
                 if (methodHandler != null)
                 {
                     await HandleMethodEnableAsync(cancellationToken).ConfigureAwait(false);
-
                     _deviceDefaultMethodCallback = new Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object>(methodHandler, userContext);
                 }
                 else
                 {
                     _deviceDefaultMethodCallback = null;
-
                     await HandleMethodDisableAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -417,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client
                 _methodsSemaphore.Release();
 
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
+                    Logging.Exit(this, methodHandler, userContext, nameof(SetMethodHandlerAsync));
             }
         }
 
@@ -587,41 +533,9 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            Tuple<Func<DirectMethodRequest, object, Task<DirectMethodResponse>>, object> callbackContextPair = null;
             DirectMethodResponse directMethodResponse = null;
 
-            await _methodsSemaphore.WaitAsync().ConfigureAwait(false);
-            try
-            {
-                if (!_deviceMethods.TryGetValue(directMethodRequest.MethodName, out callbackContextPair))
-                {
-                    callbackContextPair = _deviceDefaultMethodCallback;
-                }
-            }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, ex, nameof(OnMethodCalledAsync));
-
-                directMethodResponse = new DirectMethodResponse()
-                {
-                    Status = (int)DirectMethodResponseStatusCode.BadRequest,
-                    RequestId = directMethodRequest.RequestId,
-                };
-
-                await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
-
-                if (Logging.IsEnabled)
-                    Logging.Error(this, ex, nameof(OnMethodCalledAsync));
-
-                return;
-            }
-            finally
-            {
-                _methodsSemaphore.Release();
-            }
-
-            if (callbackContextPair == null)
+            if (_deviceDefaultMethodCallback == null)
             {
                 directMethodResponse = new DirectMethodResponse()
                 {
@@ -633,8 +547,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = callbackContextPair.Item1;
-                    object userSuppliedContext = callbackContextPair.Item2;
+                    Func<DirectMethodRequest, object, Task<DirectMethodResponse>> userSuppliedCallback = _deviceDefaultMethodCallback.Item1;
+                    object userSuppliedContext = _deviceDefaultMethodCallback.Item2;
 
                     directMethodResponse = await userSuppliedCallback
                         .Invoke(directMethodRequest, userSuppliedContext)
@@ -694,9 +608,7 @@ namespace Microsoft.Azure.Devices.Client
         private async Task HandleMethodDisableAsync(CancellationToken cancellationToken = default)
         {
             // Don't disable if it is already disabled or if there are registered device methods
-            if (!_isDeviceMethodEnabled
-                || _deviceDefaultMethodCallback != null
-                || _deviceMethods.Any())
+            if (!_isDeviceMethodEnabled || _deviceDefaultMethodCallback != null)
             {
                 return;
             }

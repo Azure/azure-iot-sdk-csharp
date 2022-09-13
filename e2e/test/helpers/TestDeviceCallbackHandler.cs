@@ -50,12 +50,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
             await _deviceClient.OpenAsync().ConfigureAwait(false);
-            await _deviceClient.SetMethodHandlerAsync(methodName,
+            await _deviceClient.SetMethodHandlerAsync(
                 (request, context) =>
                 {
                     try
                     {
-                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} {request.ResponseTimeout}.");
+                        _logger.Trace($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient {_testDevice.Id} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
                         request.MethodName.Should().Be(methodName, "The expected method name should match what was sent from service");
                         request.Payload.Should().Be(expectedServiceRequestJson, "The expected method data should match what was sent from service");
 

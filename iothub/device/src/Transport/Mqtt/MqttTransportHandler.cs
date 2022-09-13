@@ -101,20 +101,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly QualityOfService _qosSendPacketToService;
         private readonly QualityOfService _qosReceivePacketFromService;
         private readonly bool _retainMessagesAcrossSessions;
-        private readonly object _syncRoot = new object();
+        private readonly object _syncRoot = new();
         private readonly RetryPolicy _closeRetryPolicy;
         private readonly ConcurrentQueue<Message> _messageQueue;
-        private readonly TaskCompletionSource _connectCompletion = new TaskCompletionSource();
-        private readonly TaskCompletionSource _subscribeCompletionSource = new TaskCompletionSource();
+        private readonly TaskCompletionSource _connectCompletion = new();
+        private readonly TaskCompletionSource _subscribeCompletionSource = new();
         private readonly IWebProxy _webProxy;
 
-        private SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
-        private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
-        private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
-        private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
+        private SemaphoreSlim _deviceReceiveMessageSemaphore = new(1, 1);
+        private SemaphoreSlim _receivingSemaphore = new(0);
+        private CancellationTokenSource _disconnectAwaitersCancellationSource = new();
+        private readonly Regex _twinResponseTopicRegex = new(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
         private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
+        private readonly Func<Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
         private bool _isDeviceReceiveMessageCallbackSet;
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private IPAddress[] _serverAddresses;
         private int _state = (int)TransportState.NotInitialized;
         private Action<Message> _twinResponseEvent;
-        private AdditionalClientInformation _additionalClientInformation;
+        private readonly AdditionalClientInformation _additionalClientInformation;
 
         internal MqttTransportHandler(
             PipelineContext context,
@@ -602,7 +602,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
             }
             message.LockToken = _generationId + message.LockToken;
-            await (_moduleMessageReceivedListener?.Invoke(inputName, message) ?? Task.CompletedTask).ConfigureAwait(false);
+            await (_moduleMessageReceivedListener?.Invoke(message) ?? Task.CompletedTask).ConfigureAwait(false);
         }
 
         public async void OnError(Exception exception)

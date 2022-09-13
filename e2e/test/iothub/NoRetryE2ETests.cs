@@ -118,7 +118,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await deviceClient1
                 .SetMethodHandlerAsync(
-                    "empty_method",
                     (methodRequest, userContext) => Task.FromResult(response),
                     deviceClient1)
                 .ConfigureAwait(false);
@@ -127,7 +126,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient2.OpenAsync().ConfigureAwait(false);
             await deviceClient2
                 .SetMethodHandlerAsync(
-                    "empty_method",
                     (methodRequest, userContext) => Task.FromResult(response),
                     deviceClient2)
                 .ConfigureAwait(false);

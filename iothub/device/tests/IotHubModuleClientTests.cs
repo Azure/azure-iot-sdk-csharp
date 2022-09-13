@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received().EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -112,21 +112,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
-            await moduleClient.SetInputMessageHandlerAsync("endpoint2", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
-            await moduleClient.SetInputMessageHandlerAsync("endpoint1", null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, default).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
-            await moduleClient.SetInputMessageHandlerAsync("endpoint2", null, null).ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -175,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
 
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -189,22 +182,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
-            await moduleClient.SetInputMessageHandlerAsync("endpoint1", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
-            await moduleClient.SetInputMessageHandlerAsync("endpoint2", (message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync((message, context) => Task.FromResult(MessageResponse.Completed), "custom data").ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().DisableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
 
-            await moduleClient.SetInputMessageHandlerAsync("endpoint1", null, null).ConfigureAwait(false);
-            await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
-
-            await moduleClient.SetInputMessageHandlerAsync("endpoint2", null, null).ConfigureAwait(false);
+            await moduleClient.SetMessageHandlerAsync(null, null).ConfigureAwait(false);
             await innerHandler.Received(1).EnableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.DidNotReceiveWithAnyArgs().EnableReceiveMessageAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             await innerHandler.Received(1).DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.DidNotReceiveWithAnyArgs().DisableEventReceiveAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -249,8 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             bool isMessageHandlerCalled = false;
             await moduleClient
-                .SetInputMessageHandlerAsync(
-                    "endpoint1",
+                .SetMessageHandlerAsync(
                     (message, context) =>
                     {
                         isMessageHandlerCalled = true;
@@ -259,7 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                     "custom data")
                 .ConfigureAwait(false);
 
-            await moduleClient.OnModuleEventMessageReceivedAsync(null, null).ConfigureAwait(false);
+            await moduleClient.OnModuleEventMessageReceivedAsync(null).ConfigureAwait(false);
             Assert.IsFalse(isMessageHandlerCalled);
         }
 
@@ -281,62 +268,14 @@ namespace Microsoft.Azure.Devices.Client.Test
                     "custom data")
                 .ConfigureAwait(false);
 
-            bool isSpecificCallbackCalled = false;
-            await moduleClient
-                .SetInputMessageHandlerAsync(
-                    "endpoint2", (message, context) =>
-
-                     {
-                         isSpecificCallbackCalled = true;
-                         return Task.FromResult(MessageResponse.Completed);
-                     },
-                    "custom data")
-                .ConfigureAwait(false);
-
             var testMessage = new Message
             {
+                InputName = "endpoint1",
                 LockToken = "AnyLockToken",
             };
 
-            await moduleClient.OnModuleEventMessageReceivedAsync("endpoint1", testMessage).ConfigureAwait(false);
+            await moduleClient.OnModuleEventMessageReceivedAsync(testMessage).ConfigureAwait(false);
             Assert.IsTrue(isDefaultCallbackCalled);
-            Assert.IsFalse(isSpecificCallbackCalled);
-        }
-
-        [TestMethod]
-        public async Task ModuleClient_OnReceiveEventMessageCalled_SpecifiedCallbackCalled()
-        {
-            using var moduleClient = new IotHubModuleClient(FakeConnectionString);
-            IDelegatingHandler innerHandler = Substitute.For<IDelegatingHandler>();
-            moduleClient.InnerHandler = innerHandler;
-
-            bool isDefaultCallbackCalled = false;
-            await moduleClient.SetMessageHandlerAsync(
-                (message, context) =>
-                {
-                    isDefaultCallbackCalled = true;
-                    return Task.FromResult(MessageResponse.Completed);
-                },
-                "custom data");
-
-            bool isSpecificCallbackCalled = false;
-            await moduleClient.SetInputMessageHandlerAsync(
-                "endpoint2",
-                (message, context) =>
-                {
-                    isSpecificCallbackCalled = true;
-                    return Task.FromResult(MessageResponse.Completed);
-                },
-                "custom data");
-
-            var testMessage = new Message
-            {
-                LockToken = "AnyLockToken",
-            };
-
-            await moduleClient.OnModuleEventMessageReceivedAsync("endpoint2", testMessage).ConfigureAwait(false);
-            Assert.IsFalse(isDefaultCallbackCalled);
-            Assert.IsTrue(isSpecificCallbackCalled);
         }
     }
 }
