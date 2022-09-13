@@ -21,44 +21,58 @@ namespace Microsoft.Azure.Devices
         };
 
         /// <summary>
-        /// System generated. Ignored at creation.
+        /// The unique Id of the job.
         /// </summary>
+        /// <remarks>
+        /// This value is created by the service. If specified by the user, it will be ignored.
+        /// </remarks>
         [JsonProperty(PropertyName = "jobId", NullValueHandling = NullValueHandling.Ignore)]
         public string JobId { get; set; }
 
         /// <summary>
-        /// System generated. Ignored at creation.
-        /// </summary>
-        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? StartedOnUtc { get; set; }
-
-        /// <summary>
-        /// System generated. Ignored at creation.
-        /// Represents the time the job stopped processing.
-        /// </summary>
-        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndedOnUtc { get; set; }
-
-        /// <summary>
-        /// [Required] The type of job to execute.
-        /// </summary>
-        [JsonProperty(PropertyName = "type", Required = Required.Always)]
-        public JobType Type { get; set; }
-
-        /// <summary>
-        /// System generated. Ignored at creation.
-        /// </summary>
-        [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
-        public JobStatus Status { get; set; }
-
-        /// <summary>
-        /// System genereated. Ignored at creation.
+        /// When the job started running.
         /// </summary>
         /// <remarks>
+        /// This value is created by the service. If specified by the user, it will be ignored.
+        /// </remarks>
+        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? StartedOnUtc { get; internal set; }
+
+        /// <summary>
+        /// When the job finished.
+        /// </summary>
+        /// <remarks>
+        /// This value is created by the service. If specified by the user, it will be ignored.
+        /// </remarks>
+        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? EndedOnUtc { get; internal set; }
+
+        /// <summary>
+        /// The type of job to execute.
+        /// </summary>
+        /// <remarks>
+        /// This value is set by this client depending on which job method is called.
+        /// </remarks>
+        [JsonProperty(PropertyName = "type", Required = Required.Always)]
+        public JobType Type { get; internal set; }
+
+        /// <summary>
+        /// The status of the job.
+        /// </summary>
+        /// <remarks>
+        /// This value is created by the service. If specified by the user, it will be ignored.
+        /// </remarks>
+        [JsonProperty(PropertyName = "status", NullValueHandling = NullValueHandling.Ignore)]
+        public JobStatus Status { get; internal set; }
+
+        /// <summary>
         /// If status == failure, this represents a string containing the reason.
+        /// </summary>
+        /// <remarks>
+        /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
-        public string FailureReason { get; set; }
+        public string FailureReason { get; internal set; }
 
         /// <summary>
         /// URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
@@ -139,9 +153,11 @@ namespace Microsoft.Azure.Devices
         public bool IsFinished => s_finishedStates.Contains(Status);
 
         /// <summary>
-        /// System generated. Ignored at creation.
         /// Represents the percentage of completion.
         /// </summary>
+        /// <remarks>
+        /// This value is created by the service. If specified by the user, it will be ignored.
+        /// </remarks>
         /// <remarks>The service doesn't actually seem to set this, so not exposing it.</remarks>
         [JsonProperty(PropertyName = "progress", NullValueHandling = NullValueHandling.Ignore)]
         internal int Progress { get; set; }
