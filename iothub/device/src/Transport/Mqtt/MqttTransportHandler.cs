@@ -529,14 +529,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Sent twin get request with request id {requestId}. Now waiting for the service response.");
 
-            while (!getTwinResponses.ContainsKey(requestId))
+            while (!_getTwinResponses.ContainsKey(requestId))
             {
                 // May need to wait multiple times. This semaphore is released each time a get twin
                 // request gets a response, but it may not be in response to this particular get twin request.
                 _getTwinSemaphore.Wait(cancellationToken);
             }
 
-            getTwinResponses.TryRemove(requestId, out GetTwinResponse getTwinResponse);
+            _getTwinResponses.TryRemove(requestId, out GetTwinResponse getTwinResponse);
             int getTwinStatus = getTwinResponse.Status;
 
             if (Logging.IsEnabled)
@@ -622,11 +622,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _mqttClient?.Dispose();
 
             // TODO notify the user for these that they failed? Clear these when closing instead?
-            getTwinResponses?.Clear();
+            _getTwinResponses?.Clear();
             reportedPropertyUpdateResponses?.Clear();
             _inProgressGetTwinRequests?.Clear();
             _inProgressUpdateReportedPropertiesRequests?.Clear();
-            messagesToAcknowledge?.Clear();
+            _messagesToAcknowledge?.Clear();
 
             _getTwinSemaphore?.Dispose();
             _reportedPropertyUpdateResponsesSemaphore?.Dispose();
@@ -750,7 +750,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             PopulateMessagePropertiesFromPacket(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
             // Save the received mqtt message instance so that it can be completed later
-            messagesToAcknowledge[receivedCloudToDeviceMessage.LockToken] = receivedEventArgs;
+            _messagesToAcknowledge[receivedCloudToDeviceMessage.LockToken] = receivedEventArgs;
 
             if (_deviceMessageReceivedListener != null)
             {
@@ -826,7 +826,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         // Save the status code, but don't throw here. The thread waiting on the
                         // _getTwinSemaphore will check this value and throw if it wasn't successful
-                        getTwinResponses[receivedRequestId] = new GetTwinResponse
+                        _getTwinResponses[receivedRequestId] = new GetTwinResponse
                         {
                             Status = status,
                         };
@@ -840,7 +840,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
                             };
 
-                            getTwinResponses[receivedRequestId] = new GetTwinResponse
+                            _getTwinResponses[receivedRequestId] = new GetTwinResponse
                             {
                                 Status = status,
                                 Twin = twin,

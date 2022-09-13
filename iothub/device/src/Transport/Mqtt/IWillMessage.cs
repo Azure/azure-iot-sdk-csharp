@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     /// <summary>
-    /// An MQTT "will" message to be sent by this client when the client disconnects.
+    /// An MQTT "will" message to be sent by this client before the client disconnects.
     /// </summary>
     public interface IWillMessage
     {
