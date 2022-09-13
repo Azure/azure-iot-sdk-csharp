@@ -74,6 +74,6 @@ namespace Microsoft.Azure.Devices.Client
             set => ProductInfo.Extra = value;
         }
 
-        internal ProductInfo ProductInfo { get; } = new();
+        internal virtual ProductInfo ProductInfo { get; } = new();
     }
 }
