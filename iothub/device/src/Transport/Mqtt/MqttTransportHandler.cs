@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
-        private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
+        private readonly Func<Message, Task> _moduleMessageReceivedListener;
         private readonly Func<Message, Task> _deviceMessageReceivedListener;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
@@ -223,7 +223,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             MqttClientOptionsBuilderTlsParameters tlsParameters = new MqttClientOptionsBuilderTlsParameters();
 
-            //TODO chain certs?
             List<X509Certificate> certs = _connectionCredentials.Certificate == null
                 ? new List<X509Certificate>(0)
                 : new List<X509Certificate> { _connectionCredentials.Certificate };
@@ -503,15 +502,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
                 GetTwinResponse getTwinResponse = await taskCompletionSource.Task.ConfigureAwait(false);
 
-                int getTwinStatus = getTwinResponse.Status;
-
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinStatus}.");
+                    Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinResponse.Status}.");
 
-                if (getTwinStatus != 200)
+                if (getTwinResponse.Status != 200)
                 {
-                    //TODO pass in status code to error, need mapping to IotHubStatusCode
-                    throw new IotHubClientException("Failed to get twin");
+                    throw new IotHubClientException(getTwinResponse.Message);
                 }
 
                 return getTwinResponse.Twin;
@@ -567,8 +563,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (patchTwinResponse.Status != 204)
                 {
-                    //TODO pass in status code to error, need mapping to IotHubStatusCode
-                    throw new IotHubClientException("Failed to send twin patch");
+                    throw new IotHubClientException(patchTwinResponse.Message);
                 }
 
                 //TODO new twin version should be returned here, but API surface doesn't currently allow it
@@ -764,20 +759,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out int version))
             {
-                byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
+                string body = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
 
                 if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.");
 
-                    string body = Encoding.UTF8.GetString(payload);
-
                     if (status != 200)
                     {
                         var getTwinResponse = new GetTwinResponse
                         {
                             Status = status,
+                            Message = body,
                         };
 
                         getTwinCompletion.SetResult(getTwinResponse);
@@ -818,6 +812,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         Status = status,
                         Version = version,
+                        Message = body,
                     };
 
                     patchTwinCompletion.SetResult(patchTwinResponse);
@@ -845,7 +840,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // Add the endpoint as a SystemProperty
             iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
 
-            await (_moduleMessageReceivedListener?.Invoke(inputName, iotHubMessage)).ConfigureAwait(false);
+            await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
         }
 
         public void PopulateMessagePropertiesFromPacket(Message message, MqttApplicationMessage mqttMessage)

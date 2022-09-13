@@ -26,5 +26,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// This value is null if the get twin request failed.
         /// </remarks>
         internal Twin Twin { get; set; }
+
+        /// <summary>
+        /// The error message if the request failed.
+        /// </summary>
+        internal string Message { get; set; }
     }
 }

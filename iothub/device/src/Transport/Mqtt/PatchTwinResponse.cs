@@ -20,5 +20,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// The new version of the twin after the patch.
         /// </summary>
         internal int Version { get; set; }
+
+        /// <summary>
+        /// The error message if the request failed.
+        /// </summary>
+        internal string Message { get; set; }
     }
 }
