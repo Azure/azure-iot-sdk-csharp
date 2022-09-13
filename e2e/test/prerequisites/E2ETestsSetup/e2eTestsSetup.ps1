@@ -17,6 +17,13 @@ param(
     [Parameter()]
     [switch] $InstallDependencies,
 
+    # Deprecated. Recommend docker on WSL2 instead - setup with <repo>/e2e/test/docker/docker-setup.sh on WSL.
+    # Installing Docker Desktop on Windows require using HyperV or WSL, with HyperV by default, which can interfere with certain proxy setup for testing.
+    # USE THIS OPTION IF YOU KNOW YOU NEED THIS.
+    # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
+    [Parameter()]
+    [switch] $InstallDockerDesktopOnWindows,
+
     # Set this if you are generating resources for the E2E test DevOps pipeline.
     # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
     [Parameter()]
@@ -47,6 +54,7 @@ $WarningActionPreference = "Continue"
 ########################################################################################################
 
 Write-Host "`nInstallDependencies $InstallDependencies"
+Write-Host "`InstallDockerDesktopOnWindows $InstallDockerDesktopOnWindows"
 Write-Host "`GenerateResourcesForTestDevOpsPipeline $GenerateResourcesForTestDevOpsPipeline"
 Write-Host "`GenerateResourcesForSamplesDevOpsPipeline $GenerateResourcesForSamplesDevOpsPipeline"
 Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
@@ -321,17 +329,12 @@ Check-AzureCliVersion
 # Install chocolatey and docker
 ########################################################################################################
 
-if ($InstallDependencies)
+if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
 {
-    Write-Host "`nSetting up docker."
-    Set-ExecutionPolicy Bypass -Scope Process -Force
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'));
-    choco install docker-desktop -y
-    # Refresh paths after installation of choco
-    refreshenv
-    docker pull aziotbld/testtpm
-    docker pull aziotbld/testproxy
+    Write-Host "`nSetting up docker images on windows."
+    az acr login -n aziotacr -t --output tsv --query accessToken | docker login aziotacr.azurecr.io --username 00000000-0000-0000-0000-000000000000 --password-stdin
+    docker pull aziotacr.azurecr.io/aziotbld/testtpm
+    docker pull aziotacr.azurecr.io/aziotbld/testproxy
 }
 
 #######################################################################################################
@@ -762,16 +765,19 @@ foreach ($kvp in $keyvaultKvps.GetEnumerator())
 # Run docker containers for TPM simulators and proxy
 ###################################################################################################################################
 
-if (-not (docker images -q aziotbld/testtpm))
+if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
 {
-    Write-Host "Setting up docker container for TPM simulator."
-    docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
-}
+    if (-not (docker images -q aziotbld/testtpm))
+    {
+        Write-Host "Setting up docker container for TPM simulator."
+        docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
+    }
 
-if (-not (docker images -q aziotbld/testproxy))
-{
-    Write-Host "Setting up docker container for proxy."
-    docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
+    if (-not (docker images -q aziotbld/testproxy))
+    {
+        Write-Host "Setting up docker container for proxy."
+        docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
+    }
 }
 
 ############################################################################################################################
