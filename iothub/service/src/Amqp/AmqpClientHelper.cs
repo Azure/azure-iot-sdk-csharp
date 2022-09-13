@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Devices.Amqp
                             hubEx.ErrorCode,
                             hubEx.Message,
                             hubEx.IsTransient,
+                            string.Empty,
                             amqpException);
                     }
                     return ex;
@@ -154,19 +155,19 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceAlreadyExists))
             {
-                retException = new IotHubServiceException(HttpStatusCode.Conflict, IotHubErrorCode.DeviceAlreadyExists, message, false, (Exception)null);
+                retException = new IotHubServiceException(HttpStatusCode.Conflict, IotHubErrorCode.DeviceAlreadyExists, message, false);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceContainerThrottled))
             {
-                retException = new IotHubServiceException((HttpStatusCode)429, IotHubErrorCode.ThrottlingException, message, true, (Exception)null);
+                retException = new IotHubServiceException((HttpStatusCode)429, IotHubErrorCode.ThrottlingException, message, true);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.QuotaExceeded))
             {
-                retException = new IotHubServiceException(HttpStatusCode.Forbidden, IotHubErrorCode.IotHubQuotaExceeded, message, true, (Exception)null);
+                retException = new IotHubServiceException(HttpStatusCode.Forbidden, IotHubErrorCode.IotHubQuotaExceeded, message, true);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.PreconditionFailed))
             {
-                retException = new IotHubServiceException(HttpStatusCode.PreconditionFailed, IotHubErrorCode.PreconditionFailed, message, false, (Exception)null);
+                retException = new IotHubServiceException(HttpStatusCode.PreconditionFailed, IotHubErrorCode.PreconditionFailed, message, false);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
             {

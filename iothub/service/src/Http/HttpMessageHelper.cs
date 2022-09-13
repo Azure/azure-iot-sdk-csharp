@@ -60,8 +60,9 @@ namespace Microsoft.Azure.Devices
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
                 IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(responseMessage);
                 bool isTransient = GetIsTransientFlag(responseMessage.StatusCode, errorCode);
+                string trackingId = ExceptionHandlingHelper.s_trackingId;
 
-                throw new IotHubServiceException(responseMessage.StatusCode, errorCode, errorMessage, isTransient);
+                throw new IotHubServiceException(responseMessage.StatusCode, errorCode, errorMessage, isTransient, trackingId);
             }
         }
 

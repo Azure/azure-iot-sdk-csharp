@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Devices
         private const string MessageFieldErrorCode = "errorCode";
         private const string HttpErrorCodeName = "iothub-errorcode";
 
+        internal static string s_trackingId = string.Empty;
+
         internal static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
             return response.Content.ReadAsStringAsync();
@@ -49,12 +51,19 @@ namespace Microsoft.Azure.Devices
                 {
                     var structuredMessageFields = JsonConvert.DeserializeObject<ResponseMessage>(responseContent.Message);
 
-                    if (structuredMessageFields != null
-                        && structuredMessageFields.ErrorCode != null)
+                    if (structuredMessageFields != null)
                     {
-                        if (int.TryParse(structuredMessageFields.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                        if (structuredMessageFields.TrackingId != null)
                         {
-                            return (IotHubErrorCode)errorCodeInt;
+                            s_trackingId = structuredMessageFields.TrackingId;
+                        }
+
+                        if (structuredMessageFields.ErrorCode != null)
+                        {
+                            if (int.TryParse(structuredMessageFields.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                            {
+                                return (IotHubErrorCode)errorCodeInt;
+                            }
                         }
                     }
                 }

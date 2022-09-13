@@ -27,69 +27,21 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of this class with the supplied error message and tracking Id.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
-        public IotHubServiceException(string message, string trackingId)
-            : this(message, false, trackingId)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of this class with the supplied error message, tracking Id and a flag indicating if the error was transient.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
-        public IotHubServiceException(string message, bool isTransient, string trackingId)
-            : this(message, null, isTransient, trackingId)
-        {
-        }
-
-        /// <summary>
         /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
-        /// error message and an optional reference to the inner exception that caused this exception.
-        /// </summary>
-        /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
-        /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, Exception innerException = null)
-            : this(message, innerException, false, string.Empty)
-        {
-            StatusCode = errorCode;
-            ErrorCode = iotHubStatusCode;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class with <see cref="HttpStatusCode"/>, <see cref="Exceptions.IotHubErrorCode"/>, 
-        /// error message and an optional reference to the inner exception that caused this exception.
+        /// error message, a flag indicating if the error was transient, an optional tracking id and an optional reference
+        /// to the inner exception that caused this exception.
         /// </summary>
         /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
         /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, bool isTransient, Exception innerException = null)
-            : this(message, innerException, isTransient, string.Empty)
-        {
-            StatusCode = errorCode;
-            ErrorCode = iotHubStatusCode;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class with a specified error message, a reference
-        /// to the inner exception that caused this exception, a flag indicating if the error was transient
-        /// and the service returned tracking Id associated with this particular error.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
-        protected IotHubServiceException(string message, Exception innerException, bool isTransient, string trackingId)
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, bool isTransient, string trackingId = null, Exception innerException = null)
             : base(message, innerException)
         {
+            StatusCode = errorCode;
+            ErrorCode = iotHubStatusCode;
             IsTransient = isTransient;
             TrackingId = trackingId;
         }
