@@ -38,7 +38,17 @@ namespace Microsoft.Azure.Devices.Amqp
                         exception.Message);
 
                 case AmqpException amqpException:
-                    return ToIotHubClientContract(amqpException.Error);
+                    Exception ex = ToIotHubClientContract(amqpException.Error);
+                    if (ex is IotHubServiceException hubEx)
+                    {
+                        // pass amqpException as the inner exception of IotHubServiceException
+                        return new IotHubServiceException(
+                            hubEx.StatusCode, 
+                            hubEx.ErrorCode, 
+                            hubEx.Message, 
+                            amqpException);
+                    }
+                    return ex;
 
                 default:
                     return exception;
@@ -168,8 +178,6 @@ namespace Microsoft.Azure.Devices.Amqp
                 && retException is IotHubServiceException exHub)
             {
                 exHub.TrackingId = trackingId;
-                // This is created but not assigned to `retException`. If we change that now, it might be a
-                // breaking change. If not for v1, consider for #v2.
             }
 
             return retException;
