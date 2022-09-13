@@ -23,13 +23,7 @@ namespace Microsoft.Azure.Devices
     public class DevicesClient
     {
         private const string DeviceRequestUriFormat = "/devices/{0}";
-        private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
-        private const string JobsGetUriFormat = "/jobs/{0}";
-        private const string AdminUriFormat = "/$admin/{0}";
-        private const string ETagSetWhileRegisteringDevice = "ETagSetWhileRegisteringDevice";
         private const string InvalidImportMode = "InvalidImportMode";
-        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
-        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
         private static readonly Uri s_createJobsUri = new("/jobs/create", UriKind.Relative);
         private static readonly Uri s_getJobsUri = new("/jobs", UriKind.Relative);
@@ -869,11 +863,13 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
+            const string modulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
+
             deviceId = WebUtility.UrlEncode(deviceId);
             return new Uri(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    ModulesOnDeviceRequestUriFormat,
+                    modulesOnDeviceRequestUriFormat,
                     deviceId),
                 UriKind.Relative);
         }
@@ -890,16 +886,21 @@ namespace Microsoft.Azure.Devices
 
         private static Uri GetJobUri(string jobId)
         {
+            const string jobsGetUriFormat = "/jobs/{0}";
+
             return new Uri(
                 string.Format(
                     CultureInfo.InvariantCulture,
-                    JobsGetUriFormat,
+                    jobsGetUriFormat,
                     jobId),
                 UriKind.Relative);
         }
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
         {
+            const string eTagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+            const string eTagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
+
             var exportImportDeviceList = new List<ExportImportDevice>(devices.Count());
             foreach (Device device in devices)
             {
@@ -913,7 +914,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.Create:
                         if (!string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
-                            throw new ArgumentException(ETagSetWhileRegisteringDevice);
+                            throw new InvalidOperationException("The ETag must not be set when creating a device.");
                         }
                         break;
 
@@ -924,7 +925,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateIfMatchETag:
                         if (string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
-                            throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
+                            throw new ArgumentException(eTagNotSetWhileUpdatingDevice);
                         }
                         break;
 
@@ -935,7 +936,7 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.DeleteIfMatchETag:
                         if (string.IsNullOrWhiteSpace(device.ETag.ToString()))
                         {
-                            throw new ArgumentException(ETagNotSetWhileDeletingDevice);
+                            throw new ArgumentException(eTagNotSetWhileDeletingDevice);
                         }
                         break;
 
