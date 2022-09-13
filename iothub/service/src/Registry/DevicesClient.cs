@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -21,23 +22,24 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DevicesClient
     {
-        private readonly string _hostName;
-        private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly HttpClient _httpClient;
-        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
         private const string DeviceRequestUriFormat = "/devices/{0}";
         private const string ModulesOnDeviceRequestUriFormat = "/devices/{0}/modules";
         private const string JobsGetUriFormat = "/jobs/{0}";
-        private const string JobsListUriFormat = "/jobs";
         private const string AdminUriFormat = "/$admin/{0}";
-        private const string JobsCreateUriFormat = "/jobs/create";
-        private const string DeviceStatisticsUriFormat = "/statistics/devices";
-        private const string ServiceStatisticsUriFormat = "/statistics/service";
         private const string ETagSetWhileRegisteringDevice = "ETagSetWhileRegisteringDevice";
         private const string InvalidImportMode = "InvalidImportMode";
         private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
         private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
+
+        private static readonly Uri s_createJobsUri = new("/jobs/create", UriKind.Relative);
+        private static readonly Uri s_getJobsUri = new("/jobs", UriKind.Relative);
+        private static readonly Uri s_getDeviceStatsUri = new("/statistics/devices", UriKind.Relative);
+        private static readonly Uri s_getServiceStatsUri = new("/statistics/service", UriKind.Relative);
+
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -76,12 +78,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating device: {device?.Id}", nameof(CreateAsync));
 
+            Argument.AssertNotNull(device, nameof(device));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(device, nameof(device));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -90,7 +92,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating device threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -121,14 +123,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Device> GetAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting device: {deviceId}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting device {deviceId}", nameof(GetAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -137,13 +139,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting device: {deviceId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting device {deviceId}", nameof(GetAsync));
             }
         }
 
@@ -173,19 +175,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Device> SetAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device: {device?.Id}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating device {device?.Id}", nameof(SetAsync));
+
+            Argument.AssertNotNull(device, nameof(device));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNull(device, nameof(device));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (string.IsNullOrWhiteSpace(device.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileUpdatingDevice);
-                }
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetRequestUri(device.Id), _credentialProvider, device);
                 HttpMessageHelper.ConditionallyInsertETag(request, device.ETag, onlyIfUnchanged);
 
@@ -196,13 +193,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating device threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device: {device?.Id}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating device {device?.Id}", nameof(SetAsync));
             }
         }
 
@@ -227,8 +224,7 @@ namespace Microsoft.Azure.Devices
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
 
-            var device = new Device(deviceId);
-            await DeleteAsync(device, default, cancellationToken).ConfigureAwait(false);
+            await DeleteAsync(new Device(deviceId), default, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -262,19 +258,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task DeleteAsync(Device device, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting device: {device?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting device {device?.Id}", nameof(DeleteAsync));
+
+            Argument.AssertNotNull(device, nameof(device));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNull(device, nameof(device));
-
-                if (string.IsNullOrWhiteSpace(device.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileDeletingDevice);
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetRequestUri(device.Id), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, device.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -283,13 +274,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting device threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting device: {device?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting device {device?.Id}", nameof(DeleteAsync));
             }
         }
 
@@ -318,36 +309,40 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> CreateWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
+                Logging.Enter(this, $"Creating device with twin {device?.Id}", nameof(CreateWithTwinAsync));
+
+            Argument.AssertNotNull(device, nameof(device));
+            Argument.AssertNotNull(twin, nameof(twin));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                var exportImportDeviceList = new List<ExportImportDevice>(1);
-
-                var exportImportDevice = new ExportImportDevice(device, ImportMode.Create)
+                var exportImportDeviceList = new List<ExportImportDevice>
                 {
-                    Tags = twin?.Tags,
-                    Properties = new ExportImportDevice.PropertyContainer
+                    new ExportImportDevice(device, ImportMode.Create)
                     {
-                        DesiredProperties = twin?.Properties.Desired,
-                        ReportedProperties = twin?.Properties.Reported,
+                        Tags = twin.Tags,
+                        Properties = new ExportImportDevice.PropertyContainer
+                        {
+                            DesiredProperties = twin.Properties.Desired,
+                            ReportedProperties = twin.Properties.Reported,
+                        }
                     }
-                };
-
-                exportImportDeviceList.Add(exportImportDevice);
+                }; ;
 
                 return await BulkDeviceOperationAsync(exportImportDeviceList, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateWithTwinAsync)} threw an exception: {ex}", nameof(CreateWithTwinAsync));
+                    Logging.Error(this, $"Creating device with twin threw an exception: {ex}", nameof(CreateWithTwinAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating device with twin: {device?.Id}", nameof(CreateWithTwinAsync));
+                    Logging.Exit(this, $"Creating device with twin {device?.Id}", nameof(CreateWithTwinAsync));
             }
         }
 
@@ -372,14 +367,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<IEnumerable<Module>> GetModulesAsync(string deviceId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting modules on device: {deviceId}", nameof(GetModulesAsync));
+                Logging.Enter(this, $"Getting modules on device {deviceId}", nameof(GetModulesAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesOnDeviceRequestUri(deviceId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -388,13 +383,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetModulesAsync)} threw an exception: {ex}", nameof(GetModulesAsync));
+                    Logging.Error(this, $"Getting modules on device threw an exception: {ex}", nameof(GetModulesAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting modules on device: {deviceId}", nameof(GetModulesAsync));
+                    Logging.Exit(this, $"Getting modules on device {deviceId}", nameof(GetModulesAsync));
             }
         }
 
@@ -402,7 +397,7 @@ namespace Microsoft.Azure.Devices
         /// Create up to 100 new device identities in your IoT hub's registry in bulk.
         /// </summary>
         /// <remarks>
-        /// For larger scale operations, consider using <see cref="ImportAsync(string, string, CancellationToken)"/>
+        /// For larger scale operations, consider using <see cref="ImportAsync(JobProperties, CancellationToken)"/>
         /// which allows you to import devices from an Azure Storage container.
         /// </remarks>
         /// <param name="devices">The device identities to create in your IoT hub's registry. May not exceed 100 devices.</param>
@@ -423,7 +418,11 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> CreateAsync(IEnumerable<Device> devices, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating {devices?.Count()} devices", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating devices", nameof(CreateAsync));
+
+            Argument.AssertNotNullOrEmpty(devices, nameof(devices));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -433,13 +432,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating devices threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating {devices?.Count()} devices", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating devices", nameof(CreateAsync));
             }
         }
 
@@ -470,7 +469,11 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> SetAsync(IEnumerable<Device> devices, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating multiple devices: count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating multiple devices ", nameof(SetAsync));
+
+            Argument.AssertNotNullOrEmpty(devices, nameof(devices));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -481,13 +484,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating multiple devices threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating multiple devices: count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating multiple devices", nameof(SetAsync));
             }
         }
 
@@ -518,7 +521,11 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<BulkRegistryOperationResult> DeleteAsync(IEnumerable<Device> devices, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting devices : count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting devices", nameof(DeleteAsync));
+
+            Argument.AssertNotNullOrEmpty(devices, nameof(devices));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -529,21 +536,20 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting devices threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting devices : count: {devices?.Count()} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting devices", nameof(DeleteAsync));
             }
         }
 
         /// <summary>
-        /// Copies registered device data to a set of blobs in a specific container in a storage account.
+        /// Creates a new bulk job to import device registrations into the IoT hub.
         /// </summary>
-        /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount.</param>
-        /// <param name="containerName">Destination blob container name.</param>
+        /// <param name="jobParameters">Parameters for the job.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
@@ -557,302 +563,77 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task ExportAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
+        public virtual async Task<JobProperties> ImportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Exporting registry", nameof(ExportAsync));
-            try
-            {
-                Argument.AssertNotNullOrWhiteSpace(storageAccountConnectionString, nameof(storageAccountConnectionString));
-                Argument.AssertNotNullOrWhiteSpace(containerName, nameof(containerName));
+                Logging.Enter(this, $"Running import job", nameof(ImportAsync));
 
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var payload = new ExportImportRequest
-                {
-                    ContainerName = containerName,
-                    StorageConnectionString = storageAccountConnectionString,
-                };
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetAdminUri("exportRegistry"), _credentialProvider, payload);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ExportAsync)} threw an exception: {ex}", nameof(ExportAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Exporting registry", nameof(ExportAsync));
-            }
-        }
-
-        /// <summary>
-        /// Imports registered device data from a set of blobs in a specific container in a storage account.
-        /// </summary>
-        /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount.</param>
-        /// <param name="containerName">Source blob container name.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided connection string or container name is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided connection string or container name is empty or whitespace.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual async Task ImportAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Importing registry", nameof(ImportAsync));
-
-            try
-            {
-                Argument.AssertNotNullOrWhiteSpace(storageAccountConnectionString, nameof(storageAccountConnectionString));
-                Argument.AssertNotNullOrWhiteSpace(containerName, nameof(containerName));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var payload = new ExportImportRequest
-                {
-                    ContainerName = containerName,
-                    StorageConnectionString = storageAccountConnectionString,
-                };
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetAdminUri("importRegistry"), _credentialProvider, payload);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.NoContent, response).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ImportAsync)} threw an exception: {ex}", nameof(ImportAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Importing registry", nameof(ImportAsync));
-            }
-        }
-
-        /// <summary>
-        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
-        /// </summary>
-        /// <param name="exportBlobContainerUri">Destination blob container URI.</param>
-        /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>JobProperties of the newly created job.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided container URI is null.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, bool excludeKeys, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(exportBlobContainerUri, nameof(exportBlobContainerUri));
-
-            return ExportAsync(
-                JobProperties.CreateForExportJob(
-                    exportBlobContainerUri,
-                    excludeKeys),
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
-        /// </summary>
-        /// <param name="exportBlobContainerUri">Destination blob container URI.</param>
-        /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container.</param>
-        /// <param name="excludeKeys">Specifies whether to exclude the Device's Keys during the export.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>JobProperties of the newly created job.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided container URI or blob name is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the output blob name is empty or whitespace.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobProperties> ExportAsync(Uri exportBlobContainerUri, string outputBlobName, bool excludeKeys, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(exportBlobContainerUri, nameof(exportBlobContainerUri));
-
-            return ExportAsync(
-                JobProperties.CreateForExportJob(
-                    exportBlobContainerUri,
-                    excludeKeys,
-                    outputBlobName),
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
-        /// </summary>
-        /// <param name="jobParameters">Parameters for the job.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <remarks>Conditionally includes configurations, if specified.</remarks>
-        /// <returns>JobProperties of the newly created job.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobProperties> ExportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
-        {
             Argument.AssertNotNull(jobParameters, nameof(jobParameters));
 
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Export Job running with {jobParameters}", nameof(ExportAsync));
-
-            try
-            {
-                jobParameters.Type = JobType.ExportDevices;
-                return CreateJobAsync(jobParameters, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ExportAsync)} threw an exception: {ex}", nameof(ExportAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Export Job running with {jobParameters}", nameof(ExportAsync));
-            }
-        }
-
-        /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT hub.
-        /// </summary>
-        /// <param name="importBlobContainerUri">Source blob container URI.</param>
-        /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>JobProperties of the newly created job.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(importBlobContainerUri, nameof(importBlobContainerUri));
-            Argument.AssertNotNullOrWhiteSpace(outputBlobContainerUri, nameof(outputBlobContainerUri));
-
-            return ImportAsync(
-               JobProperties.CreateForImportJob(
-                   importBlobContainerUri,
-                   outputBlobContainerUri),
-               cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT hub.
-        /// </summary>
-        /// <param name="importBlobContainerUri">Source blob container URI.</param>
-        /// <param name="outputBlobContainerUri">Destination blob container URI.</param>
-        /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <returns>JobProperties of the newly created job.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided import or output container URI is null or when the input blob name is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided input blob name is empty or whitespace.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobProperties> ImportAsync(Uri importBlobContainerUri, Uri outputBlobContainerUri, string inputBlobName, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(importBlobContainerUri, nameof(importBlobContainerUri));
-            Argument.AssertNotNullOrWhiteSpace(outputBlobContainerUri, nameof(outputBlobContainerUri));
-
-            return ImportAsync(
-               JobProperties.CreateForImportJob(
-                   importBlobContainerUri,
-                   outputBlobContainerUri,
-                   inputBlobName),
-               cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates a new bulk job to import device registrations into the IoT hub.
-        /// </summary>
-        /// <param name="jobParameters">Parameters for the job.</param>
-        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
-        /// <remarks>Conditionally includes configurations, if specified.</remarks>
-        /// <returns>JobProperties of the newly created job.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
-        public virtual Task<JobProperties> ImportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNull(jobParameters, nameof(jobParameters));
-
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Import Job running with {jobParameters}", nameof(ImportAsync));
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 jobParameters.Type = JobType.ImportDevices;
-                return CreateJobAsync(jobParameters, cancellationToken);
+                return await CreateJobAsync(jobParameters, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ExportAsync)} threw an exception: {ex}", nameof(ImportAsync));
+                    Logging.Error(this, $"Running import job threw an exception: {ex}", nameof(ImportAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Import Job running with {jobParameters}", nameof(ImportAsync));
+                    Logging.Exit(this, $"Running import job", nameof(ImportAsync));
+            }
+        }
+
+        /// <summary>
+        /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
+        /// </summary>
+        /// <param name="jobParameters">Parameters for the job.</param>
+        /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
+        /// <remarks>Conditionally includes configurations, if specified.</remarks>
+        /// <returns>JobProperties of the newly created job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided job properties instance is null.</exception>
+        /// <exception cref="IotHubServiceException">
+        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
+        /// </exception>
+        /// <exception cref="HttpRequestException">
+        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
+        /// certificate validation.
+        /// </exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
+        public virtual async Task<JobProperties> ExportAsync(JobProperties jobParameters, CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, "Running export job", nameof(ExportAsync));
+
+            Argument.AssertNotNull(jobParameters, nameof(jobParameters));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                jobParameters.Type = JobType.ExportDevices;
+                return await CreateJobAsync(jobParameters, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Running export job threw an exception: {ex}", nameof(ExportAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, "Running export job", nameof(ExportAsync));
             }
         }
 
@@ -879,12 +660,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting job {jobId}", nameof(GetJobsAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(jobId, nameof(jobId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetJobUri(jobId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -893,7 +674,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                    Logging.Error(this, $"Getting job {jobId} threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
@@ -921,13 +702,13 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<IEnumerable<JobProperties>> GetJobsAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting job", nameof(GetJobsAsync));
+                Logging.Enter(this, $"Getting jobs", nameof(GetJobsAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetListJobsUri(), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, s_getJobsUri, _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<JobProperties>>(response).ConfigureAwait(false);
@@ -935,18 +716,18 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                    Logging.Error(this, $"Getting jobs threw an exception: {ex}", nameof(GetJobsAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting job", nameof(GetJobsAsync));
+                    Logging.Exit(this, $"Getting jobs", nameof(GetJobsAsync));
             }
         }
 
         /// <summary>
-        /// Cancels/Deletes the job with the specified Id.
+        /// Cancels/deletes the job with the specified Id.
         /// </summary>
         /// <param name="jobId">Id of the job to cancel.</param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
@@ -965,14 +746,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task CancelJobAsync(string jobId, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Canceling job: {jobId}", nameof(CancelJobAsync));
+                Logging.Enter(this, $"Canceling job {jobId}", nameof(CancelJobAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(jobId, nameof(jobId));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNull(jobId, nameof(jobId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetJobUri(jobId), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, new ETag(jobId), false);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -981,13 +762,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetJobsAsync)} threw an exception: {ex}", nameof(GetJobsAsync));
+                    Logging.Error(this, $"Canceling job {jobId} threw an exception: {ex}", nameof(CancelJobAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting job {jobId}", nameof(GetJobsAsync));
+                    Logging.Exit(this, $"Canceling job {jobId}", nameof(CancelJobAsync));
             }
         }
 
@@ -1011,11 +792,11 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting registry statistics", nameof(GetRegistryStatisticsAsync));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDeviceStatisticsUri(), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, s_getDeviceStatsUri, _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<RegistryStatistics>(response).ConfigureAwait(false);
@@ -1023,7 +804,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetRegistryStatisticsAsync)} threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
+                    Logging.Error(this, $"Getting registry statistics threw an exception: {ex}", nameof(GetRegistryStatisticsAsync));
                 throw;
             }
             finally
@@ -1053,11 +834,11 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting service statistics", nameof(GetServiceStatisticsAsync));
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetServiceStatisticsUri(), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, s_getServiceStatsUri, _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<ServiceStatistics>(response).ConfigureAwait(false);
@@ -1065,7 +846,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetServiceStatisticsAsync)} threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
+                    Logging.Error(this, $"Getting service statistics threw an exception: {ex}", nameof(GetServiceStatisticsAsync));
                 throw;
             }
             finally
@@ -1078,58 +859,65 @@ namespace Microsoft.Azure.Devices
         private static Uri GetRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceRequestUriFormat, deviceId), UriKind.Relative);
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DeviceRequestUriFormat,
+                    deviceId),
+                UriKind.Relative);
         }
 
         private static Uri GetModulesOnDeviceRequestUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, ModulesOnDeviceRequestUriFormat, deviceId), UriKind.Relative);
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    ModulesOnDeviceRequestUriFormat,
+                    deviceId),
+                UriKind.Relative);
         }
 
         private static Uri GetBulkRequestUri()
         {
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceRequestUriFormat, string.Empty), UriKind.Relative);
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DeviceRequestUriFormat,
+                    string.Empty),
+                UriKind.Relative);
         }
 
+        // TODO: why no references?
         private static Uri GetAdminUri(string operation)
         {
-            return new Uri(string.Format(CultureInfo.InvariantCulture, AdminUriFormat, operation), UriKind.Relative);
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    AdminUriFormat,
+                    operation),
+                UriKind.Relative);
         }
 
         private static Uri GetJobUri(string jobId)
         {
-            return new Uri(string.Format(CultureInfo.InvariantCulture, JobsGetUriFormat, jobId), UriKind.Relative);
-        }
-
-        private static Uri GetListJobsUri()
-        {
-            return new Uri(JobsListUriFormat, UriKind.Relative);
-        }
-
-        private static Uri GetCreateJobsUri()
-        {
-            return new Uri(JobsCreateUriFormat, UriKind.Relative);
-        }
-
-        private static Uri GetDeviceStatisticsUri()
-        {
-            return new Uri(DeviceStatisticsUriFormat, UriKind.Relative);
-        }
-
-        private static Uri GetServiceStatisticsUri()
-        {
-            return new Uri(ServiceStatisticsUriFormat, UriKind.Relative);
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    JobsGetUriFormat,
+                    jobId),
+                UriKind.Relative);
         }
 
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
         {
-            Argument.AssertNotNullOrEmpty(devices, nameof(devices));
-
             var exportImportDeviceList = new List<ExportImportDevice>(devices.Count());
             foreach (Device device in devices)
             {
-                Argument.AssertNotNull(device, nameof(device));
+                if (device == null)
+                {
+                    throw new InvalidOperationException("Devices in the bulk operation list must not be null.");
+                }
 
                 switch (importMode)
                 {
@@ -1175,36 +963,23 @@ namespace Microsoft.Azure.Devices
 
         private async Task<BulkRegistryOperationResult> BulkDeviceOperationAsync(IEnumerable<ExportImportDevice> devices, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
+            Debug.Assert(devices != null, $"{nameof(BulkDeviceOperationAsync)} called with null for devices.");
 
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<BulkRegistryOperationResult>(response).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(BulkDeviceOperationAsync)} threw an exception: {ex}", nameof(BulkDeviceOperationAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Performing bulk device operation on : {devices?.Count()} devices.", nameof(BulkDeviceOperationAsync));
-            }
+            using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+            return await HttpMessageHelper.DeserializeResponseAsync<BulkRegistryOperationResult>(response).ConfigureAwait(false);
         }
 
         private async Task<JobProperties> CreateJobAsync(JobProperties jobProperties, CancellationToken cancellationToken)
         {
+            Debug.Assert(jobProperties != null, $"{nameof(CreateJobAsync)} called with null for jobProperties.");
+
             cancellationToken.ThrowIfCancellationRequested();
 
-            using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetCreateJobsUri(), _credentialProvider, jobProperties);
+            using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, s_createJobsUri, _credentialProvider, jobProperties);
             HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
             await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
             return await HttpMessageHelper.DeserializeResponseAsync<JobProperties>(response).ConfigureAwait(false);

@@ -97,12 +97,12 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Time when the message was received by the server.
+        /// When the message was received by the server.
         /// </summary>
-        internal DateTime EnqueuedTimeUtc
+        internal DateTimeOffset EnqueuedOnUtc
         {
-            get => GetSystemProperty<DateTime>(MessageSystemPropertyNames.EnqueuedTime);
-            set => SystemProperties[MessageSystemPropertyNames.EnqueuedTime] = value;
+            get => GetSystemProperty<DateTimeOffset>(MessageSystemPropertyNames.EnqueuedOn);
+            set => SystemProperties[MessageSystemPropertyNames.EnqueuedOn] = value;
         }
 
         /// <summary>
@@ -170,26 +170,25 @@ namespace Microsoft.Azure.Devices
         /// <para>negative: receive a feedback message if the message expired (or maximum delivery count was reached) without being completed by the device.</para>
         /// <para>full: both positive and negative.</para>
         /// </remarks>
-        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations", Justification = "This should never happen. If it does, the client should crash.")]
         public DeliveryAcknowledgement Ack
         {
             get
             {
                 string deliveryAckAsString = GetSystemProperty<string>(MessageSystemPropertyNames.Ack);
 
-                if (!string.IsNullOrWhiteSpace(deliveryAckAsString))
+                if (string.IsNullOrWhiteSpace(deliveryAckAsString))
                 {
-                    return deliveryAckAsString switch
-                    {
-                        "none" => DeliveryAcknowledgement.None,
-                        "positive" => DeliveryAcknowledgement.PositiveOnly,
-                        "negative" => DeliveryAcknowledgement.NegativeOnly,
-                        "full" => DeliveryAcknowledgement.Full,
-                        _ => throw new IotHubServiceException("Invalid Delivery Ack mode"),
-                    };
+                    throw new IotHubServiceException("Invalid delivery ack mode");
                 }
 
-                return DeliveryAcknowledgement.None;
+                return deliveryAckAsString switch
+                {
+                    "none" => DeliveryAcknowledgement.None,
+                    "positive" => DeliveryAcknowledgement.PositiveOnly,
+                    "negative" => DeliveryAcknowledgement.NegativeOnly,
+                    "full" => DeliveryAcknowledgement.Full,
+                    _ => throw new IotHubServiceException("Invalid delivery ack mode"),
+                };
             }
             set
             {
@@ -199,7 +198,7 @@ namespace Microsoft.Azure.Devices
                     DeliveryAcknowledgement.PositiveOnly => "positive",
                     DeliveryAcknowledgement.NegativeOnly => "negative",
                     DeliveryAcknowledgement.Full => "full",
-                    _ => throw new IotHubServiceException("Invalid Delivery Ack mode"),
+                    _ => throw new IotHubServiceException("Invalid delivery ack mode"),
                 };
                 SystemProperties[MessageSystemPropertyNames.Ack] = valueToSet;
             }

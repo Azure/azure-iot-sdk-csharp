@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Result of a device message queue purge operation.
     /// </summary>
-    public sealed class PurgeMessageQueueResult
+    public class PurgeMessageQueueResult
     {
         /// <summary>
         /// The Id of the device whose messages are being purged.

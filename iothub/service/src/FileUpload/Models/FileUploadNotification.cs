@@ -18,11 +18,11 @@ namespace Microsoft.Azure.Devices
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// URI of the uploaded file.
+        /// URI path of the uploaded file.
         /// </summary>
+        // TODO: consider changing this to System.Uri before GA
         [JsonProperty(PropertyName = "blobUri", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056: Uri properties should not be strings.", Justification = "Public facing types cannot change as they are considered a breaking change.")]
-        public string BlobUri { get; set; }
+        public string BlobUriPath { get; set; }
 
         /// <summary>
         /// Name of the uploaded file.
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// Date and time indicating when the file was last updated in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedTime", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTimeOffset? LastUpdatedTime { get; set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Size of the uploaded file in bytes.
@@ -46,6 +46,6 @@ namespace Microsoft.Azure.Devices
         /// Date and time indicating when the notification was created in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "enqueuedTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTime EnqueuedTimeUtc { get; set; }
+        public DateTime EnqueuedOnUtc { get; set; }
     }
 }

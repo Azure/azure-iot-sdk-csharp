@@ -17,17 +17,16 @@ namespace Microsoft.Azure.Devices
 {
     internal static class MessageConverter
     {
-        public const string LockTokenName = "x-opt-lock-token";
-        public const string SequenceNumberName = "x-opt-sequence-number";
-        public const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
-        public const string UriName = AmqpConstants.Vendor + ":uri";
-        public const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
-        private const string FailedToSerializeUnsupportedType = "Serialization operation failed due to unsupported type ";
+        internal const string LockTokenName = "x-opt-lock-token";
+        internal const string SequenceNumberName = "x-opt-sequence-number";
+        internal const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
+        internal const string UriName = AmqpConstants.Vendor + ":uri";
+        internal const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
 
         /// <summary>
         /// Copies the message instance's properties to the AMQP message instance.
         /// </summary>
-        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
+        internal static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
         {
             amqpMessage.Properties.MessageId = data.MessageId;
 
@@ -93,7 +92,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
+        internal static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
         {
             amqpObject = null;
             if (netObject == null)
@@ -142,16 +141,14 @@ namespace Microsoft.Azure.Devices
                     break;
 
                 case PropertyValueType.Unknown:
-                    if (netObject is Stream stream)
+                    if (netObject is Stream stream
+                        && mappingType == MappingType.ApplicationProperty)
                     {
-                        if (mappingType == MappingType.ApplicationProperty)
-                        {
-                            amqpObject = ReadStream(stream);
-                        }
+                        amqpObject = ReadStream(stream);
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException($"{FailedToSerializeUnsupportedType} {netObject.GetType().FullName}."));
+                        throw new InvalidOperationException($"Serialization operation failed due to unsupported type '{netObject.GetType().FullName}'.");
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {
@@ -175,7 +172,7 @@ namespace Microsoft.Azure.Devices
             return amqpObject != null;
         }
 
-        public static ArraySegment<byte> ReadStream(Stream stream)
+        internal static ArraySegment<byte> ReadStream(Stream stream)
         {
             using var memoryStream = new MemoryStream();
             int bytesRead;
@@ -191,6 +188,7 @@ namespace Microsoft.Azure.Devices
         internal static AmqpMessage MessageToAmqpMessage(Message message)
         {
             Argument.AssertNotNull(message, nameof(message));
+
             AmqpMessage amqpMessage = message.HasPayload
                 ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
                 : AmqpMessage.Create();

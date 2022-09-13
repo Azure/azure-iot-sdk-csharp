@@ -8,26 +8,17 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// Contains properties of a Job.
-    /// See online <a href="https://docs.microsoft.com/rest/api/iothub/service/createimportexportjob">documentation</a>
-    /// for more infomration.
+    /// Contains properties of a job.
     /// </summary>
+    /// <seealso href="https://docs.microsoft.com/rest/api/iothub/service/createimportexportjob"/>
     public class JobProperties
     {
         private static readonly JobStatus[] s_finishedStates = new[]
         {
             JobStatus.Completed,
             JobStatus.Failed,
-            JobStatus.Cancelled
+            JobStatus.Cancelled,
         };
-
-        /// <summary>
-        /// Default constructor that creates an instance of this class.
-        /// </summary>
-        public JobProperties()
-        {
-            JobId = string.Empty;
-        }
 
         /// <summary>
         /// System generated. Ignored at creation.
@@ -39,14 +30,14 @@ namespace Microsoft.Azure.Devices
         /// System generated. Ignored at creation.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? StartTimeUtc { get; set; }
+        public DateTime? StartedOnUtc { get; set; }
 
         /// <summary>
         /// System generated. Ignored at creation.
         /// Represents the time the job stopped processing.
         /// </summary>
         [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? EndTimeUtc { get; set; }
+        public DateTime? EndedOnUtc { get; set; }
 
         /// <summary>
         /// [Required] The type of job to execute.
@@ -68,13 +59,6 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         [JsonProperty(PropertyName = "failureReason", NullValueHandling = NullValueHandling.Ignore)]
         public string FailureReason { get; set; }
-
-        /// <summary>
-        /// System generated. Ignored at creation.
-        /// Represents the percentage of completion.
-        /// </summary>
-        [JsonProperty(PropertyName = "progress", NullValueHandling = NullValueHandling.Ignore)]
-        public int Progress { get; set; }
 
         /// <summary>
         /// URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
@@ -155,10 +139,20 @@ namespace Microsoft.Azure.Devices
         public bool IsFinished => s_finishedStates.Contains(Status);
 
         /// <summary>
+        /// System generated. Ignored at creation.
+        /// Represents the percentage of completion.
+        /// </summary>
+        /// <remarks>The service doesn't actually seem to set this, so not exposing it.</remarks>
+        [JsonProperty(PropertyName = "progress", NullValueHandling = NullValueHandling.Ignore)]
+        internal int Progress { get; set; }
+
+        /// <summary>
         /// Creates an instance of this class with parameters ready to start an import job.
         /// </summary>
-        /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
-        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
+        /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the
+        /// <see cref="StorageAuthenticationType" /> parameter.</param>
+        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS
+        /// token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="inputBlobName">The blob name to be used when importing from the provided input blob container.</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account.</param>
         /// <param name="identity">User assigned managed identity used to access storage account for import and export jobs.</param>
@@ -184,7 +178,8 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class with parameters ready to start an export job.
         /// </summary>
-        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
+        /// <param name="outputBlobContainerUri">URI to a blob container. This is used to output the status of the job and the results. Including a SAS token
+        /// is dependent on the <see cref="StorageAuthenticationType" /> parameter.</param>
         /// <param name="excludeKeysInExport">Indicates if authorization keys are included in export output</param>
         /// <param name="outputBlobName">The name of the blob that will be created in the provided output blob container</param>
         /// <param name="storageAuthenticationType">Specifies authentication type being used for connecting to storage account</param>

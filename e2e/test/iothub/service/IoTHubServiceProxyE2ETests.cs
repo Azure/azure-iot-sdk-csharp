@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                             {
                                 QueryCondition = $"DeviceId IN ['{JobDeviceId}']",
                                 Twin = twin,
-                                StartOn = DateTimeOffset.UtcNow,
+                                StartOnUtc = DateTimeOffset.UtcNow,
                             },
                             new ScheduledJobsOptions
                             {

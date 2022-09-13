@@ -169,6 +169,12 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _amqpConnection?.Dispose();
+        }
+
         private async void OnFeedbackMessageReceivedAsync(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled)
@@ -187,7 +193,7 @@ namespace Microsoft.Azure.Devices
 
                         var feedbackBatch = new FeedbackBatch
                         {
-                            EnqueuedTime = (DateTime)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime],
+                            EnqueuedTimeUtc = (DateTimeOffset)amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedOn],
                             Records = records,
                             IotHubHostName = Encoding.UTF8.GetString(
                                 amqpMessage.Properties.UserId.Array,
@@ -237,7 +243,7 @@ namespace Microsoft.Azure.Devices
                 Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
             else
             {
@@ -246,14 +252,8 @@ namespace Microsoft.Azure.Devices
                 ErrorProcessor?.Invoke(errorContext);
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _amqpConnection?.Dispose();
         }
     }
 }

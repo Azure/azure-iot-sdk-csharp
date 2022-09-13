@@ -102,15 +102,15 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening FileUploadNotificationProcessorClient", nameof(OpenAsync));
 
+            if (FileUploadNotificationProcessor == null)
+            {
+                throw new InvalidOperationException("Callback for file upload notifications must be set before opening the connection.");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                if (FileUploadNotificationProcessor == null)
-                {
-                    throw new Exception("Callback for file upload notifications must be set before opening the connection.");
-                }
-
                 await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -161,6 +161,12 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _amqpConnection?.Dispose();
         }
 
         private async void OnNotificationMessageReceivedAsync(AmqpMessage amqpMessage)
@@ -220,7 +226,7 @@ namespace Microsoft.Azure.Devices
                 Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
             else
             {
@@ -229,14 +235,8 @@ namespace Microsoft.Azure.Devices
                 ErrorProcessor?.Invoke(errorContext);
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _amqpConnection?.Dispose();
         }
     }
 }

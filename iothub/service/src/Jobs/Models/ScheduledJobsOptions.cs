@@ -12,14 +12,15 @@ namespace Microsoft.Azure.Devices
     public class ScheduledJobsOptions
     {
         /// <summary>
-        /// Unique job Id for the job.
+        /// Unique Id for the job.
         /// </summary>
         [JsonProperty(PropertyName = "jobId", Required = Required.Default)]
         public string JobId { get; set; }
 
         /// <summary>
-        /// Max execution time in seconds (TTL duration).
+        /// Max execution time (TTL duration).
         /// </summary>
+        /// <remarks>The precision on this is in seconds.</remarks>
         [JsonIgnore]
         public TimeSpan MaxExecutionTime { get; set; }
 

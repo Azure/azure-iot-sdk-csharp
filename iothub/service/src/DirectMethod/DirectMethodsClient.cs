@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
                 Argument.AssertNotNull(directMethodRequest, nameof(directMethodRequest));
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
@@ -117,6 +118,7 @@ namespace Microsoft.Azure.Devices
                 Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
                 Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
                 Argument.AssertNotNull(directMethodRequest, nameof(directMethodRequest));
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
@@ -141,13 +143,26 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, ModuleMethodUriFormat, deviceId, moduleId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    ModuleMethodUriFormat,
+                    deviceId,
+                    moduleId),
+                UriKind.Relative);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceMethodUriFormat, deviceId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DeviceMethodUriFormat,
+                    deviceId),
+                UriKind.Relative);
         }
     }
 }
