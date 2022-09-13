@@ -259,6 +259,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
                 error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
                 error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error.And.IsTransient.Should().BeFalse();
             }
             finally
             {
@@ -294,6 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // as a result, we are mapping all of NotFound errors to IotHubStatusCode.DeviceNotFound for AMQP operations.
                 // For more details of this error, see error message via IotHubServiceException.Message.
                 error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+                error.And.IsTransient.Should().BeFalse();
             }
             finally
             {

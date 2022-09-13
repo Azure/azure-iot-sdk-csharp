@@ -119,6 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
                 error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                 FluentActions
@@ -182,6 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a configuration with an out of date ETag");
                 error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
                 error.And.ErrorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
+                error.And.IsTransient.Should().BeFalse();
 
                 // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
                 FluentActions
