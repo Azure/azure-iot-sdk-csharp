@@ -238,14 +238,14 @@ namespace Microsoft.Azure.Devices
             {
                 ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
-                Exception exceptionToLog = errorContext.IOException != null ? errorContext.IOException : errorContext.IotHubException;
+                Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
             else
             {
-                var defaultException = new IOException("AMQP connection was lost.", ((AmqpObject)sender).TerminalException);
+                var defaultException = new IotHubServiceException("AMQP connection was lost.", ((AmqpObject)sender).TerminalException);
                 var errorContext = new ErrorContext(defaultException);
                 ErrorProcessor?.Invoke(errorContext);
 

@@ -189,26 +189,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
         internal static ErrorContext GetErrorContextFromException(AmqpException exception)
         {
-            Error error = exception.Error;
-            AmqpSymbol amqpSymbol = error.Condition;
-            string message = error.ToString();
-            if (AmqpErrorCode.ConnectionForced.Equals(amqpSymbol)
-                || AmqpErrorCode.ConnectionRedirect.Equals(amqpSymbol)
-                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
-                || AmqpErrorCode.WindowViolation.Equals(amqpSymbol)
-                || AmqpErrorCode.ErrantLink.Equals(amqpSymbol)
-                || AmqpErrorCode.HandleInUse.Equals(amqpSymbol)
-                || AmqpErrorCode.UnattachedHandle.Equals(amqpSymbol)
-                || AmqpErrorCode.DetachForced.Equals(amqpSymbol)
-                || AmqpErrorCode.TransferLimitExceeded.Equals(amqpSymbol)
-                || AmqpErrorCode.MessageSizeExceeded.Equals(amqpSymbol)
-                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
-                || AmqpErrorCode.Stolen.Equals(amqpSymbol))
-            {
-                return new ErrorContext(new IotHubServiceException(message, exception));
-            }
-
-            return new ErrorContext(new IOException(message, exception));
+            return new ErrorContext(new IotHubServiceException(exception.Error.ToString(), exception));
         }
     }
 }

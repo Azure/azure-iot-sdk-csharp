@@ -22,10 +22,10 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For example, if the device does not exist.
         /// </remarks>
-        /// <param name="iotHubException"></param>
-        internal ErrorContext(IotHubServiceException iotHubException)
+        /// <param name="iotHubServiceException"></param>
+        internal ErrorContext(IotHubServiceException iotHubServiceException)
         {
-            IotHubException = iotHubException;
+            IotHubServiceException = iotHubServiceException;
         }
 
         /// <summary>
@@ -47,14 +47,14 @@ namespace Microsoft.Azure.Devices
         /// For example, if you attempt to send a cloud-to-device message to a device that does not exist. if this exception is null,
         /// then <see cref="IOException"/> will not be null.
         /// </remarks>
-        public IotHubServiceException IotHubException { get; }
+        public IotHubServiceException IotHubServiceException { get; }
 
         /// <summary>
         /// The network level exception, if any network level exception caused this connection loss.
         /// </summary>
         /// <remarks>
         /// For example, if you attempt to send a cloud-to-device message to a device when your device has no internet connection.
-        /// If this exception is null, then <see cref="IotHubException"/> will not be null.
+        /// If this exception is null, then <see cref="IotHubServiceException"/> will not be null.
         /// </remarks>
         public IOException IOException { get; }
     }
