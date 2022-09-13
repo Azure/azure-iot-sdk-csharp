@@ -323,7 +323,7 @@ namespace Microsoft.Azure.Devices.Client
         internal async Task OnModuleEventMessageReceivedAsync(Message message)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, message.InputName, nameof(OnModuleEventMessageReceivedAsync));
+                Logging.Enter(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
 
             if (message == null)
             {
@@ -371,7 +371,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message.InputName, nameof(OnModuleEventMessageReceivedAsync));
+                    Logging.Exit(this, message?.InputName, nameof(OnModuleEventMessageReceivedAsync));
             }
         }
 
