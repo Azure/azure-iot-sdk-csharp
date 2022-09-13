@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
         private readonly Action<Twin, string, TwinCollection, IotHubClientException> _twinMessageListener;
-        private readonly Func<string, Message, Task> _onModuleMessageReceivedCallback;
+        private readonly Func<Message, Task> _onModuleMessageReceivedCallback;
         private readonly Func<Message, Task> _onDeviceMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback,
             Action<Twin, string, TwinCollection, IotHubClientException> twinMessageListener,
-            Func<string, Message, Task> onModuleMessageReceivedCallback,
+            Func<Message, Task> onModuleMessageReceivedCallback,
             Func<Message, Task> onDeviceMessageReceivedCallback,
             Action onUnitDisconnected)
         {
@@ -672,7 +672,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         public void OnEventsReceived(Message message)
         {
-            _onModuleMessageReceivedCallback?.Invoke(message.InputName, message);
+            _onModuleMessageReceivedCallback?.Invoke(message);
         }
 
         #endregion Event
