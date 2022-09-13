@@ -17,7 +17,7 @@ param(
     [Parameter()]
     [switch] $InstallDependencies,
 
-    # Obsoleted. Recommend docker on WSL2 instead - setup with <repo>/e2e/test/docker/haproxy.sh on WSL.
+    # Deprecated. Recommend docker on WSL2 instead - setup with <repo>/e2e/test/docker/docker-setup.sh on WSL.
     # Installing Docker Desktop on Windows require using HyperV or WSL, with HyperV by default, which can interfere with certain proxy setup for testing.
     # USE THIS OPTION IF YOU KNOW YOU NEED THIS.
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
