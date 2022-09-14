@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// error message, a flag indicating if the error was transient, an optional tracking id and an optional reference
         /// to the inner exception that caused this exception.
         /// </summary>
+        /// <param name="message">The message that describes the error.</param>
         /// <param name="errorCode">The 3-digit error iotHubStatusCode returned back in the hub service response.</param>
         /// <param name="iotHubStatusCode">The 6-digit error iotHubStatusCode representing a more specific error in details.</param>
-        /// <param name="message">The message that describes the error.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
         /// <param name="trackingId">The service returned tracking Id associated with this particular error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public IotHubServiceException(HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, string message, bool isTransient, string trackingId = null, Exception innerException = null)
+        public IotHubServiceException(string message, HttpStatusCode errorCode, IotHubErrorCode iotHubStatusCode, bool isTransient, string trackingId = null, Exception innerException = null)
             : base(message, innerException)
         {
             StatusCode = errorCode;

@@ -2,13 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -19,32 +20,6 @@ namespace Microsoft.Azure.Devices.Test
     public class ExceptionHandlingHelperTests
     {
         private const string HttpErrorCodeName = "iothub-errorcode";
-
-        [TestMethod]
-        public async Task GetExceptionCodeAsync_NumericErrorCode_InJsonString_ValidErrorCode()
-        {
-            // arrange
-            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
-            var exceptionResult = new IoTHubExceptionResult
-            {
-                // A read-world message in the response content which includes the numeric error code returned by the hub service.
-                Message = 
-                "{" +
-                    "\"errorCode\":404103," +
-                    "\"trackingId\":\"b575211ff5194d56b18721941e82c3d5\"," +
-                    "\"message\":\"The operation failed because the requested device isn't online or hasn't registered the direct method callback.\"," +
-                    "\"info\":{}," +
-                    "\"timestampUtc\":\"2022-09-12T21:59:47.99936Z\"" +
-                "}"
-            };
-            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
-
-            // act
-            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
-
-            // assert
-            errorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
-        }
 
         [TestMethod]
         public async Task GetExceptionCodeAsync_NumericErrorCode_InResponseMessage_ValidErrorCode()
@@ -66,9 +41,12 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
+            KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            string trackingId = pair.Key;
+            IotHubErrorCode errorCode = pair.Value;
 
             // assert
+            trackingId.Should().Be("b575211ff5194d56b18721941e82c3d5");
             errorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
         }
 
@@ -85,7 +63,8 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
+            KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubErrorCode errorCode = pair.Value;
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.PreconditionFailed);
@@ -111,7 +90,8 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
+            KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubErrorCode errorCode = pair.Value;
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.Unknown);
@@ -130,7 +110,8 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
+            KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubErrorCode errorCode = pair.Value;
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.Unknown);
@@ -148,7 +129,8 @@ namespace Microsoft.Azure.Devices.Test
             httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
-            IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(httpResponseMessage);
+            KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage);
+            IotHubErrorCode errorCode = pair.Value;
 
             // assert
             errorCode.Should().Be(IotHubErrorCode.Unknown);

@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -15,8 +16,6 @@ namespace Microsoft.Azure.Devices
     {
         private const string MessageFieldErrorCode = "errorCode";
         private const string HttpErrorCodeName = "iothub-errorcode";
-
-        internal static string s_trackingId = string.Empty;
 
         internal static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices
         // the error description in the response header. The SDK will attempt to retrieve the integer error code
         // in the field of ErrorCode from the response content. If it works, the SDK will populate the exception
         // with the proper Code. Otherwise the SDK returns IotHubStatusCode.Unknown and log an error.
-        internal static async Task<IotHubErrorCode> GetIotHubErrorCodeAsync(HttpResponseMessage response)
+        internal static async Task<KeyValuePair<string, IotHubErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             IoTHubExceptionResult responseContent = null;
@@ -41,12 +40,13 @@ namespace Microsoft.Azure.Devices
             {
                 if (Logging.IsEnabled)
                     Logging.Error(
-                        nameof(GetIotHubErrorCodeAsync),
+                        nameof(GetErrorCodeAndTrackingIdAsync),
                         $"Failed to parse response content JSON: {ex.Message}. Message body: '{responseBody}.'");
             }
 
             if (responseContent != null)
             {
+                string trackingId = string.Empty;
                 try
                 {
                     var structuredMessageFields = JsonConvert.DeserializeObject<ResponseMessage>(responseContent.Message);
@@ -55,14 +55,14 @@ namespace Microsoft.Azure.Devices
                     {
                         if (structuredMessageFields.TrackingId != null)
                         {
-                            s_trackingId = structuredMessageFields.TrackingId;
+                            trackingId = structuredMessageFields.TrackingId;
                         }
 
                         if (structuredMessageFields.ErrorCode != null)
                         {
                             if (int.TryParse(structuredMessageFields.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
                             {
-                                return (IotHubErrorCode)errorCodeInt;
+                                return new KeyValuePair<string, IotHubErrorCode>(trackingId, (IotHubErrorCode)errorCodeInt);
                             }
                         }
                     }
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
                 {
                     if (Logging.IsEnabled)
                         Logging.Error(
-                            nameof(GetIotHubErrorCodeAsync),
+                            nameof(GetErrorCodeAndTrackingIdAsync),
                             $"Failed to deserialize error message into a dictionary: {ex.Message}. Message body: '{responseBody}.'");
                 }
             }
@@ -81,12 +81,13 @@ namespace Microsoft.Azure.Devices
             const char errorFieldsDelimiter = ';';
             string[] messageFields = responseContent.Message?.Split(errorFieldsDelimiter);
 
-            if (messageFields == null && Logging.IsEnabled)
+            if (messageFields == null || messageFields.Count() < 2)
             {
-                Logging.Error(
-                    nameof(GetIotHubErrorCodeAsync),
-                    $"Failed to find expected semicolon in error message to find error code." +
-                    $" Message body: '{responseBody}.'");
+                if (Logging.IsEnabled)
+                    Logging.Error(
+                        nameof(GetErrorCodeAndTrackingIdAsync),
+                        $"Failed to find expected semicolon in error message to find error code." +
+                        $" Message body: '{responseBody}.'");
             }
             else
             {
@@ -108,14 +109,14 @@ namespace Microsoft.Azure.Devices
                         // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
                         if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
                         {
-                            return (IotHubErrorCode)code;
+                            return new KeyValuePair<string, IotHubErrorCode>(string.Empty, (IotHubErrorCode)code);
                         }
 
                         // Otherwise the error code might be a string (e.g., PreconditionFailed) in which case we'll try to
                         // find the matching IotHubErrorCode enum with that same name.
                         if (Enum.TryParse(returnedErrorCode, out IotHubErrorCode errorCode))
                         {
-                            return errorCode;
+                            return new KeyValuePair<string, IotHubErrorCode>(string.Empty, errorCode);
                         }
                     }
                 }
@@ -123,10 +124,10 @@ namespace Microsoft.Azure.Devices
 
             if (Logging.IsEnabled)
                 Logging.Error(
-                    nameof(GetIotHubErrorCodeAsync),
+                    nameof(GetErrorCodeAndTrackingIdAsync),
                     $"Failed to derive any error code from the response message: {responseBody}");
 
-            return IotHubErrorCode.Unknown;
+            return new KeyValuePair<string, IotHubErrorCode>(string.Empty, IotHubErrorCode.Unknown);
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -58,11 +59,12 @@ namespace Microsoft.Azure.Devices
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                IotHubErrorCode errorCode = await ExceptionHandlingHelper.GetIotHubErrorCodeAsync(responseMessage);
-                bool isTransient = GetIsTransientFlag(responseMessage.StatusCode, errorCode);
-                string trackingId = ExceptionHandlingHelper.s_trackingId;
+                KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage);
+                string trackingId = pair.Key;
+                IotHubErrorCode errorCode = pair.Value;
+                bool isTransient = DetermineIfTransient(responseMessage.StatusCode, errorCode);
 
-                throw new IotHubServiceException(responseMessage.StatusCode, errorCode, errorMessage, isTransient, trackingId);
+                throw new IotHubServiceException(errorMessage, responseMessage.StatusCode, errorCode, isTransient, trackingId);
             }
         }
 
@@ -128,7 +130,7 @@ namespace Microsoft.Azure.Devices
             return escapedETagBuilder.ToString();
         }
 
-        private static bool GetIsTransientFlag(HttpStatusCode statusCode, IotHubErrorCode errorCode)
+        private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubErrorCode errorCode)
         {
             switch (errorCode)
             {
@@ -137,14 +139,7 @@ namespace Microsoft.Azure.Devices
                     return true;
 
                 case IotHubErrorCode.Unknown:
-                    if (statusCode == HttpStatusCode.RequestTimeout)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return statusCode == HttpStatusCode.RequestTimeout;
 
                 default:
                     return false;

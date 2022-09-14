@@ -141,8 +141,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     // If this fails, it won't fail the test
                     await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
-                catch (IotHubServiceException ex) 
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
+                catch (IotHubServiceException ex)
+                    when (ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     // configuration was already deleted during the normal test flow
                 }
