@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -39,8 +40,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
         private static readonly MqttQualityOfServiceLevel QoS = MqttQualityOfServiceLevel.AtLeastOnce;
 
-        private IMqttClient _mqttClient;
-        private MqttClientOptionsBuilder _mqttClientOptionsBuilder;
+        private static readonly MqttFactory s_mqttFactory = new MqttFactory(new MqttLogger());
         private int _packetId;
 
         private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
@@ -78,17 +78,120 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var mqttFactory = new MqttFactory(new MqttLogger());
+            using IMqttClient mqttClient = s_mqttFactory.CreateMqttClient();
+            MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(provisioningRequest, TransportProtocol, SslProtocols);
+            mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
+            mqttClient.DisconnectedAsync += HandleDisconnection;
 
-            _mqttClient = mqttFactory.CreateMqttClient();
-            _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
+            try
+            {
+                await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                throw new ProvisioningTransportException("Failed to open the MQTT connection", e);
+            }
+
+            await SubscribeToRegistrationResponseMessagesAsync(mqttClient, cancellationToken).ConfigureAwait(false);
+
+            RegistrationOperationStatus registrationStatus = await PublishRegistrationRequest(mqttClient, provisioningRequest, cancellationToken).ConfigureAwait(false);
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, "Successfully sent the initial registration request, now polling until provisioning has finished.");
+
+            return await PollUntilProvisionigFinishes(mqttClient, registrationStatus.OperationId, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<RegistrationOperationStatus> PublishRegistrationRequest(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest, CancellationToken cancellationToken)
+        {
+            DeviceRegistration registrationRequest = new DeviceRegistration()
+            {
+                Payload = new JRaw(provisioningRequest.Payload),
+            };
+
+            byte[] payload = new byte[0];
+
+            if (provisioningRequest.Payload != null)
+            {
+                string requestString = JsonConvert.SerializeObject(registrationRequest);
+                payload = Encoding.UTF8.GetBytes(requestString);
+            }
+
+            int packetId = GetNextPacketId();
+            string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, packetId);
+            var message = new MqttApplicationMessageBuilder()
+                .WithPayload(payload)
+                .WithTopic(registrationTopic)
+                .Build();
+
+            _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
+
+            try
+            {
+                MqttClientPublishResult publishResult = await mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+
+                if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new ProvisioningTransportException($"Failed to publish the MQTT packet for message with reason code {publishResult.ReasonCode}");
+                }
+            }
+            catch (Exception e) when (e is not ProvisioningTransportException)
+            {
+                throw new ProvisioningTransportException("Failed to send the ?????", e);
+            }
+
+            //TODO cancellation token?
+            RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.Task.ConfigureAwait(false);
+
+            if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
+            {
+                throw new ProvisioningTransportException($"Failed to start provisioning. Service responded with status {registrationStatus.Status}");
+            }
+
+            return registrationStatus;
+        }
+
+        private async Task SubscribeToRegistrationResponseMessagesAsync(IMqttClient mqttClient, CancellationToken cancellationToken)
+        {
+            try
+            {
+                MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
+                    .WithTopicFilter(SubscribeFilter, QoS)
+                .Build();
+
+                MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
+
+                if (subscribeResults == null || subscribeResults.Items == null)
+                {
+                    throw new ProvisioningTransportException("Failed to subscribe to topic " + SubscribeFilter);
+                }
+
+                MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
+
+                if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
+                {
+                    throw new ProvisioningTransportException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
+                }
+            }
+            catch (Exception e) when (e is not ProvisioningTransportException)
+            {
+                throw new ProvisioningTransportException("Failed to subscribe to the registrations response topic", e);
+            }
+        }
+
+        private static MqttClientOptionsBuilder CreateMqttClientOptions(
+            ProvisioningTransportRegisterRequest provisioningRequest,
+            ProvisioningClientTransportProtocol transportProtocol,
+            SslProtocols sslProtocols)
+        {
+            var mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
             string hostName = provisioningRequest.GlobalDeviceEndpoint;
 
-            if (TransportProtocol == ProvisioningClientTransportProtocol.WebSocket)
+            if (transportProtocol == ProvisioningClientTransportProtocol.WebSocket)
             {
                 var uri = "wss://" + hostName;
-                _mqttClientOptionsBuilder.WithWebSocketServer(uri);
+                mqttClientOptionsBuilder.WithWebSocketServer(uri);
                 /*
                 IWebProxy proxy = _transportSettings.Proxy;
                 if (proxy != null)
@@ -114,7 +217,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 // "ssl://" prefix is not needed here
                 var uri = hostName;
-                _mqttClientOptionsBuilder.WithTcpServer(uri, MqttTcpPort);
+                mqttClientOptionsBuilder.WithTcpServer(uri, MqttTcpPort);
             }
 
             MqttClientOptionsBuilderTlsParameters tlsParameters = new MqttClientOptionsBuilderTlsParameters();
@@ -146,8 +249,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     ClientApiVersionHelper.ApiVersion,
                     Uri.EscapeDataString(provisioningRequest.ProductInfo));
 
-            _mqttClientOptionsBuilder.WithClientId(provisioningRequest.Authentication.GetRegistrationId());
-            _mqttClientOptionsBuilder.WithCredentials(username, password);
+            mqttClientOptionsBuilder.WithClientId(provisioningRequest.Authentication.GetRegistrationId());
+            mqttClientOptionsBuilder.WithCredentials(username, password);
 
             /*
             if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
@@ -156,122 +259,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }*///TODO RCVC?
 
             tlsParameters.UseTls = true;
-            tlsParameters.SslProtocol = SslProtocols;
-            _mqttClientOptionsBuilder.WithTls(tlsParameters);
+            tlsParameters.SslProtocol = sslProtocols;
+            mqttClientOptionsBuilder.WithTls(tlsParameters);
 
-            _mqttClientOptionsBuilder.WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311); // 3.1.1
+            mqttClientOptionsBuilder.WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311); // 3.1.1
 
             //_mqttClientOptionsBuilder.WithCleanSession(_mqttTransportSettings.CleanSession);
 
             //TODO make this configurable
-            _mqttClientOptionsBuilder.WithKeepAlivePeriod(TimeSpan.FromSeconds(230));
+            mqttClientOptionsBuilder.WithKeepAlivePeriod(TimeSpan.FromSeconds(230));
 
-            _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
-            _mqttClient.DisconnectedAsync += HandleDisconnection;
-
-            MqttClientConnectResult result = await _mqttClient.ConnectAsync(_mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
-
-            //TODO check result
-
-            MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter(SubscribeFilter, QoS)
-                .Build();
-
-            MqttClientSubscribeResult subscribeResults = await _mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
-
-            if (subscribeResults == null || subscribeResults.Items == null)
-            {
-                //TODO
-                throw new Exception("Failed to subscribe to topic " + SubscribeFilter);
-            }
-
-            MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
-
-            if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
-            {
-                //TODO
-                throw new Exception("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
-            }
-
-            DeviceRegistration registrationRequest = new DeviceRegistration()
-            {
-                Payload = new JRaw(provisioningRequest.Payload),
-            };
-
-            byte[] payload = new byte[0];
-
-            if (provisioningRequest.Payload != null)
-            {
-                string requestString = JsonConvert.SerializeObject(registrationRequest);
-                payload = Encoding.UTF8.GetBytes(requestString);
-            }
-
-            int packetId = GetNextPacketId();
-            string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, packetId);
-            var message = new MqttApplicationMessageBuilder()
-                .WithPayload(payload)
-                .WithTopic(registrationTopic)
-                .Build();
-
-            _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
-
-            MqttClientPublishResult publishResult = await _mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
-
-            if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
-            {
-                //TODO
-                throw new Exception($"Failed to publish the MQTT packet for message with reason code {publishResult.ReasonCode}");
-            }
-
-            RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.Task.ConfigureAwait(false);
-
-            if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
-            {
-                //TODO
-                throw new Exception($"Failed to start provisioning. Service responded with status {registrationStatus.Status}");
-            }
-
-            string operationId = registrationStatus.OperationId;
-
-            while (true)
-            {
-                packetId = GetNextPacketId();
-                string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, packetId, operationId);
-                message = new MqttApplicationMessageBuilder()
-                    .WithTopic(topicName)
-                    .Build();
-
-                _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
-
-                publishResult = await _mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
-
-                RegistrationOperationStatus currentStatus = await _checkRegistrationOperationStatusSource.Task.ConfigureAwait(false);
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
-
-                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
-                {
-                    return currentStatus.RegistrationState;
-                }
-
-                TimeSpan pollingDelay = currentStatus.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval);
-
-                if (Logging.IsEnabled)
-                    Logging.Info(this, $"Polling for the current state again in {pollingDelay.TotalMilliseconds} milliseconds.");
-
-                await Task.Delay(pollingDelay, cancellationToken);
-            }
+            return mqttClientOptionsBuilder;
         }
 
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _mqttClient?.Dispose();
-            }
-
             base.Dispose(disposing);
         }
 
@@ -307,6 +310,49 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             //TODO
             return Task.CompletedTask;
+        }
+
+        private async Task<DeviceRegistrationResult> PollUntilProvisionigFinishes(IMqttClient mqttClient, string operationId, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                int packetId = GetNextPacketId();
+                string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, packetId, operationId);
+                var message = new MqttApplicationMessageBuilder()
+                    .WithTopic(topicName)
+                    .Build();
+
+                _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
+
+                MqttClientPublishResult publishResult = await mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+
+                if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new ProvisioningTransportException($"Failed to publish the MQTT registration message with reason code {publishResult.ReasonCode}");
+                }
+
+                //TODO cancellation token?
+                RegistrationOperationStatus currentStatus = await _checkRegistrationOperationStatusSource.Task.ConfigureAwait(false);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
+
+                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
+                {
+                    return currentStatus.RegistrationState;
+                }
+
+                // The service is expected to return a value signalling how long to wait before polling again, but
+                // the SDK has a default value for when the service does not send that value. Included in this default value
+                // is some jitter to help stagger the requests if multiple provisioning device clients are checking their provisioning
+                // state at the same time.
+                TimeSpan pollingDelay = currentStatus.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Polling for the current state again in {pollingDelay.TotalMilliseconds} milliseconds.");
+
+                await Task.Delay(pollingDelay, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private ushort GetNextPacketId()
