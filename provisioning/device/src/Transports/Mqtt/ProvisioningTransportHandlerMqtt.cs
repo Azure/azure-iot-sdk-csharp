@@ -3,24 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Net.Security;
-using System.Net.WebSockets;
-using System.Runtime.ExceptionServices;
+using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetty.Buffers;
-using DotNetty.Codecs.Mqtt;
-using DotNetty.Handlers.Logging;
-using DotNetty.Handlers.Timeout;
-using DotNetty.Handlers.Tls;
-using DotNetty.Transport.Bootstrapping;
-using DotNetty.Transport.Channels;
-using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Azure.Devices.Authentication;
+using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
+using MQTTnet;
+using MQTTnet.Client;
+using MQTTnet.Protocol;
+using MQTTnet.Server;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -29,18 +26,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     public class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
-        private static readonly MultithreadEventLoopGroup s_eventLoopGroup = new();
-
         private const int MaxMessageSize = 256 * 1024;
-
-        private const int ReadTimeoutSeconds = 60;
-
-        private const string WsMqttSubprotocol = "mqtt";
         private const int MqttTcpPort = 8883;
         private const string WsScheme = "wss";
-        private const int WsPort = 443;
+        private const string UsernameFormat = "{0}/registrations/{1}/api-version={2}&ClientVersion={3}";
+        private const string SubscribeFilter = "$dps/registrations/res/#";
+        private const string RegisterTopic = "$dps/registrations/PUT/iotdps-register/?$rid={0}";
+        private const string GetOperationsTopic = "$dps/registrations/GET/iotdps-get-operationstatus/?$rid={0}&operationId={1}";
+        private const string Registration = "registration";
 
-        private ClientWebSocketChannel _webSocketChannel;
+        private static readonly Regex s_registrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled);
+        private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
+        private static readonly MqttQualityOfServiceLevel QoS = MqttQualityOfServiceLevel.AtLeastOnce;
+
+        private IMqttClient _mqttClient;
+        private MqttClientOptionsBuilder _mqttClientOptionsBuilder;
+        private int _packetId;
+
+        private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
+        private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
@@ -50,7 +54,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ProvisioningClientTransportProtocol transportProtocol = ProvisioningClientTransportProtocol.Tcp)
         {
             TransportProtocol = transportProtocol;
-            Port = TransportProtocol == ProvisioningClientTransportProtocol.WebSocket ? WsPort : MqttTcpPort;
         }
 
         /// <summary>
@@ -61,78 +64,203 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Registers a device described by the message.
         /// </summary>
-        /// <param name="message">The provisioning message.</param>
+        /// <param name="provisioningRequest">The provisioning request message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterRequest message,
+            ProvisioningTransportRegisterRequest provisioningRequest,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
 
-            Argument.AssertNotNull(message, nameof(message));
+            Argument.AssertNotNull(provisioningRequest, nameof(provisioningRequest));
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            RegistrationOperationStatus operation = null;
+            var mqttFactory = new MqttFactory(new MqttLogger());
 
-            try
+            _mqttClient = mqttFactory.CreateMqttClient();
+            _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
+
+            string hostName = provisioningRequest.GlobalDeviceEndpoint;
+
+            if (TransportProtocol == ProvisioningClientTransportProtocol.WebSocket)
             {
-                if (message.Authentication is AuthenticationProviderX509 x509Auth)
+                var uri = "wss://" + hostName;
+                _mqttClientOptionsBuilder.WithWebSocketServer(uri);
+                /*
+                IWebProxy proxy = _transportSettings.Proxy;
+                if (proxy != null)
                 {
-                    if (TransportProtocol == ProvisioningClientTransportProtocol.Tcp)
+                    var serviceUri = new Uri(uri);
+                    var proxyUri = _transportSettings.Proxy.GetProxy(serviceUri);
+
+                    if (proxy.Credentials != null)
                     {
-                        // TODO: Fallback not implemented.
-                        operation = await ProvisionOverTcpUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else if (TransportProtocol == ProvisioningClientTransportProtocol.WebSocket)
-                    {
-                        operation = await ProvisionOverWssUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
+                        NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, "Basic");
+                        string username = credentials.UserName;
+                        string password = credentials.Password;
+                        _mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, username, password);
                     }
                     else
                     {
-                        throw new NotSupportedException($"Not supported {nameof(TransportProtocol)} value: {TransportProtocol}");
+                        _mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri);
                     }
                 }
-                else if (message.Authentication is AuthenticationProviderSymmetricKey symmetricKeyAuth)
-                {
-                    if (TransportProtocol == ProvisioningClientTransportProtocol.Tcp)
-                    {
-                        // TODO: Fallback not implemented.
-                        operation = await ProvisionOverTcpUsingSymmetricKeyAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else if (TransportProtocol == ProvisioningClientTransportProtocol.WebSocket)
-                    {
-                        operation = await ProvisionOverWssUsingSymmetricKeyAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Not supported {nameof(TransportProtocol)} value: {TransportProtocol}");
-                    }
-                }
-                else
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"Invalid {nameof(AuthenticationProvider)} type.");
-
-                    throw new NotSupportedException(
-                        $"{nameof(message.Authentication)} must be of type {nameof(AuthenticationProviderX509)} or {nameof(AuthenticationProviderSymmetricKey)}");
-                }
-
-                return operation.RegistrationState;
+                */ // TODO WS proxy support
             }
-            catch (Exception ex) when (!(ex is ProvisioningTransportException))
+            else
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerMqtt)} threw exception {ex}", nameof(RegisterAsync));
-
-                throw new ProvisioningTransportException($"MQTT transport exception", ex, true);
+                // "ssl://" prefix is not needed here
+                var uri = hostName;
+                _mqttClientOptionsBuilder.WithTcpServer(uri, MqttTcpPort);
             }
-            finally
+
+            MqttClientOptionsBuilderTlsParameters tlsParameters = new MqttClientOptionsBuilderTlsParameters();
+
+            string password = "";
+            if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
             {
+                List<X509Certificate> certs = new()
+                {
+                    x509Auth.GetAuthenticationCertificate()
+                };
+
+                tlsParameters.Certificates = certs;
+            }
+            else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey key1)
+            {
+                password = ProvisioningSasBuilder.BuildSasSignature(Registration, key1.GetPrimaryKey(), string.Concat(provisioningRequest.IdScope, '/', "registrations", '/', provisioningRequest.Authentication.GetRegistrationId()), TimeSpan.FromHours(1));
+            }
+            else if (provisioningRequest.Authentication is AuthenticationProviderTpm)
+            {
+                throw new NotSupportedException("TPM authentication is not supported over MQTT or MQTT websockets");
+            }
+
+            string username = string.Format(
+                    CultureInfo.InvariantCulture,
+                    UsernameFormat,
+                    provisioningRequest.IdScope,
+                    provisioningRequest.Authentication.GetRegistrationId(),
+                    ClientApiVersionHelper.ApiVersion,
+                    Uri.EscapeDataString(provisioningRequest.ProductInfo));
+
+            _mqttClientOptionsBuilder.WithClientId(provisioningRequest.Authentication.GetRegistrationId());
+            _mqttClientOptionsBuilder.WithCredentials(username, password);
+
+            /*
+            if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
+            {
+                tlsParameters.CertificateValidationHandler = certificateValidationHandler;
+            }*///TODO RCVC?
+
+            tlsParameters.UseTls = true;
+            tlsParameters.SslProtocol = SslProtocols;
+            _mqttClientOptionsBuilder.WithTls(tlsParameters);
+
+            _mqttClientOptionsBuilder.WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311); // 3.1.1
+
+            //_mqttClientOptionsBuilder.WithCleanSession(_mqttTransportSettings.CleanSession);
+
+            //TODO make this configurable
+            _mqttClientOptionsBuilder.WithKeepAlivePeriod(TimeSpan.FromSeconds(230));
+
+            _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
+            _mqttClient.DisconnectedAsync += HandleDisconnection;
+
+            MqttClientConnectResult result = await _mqttClient.ConnectAsync(_mqttClientOptionsBuilder.Build(), cancellationToken).ConfigureAwait(false);
+
+            //TODO check result
+
+            MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
+                .WithTopicFilter(SubscribeFilter, QoS)
+                .Build();
+
+            MqttClientSubscribeResult subscribeResults = await _mqttClient.SubscribeAsync(subscribeOptions, cancellationToken).ConfigureAwait(false);
+
+            if (subscribeResults == null || subscribeResults.Items == null)
+            {
+                //TODO
+                throw new Exception("Failed to subscribe to topic " + SubscribeFilter);
+            }
+
+            MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
+
+            if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter))
+            {
+                //TODO
+                throw new Exception("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic);
+            }
+
+            DeviceRegistration registrationRequest = new DeviceRegistration()
+            {
+                Payload = new JRaw(provisioningRequest.Payload),
+            };
+
+            byte[] payload = new byte[0];
+
+            if (provisioningRequest.Payload != null)
+            {
+                string requestString = JsonConvert.SerializeObject(registrationRequest);
+                payload = Encoding.UTF8.GetBytes(requestString);
+            }
+
+            int packetId = GetNextPacketId();
+            string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, packetId);
+            var message = new MqttApplicationMessageBuilder()
+                .WithPayload(payload)
+                .WithTopic(registrationTopic)
+                .Build();
+
+            _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
+
+            MqttClientPublishResult publishResult = await _mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+
+            if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
+            {
+                //TODO
+                throw new Exception($"Failed to publish the MQTT packet for message with reason code {publishResult.ReasonCode}");
+            }
+
+            RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.Task.ConfigureAwait(false);
+
+            if (registrationStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
+            {
+                //TODO
+                throw new Exception($"Failed to start provisioning. Service responded with status {registrationStatus.Status}");
+            }
+
+            string operationId = registrationStatus.OperationId;
+
+            while (true)
+            {
+                packetId = GetNextPacketId();
+                string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, packetId, operationId);
+                message = new MqttApplicationMessageBuilder()
+                    .WithTopic(topicName)
+                    .Build();
+
+                _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>();
+
+                publishResult = await _mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+
+                RegistrationOperationStatus currentStatus = await _checkRegistrationOperationStatusSource.Task.ConfigureAwait(false);
+
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+                    Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
+
+                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
+                {
+                    return currentStatus.RegistrationState;
+                }
+
+                TimeSpan pollingDelay = currentStatus.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Polling for the current state again in {pollingDelay.TotalMilliseconds} milliseconds.");
+
+                await Task.Delay(pollingDelay, cancellationToken);
             }
         }
 
@@ -141,199 +269,64 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (disposing)
             {
-                _webSocketChannel?.Dispose();
-                _webSocketChannel = null;
+                _mqttClient?.Dispose();
             }
 
             base.Dispose(disposing);
         }
 
-        private async Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
-            ProvisioningTransportRegisterRequest message,
-            CancellationToken cancellationToken)
+        private Task HandleReceivedMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            Debug.Assert(message.Authentication is AuthenticationProviderX509);
-            cancellationToken.ThrowIfCancellationRequested();
+            receivedEventArgs.AutoAcknowledge = true;
+            string topic = receivedEventArgs.ApplicationMessage.Topic;
 
-            X509Certificate2 clientCertificate = ((AuthenticationProviderX509)message.Authentication).GetAuthenticationCertificate();
+            //initial request's response topic"$dps/registrations/res/202/?$rid=1&retry-after=3"
 
-            var tlsSettings = new ClientTlsSettings(
-                SslProtocols,
-                true,
-                new List<X509Certificate> { clientCertificate },
-                message.GlobalDeviceEndpoint);
+            //$dps/registrations/res/200/?$rid=2
 
-            return await ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task<RegistrationOperationStatus> ProvisionOverTcpUsingSymmetricKeyAsync(
-            ProvisioningTransportRegisterRequest message,
-            CancellationToken cancellationToken)
-        {
-            Debug.Assert(message.Authentication is AuthenticationProviderSymmetricKey);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var tlsSettings = new ClientTlsSettings(
-                SslProtocols,
-                false,
-                new List<X509Certificate>(0),
-                message.GlobalDeviceEndpoint);
-
-            return await ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task<RegistrationOperationStatus> ProvisionOverTcpCommonAsync(
-            ProvisioningTransportRegisterRequest message,
-            ClientTlsSettings tlsSettings,
-            CancellationToken cancellationToken)
-        {
-            var tcs = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            SslStream streamFactory(Stream stream) => new(stream, true, RemoteCertificateValidationCallback);
-
-            Bootstrap bootstrap = new Bootstrap()
-                .Group(s_eventLoopGroup)
-                .Channel<TcpSocketChannel>()
-                .Option(ChannelOption.TcpNodelay, true)
-                .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
-                .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
-                {
-                    ch.Pipeline.AddLast(
-                        new ReadTimeoutHandler(ReadTimeoutSeconds),
-                        new TlsHandler(streamFactory, tlsSettings),
-                        MqttEncoder.Instance,
-                        new MqttDecoder(isServer: false, maxMessageSize: MaxMessageSize),
-                        new LoggingHandler(LogLevel.DEBUG),
-                        new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
-                }));
-
-            if (Logging.IsEnabled)
-                Logging.Associate(bootstrap, this);
-
-            IPAddress[] addresses = await Dns.GetHostAddressesAsync(message.GlobalDeviceEndpoint).ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
-
-            IChannel channel = null;
-            Exception lastException = null;
-            foreach (IPAddress address in addresses)
+            if (!_startProvisioningRequestStatusSource.Task.IsCompleted)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
+                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+                _startProvisioningRequestStatusSource.SetResult(operation);
+            }
+            else
+            {
+                string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
+                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
 
-                try
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"Connecting to {address}.");
+                operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(topic, s_defaultOperationPollingInterval);
 
-                    channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
-                    break;
-                }
-                catch (AggregateException ae)
-                {
-                    ae.Handle((ex) =>
-                    {
-                        if (ex is ConnectException) // We will handle DotNetty.Transport.Channels.ConnectException
-                        {
-                            lastException = ex;
-
-                            if (Logging.IsEnabled)
-                                Logging.Info(this, $"ConnectException trying to connect to {address}: {ex}");
-
-                            return true;
-                        }
-
-                        return false; // Let anything else stop the application.
-                    });
-                }
+                _checkRegistrationOperationStatusSource.SetResult(operation);
             }
 
-            if (channel == null)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, "Cannot connect to Provisioning Service.");
-
-                ExceptionDispatchInfo.Capture(lastException).Throw();
-            }
-
-            return await tcs.Task.ConfigureAwait(false);
+            return Task.CompletedTask;
         }
 
-        private async Task<RegistrationOperationStatus> ProvisionOverWssUsingX509CertificateAsync(
-            ProvisioningTransportRegisterRequest message,
-            CancellationToken cancellationToken)
+        private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
         {
-            Debug.Assert(message.Authentication is AuthenticationProviderX509);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            X509Certificate2 clientCertificate = ((AuthenticationProviderX509)message.Authentication).GetAuthenticationCertificate();
-
-            return await ProvisionOverWssCommonAsync(message, clientCertificate, cancellationToken).ConfigureAwait(false);
+            //TODO
+            return Task.CompletedTask;
         }
 
-        private async Task<RegistrationOperationStatus> ProvisionOverWssUsingSymmetricKeyAsync(
-            ProvisioningTransportRegisterRequest message,
-            CancellationToken cancellationToken)
+        private ushort GetNextPacketId()
         {
-            Debug.Assert(message.Authentication is AuthenticationProviderSymmetricKey);
-            cancellationToken.ThrowIfCancellationRequested();
+            unchecked
+            {
+                ushort newIdShort;
+                int newId = Interlocked.Increment(ref _packetId);
 
-            return await ProvisionOverWssCommonAsync(message, null, cancellationToken).ConfigureAwait(false);
+                newIdShort = (ushort)newId;
+                return newIdShort == 0 ? GetNextPacketId() : newIdShort;
+            }
         }
 
-        private async Task<RegistrationOperationStatus> ProvisionOverWssCommonAsync(
-            ProvisioningTransportRegisterRequest message,
-            X509Certificate2 clientCertificate,
-            CancellationToken cancellationToken)
+        private ushort GetCurrentPacketId()
         {
-            var tcs = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            var uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
-            Uri websocketUri = uriBuilder.Uri;
-
-            var websocket = new ClientWebSocket();
-            websocket.Options.AddSubProtocol(WsMqttSubprotocol);
-            if (clientCertificate != null)
+            unchecked
             {
-                websocket.Options.ClientCertificates.Add(clientCertificate);
+                return (ushort)Volatile.Read(ref _packetId);
             }
-
-            // Check if we're configured to use a proxy server
-            try
-            {
-                if (Proxy != null)
-                {
-                    // Configure proxy server
-                    websocket.Options.Proxy = Proxy;
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(ProvisionOverWssCommonAsync)} Setting ClientWebSocket.Options.Proxy: {Proxy}");
-                }
-            }
-            catch (PlatformNotSupportedException)
-            {
-                // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
-            }
-
-            await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-
-            _webSocketChannel = new ClientWebSocketChannel(null, websocket);
-            _webSocketChannel
-                .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
-                .Option(ChannelOption.AutoRead, true)
-                .Option(ChannelOption.RcvbufAllocator, new AdaptiveRecvByteBufAllocator())
-                .Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default)
-                .Pipeline.AddLast(
-                    new ReadTimeoutHandler(ReadTimeoutSeconds),
-                    MqttEncoder.Instance,
-                    new MqttDecoder(false, MaxMessageSize),
-                    new LoggingHandler(LogLevel.DEBUG),
-                    new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
-
-            await s_eventLoopGroup.RegisterAsync(_webSocketChannel).ConfigureAwait(false);
-
-            return await tcs.Task.ConfigureAwait(false);
         }
     }
 }
