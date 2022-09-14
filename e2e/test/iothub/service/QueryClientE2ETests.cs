@@ -211,13 +211,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // There is some latency between the creation of the test devices and when they are queryable,
             // so keep executing the query until both devices are returned in the results or until a timeout.
             using var cancellationTokenSource = new CancellationTokenSource(_queryableDelayTimeout);
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
             QueryResponse<ScheduledJob> queryResponse = await queryClient.CreateAsync<ScheduledJob>(query);
             while (queryResponse.CurrentPage.Count() < expectedCount)
             {
                 await Task.Delay(100).ConfigureAwait(false);
                 queryResponse = await queryClient.CreateAsync<ScheduledJob>(query);
-                cancellationToken.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
+                cancellationTokenSource.Token.ThrowIfCancellationRequested(); // timed out waiting for the devices to become queryable
             }
         }
 

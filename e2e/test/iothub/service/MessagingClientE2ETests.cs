@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string DevicePrefix = $"{nameof(MessagingClientE2ETests)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(TaskCanceledException))]
+        [ExpectedException(typeof(OperationCanceledException))]
         [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
         {
