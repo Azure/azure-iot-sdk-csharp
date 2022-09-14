@@ -20,6 +20,6 @@ namespace Microsoft.Azure.Devices
         internal string Message { get; set; }
 
         [JsonProperty("timestampUtc")]
-        internal string TimestampUtc { get; set; }
+        internal string OccurredOnUtc { get; set; }
     }
 }

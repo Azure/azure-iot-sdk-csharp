@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Test
                 ErrorCode = "404103",
                 TrackingId = "b575211ff5194d56b18721941e82c3d5",
                 Message = "The operation failed because the requested device isn't online or hasn't registered the direct method callback.",
-                TimestampUtc = "2022-09-12T21:59:47.99936Z",
+                OccurredOnUtc = "2022-09-12T21:59:47.99936Z",
             };
             var exceptionResult = new IoTHubExceptionResult
             {
