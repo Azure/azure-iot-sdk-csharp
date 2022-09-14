@@ -370,6 +370,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Unauthorized);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -391,6 +392,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Unauthorized);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -413,6 +415,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Unauthorized);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -435,6 +438,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Unauthorized);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         // Test device client recovery when proxy settings are enabled

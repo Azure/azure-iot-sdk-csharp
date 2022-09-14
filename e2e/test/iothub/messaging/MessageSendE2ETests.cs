@@ -178,6 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubClientException>();
                 error.And.ErrorCode.Should().Be(IotHubErrorCode.MessageTooLarge);
+                error.And.IsTransient.Should().BeFalse();
             }
             finally
             {
@@ -225,6 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.MessageTooLarge);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
@@ -262,6 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.MessageTooLarge);
+            error.And.IsTransient.Should().BeFalse();
         }
 
         // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than

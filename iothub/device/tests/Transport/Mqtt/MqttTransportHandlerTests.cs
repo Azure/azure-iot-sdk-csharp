@@ -119,6 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             //assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.NetworkErrors);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -179,6 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -219,6 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -260,6 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -301,6 +305,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -340,6 +345,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -405,6 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
@@ -481,6 +488,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubErrorCode.Timeout);
+            error.And.IsTransient.Should().BeTrue();
         }
 
         [TestMethod]
