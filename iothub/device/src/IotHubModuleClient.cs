@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.StatusCode"/> is set to <see cref="IotHubStatusCode.NetworkErrors"/>
+        /// <exception cref="IotHubClientException">Thrown and <see cref="IotHubClientException.ErrorCode"/> is set to <see cref="IotHubErrorCode.NetworkErrors"/>
         /// if the client encounters a transient retryable exception. </exception>
         /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>

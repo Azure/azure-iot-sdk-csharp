@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // An UnauthorizedException is handled in the connection status change handler through its corresponding status change event.
         // We will ignore this exception when thrown by client API operations.
-        private readonly Dictionary<IotHubStatusCode, string> _exceptionsToBeIgnored = new()
+        private readonly Dictionary<IotHubErrorCode, string> _exceptionsToBeIgnored = new()
         {
-            { IotHubStatusCode.Unauthorized, "Unauthorized exceptions are handled by the ConnectionStatusChangeHandler." }
+            { IotHubErrorCode.Unauthorized, "Unauthorized exceptions are handled by the ConnectionStatusChangeHandler." }
         };
 
         // Mark these fields as volatile so that their latest values are referenced.
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             {
                                 await s_deviceClient.CloseAsync(cancellationToken);
                             }
-                            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized) { } // if the previous token is now invalid, this call may fail
+                            catch (IotHubClientException ex) when (ex.ErrorCode is IotHubErrorCode.Unauthorized) { } // if the previous token is now invalid, this call may fail
                             s_deviceClient.Dispose();
                         }
 

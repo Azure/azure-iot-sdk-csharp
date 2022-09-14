@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">Status code of the communication failure.</param>
-        public HttpHsmComunicationException(string message, int statusCode) : base($"{message}, StatusCode: {statusCode}")
+        public HttpHsmComunicationException(string message, int statusCode) : base($"{message}, ErrorCode: {statusCode}")
         {
             StatusCode = statusCode;
         }

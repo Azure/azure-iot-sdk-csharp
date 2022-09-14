@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
-                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubClientException(true, IotHubStatusCode.NetworkErrors), out TimeSpan delay))
+                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubClientException(true, IotHubErrorCode.NetworkErrors), out TimeSpan delay))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
@@ -888,11 +888,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         status = ConnectionStatus.DisconnectedRetrying;
                     }
                 }
-                else if (hubException.StatusCode is IotHubStatusCode.Unauthorized)
+                else if (hubException.ErrorCode is IotHubErrorCode.Unauthorized)
                 {
                     reason = ConnectionStatusChangeReason.BadCredential;
                 }
-                else if (hubException.StatusCode is IotHubStatusCode.DeviceNotFound)
+                else if (hubException.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     reason = ConnectionStatusChangeReason.DeviceDisabled;
                 }

@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private readonly Random _random = new Random();
         private readonly int _maxRetryCount;
-        private readonly IDictionary<IotHubStatusCode, string> _exceptionsToBeIgnored;
+        private readonly IDictionary<IotHubErrorCode, string> _exceptionsToBeIgnored;
 
-        internal ExponentialBackoffTransientExceptionRetryPolicy(int maxRetryCount = default, IDictionary<IotHubStatusCode, string> exceptionsToBeIgnored = default)
+        internal ExponentialBackoffTransientExceptionRetryPolicy(int maxRetryCount = default, IDictionary<IotHubErrorCode, string> exceptionsToBeIgnored = default)
         {
             _maxRetryCount = maxRetryCount == 0 ? int.MaxValue : maxRetryCount;
             _exceptionsToBeIgnored = exceptionsToBeIgnored;
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             if (currentRetryCount < _maxRetryCount)
             {
                 if ((lastException is IotHubClientException iotHubException
-                        && (iotHubException.IsTransient || _exceptionsToBeIgnored != null && _exceptionsToBeIgnored.ContainsKey(iotHubException.StatusCode)))
+                        && (iotHubException.IsTransient || _exceptionsToBeIgnored != null && _exceptionsToBeIgnored.ContainsKey(iotHubException.ErrorCode)))
                     || ExceptionHelper.IsNetworkExceptionChain(lastException))
                 {
                     double exponentialInterval =

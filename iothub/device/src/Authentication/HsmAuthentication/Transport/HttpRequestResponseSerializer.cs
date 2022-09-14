@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
             if (!Enum.TryParse(statusLineParts[1], out HttpStatusCode statusCode))
             {
-                throw new HttpRequestException($"StatusCode is not valid {statusLineParts[1]}.");
+                throw new HttpRequestException($"ErrorCode is not valid {statusLineParts[1]}.");
             }
 
             httpResponse.StatusCode = statusCode;

@@ -200,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 Assert.Fail("Should throw UnauthorizedException but didn't.");
             }
-            catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
+            catch (IotHubClientException ex) when (ex.ErrorCode is IotHubErrorCode.Unauthorized)
             {
                 // It should always throw IotHubClientException with status code Unauthorized
             }
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.OpenAsync().ConfigureAwait(false);
                     Assert.Fail("Should throw UnauthorizedException but didn't.");
                 }
-                catch (IotHubClientException ex) when (ex.StatusCode is IotHubStatusCode.Unauthorized)
+                catch (IotHubClientException ex) when (ex.ErrorCode is IotHubErrorCode.Unauthorized)
                 {
                     // It should always throw IotHubClientException with status code Unauthorized
                 }

@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Throttled);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.Throttled);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Throttled);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.Throttled);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceMaximumQueueDepthExceeded);
         }
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.DeviceMaximumQueueDepthExceeded);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceMaximumQueueDepthExceeded);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.Unauthorized);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -312,7 +312,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.StatusCode.Should().Be(IotHubStatusCode.Unauthorized);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.Unauthorized);
         }
 
         // Graceful disconnection recovery test is marked as a build verification test

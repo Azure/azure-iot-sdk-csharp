@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_amqpConnection.IsClosing())
             {
-                throw new IotHubClientException("Amqp connection is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
+                throw new IotHubClientException("Amqp connection is disconnected.", null, IotHubErrorCode.NetworkErrors);
             }
 
             var amqpSessionSettings = new AmqpSessionSettings
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 if (ex is AmqpIotResourceException)
                 {
                     _amqpConnection.SafeClose();
-                    throw new IotHubClientException(ex.Message, ex, true, IotHubStatusCode.NetworkErrors);
+                    throw new IotHubClientException(ex.Message, IotHubErrorCode.NetworkErrors, ex);
                 }
 
                 throw ex;
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             if (_amqpConnection.IsClosing())
             {
-                throw new IotHubClientException("Amqp connection is disconnected.", null, true, IotHubStatusCode.NetworkErrors);
+                throw new IotHubClientException("Amqp connection is disconnected.", null, IotHubErrorCode.NetworkErrors);
             }
 
             try

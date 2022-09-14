@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         }
 
         internal AmqpIotResourceException(string message, Exception cause, bool isTransient = false)
-            : base(message, cause, isTransient)
+            : base(message, isTransient, cause)
         {
         }
 
