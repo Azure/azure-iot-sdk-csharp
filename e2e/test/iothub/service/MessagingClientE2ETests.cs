@@ -11,7 +11,6 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -247,13 +246,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Protocol = protocol
             };
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             try
             {
                 // act
                 var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-                Func<Task> act = async () => await sender.Messaging.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
+                Func<Task> act = async () => await sender.Messages.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
 
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await sender.Messaging.CloseAsync().ConfigureAwait(false);
+                await sender.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -279,13 +278,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             try
             {
                 // act
                 var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-                Func<Task> act = async () => await sender.Messaging.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
+                Func<Task> act = async () => await sender.Messages.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
 
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -299,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await sender.Messaging.CloseAsync().ConfigureAwait(false);
+                await sender.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
     }
