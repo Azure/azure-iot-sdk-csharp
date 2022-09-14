@@ -77,6 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         // The following tests can only be run in Administrator mode
         [TestMethod]
+        [TestCategory("Flaky")]
         public async Task ClientWebSocketChannelReadAfterCloseTest()
         {
             using var websocket = new ClientWebSocket();
@@ -110,6 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
+        [TestCategory("Flaky")]
         public async Task ClientWebSocketChannelWriteAfterCloseTest()
         {
             using var websocket = new ClientWebSocket();
@@ -139,6 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
+        [TestCategory("Flaky")]
         public async Task MqttWebSocketClientAndServerScenario()
         {
             using var websocket = new ClientWebSocket();

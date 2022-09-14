@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 
 namespace Microsoft.Azure.Devices
 {
@@ -15,11 +17,11 @@ namespace Microsoft.Azure.Devices
     {
         private const string ApplicationJson = "application/json";
 
-        private Uri _baseUri;
-        private string _apiVersionQueryString;
+        private readonly Uri _baseUri;
+        private readonly string _apiVersionQueryString;
 
         /// <summary>
-        /// Constructor for mocking purposes only.
+        /// Constructor for internal mocking purposes only.
         /// </summary>
         protected HttpRequestMessageFactory()
         {
@@ -46,7 +48,9 @@ namespace Microsoft.Azure.Devices
             var message = new HttpRequestMessage
             {
                 Method = method,
-                RequestUri = new Uri(_baseUri, relativeUri.ToString() + _apiVersionQueryString + (string.IsNullOrWhiteSpace(queryStringParameters) ? "" : queryStringParameters))
+                RequestUri = new Uri(
+                    _baseUri,
+                    $"{relativeUri}{_apiVersionQueryString}{queryStringParameters ?? string.Empty}")
             };
             message.Headers.Add(HttpRequestHeader.Accept.ToString(), ApplicationJson);
             message.Headers.Add(HttpRequestHeader.Authorization.ToString(), authorizationProvider.GetAuthorizationHeader());
@@ -56,20 +60,17 @@ namespace Microsoft.Azure.Devices
             {
                 message.Headers.Add(HttpRequestHeader.ContentType.ToString(), ApplicationJson);
 
-                if (payload != null)
+                if (payload is string payloadString)
                 {
-                    if (payload is string)
-                    {
-                        // This is a special case reserved for the digital twins subclient where
-                        // users are expected to pass in an already serialized string. For example,
-                        // invoking a digital twin command or updating a digital twin both use
-                        // this functionality.
-                        message.Content = new StringContent((string)payload);
-                    }
-                    else
-                    {
-                        message.Content = HttpMessageHelper.SerializePayload(payload);
-                    }
+                    // This is a special case reserved for the digital twins subclient where
+                    // users are expected to pass in an already serialized string. For example,
+                    // invoking a digital twin command or updating a digital twin both use
+                    // this functionality.
+                    message.Content = new StringContent(payloadString);
+                }
+                else
+                {
+                    message.Content = HttpMessageHelper.SerializePayload(payload);
                 }
             }
 

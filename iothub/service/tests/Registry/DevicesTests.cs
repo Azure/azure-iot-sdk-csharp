@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task RegisterDevicesAsyncWithETagsSetTest()
         {
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task RegisterDevicesAsyncWithNullDeviceTest()
         {
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Tests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public async Task RegisterDevicesAsyncWithNullDeviceListTest()
+        public async Task RegisterDevicesAsyncWithEmptyDeviceListTest()
         {
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Tests
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
             await DevicesClient.CreateAsync(new List<Device>()).ConfigureAwait(false);
-            Assert.Fail("RegisterDevices API did not throw exception when Null device list was used.");
+            Assert.Fail("RegisterDevices API did not throw exception when empty device list was used.");
         }
 
         [TestMethod]
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task UpdateDevicesAsyncWithNullDeviceTest()
         {
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Devices.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public async Task DeleteDevicesAsyncWithNullDeviceTest()
         {
             var goodDevice = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = new ETag("234") };
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Tests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public async Task DeleteDevicesAsyncWithNullDeviceListTest()
+        public async Task DeleteDevicesAsyncWithEmptyDeviceListTest()
         {
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
             var mockHttpRequestFactory = new Mock<HttpRequestMessageFactory>();
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.Tests
             var DevicesClient = new DevicesClient(HostName, mockCredentialProvider.Object, mockHttpClient.Object, mockHttpRequestFactory.Object);
 
             await DevicesClient.DeleteAsync(new List<Device>()).ConfigureAwait(false);
-            Assert.Fail("DeleteDevices API did not throw exception when Null device list was used.");
+            Assert.Fail("DeleteDevices API did not throw exception when empty device list was used.");
         }
 
         [TestMethod]

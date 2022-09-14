@@ -90,27 +90,26 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Callback for file upload notifications must be set before opening the connection.
         /// </remarks>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening FileUploadNotificationProcessorClient", nameof(OpenAsync));
 
+            if (FileUploadNotificationProcessor == null)
+            {
+                throw new InvalidOperationException("Callback for file upload notifications must be set before opening the connection.");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                if (FileUploadNotificationProcessor == null)
-                {
-                    throw new Exception("Callback for file upload notifications must be set before opening the connection.");
-                }
-
                 await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -132,13 +131,12 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// The instance can be re-opened after closing.
         /// </remarks>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="OperationCanceledException">If the provided cancellation token has requested cancellation.</exception>
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -161,6 +159,12 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Closing FileUploadNotificationProcessorClient", nameof(CloseAsync));
             }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _amqpConnection?.Dispose();
         }
 
         private async void OnNotificationMessageReceivedAsync(AmqpMessage amqpMessage)
@@ -220,7 +224,7 @@ namespace Microsoft.Azure.Devices
                 Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
             else
             {
@@ -229,14 +233,8 @@ namespace Microsoft.Azure.Devices
                 ErrorProcessor?.Invoke(errorContext);
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _amqpConnection?.Dispose();
         }
     }
 }

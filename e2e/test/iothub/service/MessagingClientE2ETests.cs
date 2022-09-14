@@ -11,7 +11,6 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -23,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string DevicePrefix = $"{nameof(MessagingClientE2ETests)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(TaskCanceledException))]
+        [ExpectedException(typeof(OperationCanceledException))]
         [TestCategory("Flaky")]
         public async Task Message_TimeOutReachedResponse()
         {
@@ -54,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
             // don't pass in cancellation token here. This test is for seeing how SendAsync reacts with an valid or expired token.
-            await sender.Messaging.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await sender.Messages.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             var sw = new Stopwatch();
             sw.Start();
@@ -63,14 +62,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 var testMessage = new Message(Encoding.ASCII.GetBytes("Test Message"));
-                await sender.Messaging.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
+                await sender.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
 
                 // Pass in the cancellation token to see how the operation reacts to it.
-                await sender.Messaging.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
+                await sender.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                await sender.Messaging.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+                await sender.Messages.CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 sw.Stop();
                 Logger.Trace($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
@@ -88,12 +87,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
 
-            await sender.Messaging.SendAsync(testDevice.Id, message).ConfigureAwait(false);
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -110,14 +109,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
 
             // Open, close, then re-open the client
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             // Client should still be usable after closing and re-opening
             var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-            await sender.Messaging.SendAsync(testDevice.Id, message).ConfigureAwait(false);
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -132,16 +131,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             // Client should be able to send more than one message on an open connection
             for (int i = 0; i < 2; i++)
             {
                 var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-                await sender.Messaging.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+                await sender.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
             }
 
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
         }
 
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
@@ -153,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -162,10 +161,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -185,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -194,10 +193,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -217,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -226,10 +225,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.Messaging.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.Messaging.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await sender.Messages.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
-            await sender.Messaging.CloseAsync().ConfigureAwait(false);
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().NotBeNullOrEmpty();
@@ -247,13 +246,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Protocol = protocol
             };
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             try
             {
                 // act
                 var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-                Func<Task> act = async () => await sender.Messaging.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
+                Func<Task> act = async () => await sender.Messages.SendAsync("nonexistent-device-id", message).ConfigureAwait(false);
 
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await sender.Messaging.CloseAsync().ConfigureAwait(false);
+                await sender.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -279,13 +278,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var sender = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
-            await sender.Messaging.OpenAsync().ConfigureAwait(false);
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
 
             try
             {
                 // act
                 var message = new Message(new byte[10]); // arbitrary payload since it shouldn't matter
-                Func<Task> act = async () => await sender.Messaging.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
+                Func<Task> act = async () => await sender.Messages.SendAsync(testDevice.Id, "nonexistent-module-id", message).ConfigureAwait(false);
 
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -299,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await sender.Messaging.CloseAsync().ConfigureAwait(false);
+                await sender.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
     }

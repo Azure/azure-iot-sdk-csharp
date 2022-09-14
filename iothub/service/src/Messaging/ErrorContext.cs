@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The context for a given connection loss event for <see cref="MessageFeedbackProcessorClient"/>,
-    /// <see cref="FileUploadNotificationProcessorClient"/>, and <see cref="MessagingClient"/>.
+    /// <see cref="FileUploadNotificationProcessorClient"/>, and <see cref="MessagesClient"/>.
     /// </summary>
     /// <remarks>
     /// The context includes the cause of the connection loss and makes a distinction between network

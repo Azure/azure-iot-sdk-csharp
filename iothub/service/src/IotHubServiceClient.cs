@@ -183,19 +183,19 @@ namespace Microsoft.Azure.Devices
         /// Subclient of <see cref="IotHubServiceClient"/> for receiving cloud-to-device message feedback.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
-        public MessageFeedbackProcessorClient MessageFeedbackProcessor { get; protected set; }
+        public MessageFeedbackProcessorClient MessageFeedback { get; protected set; }
 
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> for receiving file upload notifications.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#service-file-upload-notifications"/>.
-        public FileUploadNotificationProcessorClient FileUploadNotificationProcessor { get; protected set; }
+        public FileUploadNotificationProcessorClient FileUploadNotifications { get; protected set; }
 
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
         /// </summary>
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
-        public MessagingClient Messaging { get; protected set; }
+        public MessagesClient Messages { get; protected set; }
 
         /// <summary>
         /// Dispose this client and all the disposable resources it has. This includes any HTTP clients
@@ -216,10 +216,10 @@ namespace Microsoft.Azure.Devices
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory);
-            Messaging = new MessagingClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _options);
+            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _options);
 
-            MessageFeedbackProcessor = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
-            FileUploadNotificationProcessor = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
+            MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _options);
+            FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _options);
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();

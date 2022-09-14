@@ -19,17 +19,17 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
     public class ConfigurationsClient
     {
-        private readonly string _hostName;
-        private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly HttpClient _httpClient;
-        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
         private const string ConfigurationsRequestUriFormat = "&top={0}";
         private const string ETagSetWhileCreatingConfiguration = "ETagSetWhileCreatingConfiguration";
         private const string ArgumentMustBeNonNegative = "ArgumentMustBeNonNegative";
         private const string ETagNotSetWhileDeletingConfiguration = "ETagNotSetWhileDeletingConfiguration";
         private const string ETagNotSetWhileUpdatingConfiguration = "ETagNotSetWhileUpdatingConfiguration";
+
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -70,10 +70,7 @@ namespace Microsoft.Azure.Devices
                 Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
-            if (!string.IsNullOrEmpty(configuration.ETag.ToString()))
-            {
-                throw new ArgumentException(ETagSetWhileCreatingConfiguration);
-            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -118,11 +115,13 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -161,14 +160,16 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
+
+            if (maxCount < 0)
+            {
+                throw new ArgumentException(ArgumentMustBeNonNegative, nameof(maxCount));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                if (maxCount < 0)
-                {
-                    throw new ArgumentException(ArgumentMustBeNonNegative, nameof(maxCount));
-                }
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -215,11 +216,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
 
+            Argument.AssertNotNull(configuration, nameof(configuration));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(configuration, nameof(configuration));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
                 HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -261,12 +263,16 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
-                cancellationToken.ThrowIfCancellationRequested();
-                var configuration = new Configuration(configurationId);
-                configuration.ETag = new ETag(HttpMessageHelper.ETagForce);
+                var configuration = new Configuration(configurationId)
+                {
+                    ETag = new ETag(HttpMessageHelper.ETagForce)
+                };
 
                 await DeleteAsync(configuration, default, cancellationToken).ConfigureAwait(false);
             }
@@ -309,14 +315,13 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Deleting configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+
+            Argument.AssertNotNull(configuration, nameof(configuration));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(configuration, nameof(configuration));
-                cancellationToken.ThrowIfCancellationRequested();
-                if (string.IsNullOrWhiteSpace(configuration.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileDeletingConfiguration);
-                }
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -365,12 +370,13 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNull(content, nameof(content));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-                Argument.AssertNotNull(content, nameof(content));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -391,7 +397,13 @@ namespace Microsoft.Azure.Devices
         private static Uri GetConfigurationRequestUri(string configurationId)
         {
             configurationId = WebUtility.UrlEncode(configurationId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, ConfigurationRequestUriFormat, configurationId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    ConfigurationRequestUriFormat,
+                    configurationId),
+                UriKind.Relative);
         }
     }
 }
