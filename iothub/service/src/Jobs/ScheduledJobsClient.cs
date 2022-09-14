@@ -264,7 +264,12 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken = default)
         {
             // If the user didn't choose a job Id, make one.
-            scheduledJobsOptions.JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions?.JobId)
+            if (scheduledJobsOptions == default)
+            {
+                scheduledJobsOptions = new();
+            }
+
+            scheduledJobsOptions.JobId = string.IsNullOrWhiteSpace(scheduledJobsOptions.JobId)
                 ? Guid.NewGuid().ToString()
                 : scheduledJobsOptions.JobId;
 
