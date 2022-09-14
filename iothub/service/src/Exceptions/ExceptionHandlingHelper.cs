@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
         // the error description in the response header. The SDK will attempt to retrieve the integer error code
         // in the field of ErrorCode from the response content. If it works, the SDK will populate the exception
         // with the proper Code. Otherwise the SDK returns IotHubStatusCode.Unknown and log an error.
-        internal static async Task<KeyValuePair<string, IotHubErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
+        internal static async Task<Tuple<string, IotHubErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             IoTHubExceptionResult responseContent = null;
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
                         {
                             if (int.TryParse(structuredMessageFields.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
                             {
-                                return new KeyValuePair<string, IotHubErrorCode>(trackingId, (IotHubErrorCode)errorCodeInt);
+                                return Tuple.Create(trackingId, (IotHubErrorCode)errorCodeInt);
                             }
                         }
                     }
@@ -109,14 +109,14 @@ namespace Microsoft.Azure.Devices
                         // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
                         if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
                         {
-                            return new KeyValuePair<string, IotHubErrorCode>(string.Empty, (IotHubErrorCode)code);
+                            return Tuple.Create(string.Empty, (IotHubErrorCode)code);
                         }
 
                         // Otherwise the error code might be a string (e.g., PreconditionFailed) in which case we'll try to
                         // find the matching IotHubErrorCode enum with that same name.
                         if (Enum.TryParse(returnedErrorCode, out IotHubErrorCode errorCode))
                         {
-                            return new KeyValuePair<string, IotHubErrorCode>(string.Empty, errorCode);
+                            return Tuple.Create(string.Empty, errorCode);
                         }
                     }
                 }
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices
                     nameof(GetErrorCodeAndTrackingIdAsync),
                     $"Failed to derive any error code from the response message: {responseBody}");
 
-            return new KeyValuePair<string, IotHubErrorCode>(string.Empty, IotHubErrorCode.Unknown);
+            return Tuple.Create(string.Empty, IotHubErrorCode.Unknown);
         }
     }
 }

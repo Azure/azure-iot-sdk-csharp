@@ -59,9 +59,9 @@ namespace Microsoft.Azure.Devices
             if (expectedHttpStatusCode != responseMessage.StatusCode)
             {
                 string errorMessage = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
-                KeyValuePair<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage);
-                string trackingId = pair.Key;
-                IotHubErrorCode errorCode = pair.Value;
+                Tuple<string, IotHubErrorCode> pair = await ExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(responseMessage);
+                string trackingId = pair.Item1;
+                IotHubErrorCode errorCode = pair.Item2;
                 bool isTransient = DetermineIfTransient(responseMessage.StatusCode, errorCode);
 
                 throw new IotHubServiceException(errorMessage, responseMessage.StatusCode, errorCode, isTransient, trackingId);
