@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.Task.ConfigureAwait(false);
 
-            if (registrationStatus.RegistrationState.Status != ProvisioningRegistrationStatusType.Assigning)
+            if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
             {
                 //TODO
                 throw new Exception($"Failed to start provisioning. Service responded with status {registrationStatus.Status}");
