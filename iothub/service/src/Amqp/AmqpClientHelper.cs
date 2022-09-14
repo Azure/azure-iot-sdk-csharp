@@ -3,10 +3,10 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Newtonsoft.Json;
@@ -22,20 +22,40 @@ namespace Microsoft.Azure.Devices.Amqp
 
         internal static Exception ToIotHubClientContract(Exception exception)
         {
-            if (exception is TimeoutException)
+            switch (exception)
             {
-                return new IotHubCommunicationException(exception.Message);
-            }
-            else if (exception is UnauthorizedAccessException)
-            {
-                return new UnauthorizedException(exception.Message);
-            }
-            else if (exception is AmqpException amqpException)
-            {
-                return ToIotHubClientContract(amqpException.Error);
-            }
+                case TimeoutException:
+                    return new IotHubServiceException(
+                        exception.Message,
+                        HttpStatusCode.RequestTimeout,
+                        IotHubErrorCode.Unknown,
+                        true);
 
-            return exception;
+                case UnauthorizedAccessException:
+                    return new IotHubServiceException(
+                        exception.Message,
+                        HttpStatusCode.Unauthorized,
+                        IotHubErrorCode.IotHubUnauthorizedAccess,
+                        false);
+
+                case AmqpException amqpException:
+                    Exception ex = ToIotHubClientContract(amqpException.Error);
+                    if (ex is IotHubServiceException hubEx)
+                    {
+                        // pass amqpException as the inner exception of IotHubServiceException
+                        return new IotHubServiceException(
+                            hubEx.Message,
+                            hubEx.StatusCode,
+                            hubEx.ErrorCode,
+                            hubEx.IsTransient,
+                            string.Empty,
+                            amqpException);
+                    }
+                    return ex;
+
+                default:
+                    return exception;
+            }
         }
 
         internal static void ValidateContentType(AmqpMessage amqpMessage, string expectedContentType)
@@ -58,7 +78,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             if (outcome == null)
             {
-                return new IotHubException("Unknown error.");
+                return new IotHubServiceException("Unknown error.");
             }
 
             Exception retException;
@@ -73,7 +93,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubServiceException("Unknown error.");
             }
 
             return retException;
@@ -83,7 +103,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             if (error == null)
             {
-                return new IotHubException("Unknown error.");
+                return new IotHubServiceException("Unknown error.");
             }
 
             Exception retException;
@@ -102,15 +122,11 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {
-                retException = new DeviceNotFoundException(message, innerException: null);
+                retException = new IotHubServiceException(message, HttpStatusCode.NotFound, IotHubErrorCode.DeviceNotFound, false, innerException: null);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotImplemented))
             {
                 retException = new NotSupportedException(message);
-            }
-            else if (error.Condition.Equals(IotHubAmqpErrorCode.MessageLockLostError))
-            {
-                retException = new DeviceMessageLockLostException(message);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotAllowed))
             {
@@ -118,7 +134,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.UnauthorizedAccess))
             {
-                retException = new UnauthorizedException(message);
+                retException = new IotHubServiceException(message, HttpStatusCode.Unauthorized, IotHubErrorCode.IotHubUnauthorizedAccess, false);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.ArgumentError))
             {
@@ -130,44 +146,41 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             else if (error.Condition.Equals(AmqpErrorCode.MessageSizeExceeded))
             {
-                retException = new MessageTooLargeException(message);
+                retException = new IotHubServiceException(message, HttpStatusCode.RequestEntityTooLarge, IotHubErrorCode.MessageTooLarge, false);
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
-                retException = new DeviceMaximumQueueDepthExceededException(message);
+                retException = new IotHubServiceException(message, HttpStatusCode.Forbidden, IotHubErrorCode.DeviceMaximumQueueDepthExceeded, false);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceAlreadyExists))
             {
-                retException = new DeviceAlreadyExistsException(message, (Exception)null);
+                retException = new IotHubServiceException(message, HttpStatusCode.Conflict, IotHubErrorCode.DeviceAlreadyExists, false);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceContainerThrottled))
             {
-                retException = new IotHubThrottledException(message, (Exception)null);
+                retException = new IotHubServiceException(message, (HttpStatusCode)429, IotHubErrorCode.ThrottlingException, true);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.QuotaExceeded))
             {
-                retException = new QuotaExceededException(message, (Exception)null);
+                retException = new IotHubServiceException(message, HttpStatusCode.Forbidden, IotHubErrorCode.IotHubQuotaExceeded, true);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.PreconditionFailed))
             {
-                retException = new PreconditionFailedException(message, (Exception)null);
+                retException = new IotHubServiceException(message, HttpStatusCode.PreconditionFailed, IotHubErrorCode.PreconditionFailed, false);
             }
             else if (error.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
             {
-                retException = new IotHubSuspendedException(message);
+                retException = new IotHubServiceException(message, HttpStatusCode.BadRequest, IotHubErrorCode.IotHubSuspended, false);
             }
             else
             {
-                retException = new IotHubException(message);
+                retException = new IotHubServiceException(message);
             }
 
             if (trackingId != null
-                && retException is IotHubException exHub)
+                && retException is IotHubServiceException exHub)
             {
-                IotHubException iotHubException = exHub;
-                iotHubException.TrackingId = trackingId;
-                // This is created but not assigned to `retException`. If we change that now, it might be a
-                // breaking change. If not for v1, consider for #v2.
+                exHub.TrackingId = trackingId;
             }
 
             return retException;
@@ -175,26 +188,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
         internal static ErrorContext GetErrorContextFromException(AmqpException exception)
         {
-            Error error = exception.Error;
-            AmqpSymbol amqpSymbol = error.Condition;
-            string message = error.ToString();
-            if (AmqpErrorCode.ConnectionForced.Equals(amqpSymbol)
-                || AmqpErrorCode.ConnectionRedirect.Equals(amqpSymbol)
-                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
-                || AmqpErrorCode.WindowViolation.Equals(amqpSymbol)
-                || AmqpErrorCode.ErrantLink.Equals(amqpSymbol)
-                || AmqpErrorCode.HandleInUse.Equals(amqpSymbol)
-                || AmqpErrorCode.UnattachedHandle.Equals(amqpSymbol)
-                || AmqpErrorCode.DetachForced.Equals(amqpSymbol)
-                || AmqpErrorCode.TransferLimitExceeded.Equals(amqpSymbol)
-                || AmqpErrorCode.MessageSizeExceeded.Equals(amqpSymbol)
-                || AmqpErrorCode.LinkRedirect.Equals(amqpSymbol)
-                || AmqpErrorCode.Stolen.Equals(amqpSymbol))
-            {
-                return new ErrorContext(new IotHubException(message, exception));
-            }
-
-            return new ErrorContext(new IOException(message, exception));
+            return new ErrorContext(new IotHubServiceException(exception.Error.ToString(), exception));
         }
     }
 }

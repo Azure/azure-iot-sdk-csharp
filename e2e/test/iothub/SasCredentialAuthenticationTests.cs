@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
-            catch (UnauthorizedException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized)
             {
                 // Expected to be unauthorized exception.
             }
@@ -111,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         scheduledTwinUpdateOptions)
                     .ConfigureAwait(false);
             }
-            catch (ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429) 
             {
                 // Concurrent jobs can be rejected, but it still means authentication was successful. Ignore the exception.
             }

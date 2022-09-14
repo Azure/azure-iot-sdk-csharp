@@ -105,11 +105,11 @@ namespace Microsoft.Azure.Devices
         /// Advances to the next element of the query results.
         /// </summary>
         /// <returns>True if there was a next item in the query results. False if there were no more items.</returns>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// If this method made a request to IoT hub to get the next page of items but IoT hub responded to
         /// the request with a non-successful status code. For example, if the provided request was throttled,
-        /// <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible error cases,
-        /// see <see cref="Common.Exceptions"/>.
+        /// <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. For a complete list of possible error cases,
+        /// see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If this method made a request to IoT hub to get the next page of items but the HTTP request fails due to

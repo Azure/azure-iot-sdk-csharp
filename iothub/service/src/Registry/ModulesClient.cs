@@ -49,10 +49,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The registered module with the generated keys and ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -97,10 +97,10 @@ namespace Microsoft.Azure.Devices
         /// <returns>The retrieved module identity.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -143,17 +143,17 @@ namespace Microsoft.Azure.Devices
         /// <param name="module">The module identity's new state.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
         /// if the provided module has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The newly updated module identity including its new ETag.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -197,10 +197,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided device Id or module Id is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided device Id or module Id is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -222,23 +222,23 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="module">
         /// The module identity to delete from your IoT hub's registry. If the provided module's ETag
-        /// is out of date, this operation will throw a <see cref="PreconditionFailedException"/>
+        /// is out of date, this operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
         /// An up-to-date ETag can be retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// To force the operation to execute regardless of ETag, set the module identity's ETag to "*" or
         /// use <see cref="DeleteAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="onlyIfUnchanged">
         /// If false, this delete operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
         /// if the provided module has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided module is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server

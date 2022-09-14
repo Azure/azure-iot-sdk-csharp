@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -75,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         twinUpdateOptions)
                     .ConfigureAwait(false);
             }
-            catch (ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
                 // Concurrent jobs can be rejected, but it still means authentication was successful. Ignore the exception.
             }
@@ -131,7 +132,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Func<Task> act = async () => await serviceClient.Messaging.SendAsync(ghostDevice, message).ConfigureAwait(false);
 
             // assert
-            await act.Should().ThrowAsync<DeviceNotFoundException>();
+            var error = await act.Should().ThrowAsync<IotHubServiceException>();
+            error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
+            error.And.IsTransient.Should().BeFalse();
 
             await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
         }

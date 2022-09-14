@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task ServiceClient_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
             using var sc = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate);
-            IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
+            var exception = await Assert.ThrowsExceptionAsync<IotHubServiceException>(
                 () => sc.Query.CreateAsync<Twin>("select * from devices")).ConfigureAwait(false);
 
 #if NET472
@@ -75,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 JobId = "testDevice",
                 MaxExecutionTime = TimeSpan.FromSeconds(60)
             };
-            IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
+            var exception = await Assert.ThrowsExceptionAsync<IotHubServiceException>(
                 () => sc.ScheduledJobs.ScheduleTwinUpdateAsync(
                     twinUpdate, ScheduledTwinUpdateOptions)).ConfigureAwait(false);
 

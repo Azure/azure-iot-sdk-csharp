@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -254,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 await jobsClient.ScheduleTwinUpdateAsync(scheduledTwinUpdate);
             }
-            catch (Common.Exceptions.ThrottlingException)
+            catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)429)
             {
                 // Each IoT hub has a low limit for the number of parallel jobs allowed. Because of that,
                 // tests in this suite are written to work even if the queried job isn't the one they created.

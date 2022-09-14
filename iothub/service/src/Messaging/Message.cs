@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices
                         "positive" => DeliveryAcknowledgement.PositiveOnly,
                         "negative" => DeliveryAcknowledgement.NegativeOnly,
                         "full" => DeliveryAcknowledgement.Full,
-                        _ => throw new IotHubException("Invalid Delivery Ack mode"),
+                        _ => throw new IotHubServiceException("Invalid Delivery Ack mode"),
                     };
                 }
 
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices
                     DeliveryAcknowledgement.PositiveOnly => "positive",
                     DeliveryAcknowledgement.NegativeOnly => "negative",
                     DeliveryAcknowledgement.Full => "full",
-                    _ => throw new IotHubException("Invalid Delivery Ack mode"),
+                    _ => throw new IotHubServiceException("Invalid Delivery Ack mode"),
                 };
                 SystemProperties[MessageSystemPropertyNames.Ack] = valueToSet;
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common.Exceptions;
@@ -182,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
                 // Concurrent jobs can be rejected, so implement a retry mechanism to handle conflicts with other tests
-                catch (JobQuotaExceededException)
+                catch (IotHubServiceException ex) when (ex.StatusCode is (HttpStatusCode)492)
                 {
                     Logger.Trace($"JobQuotaExceededException... waiting after {sw.Elapsed}.");
                     await Task.Delay(s_waitDuration).ConfigureAwait(false);

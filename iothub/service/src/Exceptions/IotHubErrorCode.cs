@@ -1,22 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel;
-using Azure;
-using Microsoft.Azure.Devices;
-
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     /// <summary>
     /// Error codes for common IoT hub response errors.
     /// </summary>
-    public enum ErrorCode
+    public enum IotHubErrorCode
     {
         /// <summary>
         /// Used when the error code returned by the hub is unrecognized. If encountered, please report the issue so it can be added here.
         /// </summary>
-        InvalidErrorCode = 0,
+        Unknown = 0,
 
         // BadRequest - 400
 
@@ -73,6 +68,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         BulkRegistryOperationFailure = 400013,
 
+        /// <summary>
+        /// The operation failed because the IoT hub has been suspended. 
+        /// </summary>
+        /// <remarks>
+        /// This is likely due to exceeding Azure spending limits. To resolve the error, check the Azure bill and ensure there are enough credits.
+        /// </remarks>
+        IotHubSuspended = 400020,
+
         // Unauthorized - 401
 
         /// <summary>
@@ -122,6 +125,17 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </para>
         /// </summary>
         ModuleNotFound = 404010,
+
+        /// <summary>
+        /// The operation failed because the requested device isn't online or hasn't registered the direct method callback.
+        /// </summary>
+        /// <para>
+        /// May be thrown by operations such as <see cref="DirectMethodsClient.InvokeAsync(string, DirectMethodRequest, System.Threading.CancellationToken)"/>
+        /// </para>
+        /// <remarks>
+        /// For more information, see <see href="https://docs.microsoft.com/en-us/azure/iot-hub/troubleshoot-error-codes#404103-devicenotonline"/>.
+        /// </remarks>
+        DeviceNotOnline = 404103,
 
         // Conflict - 409
 
@@ -177,14 +191,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
         /// </summary>
         ThrottlingException = 429001,
-
-        /// <summary>
-        /// IoT hub throttling limits have been exceeded for the requested operation.
-        /// <para>
-        /// For more information, see <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
-        /// </para>
-        /// </summary>
-        ThrottleBacklogLimitExceeded = 429002,
 
         // InternalServerError - 500
 
