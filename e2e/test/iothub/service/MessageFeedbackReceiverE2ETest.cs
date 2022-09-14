@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
+using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -20,7 +21,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     public class MessageFeedbackReceiverE2ETest : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
-        private bool messagedFeedbackReceived;
 
         [LoggedTestMethod, Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
@@ -31,40 +31,51 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Protocol = protocol,
             };
-
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString, options);
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, _devicePrefix).ConfigureAwait(false);
-            serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = OnFeedbackReceived;
-            await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
-            var message = new Message(Encoding.UTF8.GetBytes("some payload"));
-            message.Ack = DeliveryAcknowledgement.Full;
-            messagedFeedbackReceived = false;
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
-            await serviceClient.Messaging.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
 
-            using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
-            await deviceClient.CompleteMessageAsync(receivedMessage.LockToken).ConfigureAwait(false);
-
-            var timer = Stopwatch.StartNew();
-            while (!messagedFeedbackReceived && timer.ElapsedMilliseconds < 200000)
+            try
             {
-                await Task.Delay(800);
+                var message = new Message(Encoding.UTF8.GetBytes("some payload"))
+                {
+                    Ack = DeliveryAcknowledgement.Full,
+                    MessageId = Guid.NewGuid().ToString(),
+                };
+
+                var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
+                {
+                    if (feedback.Records.Any(x => x.OriginalMessageId == message.MessageId))
+                    {
+                        messageReceived.TrySetResult(true);
+                    }
+
+                    return AcknowledgementType.Complete;
+                };
+                await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
+
+                await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+                await serviceClient.Messaging.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
+
+                using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(
+                    new IotHubClientOptions(new IotHubClientAmqpSettings()));
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                Client.Message receivedMessage = await deviceClient.ReceiveMessageAsync().ConfigureAwait(false);
+                await deviceClient.CompleteMessageAsync(receivedMessage.LockToken).ConfigureAwait(false);
+
+                Task result = await Task
+                    .WhenAny(
+                        // Wait for up to 200 seconds for the feedback message
+                        Task.Delay(TimeSpan.FromSeconds(200)),
+                        messageReceived.Task)
+                    .ConfigureAwait(false);
+                messageReceived.Task.IsCompleted.Should().BeTrue();
             }
-            timer.Stop();
-
-            messagedFeedbackReceived.Should().BeTrue("Timed out waiting to receive message feedback.");
-
-            await serviceClient.MessageFeedbackProcessor.CloseAsync().ConfigureAwait(false);
-            messagedFeedbackReceived.Should().BeTrue();
-        }
-
-        private AcknowledgementType OnFeedbackReceived(FeedbackBatch feedback)
-        {
-            messagedFeedbackReceived = true;
-            return AcknowledgementType.Complete;
+            finally
+            {
+                await serviceClient.MessageFeedbackProcessor.CloseAsync().ConfigureAwait(false);
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Feedback messages are delivery acknowledgments for messages sent to a device from IoT hub.
         /// </remarks>
-        public DateTime EnqueuedTimeUtc { get; set; }
+        public DateTime EnqueuedOnUtc { get; set; }
 
         /// <summary>
         /// A collection of feedback records of C2D messages across multiple devices in the IoT hub.
