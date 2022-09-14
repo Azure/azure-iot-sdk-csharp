@@ -136,10 +136,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     throw;
                 }
 
-                if (iotEx is AmqpIotResourceException)
+                if (iotEx is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
                 {
                     _sendingAmqpLink.SafeClose();
-                    throw new IotHubClientException(iotEx.Message, IotHubErrorCode.NetworkErrors, iotEx);
+                    hubEx.ErrorCode = IotHubErrorCode.NetworkErrors;
+                    throw hubEx;
                 }
 
                 throw iotEx;
