@@ -39,6 +39,8 @@ namespace Microsoft.Azure.Devices
         /// <item>ConfigurationsBlobName, if the import job includes configurations and to override the default blob name.</item>
         /// </list>
         /// </remarks>
+        /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync.</param>
+        /// <param name="outputBlobContainerUri">URI to a blob container, used to output the status of the job and the results.</param>
         public JobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri)
         {
             Type = JobType.ImportDevices;
@@ -60,6 +62,8 @@ namespace Microsoft.Azure.Devices
         /// <item>ConfigurationsBlobName, if the export job includes configurations and to override the default blob name.</item>
         /// </list>
         /// </remarks>
+        /// <param name="outputBlobContainerUri">URI to a blob container, used to output the status of the job and the results.</param>
+        /// <param name="excludeKeysInExport">Whether to include authorization keys in export output.</param>
         public JobProperties(Uri outputBlobContainerUri, bool excludeKeysInExport)
         {
             Type = JobType.ImportDevices;
@@ -122,16 +126,22 @@ namespace Microsoft.Azure.Devices
         public string FailureReason { get; internal set; }
 
         /// <summary>
-        /// URI to a blob container that contains registry data to sync. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
+        /// URI to a blob container that contains registry data to sync.
         /// </summary>
+        /// <remarks>
+        /// Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
+        /// </remarks>
         [JsonProperty(PropertyName = "inputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
         public Uri InputBlobContainerUri { get; set; }
 
         /// <summary>
-        /// URI to a blob container. This is used to output the status of the job and the results. Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
+        /// URI to a blob container, used to output the status of the job and the results.
         /// </summary>
         /// <remarks>
+        /// Including a SAS token is dependent on the <see cref="StorageAuthenticationType" /> property.
+        /// <para>
         /// For import job, if there are errors they will be written to OutputBlobContainerUri to a file called "importerrors.log"
+        /// </para>
         /// </remarks>
         [JsonProperty(PropertyName = "outputBlobContainerUri", NullValueHandling = NullValueHandling.Ignore)]
         public Uri OutputBlobContainerUri { get; set; }
