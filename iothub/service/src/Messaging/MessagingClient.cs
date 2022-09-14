@@ -88,9 +88,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -125,9 +123,7 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.
-        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
-        /// If <see cref="IotHubServiceException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
+        /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -160,9 +156,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, Message message, CancellationToken cancellationToken = default)
         {
@@ -222,9 +217,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task SendAsync(string deviceId, string moduleId, Message message, CancellationToken cancellationToken = default)
         {
@@ -284,15 +278,12 @@ namespace Microsoft.Azure.Devices
         /// <returns>The <see cref="PurgeMessageQueueResult"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// <exception cref="IotHubServiceException">Thrown if IoT hub responded to the request with a non-successful status code.
+        /// For example, if the provided request was throttled, <see cref="IotHubServiceException"/> with 
+        /// <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
+        /// <exception cref="HttpRequestException">If the HTTP request fails due to an underlying issue such as network connectivity,
+        /// DNS failure, or server certificate validation.</exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId, CancellationToken cancellationToken = default)
         {
