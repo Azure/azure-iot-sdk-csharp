@@ -44,13 +44,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 Assert.Fail("Message completion out of order not supported outside of AMQP");
             }
 
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             var messages = new List<Client.Message>(MessageCount);
             for (int i = 0; i < MessageCount; i++)
             {
                 (Message msg, string _, string _) = MessageReceiveE2ETests.ComposeC2dTestMessage(logger);
-                await serviceClient.Messaging.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
                 Client.Message message = await deviceClient.ReceiveMessageAsync(cts.Token).ConfigureAwait(false);
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }
     }
 }

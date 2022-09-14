@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Uri containerUri,
             ManagedIdentity identity)
         {
-            var jobProperties = new JobProperties(containerUri, containerUri)
+            var jobProperties = new JobProperties(containerUri)
             {
                 InputBlobName = devicesFileName,
                 StorageAuthenticationType = storageAuthenticationType,

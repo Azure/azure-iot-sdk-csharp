@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices
     /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
-    public class MessagingClient : IDisposable
+    public class MessagesClient : IDisposable
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
@@ -34,11 +34,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        protected MessagingClient()
+        protected MessagesClient()
         {
         }
 
-        internal MessagingClient(
+        internal MessagesClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
@@ -141,6 +141,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Send a cloud-to-device message to the specified device.
         /// </summary>
+        /// <remarks>
+        /// In order to receive feedback messages on the service client, set the <see cref="Message.Ack"/> property to an appropriate value
+        /// and use <see cref="IotHubServiceClient.MessageFeedback"/>.
+        /// </remarks>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>

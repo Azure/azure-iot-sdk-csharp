@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <para>
         /// You will need to receive and complete/reject the messages from the device-side before you can enqueue any additional messages.
         /// If you want to discard the currently enqueued messages, you can
-        /// <see cref="MessagingClient.PurgeMessageQueueAsync(string, System.Threading.CancellationToken)">purge your device message queue</see>.
+        /// <see cref="MessagesClient.PurgeMessageQueueAsync(string, System.Threading.CancellationToken)">purge your device message queue</see>.
         /// For more information on cloud-to-device message operations, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
         /// </para>
         /// </summary>

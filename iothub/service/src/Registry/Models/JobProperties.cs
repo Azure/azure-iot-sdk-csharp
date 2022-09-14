@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Creates an instance of this class for the import job.
         /// </summary>
+        /// <seealso cref="DevicesClient.ImportAsync(JobProperties, System.Threading.CancellationToken)"/>
         /// <remarks>
         /// Other relevant, optional properties to set include:
         /// <list type="bullet">
@@ -40,17 +41,19 @@ namespace Microsoft.Azure.Devices
         /// </list>
         /// </remarks>
         /// <param name="inputBlobContainerUri">URI to a blob container that contains registry data to sync.</param>
-        /// <param name="outputBlobContainerUri">URI to a blob container, used to output the status of the job and the results.</param>
-        public JobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri)
+        /// <param name="outputBlobContainerUri">URI to a blob container, used to output the status of the job and the results.
+        /// If not specified, the input blob container will be used.</param>
+        public JobProperties(Uri inputBlobContainerUri, Uri outputBlobContainerUri = default)
         {
             Type = JobType.ImportDevices;
             InputBlobContainerUri = inputBlobContainerUri;
-            OutputBlobContainerUri = outputBlobContainerUri;
+            OutputBlobContainerUri = outputBlobContainerUri ?? inputBlobContainerUri;
         }
 
         /// <summary>
         /// Creates an instance of this class for the export job.
         /// </summary>
+        /// <seealso cref="DevicesClient.ExportAsync(JobProperties, System.Threading.CancellationToken)"/>
         /// <remarks>
         /// Other relevant, optional properties to set include:
         /// <list type="bullet">
@@ -66,7 +69,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="excludeKeysInExport">Whether to include authorization keys in export output.</param>
         public JobProperties(Uri outputBlobContainerUri, bool excludeKeysInExport)
         {
-            Type = JobType.ImportDevices;
+            Type = JobType.ExportDevices;
             OutputBlobContainerUri = outputBlobContainerUri;
             ExcludeKeysInExport = excludeKeysInExport;
         }

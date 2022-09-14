@@ -44,19 +44,20 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 };
 
                 var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                serviceClient.MessageFeedbackProcessor.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
+                serviceClient.MessageFeedback.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
                 {
                     if (feedback.Records.Any(x => x.OriginalMessageId == message.MessageId))
                     {
                         messageReceived.TrySetResult(true);
+                        return AcknowledgementType.Complete;
                     }
 
-                    return AcknowledgementType.Complete;
+                    return AcknowledgementType.Abandon;
                 };
-                await serviceClient.MessageFeedbackProcessor.OpenAsync().ConfigureAwait(false);
+                await serviceClient.MessageFeedback.OpenAsync().ConfigureAwait(false);
 
-                await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
-                await serviceClient.Messaging.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
+                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
 
                 using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(
                     new IotHubClientOptions(new IotHubClientAmqpSettings()));
@@ -66,7 +67,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 Task result = await Task
                     .WhenAny(
-                        // Wait for up to 200 seconds for the feedback message
+                        // Wait for up to 200 seconds for the feedback message as the service may not send messages
+                        // until they can batch others, even up to a minute later.
                         Task.Delay(TimeSpan.FromSeconds(200)),
                         messageReceived.Task)
                     .ConfigureAwait(false);
@@ -74,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
             finally
             {
-                await serviceClient.MessageFeedbackProcessor.CloseAsync().ConfigureAwait(false);
+                await serviceClient.MessageFeedback.CloseAsync().ConfigureAwait(false);
             }
         }
     }

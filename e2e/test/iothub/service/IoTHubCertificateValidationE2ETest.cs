@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var service = new IotHubServiceClient(
                 TestConfiguration.IoTHub.ConnectionStringInvalidServiceCertificate, options);
             var testMessage = new Message();
-            await service.Messaging.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
+            await service.Messages.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]

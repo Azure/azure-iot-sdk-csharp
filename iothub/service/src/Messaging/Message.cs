@@ -169,6 +169,9 @@ namespace Microsoft.Azure.Devices
         /// <para>positive: receive a feedback message if the message was completed.</para>
         /// <para>negative: receive a feedback message if the message expired (or maximum delivery count was reached) without being completed by the device.</para>
         /// <para>full: both positive and negative.</para>
+        /// <para>
+        /// In order to receive feedback messages on the service client, use <see cref="IotHubServiceClient.MessageFeedback"/>.
+        /// </para>
         /// </remarks>
         public DeliveryAcknowledgement Ack
         {
