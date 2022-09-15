@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("IoTHub")]
     public class RegistryManagerE2ETests : E2EMsTestBase
     {
-        private readonly string _idPrefix = $"{nameof(RegistryManagerE2ETests)}_";
+        private readonly string _idPrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
