@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.Azure.Devices.Common.Exceptions;
 
 namespace Microsoft.Azure.Devices
@@ -18,14 +17,14 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class ModulesClient
     {
+        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
+        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
+        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
+
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
-        private const string ModulesRequestUriFormat = "/devices/{0}/modules/{1}";
-        private const string ETagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
-        private const string ETagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -64,12 +63,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Creating module: {module?.Id} on device: {module?.DeviceId}", nameof(CreateAsync));
 
+            Argument.AssertNotNull(module, nameof(module));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(module, nameof(module));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -78,7 +77,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating device module threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -112,13 +111,13 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting module: {moduleId} on device: {deviceId}", nameof(GetAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-                Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModulesRequestUri(deviceId, moduleId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -127,7 +126,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting device module threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
@@ -165,11 +164,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
 
+            Argument.AssertNotNull(module, nameof(module));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(module, nameof(module));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider, module);
                 HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating device module threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
@@ -212,9 +212,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
-            var module = new Module(deviceId, moduleId);
-            module.ETag = new ETag(HttpMessageHelper.ETagForce);
-            await DeleteAsync(module, default, cancellationToken).ConfigureAwait(false);
+            await DeleteAsync(new Module(deviceId, moduleId), default, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -250,11 +248,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Deleting module: {module?.Id} on device: {module?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
+            Argument.AssertNotNull(module, nameof(module));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(module, nameof(module));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(module.DeviceId, module.Id), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, module.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -263,7 +262,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting device module threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
@@ -277,7 +276,14 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, ModulesRequestUriFormat, deviceId, moduleId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    ModulesRequestUriFormat,
+                    deviceId,
+                    moduleId),
+                UriKind.Relative);
         }
     }
 }

@@ -63,11 +63,11 @@ namespace Microsoft.Azure.Devices
         /// <see cref="ScheduledJob"/>.
         /// </typeparam>
         /// <returns>An iterable set of the queried items.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="query"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the provided <paramref name="query"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="query"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="query"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -147,8 +147,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>An iterable set of the queried jobs.</returns>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">

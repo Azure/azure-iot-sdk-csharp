@@ -35,6 +35,6 @@ namespace Microsoft.Azure.Devices
         /// No authentication token at this scope.
         /// </summary>
         [EnumMember(Value = "none")]
-        None = 3
+        None = 3,
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -25,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The If-Match header value for forcing the operation regardless of ETag.
         /// </summary>
-        internal const string ETagForce = "\"*\"";
+        private static readonly string s_eTagForce = $"\"{ETag.All}\"";
 
         /// <summary>
         /// Helper method for serializing payload objects.
@@ -106,7 +105,7 @@ namespace Microsoft.Azure.Devices
             {
                 // "Perform this operation even if the entity has changed"
                 // Sends the If-Match header with a value of "*"
-                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(ETagForce));
+                requestMessage.Headers.IfMatch.Add(new EntityTagHeaderValue(s_eTagForce));
             }
         }
 

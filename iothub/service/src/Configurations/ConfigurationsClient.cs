@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Configuration> CreateAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating configuration: {configuration?.Id}", nameof(CreateAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
 
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating configuration threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -130,13 +130,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting configuration threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Get configuration: {configurationId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
             }
         }
 
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<IEnumerable<Configuration>> GetAsync(int maxCount, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting configurations", nameof(GetAsync));
 
             if (maxCount < 0)
             {
@@ -170,7 +170,12 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Get,
+                    GetConfigurationRequestUri(""),
+                    _credentialProvider,
+                    null,
+                    string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<Configuration>>(response).ConfigureAwait(false);
@@ -178,13 +183,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting configurations threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting configurations", nameof(GetAsync));
             }
         }
 
@@ -214,7 +219,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Configuration> SetAsync(Configuration configuration, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating configuration {configuration?.Id}", nameof(SetAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
 
@@ -231,13 +236,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating configuration threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating configuration {configuration?.Id}", nameof(SetAsync));
             }
         }
 
@@ -260,33 +265,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string configurationId, CancellationToken cancellationToken = default)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
-
             Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var configuration = new Configuration(configurationId)
-                {
-                    ETag = new ETag(HttpMessageHelper.ETagForce)
-                };
-
-                await DeleteAsync(configuration, default, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
-            }
+            await DeleteAsync(new Configuration(configurationId), default, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -314,7 +295,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task DeleteAsync(Configuration configuration, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
 
@@ -330,13 +311,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting configuration threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
             }
         }
 

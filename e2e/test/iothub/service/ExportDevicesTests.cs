@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new Device(edgeId1)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                        Capabilities = new DeviceCapabilities { IotEdge = true },
+                        Capabilities = new DeviceCapabilities { IsIotEdge = true },
                     })
                     .ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new Device(edgeId2)
                     {
                         Authentication = new AuthenticationMechanism { Type = AuthenticationType.Sas },
-                        Capabilities = new DeviceCapabilities { IotEdge = true },
+                        Capabilities = new DeviceCapabilities { IsIotEdge = true },
                         ParentScopes = { edge1.Scope },
                     })
                     .ConfigureAwait(false);
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 ExportImportDevice exportedDevice = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice);
 
-                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge1.Id) && exportedDevice.Capabilities.IotEdge)
+                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge1.Id) && exportedDevice.Capabilities.IsIotEdge)
                 {
                     Logger.Trace($"Found edge1 in export as [{serializedDevice}]");
                     foundEdge1InExport = true;
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     continue;
                 }
 
-                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge2.Id) && exportedDevice.Capabilities.IotEdge)
+                if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge2.Id) && exportedDevice.Capabilities.IsIotEdge)
                 {
                     Logger.Trace($"Found edge2 in export as [{serializedDevice}]");
                     foundEdge2InExport = true;
