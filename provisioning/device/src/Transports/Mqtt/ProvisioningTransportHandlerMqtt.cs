@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string password = "";
             if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
             {
-                List<X509Certificate> certs = new()
+                var certs = new List<X509Certificate>()
                 {
                     x509Auth.GetAuthenticationCertificate()
                 };
