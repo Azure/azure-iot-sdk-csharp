@@ -169,6 +169,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
                     // This can get back "lost" twin updates in a device reconnection from status like Disconnected_Retrying or Disconnected.
+                    //
+                    // Howevever, considering how a fleet of devices connected to a hub may behave together, one must consider the implication of performing
+                    // work on a device (e.g., get twin) when it comes online. If all the devices go offline and then come online at the same time (for example,
+                    // during a servicing event) it could introduce increased latency or even throttling responses.
+                    // For more information, see https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-quotas-throttling#traffic-shaping.
                     await GetTwinAndDetectChangesAsync(s_cancellationTokenSource.Token);
                     _logger.LogDebug("The client has retrieved twin values after the connection status changes into CONNECTED.");
                     break;
@@ -256,29 +261,35 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // Allow a single thread to call GetTwin here
             await _initSemaphore.WaitAsync(cancellationToken);
 
-            await RetryOperationHelper.RetryTransientExceptionsAsync(
-                operationName: "GetTwin",
-                asyncOperation: async () =>
-                {
-                    twin = await s_deviceClient.GetTwinAsync();
-                    _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
-
-                    TwinCollection twinCollection = twin.Properties.Desired;
-                    long serverDesiredPropertyVersion = twinCollection.Version;
-
-                    // Check if the desired property version is outdated on the local side.
-                    if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
+            try
+            {
+                // For the following call, we execute with a retry strategy with incrementally increasing delays between retry.
+                await RetryOperationHelper.RetryTransientExceptionsAsync(
+                    operationName: "GetTwin",
+                    asyncOperation: async () =>
                     {
-                        _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
-                        await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
-                    }
-                },
-                shouldExecuteOperation: () => IsDeviceConnected,
-                logger: _logger,
-                exceptionsToBeIgnored: _exceptionsToBeIgnored,
-                cancellationToken: cancellationToken);
+                        twin = await s_deviceClient.GetTwinAsync();
+                        _logger.LogInformation($"Device retrieving twin values: {twin.ToJson()}");
 
-            _initSemaphore.Release();
+                        TwinCollection twinCollection = twin.Properties.Desired;
+                        long serverDesiredPropertyVersion = twinCollection.Version;
+
+                        // Check if the desired property version is outdated on the local side.
+                        if (serverDesiredPropertyVersion > s_localDesiredPropertyVersion)
+                        {
+                            _logger.LogDebug($"The desired property version cached on local is changing from {s_localDesiredPropertyVersion} to {serverDesiredPropertyVersion}.");
+                            await HandleTwinUpdateNotificationsAsync(twinCollection, cancellationToken);
+                        }
+                    },
+                    shouldExecuteOperation: () => IsDeviceConnected,
+                    logger: _logger,
+                    exceptionsToBeIgnored: _exceptionsToBeIgnored,
+                    cancellationToken: cancellationToken);
+            }
+            finally
+            {
+                _initSemaphore.Release();
+            }
         }
 
         private async Task HandleTwinUpdateNotificationsAsync(TwinCollection twinUpdateRequest, object userContext)
