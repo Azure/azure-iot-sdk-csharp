@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -26,8 +27,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
+        /// <remarks>
+        /// The payload can be null or Primitive type (e.g., String, Int)/Array/List/Map/custom type.
+        /// </remarks>
         [JsonIgnore]
-        public byte[] Payload { get; set; }
+        public object Payload { get; set; }
 
         /// <summary>
         /// The request Id for the transport layer.

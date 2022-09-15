@@ -13,6 +13,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Utilities;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -267,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             AmqpMessage amqpMessage = directMethodResponse.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(new MemoryStream(directMethodResponse.Payload), true);
+                : AmqpMessage.Create(new MemoryStream((byte[])directMethodResponse.Payload), true);
 
             PopulateAmqpMessageFromMethodResponse(amqpMessage, directMethodResponse);
             return amqpMessage;
@@ -301,7 +302,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             var directMethodRequest = new DirectMethodRequest()
             {
                 MethodName = methodName,
-                Payload = Encoding.UTF8.GetString(ms.ToArray())
+                Payload = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()))
             };
 
             directMethodRequest.RequestId = methodRequestId;
