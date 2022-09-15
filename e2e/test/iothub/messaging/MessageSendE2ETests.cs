@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
                 // assert
                 var error = await act.Should().ThrowAsync<IotHubClientException>();
-                error.And.ErrorCode.Should().Be(IotHubErrorCode.MessageTooLarge);
+                error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
                 error.And.IsTransient.Should().BeFalse();
             }
             finally
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.MessageTooLarge);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubErrorCode.MessageTooLarge);
+            error.And.StatusCode.Should().Be(IotHubStatusCode.MessageTooLarge);
             error.And.IsTransient.Should().BeFalse();
         }
 

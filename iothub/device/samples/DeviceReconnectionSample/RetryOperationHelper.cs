@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string operationName,
             Func<Task> asyncOperation,
             Func<bool> shouldExecuteOperation,
-            IDictionary<IotHubErrorCode, string> exceptionsToBeIgnored = default,
+            IDictionary<IotHubStatusCode, string> exceptionsToBeIgnored = default,
             CancellationToken cancellationToken = default)
         {
             IRetryPolicy retryPolicy = new ExponentialBackoffTransientExceptionRetryPolicy(maxRetryCount: int.MaxValue, exceptionsToBeIgnored: exceptionsToBeIgnored);
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             bool shouldRetry;
             do
             {
-                Exception lastException = new IotHubClientException("Client is currently reconnecting internally; attempt the operation after some time.", null, IotHubErrorCode.NetworkErrors);
+                Exception lastException = new IotHubClientException("Client is currently reconnecting internally; attempt the operation after some time.", null, IotHubStatusCode.NetworkErrors);
                 try
                 {
                     if (shouldExecuteOperation())

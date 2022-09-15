@@ -194,13 +194,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw new AuthenticationException("TLS authentication error.", innerException);
                     }
                     // For historic reasons, part of the Error handling is done within the transport handlers.
-                    else if (ex is IotHubClientException hubEx && hubEx.ErrorCode is IotHubErrorCode.NetworkErrors)
+                    else if (ex is IotHubClientException hubEx && hubEx.StatusCode is IotHubStatusCode.NetworkErrors)
                     {
                         throw;
                     }
                     else if (IsNetworkExceptionChain(ex))
                     {
-                        throw new IotHubClientException("Transient network error occurred, please retry.", IotHubErrorCode.NetworkErrors, ex);
+                        throw new IotHubClientException("Transient network error occurred, please retry.", IotHubStatusCode.NetworkErrors, ex);
                     }
                     else
                     {

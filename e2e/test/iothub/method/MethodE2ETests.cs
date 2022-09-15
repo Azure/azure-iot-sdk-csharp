@@ -2,14 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -126,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(Common.Exceptions.IotHubErrorCode.DeviceNotFound);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -174,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(Common.Exceptions.IotHubErrorCode.ModuleNotFound);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.ModuleNotFound);
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -263,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            error.And.ErrorCode.Should().Be(Common.Exceptions.IotHubErrorCode.DeviceNotOnline);
+            error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotOnline);
             error.And.IsTransient.Should().BeFalse();
         }
 

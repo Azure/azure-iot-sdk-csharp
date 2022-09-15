@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The IoT Hub status code.
     /// </summary>
-    public enum IotHubErrorCode
+    public enum IotHubStatusCode
     {
         /// <summary>
         /// The request completed without exception.
