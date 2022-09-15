@@ -3,12 +3,11 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <IsTestProject>True</IsTestProject>
-	<LangVersion>9.0</LangVersion>
-	<IsTestProject>False</IsTestProject>
+    <LangVersion>9.0</LangVersion>
+    <IsTestProject>False</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
     <PackageReference Include="FluentAssertions" Version="6.7.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
@@ -16,6 +15,14 @@
 
     <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
     <PackageReference Include="DotNetty.Common" Version="0.7.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
 </Project>

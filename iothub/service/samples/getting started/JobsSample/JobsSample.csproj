@@ -12,11 +12,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-	<PackageReference Include="Microsoft.Azure.Devices" Version="1.38.1" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.38.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-	<ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="..\..\..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+   
   </ItemGroup>
 
 </Project>

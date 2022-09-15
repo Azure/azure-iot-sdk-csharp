@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Serialization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Rest;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Serialization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {

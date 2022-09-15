@@ -49,9 +49,9 @@ namespace Microsoft.Azure.Devices.Samples
 
         private static List<string> ConvertCsvFileToList(string filePath)
         {
-            List<string> deleteDeviceWithPrefix = new List<string>();
-            var lines = File.ReadAllLines(filePath);
-            foreach (var line in lines)
+            var deleteDeviceWithPrefix = new List<string>();
+            string[] lines = File.ReadAllLines(filePath);
+            foreach (string line in lines)
             {
                 string[] words = line.Split(',');
                 deleteDeviceWithPrefix.AddRange(words);
