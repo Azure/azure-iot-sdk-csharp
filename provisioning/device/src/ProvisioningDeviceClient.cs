@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private readonly string _idScope;
         private readonly AuthenticationProvider _authentication;
         private readonly ProvisioningClientOptions _options;
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Creates an instance of this class.
@@ -85,7 +86,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 ProductInfo = ProductInfo,
             };
 
-            return _options.ProvisioningTransportHandler.RegisterAsync(request, cancellationToken);
+            // Only one invocation of RegisterAsync is allowed at a time on a given client
+            lock (_lock)
+            {
+                return _options.ProvisioningTransportHandler.RegisterAsync(request, cancellationToken);
+            }
         }
     }
 }
