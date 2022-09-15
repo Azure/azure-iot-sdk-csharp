@@ -57,23 +57,20 @@ namespace Microsoft.Azure.Devices.Logging
         /// <param name="formatter">The formatter to be used for formatting the log message.</param>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            lock (s_lockObject)
+            if (!IsEnabled(logLevel))
             {
-                if (!IsEnabled(logLevel))
+                return;
+            }
+
+            ConsoleColor color = _config.LogLevelToColorMapping[logLevel];
+            if (_config.EventIds.Contains(ColorConsoleLoggerConfiguration.DefaultEventId) || _config.EventIds.Contains(eventId.Id))
+            {
+                ConsoleColor initialColor = Console.ForegroundColor;
+
+                lock (s_lockObject)
                 {
-                    return;
-                }
-
-                ConsoleColor color = _config.LogLevelToColorMapping[logLevel];
-                if (_config.EventIds.Contains(ColorConsoleLoggerConfiguration.DefaultEventId) || _config.EventIds.Contains(eventId.Id))
-                {
-                    ConsoleColor initialColor = Console.ForegroundColor;
-
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write($"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture)}>> ");
-
                     Console.ForegroundColor = color;
-                    Console.WriteLine($"{logLevel} - {formatter(state, exception)}");
+                    Console.WriteLine($"{DateTime.Now:G}> {logLevel} - {formatter(state, exception)}");
                     Console.ForegroundColor = initialColor;
                 }
             }
