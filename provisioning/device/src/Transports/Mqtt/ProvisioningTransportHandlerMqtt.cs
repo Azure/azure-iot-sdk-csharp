@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             else if (provisioningRequest.Authentication is AuthenticationProviderTpm)
             {
-                throw new NotSupportedException("TPM authentication is not supported over MQTT or MQTT websockets");
+                throw new NotSupportedException("TPM authentication is not supported over MQTT TCP or MQTT web socket.");
             }
 
             string username = string.Format(
