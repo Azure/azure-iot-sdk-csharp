@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -25,7 +26,6 @@ namespace Microsoft.Azure.Devices
         private const string RequestUriFormat = "/devices/{0}";
         private const string TwinUriFormat = "/twins/{0}";
         private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}";
-        private const string ETagNotSetWhileUpdatingTwin = "ETagNotSetWhileUpdatingTwin";
         private const string InvalidImportMode = "InvalidImportMode";
 
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
@@ -63,11 +63,11 @@ namespace Microsoft.Azure.Devices
         /// <param name="deviceId">The device Id.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>The device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -110,11 +110,11 @@ namespace Microsoft.Azure.Devices
         /// <param name="moduleId">The module Id.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>The module twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -168,11 +168,11 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="twinPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="twinPatch"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -189,45 +189,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Updates the mutable fields of a device's twin.
-        /// </summary>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="jsonTwinPatch">Twin json with updated fields.</param>
-        /// <param name="onlyIfUnchanged">
-        /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
-        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
-        /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
-        /// </param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="jsonTwinPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="jsonTwinPatch"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> UpdateAsync(string deviceId, string jsonTwinPatch, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-            Argument.AssertNotNullOrWhiteSpace(jsonTwinPatch, nameof(jsonTwinPatch));
-
-            // TODO: Do we need to deserialize Twin, only to serialize it again?
-            return await UpdateAsync(
-                    deviceId,
-                    JsonConvert.DeserializeObject<Twin>(jsonTwinPatch),
-                    onlyIfUnchanged,
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Updates the mutable fields of a module's twin.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
@@ -241,12 +202,12 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
         /// or <paramref name="twinPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentException">If the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -277,67 +238,24 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Updates the mutable fields of a module's twin.
-        /// </summary>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="moduleId">The module Id.</param>
-        /// <param name="jsonTwinPatch">Twin json with updated fields.</param>
-        /// <param name="onlyIfUnchanged">
-        /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
-        /// if the provided device/module identity has an out of date ETag. An up-to-date ETag can be
-        /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
-        /// </param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>Updated module twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
-        /// or <paramref name="jsonTwinPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/>, <paramref name="moduleId"/>,
-        /// or <paramref name="jsonTwinPatch"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> UpdateAsync(
-            string deviceId,
-            string moduleId,
-            string jsonTwinPatch,
-            bool onlyIfUnchanged = false,
-            CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device module twin: {deviceId}/{moduleId}", nameof(UpdateAsync));
-
-            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
-            Argument.AssertNotNull(jsonTwinPatch, nameof(jsonTwinPatch));
-
-            return await UpdateAsync(
-                    deviceId,
-                    moduleId,
-                    JsonConvert.DeserializeObject<Twin>(jsonTwinPatch),
-                    onlyIfUnchanged,
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Update the mutable fields for a list of module twins previously created within the system.
         /// </summary>
         /// <param name="twins">List of <see cref="Twin"/>s with updated fields.</param>
-        /// <param name="forceUpdate">Forces the <see cref="Twin"/> object to be updated even if it has changed since it was retrieved last time.</param>
+        /// <param name="onlyIfUnchanged">
+        /// If false, this operation will be performed even if the provided device identity has
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
+        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
+        /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
+        /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>updated module twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="twins"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="twins"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="twins"/> enumeration is empty.</exception>
+        /// <exception cref="InvalidOperationException">When a twin in the enumeration is null.</exception>
+        /// <exception cref="InvalidOperationException">When a twin is missing an expected ETag.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -345,21 +263,44 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Twin> twins, bool forceUpdate = false, CancellationToken cancellationToken = default)
+        public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Twin> twins, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
-            Argument.AssertNotNull(twins, nameof(twins));
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Updating twins", nameof(UpdateAsync));
 
-            return await BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
-                    GenerateExportImportDeviceListForTwinBulkOperations(twins, forceUpdate ? ImportMode.UpdateTwin : ImportMode.UpdateTwinIfMatchETag),
-                    cancellationToken)
-                .ConfigureAwait(false);
+            Argument.AssertNotNullOrEmpty(twins, nameof(twins));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                IEnumerable<ExportImportDevice> devices = GenerateExportImportDeviceListForTwinBulkOperations(
+                    twins,
+                    onlyIfUnchanged ? ImportMode.UpdateTwinIfMatchETag : ImportMode.UpdateTwin);
+
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
+                return await HttpMessageHelper.DeserializeResponseAsync<BulkRegistryOperationResult>(response).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Updating twins threw an exception: {ex}", nameof(UpdateAsync));
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"Updating twins", nameof(UpdateAsync));
+            }
         }
 
         /// <summary>
         /// Updates the mutable fields of a device's twin.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
-        /// <param name="newTwin">New Twin object to replace with.</param>
+        /// <param name="newTwin">New twin object to replace with.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
         /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
@@ -368,11 +309,11 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>updated twins.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="newTwin"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="newTwin"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="deviceId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -389,44 +330,6 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Updates the mutable fields of a device's twin.
-        /// </summary>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="newTwinJson">New Twin json to replace with.</param>
-        /// <param name="onlyIfUnchanged">
-        /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
-        /// if the provided device identity has an out of date ETag. An up-to-date ETag can be
-        /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
-        /// </param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="newTwinJson"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="newTwinJson"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> ReplaceAsync(string deviceId, string newTwinJson, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-            Argument.AssertNotNullOrWhiteSpace(newTwinJson, nameof(newTwinJson));
-
-            return await ReplaceAsync(
-                    deviceId,
-                    JsonConvert.DeserializeObject<Twin>(newTwinJson),
-                    onlyIfUnchanged,
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Updates the mutable fields of a module's twin.
         /// </summary>
         /// <param name="deviceId">The device Id.</param>
@@ -440,12 +343,12 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
         /// or <paramref name="newTwin"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown.
         /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
@@ -460,47 +363,6 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNull(newTwin, nameof(newTwin));
 
             return await UpdateInternalAsync(deviceId, moduleId, newTwin, newTwin.ETag, true, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Updates the mutable fields of a module's twin.
-        /// </summary>
-        /// <param name="deviceId">The device Id.</param>
-        /// <param name="moduleId">The module Id.</param>
-        /// <param name="newTwinJson">New Twin json to replace with.</param>
-        /// <param name="onlyIfUnchanged">
-        /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
-        /// if the provided device/module identity has an out of date ETag. An up-to-date ETag can be
-        /// retrieved using <see cref="GetAsync(string, string, CancellationToken)"/>.
-        /// </param>
-        /// <param name="cancellationToken">Task cancellation token.</param>
-        /// <returns>Updated module twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="newTwinJson"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="newTwinJson"/> is empty or white space.</exception>
-        /// <exception cref="IotHubServiceException">
-        /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
-        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
-        /// </exception>
-        /// <exception cref="HttpRequestException">
-        /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
-        /// certificate validation.
-        /// </exception>
-        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> ReplaceAsync(string deviceId, string moduleId, string newTwinJson, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
-        {
-            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
-            Argument.AssertNotNullOrWhiteSpace(newTwinJson, nameof(newTwinJson));
-
-            return await ReplaceAsync(
-                    deviceId,
-                    moduleId,
-                    JsonConvert.DeserializeObject<Twin>(newTwinJson),
-                    onlyIfUnchanged,
-                    cancellationToken)
-                .ConfigureAwait(false);
         }
 
         private async Task<Twin> UpdateInternalAsync(
@@ -585,46 +447,18 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private async Task<T> BulkDeviceOperationsAsync<T>(IEnumerable<ExportImportDevice> devices, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Performing bulk device operation", nameof(BulkDeviceOperationsAsync));
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetBulkRequestUri(), _credentialProvider, devices);
-                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-                return await HttpMessageHelper.DeserializeResponseAsync<T>(response).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(BulkDeviceOperationsAsync)} threw an exception: {ex}", nameof(BulkDeviceOperationsAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Performing bulk device operation", nameof(BulkDeviceOperationsAsync));
-            }
-        }
-
         private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForTwinBulkOperations(IEnumerable<Twin> twins, ImportMode importMode)
         {
-            if (!twins.Any())
-            {
-                throw new ArgumentException($"Parameter {nameof(twins)} cannot be empty");
-            }
+            Debug.Assert(twins != null);
+            Debug.Assert(twins.Any());
 
             var exportImportDeviceList = new List<ExportImportDevice>(twins.Count());
+
             foreach (Twin twin in twins)
             {
                 if (twin == null)
                 {
-                    throw new ArgumentNullException(nameof(twin));
+                    throw new InvalidOperationException("Null twin in bulk update.");
                 }
 
                 switch (importMode)
@@ -636,12 +470,13 @@ namespace Microsoft.Azure.Devices
                     case ImportMode.UpdateTwinIfMatchETag:
                         if (string.IsNullOrWhiteSpace(twin.ETag.ToString()))
                         {
-                            throw new ArgumentException(ETagNotSetWhileUpdatingTwin);
+                            throw new InvalidOperationException($"Twin {twin.DeviceId} missing an ETag when conditionally updating.");
                         }
                         break;
 
                     default:
-                        throw new ArgumentException($"{InvalidImportMode} {importMode}.");
+                        Debug.Fail($"{InvalidImportMode} {importMode} for bulk twin update.");
+                        break;
                 }
 
                 var exportImportDevice = new ExportImportDevice
@@ -649,7 +484,7 @@ namespace Microsoft.Azure.Devices
                     Id = twin.DeviceId,
                     ModuleId = twin.ModuleId,
                     ImportMode = importMode,
-                    TwinETag = new ETag(twin.ETag.ToString()),
+                    TwinETag = twin.ETag,
                     Tags = twin.Tags,
                     Properties = new ExportImportDevice.PropertyContainer(),
                 };

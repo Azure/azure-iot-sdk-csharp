@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The deserialized application/json digital twin and the ETag for the digital twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
@@ -114,8 +114,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The new ETag for the digital twin and the URI location of the digital twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
@@ -192,8 +192,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The serialized application/json command invocation response, the command response status code, and the request id.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
@@ -265,8 +265,8 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The serialized application/json command invocation response, the command response status code, and the request id.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 

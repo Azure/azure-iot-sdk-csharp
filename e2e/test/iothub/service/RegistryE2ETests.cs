@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 twin2.Properties.Desired[expectedProperty] = expectedPropertyValue;
 
                 BulkRegistryOperationResult result = await serviceClient.Twins
-                    .UpdateAsync(new[] { twin1, twin2 }, true)
+                    .UpdateAsync(new[] { twin1, twin2 }, false)
                     .ConfigureAwait(false);
 
                 // assert
