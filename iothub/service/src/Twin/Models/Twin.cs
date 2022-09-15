@@ -62,12 +62,12 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets and sets the twin tags.
         /// </summary>
-        public TwinCollection Tags { get; set; } = new TwinCollection();
+        public TwinCollection Tags { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin properties.
         /// </summary>
-        public TwinProperties Properties { get; set; } = new TwinProperties();
+        public TwinProperties Properties { get; set; } = new();
 
         /// <summary>
         /// Gets the twin configuration properties.

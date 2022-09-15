@@ -14,12 +14,12 @@ namespace Microsoft.Azure.Devices
         /// Gets and sets the twin desired properties.
         /// </summary>
         [JsonProperty(PropertyName = "desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public TwinCollection Desired { get; set; } = new TwinCollection();
+        public TwinCollection Desired { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin reported properties.
         /// </summary>
         [JsonProperty(PropertyName = "reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public TwinCollection Reported { get; set; } = new TwinCollection();
+        public TwinCollection Reported { get; set; } = new();
     }
 }

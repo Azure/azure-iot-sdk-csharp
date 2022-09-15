@@ -8,14 +8,14 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Metadata for properties in <see cref="TwinCollection"/>.
     /// </summary>
-    public sealed class Metadata
+    public sealed class TwinMetadata
     {
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
         /// <param name="lastUpdatedOn">When a property was last updated.</param>
         /// <param name="lastUpdatedVersion">The version of the property when last updated.</param>
-        public Metadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
+        public TwinMetadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
         {
             LastUpdatedOn = lastUpdatedOn;
             LastUpdatedVersion = lastUpdatedVersion;

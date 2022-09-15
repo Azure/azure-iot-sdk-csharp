@@ -151,9 +151,9 @@ namespace Microsoft.Azure.Devices
         /// Gets the metadata for this property.
         /// </summary>
         /// <returns>Metadata instance representing the metadata for this property.</returns>
-        public Metadata GetMetadata()
+        public TwinMetadata GetMetadata()
         {
-            return new Metadata(GetLastUpdatedOn(), GetLastUpdatedVersion());
+            return new TwinMetadata(GetLastUpdatedOn(), GetLastUpdatedVersion());
         }
 
         /// <summary>

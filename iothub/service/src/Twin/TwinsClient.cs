@@ -134,7 +134,10 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetModuleTwinRequestUri(deviceId, moduleId), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Get,
+                    GetModuleTwinRequestUri(deviceId, moduleId),
+                    _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<Twin>(response).ConfigureAwait(false);
@@ -212,31 +215,16 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<Twin> UpdateAsync(string deviceId, string jsonTwinPatch, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device twin: {deviceId}", nameof(UpdateAsync));
-
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(jsonTwinPatch, nameof(jsonTwinPatch));
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                // TODO: Do we need to deserialize Twin, only to serialize it again?
-                Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
-                return await UpdateAsync(deviceId, twin, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device twin threw an exception: {ex}", nameof(UpdateAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device twin: {deviceId}", nameof(UpdateAsync));
-            }
+            // TODO: Do we need to deserialize Twin, only to serialize it again?
+            return await UpdateAsync(
+                    deviceId,
+                    JsonConvert.DeserializeObject<Twin>(jsonTwinPatch),
+                    onlyIfUnchanged,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -253,7 +241,8 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="twinPatch"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
+        /// or <paramref name="twinPatch"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -265,13 +254,26 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> UpdateAsync(string deviceId, string moduleId, Twin twinPatch, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<Twin> UpdateAsync(
+            string deviceId,
+            string moduleId,
+            Twin twinPatch,
+            bool onlyIfUnchanged = false,
+            CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(twinPatch, nameof(twinPatch));
 
-            return await UpdateInternalAsync(deviceId, moduleId, twinPatch, twinPatch.ETag, false, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
+            return await UpdateInternalAsync(
+                    deviceId,
+                    moduleId,
+                    twinPatch,
+                    twinPatch.ETag,
+                    false,
+                    onlyIfUnchanged,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -288,8 +290,10 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Updated module twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="jsonTwinPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="jsonTwinPatch"/> is empty or white space.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
+        /// or <paramref name="jsonTwinPatch"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/>, <paramref name="moduleId"/>,
+        /// or <paramref name="jsonTwinPatch"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
@@ -300,7 +304,12 @@ namespace Microsoft.Azure.Devices
         /// certificate validation.
         /// </exception>
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task<Twin> UpdateAsync(string deviceId, string moduleId, string jsonTwinPatch, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        public virtual async Task<Twin> UpdateAsync(
+            string deviceId,
+            string moduleId,
+            string jsonTwinPatch,
+            bool onlyIfUnchanged = false,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating device module twin: {deviceId}/{moduleId}", nameof(UpdateAsync));
@@ -309,25 +318,13 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(jsonTwinPatch, nameof(jsonTwinPatch));
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                // TODO: Do we need to deserialize Twin, only to serialize it again?
-                Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
-                return await UpdateAsync(deviceId, moduleId, twin, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating device module twin threw an exception: {ex}", nameof(UpdateAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device module twin: {deviceId}/{moduleId}", nameof(UpdateAsync));
-            }
+            return await UpdateAsync(
+                    deviceId,
+                    moduleId,
+                    JsonConvert.DeserializeObject<Twin>(jsonTwinPatch),
+                    onlyIfUnchanged,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -350,30 +347,12 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<BulkRegistryOperationResult> UpdateAsync(IEnumerable<Twin> twins, bool forceUpdate = false, CancellationToken cancellationToken = default)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating device twins", nameof(UpdateAsync));
-
             Argument.AssertNotNull(twins, nameof(twins));
-            cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                return await BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
-                        GenerateExportImportDeviceListForTwinBulkOperations(twins, forceUpdate ? ImportMode.UpdateTwin : ImportMode.UpdateTwinIfMatchETag),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Updating deivce twins threw an exception: {ex}", nameof(UpdateAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating device twins.", nameof(UpdateAsync));
-            }
+            return await BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
+                    GenerateExportImportDeviceListForTwinBulkOperations(twins, forceUpdate ? ImportMode.UpdateTwin : ImportMode.UpdateTwinIfMatchETag),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -403,29 +382,10 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<Twin> ReplaceAsync(string deviceId, Twin newTwin, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Replacing device twin: {deviceId}", nameof(ReplaceAsync));
-
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(newTwin, nameof(newTwin));
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                return await UpdateInternalAsync(deviceId, newTwin, newTwin.ETag, true, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Replacing device twin threw an exception: {ex}", nameof(ReplaceAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Replacing device twin: {deviceId}", nameof(ReplaceAsync));
-            }
+            return await UpdateInternalAsync(deviceId, newTwin, newTwin.ETag, true, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -458,9 +418,12 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(newTwinJson, nameof(newTwinJson));
 
-            // TODO: Do we need to deserialize Twin, only to serialize it again?
-            Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
-            return await ReplaceAsync(deviceId, twin, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
+            return await ReplaceAsync(
+                    deviceId,
+                    JsonConvert.DeserializeObject<Twin>(newTwinJson),
+                    onlyIfUnchanged,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -477,7 +440,8 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns>Updated device twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="newTwin"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/>, <paramref name="moduleId"/>,
+        /// or <paramref name="newTwin"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
         /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
@@ -526,44 +490,41 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task<Twin> ReplaceAsync(string deviceId, string moduleId, string newTwinJson, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Replacing device module twin: {deviceId}/{moduleId}", nameof(ReplaceAsync));
-
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNullOrWhiteSpace(newTwinJson, nameof(newTwinJson));
+
+            return await ReplaceAsync(
+                    deviceId,
+                    moduleId,
+                    JsonConvert.DeserializeObject<Twin>(newTwinJson),
+                    onlyIfUnchanged,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        private async Task<Twin> UpdateInternalAsync(
+            string deviceId,
+            Twin twin,
+            ETag etag,
+            bool isReplace,
+            bool onlyIfUnchanged = false,
+            CancellationToken cancellationToken = default)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"Updating device twin {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                // TODO: Do we need to deserialize Twin, only to serialize it again?
-                Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
-                return await ReplaceAsync(deviceId, moduleId, twin, onlyIfUnchanged, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Replacing device module twin threw an exception: {ex}", nameof(ReplaceAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Replacing device module twin: {deviceId}/{moduleId}", nameof(ReplaceAsync));
-            }
-        }
-
-        private async Task<Twin> UpdateInternalAsync(string deviceId, Twin twin, ETag etag, bool isReplace, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Replacing device twin: {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
-
-            try
-            {
                 twin.DeviceId = deviceId;
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(isReplace ? HttpMethod.Put : s_patch, GetTwinUri(deviceId), _credentialProvider, twin);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    isReplace ? HttpMethod.Put : s_patch,
+                    GetTwinUri(deviceId),
+                    _credentialProvider,
+                    twin);
                 HttpMessageHelper.ConditionallyInsertETag(request, etag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -572,20 +533,27 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Replacing device twin threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"Updating device twin threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Replacing device twin: {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
+                    Logging.Exit(this, $"Updating device twin: {deviceId} - is replace: {isReplace}", nameof(UpdateAsync));
             }
         }
 
-        private async Task<Twin> UpdateInternalAsync(string deviceId, string moduleId, Twin twin, ETag etag, bool isReplace, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
+        private async Task<Twin> UpdateInternalAsync(
+            string deviceId,
+            string moduleId,
+            Twin twin,
+            ETag etag,
+            bool isReplace,
+            bool onlyIfUnchanged = false,
+            CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Replacing device module twin: {deviceId}/{moduleId}", nameof(UpdateAsync));
+                Logging.Enter(this, $"Updating device module twin {deviceId}/{moduleId} - is replace: {isReplace}", nameof(UpdateAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -607,13 +575,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Replacing device module twin threw an exception: {ex}", nameof(UpdateAsync));
+                    Logging.Error(this, $"Updating device module twin threw an exception: {ex}", nameof(UpdateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Replacing device twin: {deviceId}/{moduleId}", nameof(UpdateAsync));
+                    Logging.Exit(this, $"Updating device twin {deviceId}/{moduleId} - is replace: {isReplace}", nameof(UpdateAsync));
             }
         }
 
