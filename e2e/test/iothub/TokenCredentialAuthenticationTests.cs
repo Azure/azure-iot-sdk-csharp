@@ -58,13 +58,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 // act
-                ScheduledTwinUpdate twinUpdate = new ScheduledTwinUpdate
+                var twinUpdate = new ScheduledTwinUpdate
                 {
                     Twin = twin,
                     QueryCondition = query,
-                    StartOn = DateTime.UtcNow
+                    StartOnUtc = DateTimeOffset.UtcNow
                 };
-                ScheduledJobsOptions twinUpdateOptions = new ScheduledJobsOptions
+                var twinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
                     MaxExecutionTime = TimeSpan.FromMinutes(2)
@@ -124,11 +124,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var serviceClient = new IotHubServiceClient(
                 TestConfiguration.IoTHub.GetIotHubHostName(),
                 TestConfiguration.IoTHub.GetClientSecretCredential());
-            await serviceClient.Messaging.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
             // act
-            Func<Task> act = async () => await serviceClient.Messaging.SendAsync(ghostDevice, message).ConfigureAwait(false);
+            Func<Task> act = async () => await serviceClient.Messages.SendAsync(ghostDevice, message).ConfigureAwait(false);
 
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             error.And.ErrorCode.Should().Be(IotHubErrorCode.DeviceNotFound);
             error.And.IsTransient.Should().BeFalse();
 
-            await serviceClient.Messaging.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }
     }
 }

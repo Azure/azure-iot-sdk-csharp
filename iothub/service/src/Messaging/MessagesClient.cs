@@ -3,11 +3,8 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -21,7 +18,7 @@ namespace Microsoft.Azure.Devices
     /// Subclient of <see cref="IotHubServiceClient"/> for sending cloud-to-device and cloud-to-module messages.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
-    public class MessagingClient : IDisposable
+    public class MessagesClient : IDisposable
     {
         private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
@@ -30,34 +27,17 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
-        private const string _sendingPath = "/messages/deviceBound";
+        private const string SendingPath = "/messages/deviceBound";
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
-
-        /// <summary>
-        /// The callback to be executed when the connection is lost.
-        /// </summary>
-        /// <example>
-        /// serviceClient.Messaging.ErrorProcessor = OnConnectionLost;
-        /// serviceClient.Messaging.OpenAsync();
-        ///
-        /// //...
-        ///
-        /// public void OnConnectionLost(ErrorContext errorContext)
-        /// {
-        ///    // Add reconnection logic as needed
-        ///    Console.WriteLine("Messaging client connection lost")
-        /// }
-        /// </example>
-        public Action<ErrorContext> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        protected MessagingClient()
+        protected MessagesClient()
         {
         }
 
-        internal MessagingClient(
+        internal MessagesClient(
             string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
@@ -78,19 +58,34 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Open this instance. Must be done before any cloud-to-device messages can be sent.
+        /// The callback to be executed when the connection is lost.
         /// </summary>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
+        /// <example>
+        /// serviceClient.Messaging.ErrorProcessor = OnConnectionLost;
+        /// serviceClient.Messaging.OpenAsync();
+        ///
+        /// //...
+        ///
+        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// {
+        ///    // Add reconnection logic as needed
+        ///    Console.WriteLine("Messaging client connection lost")
+        /// }
+        /// </example>
+        public Action<ErrorContext> ErrorProcessor { get; set; }
+
+        /// <summary>
+        /// Open the connection. Must be done before any cloud-to-device messages can be sent.
+        /// </summary>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
         /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening MessagingClient", nameof(OpenAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -110,22 +105,20 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Close this instance.
+        /// Close the connection.
         /// </summary>
         /// <remarks>
         /// The instance can be re-opened after closing.
         /// </remarks>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
-        /// <exception cref="IotHubServiceClient"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown when the operation has been canceled. The inner exception will be
-        /// <see cref="OperationCanceledException"/>.</exception>
-        /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
-        /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
-        /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
+        /// <exception cref="IotHubServiceException"> with <see cref="HttpStatusCode.RequestTimeout"/>Thrown if the client operation times out before the response is returned.</exception>
         /// <exception cref="IotHubServiceException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Closing MessagingClient", nameof(CloseAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -147,6 +140,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Send a cloud-to-device message to the specified device.
         /// </summary>
+        /// <remarks>
+        /// In order to receive feedback messages on the service client, set the <see cref="Message.Ack"/> property to an appropriate value
+        /// and use <see cref="IotHubServiceClient.MessageFeedback"/>.
+        /// </remarks>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
@@ -165,18 +162,14 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(message, nameof(message));
 
-            if (!_amqpConnection.IsOpen)
-            {
-                throw new IotHubServiceException("Must open client before sending messages.");
-            }
+            CheckConnectionIsOpen();
 
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
-            {
-                message.MessageId = Guid.NewGuid().ToString();
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+
+            CheckAddMessageId(ref message);
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
-            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
+            amqpMessage.Properties.To = $"/devices/{WebUtility.UrlEncode(deviceId)}/messages/deviceBound";
 
             try
             {
@@ -227,18 +220,14 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(message, nameof(message));
 
-            if (!_amqpConnection.IsOpen)
-            {
-                throw new IotHubServiceException("Must open client before sending messages.");
-            }
+            CheckConnectionIsOpen();
 
-            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
-            {
-                message.MessageId = Guid.NewGuid().ToString();
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+
+            CheckAddMessageId(ref message);
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
-            amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
+            amqpMessage.Properties.To = $"/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/messages/deviceBound";
             try
             {
                 Outcome outcome = await _amqpConnection.SendAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
@@ -288,12 +277,20 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Purging message queue for device: {deviceId}", nameof(PurgeMessageQueueAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-                cancellationToken.ThrowIfCancellationRequested();
+                var purgeUri = new Uri(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        PurgeMessageQueueFormat,
+                        deviceId),
+                    UriKind.Relative);
 
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetPurgeMessageQueueAsyncUri(deviceId), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, purgeUri, _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<PurgeMessageQueueResult>(response).ConfigureAwait(false);
@@ -311,9 +308,10 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private static Uri GetPurgeMessageQueueAsyncUri(string deviceId)
+        /// <inheritdoc/>
+        public void Dispose()
         {
-            return new Uri(string.Format(CultureInfo.InvariantCulture, PurgeMessageQueueFormat, deviceId), UriKind.Relative);
+            _amqpConnection?.Dispose();
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -324,7 +322,7 @@ namespace Microsoft.Azure.Devices
                 ErrorProcessor?.Invoke(errorContext);
                 Exception exceptionToLog = errorContext.IotHubServiceException;
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
             }
             else
             {
@@ -332,14 +330,24 @@ namespace Microsoft.Azure.Devices
                 ErrorContext errorContext = new ErrorContext(defaultException);
                 ErrorProcessor?.Invoke(errorContext);
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender) + '.' + nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
+        private void CheckConnectionIsOpen()
         {
-            _amqpConnection?.Dispose();
+            if (!_amqpConnection.IsOpen)
+            {
+                throw new IotHubServiceException("Must open client before sending messages.");
+            }
+        }
+
+        private void CheckAddMessageId(ref Message message)
+        {
+            if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset && message.MessageId == null)
+            {
+                message.MessageId = Guid.NewGuid().ToString();
+            }
         }
     }
 }

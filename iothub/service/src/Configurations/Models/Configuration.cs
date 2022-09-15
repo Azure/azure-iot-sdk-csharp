@@ -28,18 +28,8 @@ namespace Microsoft.Azure.Devices
         /// Lowercase and the following special characters are allowed: [-+%_*!'].
         /// </param>
         public Configuration(string configurationId)
-            : this()
         {
             Id = configurationId;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        internal Configuration()
-        {
-            SchemaVersion = "1.0";
-            ContentType = "assignment";
         }
 
         /// <summary>
@@ -52,7 +42,7 @@ namespace Microsoft.Azure.Devices
         /// The schema version of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "schemaVersion", NullValueHandling = NullValueHandling.Ignore)]
-        public string SchemaVersion { get; }
+        public string SchemaVersion { get; } = "1.0";
 
         /// <summary>
         /// The key-value pairs used to describe the configuration.
@@ -70,7 +60,7 @@ namespace Microsoft.Azure.Devices
         /// Gets the content type for configuration.
         /// </summary>
         [JsonProperty(PropertyName = "contentType")]
-        public string ContentType { get; internal set; }
+        public string ContentType { get; } = "assignment";
 
         /// <summary>
         /// The query used to define the targeted devices or modules.
@@ -85,13 +75,13 @@ namespace Microsoft.Azure.Devices
         /// The creation date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "createdTimeUtc")]
-        public DateTime CreatedTimeUtc { get; internal set; }
+        public DateTime CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
         [JsonProperty(PropertyName = "lastUpdatedTimeUtc")]
-        public DateTime LastUpdatedTimeUtc { get; internal set; }
+        public DateTime LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.

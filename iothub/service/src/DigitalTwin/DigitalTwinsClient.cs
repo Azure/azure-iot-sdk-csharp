@@ -19,11 +19,6 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
     public class DigitalTwinsClient
     {
-        private readonly string _hostName;
-        private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly HttpClient _httpClient;
-        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
         private const string DigitalTwinRequestUriFormat = "/digitaltwins/{0}";
         private const string DigitalTwinCommandRequestUriFormat = "/digitaltwins/{0}/commands/{1}";
         private const string DigitalTwinComponentCommandRequestUriFormat = "/digitaltwins/{0}/components/{1}/commands/{2}";
@@ -32,7 +27,12 @@ namespace Microsoft.Azure.Devices
 
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an
         // HTTP patch request.
-        private readonly HttpMethod _patch = new("PATCH");
+        private static readonly HttpMethod s_patch = new("PATCH");
+
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -72,12 +72,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting digital twin with Id: {digitalTwinId}", nameof(GetAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -142,15 +142,15 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating digital twin with Id: {digitalTwinId}", nameof(UpdateAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+            Argument.AssertNotNullOrWhiteSpace(jsonPatch, nameof(jsonPatch));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(jsonPatch, nameof(jsonPatch));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                    _patch,
+                    s_patch,
                     GetDigitalTwinRequestUri(digitalTwinId),
                     _credentialProvider,
                     jsonPatch);
@@ -211,13 +211,13 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking command on digital twin with Id: {digitalTwinId}", nameof(InvokeCommandAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+            Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 string queryStringParameters = BuildCommandRequestQueryStringParameters(requestOptions);
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                     HttpMethod.Post,
@@ -285,14 +285,14 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking component command on digital twin with Id: {digitalTwinId}", nameof(InvokeComponentCommandAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+            Argument.AssertNotNullOrWhiteSpace(componentName, nameof(componentName));
+            Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(componentName, nameof(componentName));
-                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 string queryStringParameters = BuildCommandRequestQueryStringParameters(requestOptions);
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                     HttpMethod.Post,
@@ -309,14 +309,12 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
                 string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
-                var commandResponse = new InvokeDigitalTwinCommandResponse
+                return new InvokeDigitalTwinCommandResponse
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
                     RequestId = requestId,
                 };
-
-                return commandResponse;
             }
             catch (Exception ex)
             {
@@ -341,7 +339,14 @@ namespace Microsoft.Azure.Devices
         {
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
             commandName = WebUtility.UrlEncode(commandName);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinCommandRequestUriFormat, digitalTwinId, commandName), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DigitalTwinCommandRequestUriFormat,
+                    digitalTwinId,
+                    commandName),
+                UriKind.Relative);
         }
 
         private static Uri GetDigitalTwinComponentCommandRequestUri(string digitalTwinId, string componentPath, string commandName)
@@ -349,7 +354,15 @@ namespace Microsoft.Azure.Devices
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
             componentPath = WebUtility.UrlEncode(componentPath);
             commandName = WebUtility.UrlEncode(commandName);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinComponentCommandRequestUriFormat, digitalTwinId, componentPath, commandName), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DigitalTwinComponentCommandRequestUriFormat,
+                    digitalTwinId,
+                    componentPath,
+                    commandName),
+                UriKind.Relative);
         }
 
         // Root level commands and component level commands append the connect and read timeout values as query string values such as:
@@ -357,14 +370,15 @@ namespace Microsoft.Azure.Devices
         private static string BuildCommandRequestQueryStringParameters(InvokeDigitalTwinCommandOptions requestOptions)
         {
             string queryStringParameters = "";
+
             if (requestOptions?.ConnectTimeout != null)
             {
-                queryStringParameters += string.Format($"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout.Value.TotalSeconds}");
+                queryStringParameters += $"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout.Value.TotalSeconds}";
             }
 
             if (requestOptions?.ResponseTimeout != null)
             {
-                queryStringParameters += string.Format($"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout.Value.TotalSeconds}");
+                queryStringParameters += $"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout.Value.TotalSeconds}";
             }
 
             return queryStringParameters;

@@ -24,9 +24,9 @@ namespace Microsoft.Azure.Devices
         public Twin Twin { get; set; }
 
         /// <summary>
-        /// Date time in UTC to start the job.
+        /// When to start the job, in UTC.
         /// </summary>
         [JsonProperty(PropertyName = "startTimeUtc", Required = Required.Always)]
-        public DateTimeOffset StartOn { get; set; }
+        public DateTimeOffset StartOnUtc { get; set; }
     }
 }

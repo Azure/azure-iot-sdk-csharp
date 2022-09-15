@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         //
         // This default value is consistent with the default value used in Azure.Core
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
-        private static readonly TimeSpan DefaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan s_defaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
 
         /// <summary>
         /// Create an HTTP client for communicating with the provided host and that uses the
@@ -50,20 +50,19 @@ namespace Microsoft.Azure.Devices
             if (options.HttpClient != null)
             {
                 Uri providedEndpoint = options.HttpClient.BaseAddress;
-                if (!providedEndpoint.Equals(httpsEndpoint))
-                {
-                    throw new ArgumentException($"The provided HTTP client targets a different URI than expected. Expected: {httpsEndpoint}, Actual: {providedEndpoint}");
-                }
-
-                return options.HttpClient;
+                return providedEndpoint.Equals(httpsEndpoint)
+                    ? options.HttpClient
+                    : throw new ArgumentException($"The provided HTTP client targets a different URI than expected. Expected: {httpsEndpoint}, Actual: {providedEndpoint}");
             }
 
 #pragma warning disable CA2000 // Dispose objects before losing scope.
             // This handler is used within the returned HttpClient, so it cannot be disposed within this scope.
-            var httpMessageHandler = new HttpClientHandler();
+            var httpMessageHandler = new HttpClientHandler
+            {
+                SslProtocols = options.SslProtocols,
+                CheckCertificateRevocationList = options.CertificateRevocationCheck,
+            };
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            httpMessageHandler.SslProtocols = options.SslProtocols;
-            httpMessageHandler.CheckCertificateRevocationList = options.CertificateRevocationCheck;
 
             if (options.Proxy != null)
             {
@@ -73,9 +72,9 @@ namespace Microsoft.Azure.Devices
 
             httpMessageHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
             ServicePoint servicePoint = ServicePointManager.FindServicePoint(httpsEndpoint);
-            servicePoint.ConnectionLeaseTimeout = DefaultConnectionLeaseTimeout.Milliseconds;
+            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
 
-            return new HttpClient(httpMessageHandler);
+            return new HttpClient(httpMessageHandler, true);
         }
     }
 }

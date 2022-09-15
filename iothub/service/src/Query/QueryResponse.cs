@@ -24,10 +24,14 @@ namespace Microsoft.Azure.Devices
         private readonly JobType? _jobType;
         private readonly JobStatus? _jobStatus;
         private readonly int? _defaultPageSize;
+        private readonly IEnumerator<T> _items;
 
-        private IEnumerator<T> _items;
-
-        internal QueryResponse(QueryClient client, string query, IEnumerable<T> queryResults, string continuationToken, int? defaultPageSize)
+        internal QueryResponse(
+            QueryClient client,
+            string query,
+            IEnumerable<T> queryResults,
+            string continuationToken,
+            int? defaultPageSize)
         {
             _client = client;
             _originalQuery = query;
@@ -38,7 +42,13 @@ namespace Microsoft.Azure.Devices
             _defaultPageSize = defaultPageSize;
         }
 
-        internal QueryResponse(QueryClient client, JobType? jobType, JobStatus? jobStatus, IEnumerable<T> queryResults, string continuationToken, int? defaultPageSize)
+        internal QueryResponse(
+            QueryClient client,
+            JobType? jobType,
+            JobStatus? jobStatus,
+            IEnumerable<T> queryResults,
+            string continuationToken,
+            int? defaultPageSize)
         {
             _client = client;
             _jobType = jobType;
@@ -153,10 +163,12 @@ namespace Microsoft.Azure.Devices
 
             // User's can pass in a continuation token themselves, but the default behavior
             // is to use the continuation token saved by this class when it last retrieved a page.
-            var queryOptionsClone = new QueryOptions
+            var queryOptionsClone = new JobQueryOptions
             {
                 ContinuationToken = queryOptions?.ContinuationToken ?? ContinuationToken,
                 PageSize = queryOptions?.PageSize ?? _defaultPageSize,
+                JobType = _jobType,
+                JobStatus = _jobStatus,
             };
 
             if (!string.IsNullOrEmpty(_originalQuery))
@@ -169,7 +181,7 @@ namespace Microsoft.Azure.Devices
             else
             {
                 // Job type and job status may still be null here, but that's okay
-                QueryResponse<ScheduledJob> response = await _client.CreateAsync(_jobType, _jobStatus, queryOptionsClone, cancellationToken);
+                QueryResponse<ScheduledJob> response = await _client.CreateJobsQueryAsync(queryOptionsClone, cancellationToken);
                 CurrentPage = (IEnumerable<T>)response.CurrentPage;
                 Current = CurrentPage.GetEnumerator().Current;
                 ContinuationToken = response.ContinuationToken;

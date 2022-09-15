@@ -6,6 +6,6 @@ namespace Microsoft.Azure.Devices
     internal enum MappingType
     {
         ApplicationProperty,
-        MessageBody
+        MessageBody,
     }
 }

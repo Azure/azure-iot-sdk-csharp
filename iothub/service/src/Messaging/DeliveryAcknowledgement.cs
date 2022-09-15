@@ -26,6 +26,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// An acknowledgement is sent on delivery success or failure.
         /// </summary>
-        Full
+        Full,
     }
 }

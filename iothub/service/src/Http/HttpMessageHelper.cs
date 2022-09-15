@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         /// </exception>
         internal static HttpContent SerializePayload(object payload)
         {
-            Argument.AssertNotNull(payload, nameof(payload));
+            Debug.Assert(payload != null, "Upstream caller should have validated the payload.");
 
             string str = JsonConvert.SerializeObject(payload);
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
@@ -90,9 +90,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="ArgumentException">Thrown if the <paramref name="eTag"/> is empty or white space.</exception>
         internal static void ConditionallyInsertETag(HttpRequestMessage requestMessage, ETag eTag, bool onlyIfUnchanged)
         {
-            Argument.AssertNotNull(requestMessage, nameof(requestMessage));
+            Debug.Assert(requestMessage != null, "Request message should not have been null");
 
-            if (onlyIfUnchanged && eTag != null)
+            if (onlyIfUnchanged && !string.IsNullOrWhiteSpace(eTag.ToString()))
             {
                 // "Perform this operation only if the entity is unchanged"
                 // Sends the If-Match header with a value of the ETag.
@@ -113,14 +113,14 @@ namespace Microsoft.Azure.Devices
         {
             var escapedETagBuilder = new StringBuilder();
 
-            if (!eTag.ToString().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+            if (!eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 escapedETagBuilder.Append('"');
             }
 
-            escapedETagBuilder.Append(eTag.ToString());
+            escapedETagBuilder.Append(eTag);
 
-            if (!eTag.ToString().EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            if (!eTag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 escapedETagBuilder.Append('"');
             }

@@ -190,14 +190,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Uri containerUri,
             ManagedIdentity identity)
         {
-            JobProperties jobProperties = JobProperties.CreateForImportJob(
-                containerUri,
-                containerUri,
-                devicesFileName,
-                storageAuthenticationType,
-                identity);
-            jobProperties.ConfigurationsBlobName = configsFileName;
-            jobProperties.IncludeConfigurations = true;
+            var jobProperties = new JobProperties(containerUri)
+            {
+                InputBlobName = devicesFileName,
+                StorageAuthenticationType = storageAuthenticationType,
+                Identity = identity,
+                ConfigurationsBlobName = configsFileName,
+                IncludeConfigurations = true,
+            };
 
             var sw = Stopwatch.StartNew();
 
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 await Task.Delay(1000).ConfigureAwait(false);
                 jobProperties = await serviceClient.Devices.GetJobAsync(jobProperties.JobId).ConfigureAwait(false);
-                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} with progress {jobProperties.Progress}% after {sw.Elapsed}.");
+                Logger.Trace($"Job {jobProperties.JobId} is {jobProperties.Status} after {sw.Elapsed}.");
             }
 
             return jobProperties;
