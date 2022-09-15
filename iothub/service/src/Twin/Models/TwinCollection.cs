@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,10 +12,6 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Represents a collection of properties for the twin.
     /// </summary>
-    [SuppressMessage(
-        "Microsoft.Design",
-        "CA1010:CollectionsShouldImplementGenericInterface",
-        Justification = "Public API: this was not designed to be a generic collection.")]
     [JsonConverter(typeof(TwinCollectionJsonConverter))]
     public class TwinCollection : IEnumerable
     {
@@ -24,6 +19,7 @@ namespace Microsoft.Azure.Devices
         internal const string LastUpdatedName = "$lastUpdated";
         internal const string LastUpdatedVersionName = "$lastUpdatedVersion";
         internal const string VersionName = "$version";
+
         private readonly JObject _metadata;
 
         /// <summary>
@@ -115,7 +111,7 @@ namespace Microsoft.Azure.Devices
         internal JObject JObject { get; private set; }
 
         /// <summary>
-        /// Property Indexer.
+        /// Property indexer.
         /// </summary>
         /// <param name="propertyName">Name of the property to get.</param>
         /// <returns>Value for the given property name.</returns>
@@ -129,7 +125,7 @@ namespace Microsoft.Azure.Devices
                 }
                 else if (propertyName == LastUpdatedName)
                 {
-                    return GetLastUpdated();
+                    return GetLastUpdatedOn();
                 }
                 else if (propertyName == LastUpdatedVersionName)
                 {
@@ -157,7 +153,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Metadata instance representing the metadata for this property.</returns>
         public Metadata GetMetadata()
         {
-            return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
+            return new Metadata(GetLastUpdatedOn(), GetLastUpdatedVersion());
         }
 
         /// <summary>
@@ -166,7 +162,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>Date-time instance representing the last updated time for this property.</returns>
         /// <exception cref="System.NullReferenceException">Thrown when the metadata object is null.
         /// An example would be when the this class is created with the default constructor.</exception>
-        public DateTime GetLastUpdated()
+        public DateTimeOffset GetLastUpdatedOn()
         {
             return (DateTime)_metadata[LastUpdatedName];
         }

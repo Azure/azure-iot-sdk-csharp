@@ -60,14 +60,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Create a top-level edge device.
                 var edgeDevice1 = new Device(edgeId1)
                 {
-                    Capabilities = new DeviceCapabilities { IotEdge = true }
+                    Capabilities = new DeviceCapabilities { IsIotEdge = true }
                 };
                 edgeDevice1 = await serviceClient.Devices.CreateAsync(edgeDevice1).ConfigureAwait(false);
 
                 // Create a second-level edge device with edge 1 as the parent.
                 var edgeDevice2 = new Device(edgeId2)
                 {
-                    Capabilities = new DeviceCapabilities { IotEdge = true },
+                    Capabilities = new DeviceCapabilities { IsIotEdge = true },
                     ParentScopes = { edgeDevice1.Scope },
                 };
                 edgeDevice2 = await serviceClient.Devices.CreateAsync(edgeDevice2).ConfigureAwait(false);
@@ -100,14 +100,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string deviceId = _idPrefix + Guid.NewGuid();
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var twin = new Twin
+            var twin = new Twin(deviceId)
             {
                 Tags = new TwinCollection(@"{ companyId: 1234 }"),
             };
 
             var iotEdgeDevice = new Device(deviceId)
             {
-                Capabilities = new DeviceCapabilities { IotEdge = true }
+                Capabilities = new DeviceCapabilities { IsIotEdge = true }
             };
 
             await serviceClient.Devices.CreateWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 Device actual = await serviceClient.Devices.GetAsync(deviceId).ConfigureAwait(false);
                 actual.Should().NotBeNull($"Got null in GET on device {deviceId} to check IotEdge property.");
-                actual.Capabilities.IotEdge.Should().BeTrue();
+                actual.Capabilities.IsIotEdge.Should().BeTrue();
             }
             finally
             {

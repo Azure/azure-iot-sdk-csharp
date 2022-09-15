@@ -2,35 +2,35 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Metadata for properties in <see cref="TwinCollection"/>.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1724:TypeNamesShouldNotMatchNamespaces",
-        Justification = "Public API cannot change name.")]
     public sealed class Metadata
     {
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
-        /// <param name="lastUpdated"></param>
-        /// <param name="lastUpdatedVersion"></param>
-        public Metadata(DateTime lastUpdated, long? lastUpdatedVersion)
+        /// <param name="lastUpdatedOn">When a property was last updated.</param>
+        /// <param name="lastUpdatedVersion">The version of the property when last updated.</param>
+        public Metadata(DateTimeOffset lastUpdatedOn, long? lastUpdatedVersion)
         {
-            LastUpdated = lastUpdated;
+            LastUpdatedOn = lastUpdatedOn;
             LastUpdatedVersion = lastUpdatedVersion;
         }
 
         /// <summary>
-        /// Time when a property was last updated.
+        /// When a property was last updated.
         /// </summary>
-        public DateTime LastUpdated { get; set; }
+        public DateTimeOffset LastUpdatedOn { get; set; }
 
+        /// <summary>
+        /// The version of the property when last updated.
+        /// </summary>
         /// <remarks>
-        /// This SHOULD be null for Reported properties metadata and MUST not be null for Desired properties metadata.
+        /// This should be null for reported properties metadata and must not be null for desired properties metadata.
         /// </remarks>
         public long? LastUpdatedVersion { get; set; }
     }

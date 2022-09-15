@@ -51,9 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(Logger, DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
 
-            var twin = new Twin();
-            twin.DeviceId = testDevice.Id;
-            twin.Tags = new TwinCollection();
+            var twin = new Twin(testDevice.Id);
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
@@ -102,10 +100,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, Logger).ConfigureAwait(false);
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IoTHub.ConnectionString);
-            var twin = new Twin();
-            twin.DeviceId = testModule.DeviceId;
-            twin.ModuleId = testModule.Id;
-            twin.Tags = new TwinCollection();
+            var twin = new Twin(testModule.DeviceId)
+            {
+                ModuleId = testModule.Id
+            };
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<Twin> { twin }, true).ConfigureAwait(false);
