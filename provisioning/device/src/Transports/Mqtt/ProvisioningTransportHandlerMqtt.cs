@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private async Task<RegistrationOperationStatus> PublishRegistrationRequest(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest, CancellationToken cancellationToken)
         {
-            DeviceRegistration registrationRequest = new DeviceRegistration()
+            var registrationRequest = new DeviceRegistration
             {
                 Payload = new JRaw(provisioningRequest.Payload),
             };
