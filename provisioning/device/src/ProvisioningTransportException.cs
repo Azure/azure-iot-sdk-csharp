@@ -42,6 +42,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
+        /// <param name="isTransient">True if the error is transient.</param>
+        public ProvisioningTransportException(string message, bool isTransient)
+            : this(message, null, isTransient)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ProvisioningTransportException"/> class.
+        /// </summary>
+        /// <param name="message">The exception message.</param>
         /// <param name="innerException">The inner exception.</param>
         public ProvisioningTransportException(string message, Exception innerException)
             : this(message, innerException, false, string.Empty)

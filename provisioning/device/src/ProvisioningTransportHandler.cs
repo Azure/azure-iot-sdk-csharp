@@ -19,9 +19,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         private int _port;
 
         /// <summary>
+        /// The default idle timeout.
+        /// </summary>
+        public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromMinutes(2);
+
+        /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
-        public ProvisioningTransportHandler() { }
+        public ProvisioningTransportHandler()
+        { }
 
         /// <summary>
         /// Gets or sets the proxy for Provisioning Client operations.
@@ -87,6 +93,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Defaults to false.
         /// </remarks>
         public bool CertificateRevocationCheck { get; set; }
+
+        /// <summary>
+        /// Specify client-side heartbeat interval.
+        /// The interval, that the client establishes with the service, for sending keep alive pings.
+        /// The default value is 2 minutes.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This option is not used when using HTTP because HTTP is not a stateful connection.
+        /// </para>
+        /// <para>
+        /// The client will consider the connection as disconnected if the keep alive ping fails.
+        /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
+        /// client enough time to establish a connection before disconnecting and reconnecting.
+        /// </para>
+        /// </remarks>
+        public TimeSpan IdleTimeout { get; set; } = DefaultIdleTimeout;
 
         /// <summary>
         /// Registers a device described by the message.
