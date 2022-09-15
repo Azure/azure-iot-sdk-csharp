@@ -344,26 +344,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Topic depends on if the client is a module client or a device client
-            string baseTopicName = _moduleId == null ? _deviceToCloudMessagesTopic : _moduleToCloudMessagesTopic;
-            string TopicName = PopulateMessagePropertiesFromMessage(baseTopicName, message);
-
-            if (message.HasPayload && message.Payload.Length > MaxMessageSize)
+            try
             {
-                throw new InvalidOperationException($"Message size ({message.Payload.Length} bytes) is too big to process. Maximum allowed payload size is {MaxMessageSize}");
+                // Topic depends on if the client is a module client or a device client
+                string baseTopicName = _moduleId == null ? _deviceToCloudMessagesTopic : _moduleToCloudMessagesTopic;
+                string TopicName = PopulateMessagePropertiesFromMessage(baseTopicName, message);
+
+                if (message.HasPayload && message.Payload.Length > MaxMessageSize)
+                {
+                    throw new InvalidOperationException($"Message size ({message.Payload.Length} bytes) is too big to process. Maximum allowed payload size is {MaxMessageSize}");
+                }
+
+                var mqttMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic(TopicName)
+                    .WithPayload(message.Payload)
+                    .WithQualityOfServiceLevel(publishingQualityOfService)
+                    .Build();
+
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
+
+                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", true);
+                }
             }
-
-            var mqttMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(TopicName)
-                .WithPayload(message.Payload)
-                .WithQualityOfServiceLevel(publishingQualityOfService)
-                .Build();
-
-            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
-
-            if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+            catch (Exception e) when (e is not IotHubClientException)
             {
-                throw new IotHubClientException($"Failed to publish the MQTT packet for message with correlation Id {message.CorrelationId} with reason code {result.ReasonCode}", true);
+                throw new IotHubClientException("Failed to send message", e, true);
             }
         }
 
@@ -396,12 +403,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await SubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to enable receiving direct methods", e, true);
+            }
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to disable receiving direct methods", e, true);
+            }
         }
 
         public override async Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
@@ -414,41 +435,76 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .WithQualityOfServiceLevel(publishingQualityOfService)
                 .Build();
 
-            MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
-
-            if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+            try
             {
-                throw new IotHubClientException($"Failed to publish the MQTT packet for direct method response with reason code {result.ReasonCode}", true);
+                MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
+
+                if (result.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new IotHubClientException($"Failed to send direct method response with reason code {result.ReasonCode}", true);
+                }
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to send direct method response", e, true);
             }
         }
 
         public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to enable receiving messages", e, true);
+            }
         }
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to disable receiving messages", e, true);
+            }
         }
 
         public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            if (isAnEdgeModule)
+            try
             {
-                await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
-            }
+                if (isAnEdgeModule)
+                {
+                    await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                }
 
-            _isSubscribedToDesiredPropertyPatches = true;
+                _isSubscribedToDesiredPropertyPatches = true;
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to enable receiving messages", e, true);
+            }
         }
 
         public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to disable receiving messages", e, true);
+            }
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
@@ -458,14 +514,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
-            await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to enable receiving twin patches", e, true);
+            }
 
             _isSubscribedToDesiredPropertyPatches = true;
         }
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            await UnsubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await UnsubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to disable receiving twin patches", e, true);
+            }
 
             _isSubscribedToDesiredPropertyPatches = false;
         }
@@ -511,6 +581,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 return getTwinResponse.Twin;
+            }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to get twin", e, true);
             }
             finally
             {
@@ -569,6 +643,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 //TODO new twin version should be returned here, but API surface doesn't currently allow it
                 //return patchTwinResponse.Version;
             }
+            catch (Exception e) when (e is not IotHubClientException)
+            {
+                throw new IotHubClientException("Failed to send twin patch", e, true);
+            }
             finally
             {
                 // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
@@ -586,7 +664,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             OnTransportClosedGracefully();
             MqttClientDisconnectOptions disconnectOptions = new MqttClientDisconnectOptions();
-            await _mqttClient.DisconnectAsync(disconnectOptions, cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await _mqttClient.DisconnectAsync(disconnectOptions, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                // Deliberately not rethrowing the exception because this is a "best effort" close
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to gracefully close the MQTT client {e}");
+            }
         }
 
         #endregion Client operations
