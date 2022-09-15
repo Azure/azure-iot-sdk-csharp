@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Samples
             try
             {
                 await InitializeServiceClientAsync();
-                await ReceiveFileUploadNotifications(targetDeviceId, cts.Token);
+                await ReceiveFileUploadNotificationsAsync(targetDeviceId, cts.Token);
             }
             catch (Exception ex)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Samples
             }
         }
 
-        private async Task ReceiveFileUploadNotifications(string targetDeviceId, CancellationToken cancellationToken)
+        private async Task ReceiveFileUploadNotificationsAsync(string targetDeviceId, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(targetDeviceId))
             {

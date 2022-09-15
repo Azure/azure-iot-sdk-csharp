@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 
     <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
     <PackageReference Include="DotNetty.Common" Version="0.7.4" />
@@ -21,11 +22,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-	  <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-	<ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
 </Project>
