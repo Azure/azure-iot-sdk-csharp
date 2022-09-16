@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 {
                     await mqttClient.ConnectAsync(mqttClientOptionsBuilder.Build(), linkedCancellationToken.Token).ConfigureAwait(false);
                 }
-                catch (Exception e)
+                catch (Exception e) when (e is not OperationCanceledException)
                 {
                     throw new ProvisioningTransportException("Failed to open the MQTT connection", e, true);
                 }
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new ProvisioningTransportException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic, true);
                 }
             }
-            catch (Exception e) when (e is not ProvisioningTransportException)
+            catch (Exception e) when (e is not ProvisioningTransportException && e is not OperationCanceledException)
             {
                 throw new ProvisioningTransportException("Failed to subscribe to the registrations response topic", e, true);
             }
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new ProvisioningTransportException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'", true);
                 }
             }
-            catch (Exception e) when (e is not ProvisioningTransportException)
+            catch (Exception e) when (e is not ProvisioningTransportException && e is not OperationCanceledException)
             {
                 throw new ProvisioningTransportException("Failed to send the initial registration request", e, true);
             }
