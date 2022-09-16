@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.WebSocket)
             {
-                var uri = "wss://" + _hostName + "/$iothub/websocket";
+                var uri = $"wss://{_hostName}/$iothub/websocket";
                 _mqttClientOptionsBuilder.WithWebSocketServer(uri);
 
                 IWebProxy proxy = _transportSettings.Proxy;
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
-            string clientId = _moduleId == null ? _deviceId : _deviceId + "/" + _moduleId;
+            string clientId = _moduleId == null ? _deviceId : $"{_deviceId}/{_moduleId}";
             _mqttClientOptionsBuilder.WithClientId(clientId);
 
             string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&DeviceClientType={Uri.EscapeDataString(_productInfo.ToString())}";
@@ -701,14 +701,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (subscribeResults == null || subscribeResults.Items == null)
             {
-                throw new IotHubClientException("Failed to subscribe to topic " + fullTopic, true);
+                throw new IotHubClientException($"Failed to subscribe to topic {fullTopic}", true);
             }
 
             MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
 
             if (!subscribeResult.TopicFilter.Topic.Equals(fullTopic))
             {
-                throw new IotHubClientException("Received unexpected subscription to topic " + subscribeResult.TopicFilter.Topic, true);
+                throw new IotHubClientException($"Received unexpected subscription to topic {subscribeResult.TopicFilter.Topic}", true);
             }
         }
 
@@ -724,18 +724,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (unsubscribeResults == null || unsubscribeResults.Items == null || unsubscribeResults.Items.Count != 1)
             {
-                throw new IotHubClientException("Failed to unsubscribe to topic " + fullTopic, true);
+                throw new IotHubClientException($"Failed to unsubscribe to topic {fullTopic}", true);
             }
 
             MqttClientUnsubscribeResultItem unsubscribeResult = unsubscribeResults.Items.FirstOrDefault();
             if (!unsubscribeResult.TopicFilter.Equals(fullTopic))
             {
-                throw new IotHubClientException("Received unexpected unsubscription from topic " + unsubscribeResult.TopicFilter, true);
+                throw new IotHubClientException($"Received unexpected unsubscription from topic {unsubscribeResult.TopicFilter}", true);
             }
 
             if (unsubscribeResult.ResultCode != MqttClientUnsubscribeResultCode.Success)
             {
-                throw new IotHubClientException("Failed to unsubscribe from topic " + fullTopic + " with reason " + unsubscribeResult.ResultCode, true);
+                throw new IotHubClientException($"Failed to unsubscribe from topic {fullTopic} with reason {unsubscribeResult.ResultCode}", true);
             }
         }
 
@@ -1032,7 +1032,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string properties = UrlEncodedDictionarySerializer.Serialize(mergedProperties);
 
             string msg = properties.Length != 0
-                ? topicName.EndsWith("/", StringComparison.Ordinal) ? topicName + properties + "/" : topicName + "/" + properties
+                ? topicName.EndsWith("/", StringComparison.Ordinal) ? $"{topicName}{properties}/" : $"{topicName}/{properties}"
                 : topicName;
 
             if (Encoding.UTF8.GetByteCount(msg) > MaxTopicNameLength)
