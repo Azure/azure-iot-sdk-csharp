@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if (TransportProtocol == ProvisioningClientTransportProtocol.WebSocket)
             {
-                var uri = "wss://" + hostName;
+                var uri = $"wss://{hostName}";
                 mqttClientOptionsBuilder.WithWebSocketServer(uri);
 
                 if (Proxy != null)
