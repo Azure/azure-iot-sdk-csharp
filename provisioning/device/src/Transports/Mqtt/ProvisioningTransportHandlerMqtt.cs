@@ -396,6 +396,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
         }
 
+        /// <summary>
+        /// Gets the result of the provided task completion source or throws OperationCancelledException if the provided
+        /// cancellation token is cancelled beforehand.
+        /// </summary>
+        /// <typeparam name="T">The type of the result of the task completion source.</typeparam>
+        /// <param name="taskCompletionSource">The task completion source to asynchronously wait for the result of.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The result of the provided task completion source if it completes before the provided cancellation token is cancelled.</returns>
+        /// <exception cref="OperationCanceledException">If the cancellation token is cancelled before the provided task completion source finishes.</exception>
         private static async Task<T> GetTaskCompletionSourceResultAsync<T>(TaskCompletionSource<T> taskCompletionSource, CancellationToken cancellationToken)
         {
             Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
