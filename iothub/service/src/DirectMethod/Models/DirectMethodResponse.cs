@@ -26,11 +26,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public object Payload
         {
-            get => JsonPayload.Value;
-            set
-            {
-                Payload = new JRaw(value);
-            }
+            get => JsonConvert.DeserializeObject((string)JsonPayload.Value);
         }
 
         [JsonProperty("payload")]
