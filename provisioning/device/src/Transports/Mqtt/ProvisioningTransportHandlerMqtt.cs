@@ -395,11 +395,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             // just means that the task is allowed to run indefinitely.
             Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
 
+            // If the finished task is not the cancellation token
             if (finishedTask is Task<T>)
             {
                 return await ((Task<T>)finishedTask).ConfigureAwait(false);
             }
 
+            // Otherwise throw operation cancelled exception since the cancellation token was cancelled before the task finished.
             throw new OperationCanceledException();
         }
     }
