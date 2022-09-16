@@ -559,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                 // responds, this layer can correlate the request.
-                var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>();
+                var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _getTwinResponseCompletions[requestId] = taskCompletionSource;
 
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
@@ -616,7 +616,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                 // responds, this layer can correlate the request.
-                var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>();
+                var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _reportedPropertyUpdateResponseCompletions[requestId] = taskCompletionSource;
 
                 MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
