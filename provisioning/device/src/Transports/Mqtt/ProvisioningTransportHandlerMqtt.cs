@@ -413,9 +413,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             if (finishedTask is Task<T>)
             {
-                T result = await ((Task<T>)finishedTask).ConfigureAwait(false);
-
-                return result;
+                return await ((Task<T>)finishedTask).ConfigureAwait(false);
             }
 
             throw new OperationCanceledException();
