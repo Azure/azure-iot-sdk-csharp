@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.WebSockets;
@@ -57,8 +58,8 @@ namespace Microsoft.Azure.Devices
         {
             ThrowIfNotOpen();
 
-            Fx.AssertAndThrow(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
-            Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
+            Debug.Assert(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
+            Debug.Assert(args.CompletedCallback != null, "must have a valid callback");
             args.Exception = null; // null out any exceptions
 
             Task taskResult = WriteImplAsync(args);
@@ -76,8 +77,8 @@ namespace Microsoft.Azure.Devices
             ThrowIfNotOpen();
 
             // Read with buffer list not supported
-            Fx.AssertAndThrow(args.Buffer != null, "must have buffer to read");
-            Fx.AssertAndThrow(args.CompletedCallback != null, "must have a valid callback");
+            Debug.Assert(args.Buffer != null, "must have buffer to read");
+            Debug.Assert(args.CompletedCallback != null, "must have a valid callback");
 
             Argument.ValidateBufferBounds(args.Buffer, args.Offset, args.Count);
             args.Exception = null; // null out any exceptions

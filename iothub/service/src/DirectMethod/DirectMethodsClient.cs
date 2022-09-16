@@ -46,12 +46,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="directMethodRequest">Parameters to execute a direct method on the device.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The direct method response.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="directMethodRequest"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="directMethodRequest"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices
             {
                 Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
                 Argument.AssertNotNull(directMethodRequest, nameof(directMethodRequest));
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetDeviceMethodUri(deviceId), _credentialProvider, directMethodRequest);
@@ -95,12 +96,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="directMethodRequest">Parameters to execute a direct method on the module.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The direct method response.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="directMethodRequest"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="moduleId"/> or <paramref name="directMethodRequest"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or white space.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -117,6 +118,7 @@ namespace Microsoft.Azure.Devices
                 Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
                 Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
                 Argument.AssertNotNull(directMethodRequest, nameof(directMethodRequest));
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Post, GetModuleMethodUri(deviceId, moduleId), _credentialProvider, directMethodRequest);
@@ -141,13 +143,26 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, ModuleMethodUriFormat, deviceId, moduleId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    ModuleMethodUriFormat,
+                    deviceId,
+                    moduleId),
+                UriKind.Relative);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceMethodUriFormat, deviceId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DeviceMethodUriFormat,
+                    deviceId),
+                UriKind.Relative);
         }
     }
 }

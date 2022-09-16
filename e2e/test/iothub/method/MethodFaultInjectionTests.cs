@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
+using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -232,7 +232,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                     done = true;
                 }
-                catch (DeviceNotFoundException ex)
+                catch (IotHubServiceException ex) 
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubErrorCode.DeviceNotFound)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
                     Logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");

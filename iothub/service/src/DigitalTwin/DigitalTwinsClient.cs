@@ -21,11 +21,6 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-develop/concepts-digital-twin"/>
     public class DigitalTwinsClient
     {
-        private readonly string _hostName;
-        private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly HttpClient _httpClient;
-        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
         private const string DigitalTwinRequestUriFormat = "/digitaltwins/{0}";
         private const string DigitalTwinCommandRequestUriFormat = "/digitaltwins/{0}/commands/{1}";
         private const string DigitalTwinComponentCommandRequestUriFormat = "/digitaltwins/{0}/components/{1}/commands/{2}";
@@ -34,7 +29,12 @@ namespace Microsoft.Azure.Devices
 
         // HttpMethod does not define PATCH in its enum in .netstandard 2.0, so this is the only way to create an
         // HTTP patch request.
-        private readonly HttpMethod _patch = new("PATCH");
+        private static readonly HttpMethod s_patch = new("PATCH");
+
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -57,12 +57,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="digitalTwinId">The Id of the digital twin.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The deserialized application/json digital twin and the ETag for the digital twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> is empty or whitespace.</exception>
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -74,12 +74,12 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting digital twin with Id: {digitalTwinId}", nameof(GetAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetDigitalTwinRequestUri(digitalTwinId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -114,12 +114,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The new ETag for the digital twin and the URI location of the digital twin.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="jsonPatch"/> is empty or whitespace.</exception>
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -144,15 +144,15 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Updating digital twin with Id: {digitalTwinId}", nameof(UpdateAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+            Argument.AssertNotNullOrWhiteSpace(jsonPatch, nameof(jsonPatch));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(jsonPatch, nameof(jsonPatch));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
-                    _patch,
+                    s_patch,
                     GetDigitalTwinRequestUri(digitalTwinId),
                     _credentialProvider,
                     jsonPatch);
@@ -192,12 +192,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The serialized application/json command invocation response, the command response status code, and the request id.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -213,13 +213,13 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking command on digital twin with Id: {digitalTwinId}", nameof(InvokeCommandAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+            Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 string queryStringParameters = BuildCommandRequestQueryStringParameters(requestOptions);
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                     HttpMethod.Post,
@@ -265,12 +265,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="requestOptions">The optional settings for this request.</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The serialized application/json command invocation response, the command response status code, and the request id.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is null.</exception>
+        /// <exception cref="ArgumentException">When the provided <paramref name="digitalTwinId"/> or <paramref name="componentName"/> or <paramref name="commandName"/> is empty or whitespace.</exception>
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -287,14 +287,14 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Invoking component command on digital twin with Id: {digitalTwinId}", nameof(InvokeComponentCommandAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
+            Argument.AssertNotNullOrWhiteSpace(componentName, nameof(componentName));
+            Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(digitalTwinId, nameof(digitalTwinId));
-                Argument.AssertNotNullOrWhiteSpace(componentName, nameof(componentName));
-                Argument.AssertNotNullOrWhiteSpace(commandName, nameof(commandName));
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 string queryStringParameters = BuildCommandRequestQueryStringParameters(requestOptions);
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
                     HttpMethod.Post,
@@ -311,14 +311,12 @@ namespace Microsoft.Azure.Devices
                 string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 int responseStatusCode = int.Parse(response.Headers.GetValues(StatusCodeHeaderKey).FirstOrDefault());
                 string requestId = response.Headers.GetValues(RequestIdHeaderKey).FirstOrDefault();
-                var commandResponse = new InvokeDigitalTwinCommandResponse
+                return new InvokeDigitalTwinCommandResponse
                 {
                     Payload = responsePayload,
                     Status = responseStatusCode,
                     RequestId = requestId,
                 };
-
-                return commandResponse;
             }
             catch (Exception ex)
             {
@@ -343,7 +341,14 @@ namespace Microsoft.Azure.Devices
         {
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
             commandName = WebUtility.UrlEncode(commandName);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinCommandRequestUriFormat, digitalTwinId, commandName), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DigitalTwinCommandRequestUriFormat,
+                    digitalTwinId,
+                    commandName),
+                UriKind.Relative);
         }
 
         private static Uri GetDigitalTwinComponentCommandRequestUri(string digitalTwinId, string componentPath, string commandName)
@@ -351,7 +356,15 @@ namespace Microsoft.Azure.Devices
             digitalTwinId = WebUtility.UrlEncode(digitalTwinId);
             componentPath = WebUtility.UrlEncode(componentPath);
             commandName = WebUtility.UrlEncode(commandName);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, DigitalTwinComponentCommandRequestUriFormat, digitalTwinId, componentPath, commandName), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    DigitalTwinComponentCommandRequestUriFormat,
+                    digitalTwinId,
+                    componentPath,
+                    commandName),
+                UriKind.Relative);
         }
 
         // Root level commands and component level commands append the connect and read timeout values as query string values such as:
@@ -359,14 +372,15 @@ namespace Microsoft.Azure.Devices
         private static string BuildCommandRequestQueryStringParameters(InvokeDigitalTwinCommandOptions requestOptions)
         {
             string queryStringParameters = "";
+
             if (requestOptions?.ConnectTimeout != null)
             {
-                queryStringParameters += string.Format($"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout.Value.TotalSeconds}");
+                queryStringParameters += $"&connectTimeoutInSeconds={(int)requestOptions.ConnectTimeout.Value.TotalSeconds}";
             }
 
             if (requestOptions?.ResponseTimeout != null)
             {
-                queryStringParameters += string.Format($"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout.Value.TotalSeconds}");
+                queryStringParameters += $"&responseTimeoutInSeconds={(int)requestOptions.ResponseTimeout.Value.TotalSeconds}";
             }
 
             return queryStringParameters;

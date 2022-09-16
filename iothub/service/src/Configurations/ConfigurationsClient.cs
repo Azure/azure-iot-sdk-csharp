@@ -19,17 +19,17 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-automatic-device-management"/>
     public class ConfigurationsClient
     {
-        private readonly string _hostName;
-        private readonly IotHubConnectionProperties _credentialProvider;
-        private readonly HttpClient _httpClient;
-        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
-
         private const string ConfigurationRequestUriFormat = "/configurations/{0}";
         private const string ConfigurationsRequestUriFormat = "&top={0}";
         private const string ETagSetWhileCreatingConfiguration = "ETagSetWhileCreatingConfiguration";
         private const string ArgumentMustBeNonNegative = "ArgumentMustBeNonNegative";
         private const string ETagNotSetWhileDeletingConfiguration = "ETagNotSetWhileDeletingConfiguration";
         private const string ETagNotSetWhileUpdatingConfiguration = "ETagNotSetWhileUpdatingConfiguration";
+
+        private readonly string _hostName;
+        private readonly IotHubConnectionProperties _credentialProvider;
+        private readonly HttpClient _httpClient;
+        private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -54,10 +54,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -67,13 +67,10 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Configuration> CreateAsync(Configuration configuration, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Adding configuration: {configuration?.Id}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating configuration: {configuration?.Id}", nameof(CreateAsync));
 
             Argument.AssertNotNull(configuration, nameof(configuration));
-            if (!string.IsNullOrEmpty(configuration.ETag.ToString()))
-            {
-                throw new ArgumentException(ETagSetWhileCreatingConfiguration);
-            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -86,7 +83,7 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(CreateAsync)} threw an exception: {ex}", nameof(CreateAsync));
+                    Logging.Error(this, $"Creating configuration threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
@@ -104,10 +101,10 @@ namespace Microsoft.Azure.Devices
         /// <returns>The configuration object.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configurationId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="configurationId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -118,11 +115,13 @@ namespace Microsoft.Azure.Devices
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
+
+            Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(configurationId), _credentialProvider);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -131,13 +130,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting configuration threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Get configuration: {configurationId}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting configuration: {configurationId}", nameof(GetAsync));
             }
         }
 
@@ -147,10 +146,10 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <returns>The list of configuration.</returns>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="maxCount"/> value less than zero.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -160,16 +159,23 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<IEnumerable<Configuration>> GetAsync(int maxCount, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
+                Logging.Enter(this, $"Getting configurations", nameof(GetAsync));
+
+            if (maxCount < 0)
+            {
+                throw new ArgumentException(ArgumentMustBeNonNegative, nameof(maxCount));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                if (maxCount < 0)
-                {
-                    throw new ArgumentException(ArgumentMustBeNonNegative, nameof(maxCount));
-                }
-                cancellationToken.ThrowIfCancellationRequested();
-
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Get, GetConfigurationRequestUri(""), _credentialProvider, null, string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(
+                    HttpMethod.Get,
+                    GetConfigurationRequestUri(""),
+                    _credentialProvider,
+                    null,
+                    string.Format(CultureInfo.InvariantCulture, ConfigurationsRequestUriFormat, maxCount));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
                 return await HttpMessageHelper.DeserializeResponseAsync<IEnumerable<Configuration>>(response).ConfigureAwait(false);
@@ -177,13 +183,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(GetAsync)} threw an exception: {ex}", nameof(GetAsync));
+                    Logging.Error(this, $"Getting configurations threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Getting configuration: max count: {maxCount}", nameof(GetAsync));
+                    Logging.Exit(this, $"Getting configurations", nameof(GetAsync));
             }
         }
 
@@ -193,17 +199,17 @@ namespace Microsoft.Azure.Devices
         /// <param name="configuration">The configuration object with replaced fields.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
         /// if the provided configuration has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <returns>The configuration object with replaced ETags.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -213,13 +219,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Configuration> SetAsync(Configuration configuration, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating configuration {configuration?.Id}", nameof(SetAsync));
+
+            Argument.AssertNotNull(configuration, nameof(configuration));
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                Argument.AssertNotNull(configuration, nameof(configuration));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(configuration.Id), _credentialProvider, configuration);
                 HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -229,13 +236,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(SetAsync)} threw an exception: {ex}", nameof(SetAsync));
+                    Logging.Error(this, $"Updating configuration threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating configuration {configuration?.Id}", nameof(SetAsync));
             }
         }
 
@@ -246,10 +253,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configurationId"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="configurationId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -258,29 +265,9 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
         public virtual async Task DeleteAsync(string configurationId, CancellationToken cancellationToken = default)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
+            Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
 
-            try
-            {
-                Argument.AssertNotNullOrWhiteSpace(configurationId, nameof(configurationId));
-                cancellationToken.ThrowIfCancellationRequested();
-                var configuration = new Configuration(configurationId);
-                configuration.ETag = new ETag(HttpMessageHelper.ETagForce);
-
-                await DeleteAsync(configuration, default, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting configuration: {configurationId}", nameof(DeleteAsync));
-            }
+            await DeleteAsync(new Configuration(configurationId), default, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -289,16 +276,16 @@ namespace Microsoft.Azure.Devices
         /// <param name="configuration">The configuration being deleted.</param>
         /// <param name="onlyIfUnchanged">
         /// If false, this delete operation will be performed even if the provided device identity has
-        /// an out of date ETag. If true, the operation will throw a <see cref="PreconditionFailedException"/>
+        /// an out of date ETag. If true, the operation will throw a <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.PreconditionFailed"/>
         /// if the provided configuration has an out of date ETag. An up-to-date ETag can be
         /// retrieved using <see cref="GetAsync(string, CancellationToken)"/>.
         /// </param>
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="configuration"/> is null.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -308,15 +295,14 @@ namespace Microsoft.Azure.Devices
         public virtual async Task DeleteAsync(Configuration configuration, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
+
+            Argument.AssertNotNull(configuration, nameof(configuration));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNull(configuration, nameof(configuration));
-                cancellationToken.ThrowIfCancellationRequested();
-                if (string.IsNullOrWhiteSpace(configuration.ETag.ToString()) && onlyIfUnchanged)
-                {
-                    throw new ArgumentException(ETagNotSetWhileDeletingConfiguration);
-                }
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetConfigurationRequestUri(configuration.Id), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, configuration.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -325,13 +311,13 @@ namespace Microsoft.Azure.Devices
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DeleteAsync)} threw an exception: {ex}", nameof(DeleteAsync));
+                    Logging.Error(this, $"Deleting configuration threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting configuration: {configuration?.Id} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting configuration: {configuration?.Id}", nameof(DeleteAsync));
             }
         }
 
@@ -346,10 +332,10 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">The token which allows the operation to be canceled.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="deviceId"/> or <paramref name="content"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="deviceId"/> is empty or whitespace.</exception>
-        /// <exception cref="IotHubException">
+        /// <exception cref="IotHubServiceException">
         /// Thrown if IoT hub responded to the request with a non-successful status code. For example, if the provided
-        /// request was throttled, <see cref="IotHubThrottledException"/> is thrown. For a complete list of possible
-        /// error cases, see <see cref="Common.Exceptions"/>.
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubErrorCode.ThrottlingException"/> is thrown. 
+        /// For a complete list of possible error cases, see <see cref="IotHubErrorCode"/>.
         /// </exception>
         /// <exception cref="HttpRequestException">
         /// If the HTTP request fails due to an underlying issue such as network connectivity, DNS failure, or server
@@ -365,12 +351,13 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Applying configuration content on device: {deviceId}", nameof(ApplyConfigurationContentOnDeviceAsync));
 
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNull(content, nameof(content));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
-                Argument.AssertNotNull(content, nameof(content));
-                cancellationToken.ThrowIfCancellationRequested();
-
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetConfigurationRequestUri(deviceId), _credentialProvider, content);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
@@ -391,7 +378,13 @@ namespace Microsoft.Azure.Devices
         private static Uri GetConfigurationRequestUri(string configurationId)
         {
             configurationId = WebUtility.UrlEncode(configurationId);
-            return new Uri(string.Format(CultureInfo.InvariantCulture, ConfigurationRequestUriFormat, configurationId), UriKind.Relative);
+
+            return new Uri(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    ConfigurationRequestUriFormat,
+                    configurationId),
+                UriKind.Relative);
         }
     }
 }

@@ -49,12 +49,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 return _acknowledgementType;
             };
 
-            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+            serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
 
-            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
             await WaitForFileUploadNotification(counter, 1);
-            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -76,17 +76,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 return _acknowledgementType;
             };
 
-            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+            serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
 
             // Close and re-open the client
-            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
-            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
-            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
 
             // Client should still be able to receive file upload notifications after being closed and re-opened.
             await UploadFile().ConfigureAwait(false);
             await WaitForFileUploadNotification(counter, 1);
-            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
         [LoggedTestMethod, Timeout(TestTimeoutMilliseconds)]
@@ -108,9 +108,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 return _acknowledgementType;
             };
 
-            serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
+            serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
 
-            await serviceClient.FileUploadNotificationProcessor.OpenAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
             await UploadFile().ConfigureAwait(false);
 
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // file upload notification without closing and re-opening as long as there is more
             // than one file upload notification to consume.
             await WaitForFileUploadNotification(counter, 2);
-            await serviceClient.FileUploadNotificationProcessor.CloseAsync().ConfigureAwait(false);
+            await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
         }
 
         /// <summary>
