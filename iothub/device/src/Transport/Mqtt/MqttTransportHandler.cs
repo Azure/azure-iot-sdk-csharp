@@ -570,7 +570,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
-                GetTwinResponse getTwinResponse = await taskCompletionSource.Task.ConfigureAwait(false);
+                GetTwinResponse getTwinResponse =
+                    await GetTaskCompletionSourceResultAsync(
+                        taskCompletionSource,
+                        cancellationToken).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinResponse.Status}.");
@@ -630,7 +633,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
 
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
-                PatchTwinResponse patchTwinResponse = await taskCompletionSource.Task.ConfigureAwait(false);
+                PatchTwinResponse patchTwinResponse =
+                    await GetTaskCompletionSourceResultAsync(
+                        taskCompletionSource,
+                        cancellationToken)
+                        .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.");
@@ -1066,6 +1073,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 "full" => DeliveryAcknowledgement.Full,
                 _ => throw new NotSupportedException($"Unknown value: '{value}'"),
             };
+        }
+
+        /// <summary>
+        /// Gets the result of the provided task completion source or throws OperationCancelledException if the provided
+        /// cancellation token is cancelled beforehand.
+        /// </summary>
+        /// <typeparam name="T">The type of the result of the task completion source.</typeparam>
+        /// <param name="taskCompletionSource">The task completion source to asynchronously wait for the result of.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The result of the provided task completion source if it completes before the provided cancellation token is cancelled.</returns>
+        /// <exception cref="OperationCanceledException">If the cancellation token is cancelled before the provided task completion source finishes.</exception>
+        private static async Task<T> GetTaskCompletionSourceResultAsync<T>(TaskCompletionSource<T> taskCompletionSource, CancellationToken cancellationToken)
+        {
+            Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
+
+            if (finishedTask is Task<T>)
+            {
+                T result = await ((Task<T>)finishedTask).ConfigureAwait(false);
+
+                return result;
+            }
+
+            throw new OperationCanceledException();
         }
     }
 }
