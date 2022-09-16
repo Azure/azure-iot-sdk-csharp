@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             var saslHandler = new SaslPlainHandler();
             saslHandler.AuthenticationIdentity = $"{idScope}/registrations/{_authentication.GetRegistrationId()}";
             string key = _authentication.GetPrimaryKey();
-            saslHandler.Password = ProvisioningSasBuilder.BuildSasSignature("registration", key, saslHandler.AuthenticationIdentity, TimeSpan.FromDays(1));
+            saslHandler.Password = ProvisioningSasBuilder.BuildSasSignature(key, saslHandler.AuthenticationIdentity, TimeSpan.FromDays(1));
             saslProvider.AddHandler(saslHandler);
 
             return settings;
