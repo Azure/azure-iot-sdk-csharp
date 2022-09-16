@@ -21,10 +21,17 @@ namespace Microsoft.Azure.Devices
         /// Get the payload object. May be null or empty.
         /// </summary>
         /// <remarks>
-        /// The payload can be null or Primitive type (e.g., String, Int)/Array/List/Map/custom type.
+        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
         [JsonIgnore]
-        public object Payload { get; set; }
+        public object Payload
+        {
+            get => JsonPayload.Value;
+            set
+            {
+                Payload = new JRaw(value);
+            }
+        }
 
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }

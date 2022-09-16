@@ -12,6 +12,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class DirectMethodRequest
     {
+        private object _payload;
+
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
@@ -89,10 +91,10 @@ namespace Microsoft.Azure.Devices.Client
         public string PayloadAsJsonString { get; internal set; }
 
         /// <summary>
-        /// Get the JSON payload in JRaw type.
+        /// The JSON payload in JRaw type.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        public JRaw JsonPayload { get; internal set; }
+        internal JRaw JsonPayload { get; set; }
 
         /// <summary>
         /// The request Id for the transport layer.
@@ -103,7 +105,5 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         [JsonIgnore]
         internal string RequestId { get; set; }
-
-        private object _payload;
     }
 }

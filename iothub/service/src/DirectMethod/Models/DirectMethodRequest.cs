@@ -12,6 +12,8 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public class DirectMethodRequest
     {
+        private object _payload;
+
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
@@ -92,17 +94,15 @@ namespace Microsoft.Azure.Devices
         public string PayloadAsJsonString { get; internal set; }
 
         /// <summary>
-        /// Get the JSON payload in JRaw type.
+        /// The JSON payload in JRaw type.
         /// </summary>
         [JsonProperty("payload")]
-        public JRaw JsonPayload { get; internal set; }
+        internal JRaw JsonPayload { get; set; }
 
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
-
-        private object _payload;
     }
 }

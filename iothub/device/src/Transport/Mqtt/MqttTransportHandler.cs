@@ -799,7 +799,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            var message = new Message((byte[])methodResponse.Payload)
+            var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodResponse.Payload)))
             {
                 MqttTopicName = MethodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId)
             };

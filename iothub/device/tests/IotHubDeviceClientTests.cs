@@ -506,37 +506,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task IotHubDeviceClient_OnMethodCalled_CustomPayload()
-        {
-            using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-            bool isMethodHandlerCalled = false;
-            CustomType response = null;
-            string responseAsString = null;
-            await deviceClient.SetMethodHandlerAsync((payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                responseAsString = payload.PayloadAsJsonString;
-                response = payload.GetPayload<CustomType>();
-                return Task.FromResult(directMethodResponseWithPayload);
-            }, "custom data").ConfigureAwait(false);
-
-            CustomType nested = new CustomType("some string", 3, false, new NestedCustomType("some value", 2));
-            var DirectMethodRequest = new DirectMethodRequest()
-            {
-                MethodName = "TestMethodName",
-                Payload = nested,
-            };
-
-            await deviceClient.OnMethodCalledAsync(DirectMethodRequest).ConfigureAwait(false);
-            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<DirectMethodResponse>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            isMethodHandlerCalled.Should().BeTrue();
-            response.Should().BeEquivalentTo(nested);
-            responseAsString.Should().BeEquivalentTo(JsonConvert.SerializeObject(nested));
-        }
-
-        [TestMethod]
         public async Task IotHubDeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_NoPayloadResult()
         {
             using var deviceClient = new IotHubDeviceClient(FakeConnectionString);
