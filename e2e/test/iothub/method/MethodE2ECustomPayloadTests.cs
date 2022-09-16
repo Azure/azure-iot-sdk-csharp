@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             logger.Trace($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {methodResponse.Status}.");
             methodResponse.Status.Should().Be(200);
-            methodResponse.Payload.Should().Be(JsonConvert.SerializeObject(response));
+            JsonConvert.SerializeObject(methodResponse.Payload).Should().BeEquivalentTo(JsonConvert.SerializeObject(response));
         }
 
         public static async Task<Task> SetDeviceReceiveMethod_booleanPayloadAsync(IotHubDeviceClient deviceClient, string methodName, MsTestLogger logger)
