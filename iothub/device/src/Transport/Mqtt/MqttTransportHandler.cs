@@ -21,6 +21,7 @@ using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
@@ -78,9 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string DirectMethodsRequestTopic = "$iothub/methods/POST/";
         private const string DirectMethodsResponseTopicFormat = "$iothub/methods/res/{0}/?$rid={1}";
 
-        private const string DeviceClientTypeParam = "DeviceClientType";
-
-        // Intentionally not private so that unit tests can mock this field easier
+        // Intentionally not private so that unit tests can mock this field
         internal IMqttClient _mqttClient;
 
         private MqttClientOptions _mqttClientOptions;
@@ -97,24 +96,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
         private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
 
-        private bool _isSubscribedToDesiredPropertyPatches;
         private bool _isSubscribedToTwinResponses;
-
-        private const string ModelIdParam = "model-id";
-        private const string AuthChainParam = "auth-chain";
 
         private readonly string _deviceId;
         private readonly string _moduleId;
         private readonly string _hostName;
         private readonly string _modelId;
         private readonly ProductInfo _productInfo;
-        private bool _isSymmetricKeyAuthenticated;
         private readonly IotHubClientMqttSettings _mqttTransportSettings;
         private readonly IotHubConnectionCredentials _connectionCredentials;
-
-        // Used to correlate back to a received message when the user wants to acknowledge it. This is not a value
-        // that is sent over the wire, so we increment this value locally instead.
-        private int _nextLockToken;
 
         private static readonly Dictionary<string, string> s_toSystemPropertiesMap = new Dictionary<string, string>
         {
@@ -183,11 +173,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
 
             _hostName = context.IotHubConnectionCredentials.IotHubHostName;
-            if (context.IotHubConnectionCredentials.SharedAccessKey != null)
-            {
-                _isSymmetricKeyAuthenticated = true;
-            }
-
             _connectionCredentials = context.IotHubConnectionCredentials;
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.WebSocket)
@@ -285,22 +270,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string clientId = _moduleId == null ? _deviceId : _deviceId + "/" + _moduleId;
             _mqttClientOptionsBuilder.WithClientId(clientId);
 
-            string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&{DeviceClientTypeParam}={Uri.EscapeDataString(_productInfo.ToString())}";
+            string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&DeviceClientType={Uri.EscapeDataString(_productInfo.ToString())}";
 
             if (!string.IsNullOrWhiteSpace(_modelId))
             {
-                username += $"&{ModelIdParam}={Uri.EscapeDataString(_modelId)}";
+                username += $"&model-id={Uri.EscapeDataString(_modelId)}";
             }
 
             if (!string.IsNullOrWhiteSpace(_mqttTransportSettings?.AuthenticationChain))
             {
-                username += $"&{AuthChainParam}={Uri.EscapeDataString(_mqttTransportSettings.AuthenticationChain)}";
+                username += $"&auth-chain={Uri.EscapeDataString(_mqttTransportSettings.AuthenticationChain)}";
             }
 
-            if (_isSymmetricKeyAuthenticated)
+            if (_connectionCredentials.SasTokenRefresher != null)
             {
                 // Symmetric key authenticated connections need to set client Id, username, and password
                 string password = await _connectionCredentials.SasTokenRefresher.GetTokenAsync(_connectionCredentials.IotHubHostName).ConfigureAwait(false);
+                _mqttClientOptionsBuilder.WithCredentials(username, password);
+            }
+            else if (_connectionCredentials.SharedAccessSignature != null)
+            {
+                // Symmetric key authenticated connections need to set client Id, username, and password
+                string password = _connectionCredentials.SharedAccessSignature;
                 _mqttClientOptionsBuilder.WithCredentials(username, password);
             }
             else
@@ -486,8 +477,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
                 }
-
-                _isSubscribedToDesiredPropertyPatches = true;
             }
             catch (Exception e) when (e is not IotHubClientException)
             {
@@ -499,7 +488,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                if (isAnEdgeModule)
+                {
+                    await UnsubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Exception e) when (e is not IotHubClientException)
             {
@@ -509,11 +505,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            if (_isSubscribedToDesiredPropertyPatches)
-            {
-                return;
-            }
-
             try
             {
                 await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
@@ -522,8 +513,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 throw new IotHubClientException("Failed to enable receiving twin patches", e, true);
             }
-
-            _isSubscribedToDesiredPropertyPatches = true;
         }
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
@@ -536,8 +525,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 throw new IotHubClientException("Failed to disable receiving twin patches", e, true);
             }
-
-            _isSubscribedToDesiredPropertyPatches = false;
         }
 
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
@@ -569,6 +556,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException($"Failed to publish the mqtt packet for getting this client's twin with reason code {result.ReasonCode}", true);
                 }
 
+                if (Logging.IsEnabled)
+                    Logging.Info($"Sent get twin request. Waiting on service response with request id {requestId}");
+
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
                 GetTwinResponse getTwinResponse =
                     await GetTaskCompletionSourceResultAsync(
@@ -576,7 +566,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         cancellationToken).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Received twin get response for request id {requestId} with status {getTwinResponse.Status}.");
+                    Logging.Info(this, $"Received get twin response for request id {requestId} with status {getTwinResponse.Status}.");
 
                 if (getTwinResponse.Status != 200)
                 {
@@ -630,7 +620,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Sent twin patch with request id {requestId}. Now waiting for the service response.");
+                    Logging.Info(this, $"Sent twin patch request with request id {requestId}. Now waiting for the service response.");
 
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
                 PatchTwinResponse patchTwinResponse =
@@ -678,7 +668,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception e)
             {
-                // Deliberately not rethrowing the exception because this is a "best effort" close
+                // Deliberately not rethrowing the exception because this is a "best effort" close.
+                // The service may not have acknowledged that the client closed the connection, but
+                // all local resources have been closed. The service will eventually realize the
+                // connection is closed in cases like these.
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Failed to gracefully close the MQTT client {e}");
             }
@@ -744,6 +737,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private Task HandleDisconnection(MqttClientDisconnectedEventArgs disconnectedEventArgs)
         {
+            if (Logging.IsEnabled)
+                Logging.Info($"MQTT connection was lost {disconnectedEventArgs.Exception}");
+
             if (disconnectedEventArgs.ClientWasConnected)
             {
                 OnTransportDisconnected();
@@ -756,6 +752,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             receivedEventArgs.AutoAcknowledge = false;
             string topic = receivedEventArgs.ApplicationMessage.Topic;
+
             if (topic.StartsWith(_deviceBoundMessagesTopic))
             {
                 await HandleReceivedCloudToDeviceMessage(receivedEventArgs).ConfigureAwait(false);
@@ -792,7 +789,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             var receivedCloudToDeviceMessage = new Message(payload);
 
-            PopulateMessagePropertiesFromPacket(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
+            PopulateMessagePropertiesFromMqttMessage(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
             if (_deviceMessageReceivedListener != null)
             {
@@ -801,7 +798,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 _ = _deviceMessageReceivedListener.Invoke(receivedCloudToDeviceMessage);
 
                 // note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
+                // Also note that
+                try
+                {
+                    await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    // This likely happened because the connection was lost. The service will re-send this message so the user
+                    // can acknowledge it on the new connection.
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {e}"); ;
+                }
             }
             else
             {
@@ -818,7 +826,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             var receivedDirectMethod = new Message(payload);
 
-            PopulateMessagePropertiesFromPacket(receivedDirectMethod, receivedEventArgs.ApplicationMessage);
+            PopulateMessagePropertiesFromMqttMessage(receivedDirectMethod, receivedEventArgs.ApplicationMessage);
 
             string[] tokens = Regex.Split(receivedEventArgs.ApplicationMessage.Topic, "/", RegexOptions.Compiled);
 
@@ -833,29 +841,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 Payload = Encoding.UTF8.GetString(payload)
             };
 
-            // We are intentionally not awaiting _methodListener callback.
-            // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
+            // We are intentionally not awaiting _methodListener callback. The direct method response
+            // is handled elsewhere, so we can simply invoke this callback and continue.
             _methodListener.Invoke(methodRequest).ConfigureAwait(false);
         }
 
         private void HandleReceivedDesiredPropertiesUpdateRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
-
+            receivedEventArgs.AutoAcknowledge = true;
             string patch = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
             TwinCollection twinCollection = JsonConvert.DeserializeObject<TwinCollection>(patch);
 
             _onDesiredStatePatchListener.Invoke(twinCollection);
-
-            receivedEventArgs.AutoAcknowledge = true;
         }
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out int version))
             {
-                byte[] payload = receivedEventArgs.ApplicationMessage.Payload ?? new byte[0];
-                string payloadString = Encoding.UTF8.GetString(payload);
+                string payloadString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload ?? new byte[0]);
 
                 if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
                 {
@@ -892,7 +896,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{payload}'");
+                                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{payloadString}'");
 
                             getTwinCompletion.SetException(ex);
                         }
@@ -923,26 +927,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         private async Task HandleIncomingEventMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
             receivedEventArgs.AutoAcknowledge = true;
 
-            var iotHubMessage = new Message(payload);
+            var iotHubMessage = new Message(receivedEventArgs.ApplicationMessage.Payload);
 
             // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
             // We try to get the endpoint from the topic, if the topic is in the above format.
             string[] tokens = receivedEventArgs.ApplicationMessage.Topic.Split('/');
-            string inputName = tokens.Length >= 6 ? tokens[5] : null;
 
-            // Add the endpoint as a SystemProperty
-            iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
+            // if there is an input name in the topic string, set the system property accordingly
+            if (tokens.Length >= 6)
+            {
+                iotHubMessage.SystemProperties.Add(MessageSystemPropertyNames.InputName, tokens[5]);
+            }
 
             await (_moduleMessageReceivedListener?.Invoke(iotHubMessage)).ConfigureAwait(false);
         }
 
-        public void PopulateMessagePropertiesFromPacket(Message message, MqttApplicationMessage mqttMessage)
+        public void PopulateMessagePropertiesFromMqttMessage(Message message, MqttApplicationMessage mqttMessage)
         {
-            message.LockToken = (++_nextLockToken).ToString();
-
             // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
             // Format 2 - going to module endpoint - devices/{deviceId}/modules/{moduleId/endpoints/{endpointId}/{properties}/
@@ -983,15 +986,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 return property.Value;
             }
+
             if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime ||
                 property.Key == IotHubWirePropertyNames.CreationTimeUtc)
             {
                 return DateTime.ParseExact(property.Value, "o", CultureInfo.InvariantCulture);
             }
+
             if (property.Key == MessageSystemPropertyNames.Ack)
             {
-                return ConvertDeliveryAckTypeFromString(property.Value);
+                return property.Value switch
+                {
+                    "none" => DeliveryAcknowledgement.None,
+                    "negative" => DeliveryAcknowledgement.NegativeOnly,
+                    "positive" => DeliveryAcknowledgement.PositiveOnly,
+                    "full" => DeliveryAcknowledgement.Full,
+                    _ => throw new NotSupportedException($"Unknown value: '{property.Value}'"),
+                };
             }
+
             return property.Value;
         }
 
@@ -1005,7 +1018,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     systemProperties[propertyName] = ConvertFromSystemProperties(property.Value);
                 }
             }
-            string properties = UrlEncodedDictionarySerializer.Serialize(MergeDictionaries(new IDictionary<string, string>[] { systemProperties, message.Properties }));
+
+            Dictionary<string, string> mergedProperties = systemProperties.Concat(message.Properties)
+                .ToLookup(x => x.Key, x => x.Value)
+                .ToDictionary(x => x.Key, g => g.First());
+
+            string properties = UrlEncodedDictionarySerializer.Serialize(mergedProperties);
 
             string msg = properties.Length != 0
                 ? topicName.EndsWith("/", StringComparison.Ordinal) ? topicName + properties + "/" : topicName + "/" + properties
@@ -1046,33 +1064,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             return false;
-        }
-
-        private static IReadOnlyDictionary<TKey, TValue> MergeDictionaries<TKey, TValue>(IDictionary<TKey, TValue>[] dictionaries)
-        {
-            // No item in the array should be null.
-            if (dictionaries == null || dictionaries.Any(item => item == null))
-            {
-                throw new ArgumentNullException(nameof(dictionaries), "Provided dictionaries should not be null");
-            }
-
-            var result = dictionaries.SelectMany(dict => dict)
-                .ToLookup(pair => pair.Key, pair => pair.Value)
-                .ToDictionary(group => group.Key, group => group.First());
-
-            return new ReadOnlyDictionary<TKey, TValue>(result);
-        }
-
-        private static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
-        {
-            return value switch
-            {
-                "none" => DeliveryAcknowledgement.None,
-                "negative" => DeliveryAcknowledgement.NegativeOnly,
-                "positive" => DeliveryAcknowledgement.PositiveOnly,
-                "full" => DeliveryAcknowledgement.Full,
-                _ => throw new NotSupportedException($"Unknown value: '{value}'"),
-            };
         }
 
         /// <summary>
