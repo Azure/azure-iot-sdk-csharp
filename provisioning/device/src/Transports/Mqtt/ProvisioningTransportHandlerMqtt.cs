@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new ProvisioningTransportException($"Failed to publish the MQTT packet for message with reason code {publishResult.ReasonCode}", true);
+                    throw new ProvisioningTransportException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'", true);
                 }
             }
             catch (Exception e) when (e is not ProvisioningTransportException)
@@ -165,8 +165,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 throw new ProvisioningTransportException("Failed to send the initial registration request", e, true);
             }
 
-            //TODO cancellation token?
-            RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.Task.ConfigureAwait(false);
+            RegistrationOperationStatus registrationStatus =
+                await GetTaskCompletionSourceResultAsync(
+                    _startProvisioningRequestStatusSource,
+                    cancellationToken)
+                    .ConfigureAwait(false);
 
             if (registrationStatus.Status != RegistrationOperationStatus.OperationStatusAssigning)
             {
@@ -343,11 +346,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
                 if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
                 {
-                    throw new ProvisioningTransportException($"Failed to publish the MQTT registration message with reason code {publishResult.ReasonCode}", true);
+                    throw new ProvisioningTransportException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'", true);
                 }
 
-                //TODO cancellation token?
-                RegistrationOperationStatus currentStatus = await _checkRegistrationOperationStatusSource.Task.ConfigureAwait(false);
+                RegistrationOperationStatus currentStatus =
+                    await GetTaskCompletionSourceResultAsync(
+                        _checkRegistrationOperationStatusSource,
+                        cancellationToken)
+                        .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
@@ -388,6 +394,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 return (ushort)Volatile.Read(ref _packetId);
             }
+        }
+
+        private static async Task<T> GetTaskCompletionSourceResultAsync<T>(TaskCompletionSource<T> taskCompletionSource, CancellationToken cancellationToken)
+        {
+            Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
+
+            if (finishedTask is Task<T>)
+            {
+                T result = await ((Task<T>)finishedTask).ConfigureAwait(false);
+
+                return result;
+            }
+
+            throw new OperationCanceledException();
         }
     }
 }
