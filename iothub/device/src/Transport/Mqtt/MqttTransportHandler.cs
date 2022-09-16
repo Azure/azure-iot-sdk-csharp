@@ -1086,13 +1086,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <exception cref="OperationCanceledException">If the cancellation token is cancelled before the provided task completion source finishes.</exception>
         private static async Task<T> GetTaskCompletionSourceResultAsync<T>(TaskCompletionSource<T> taskCompletionSource, CancellationToken cancellationToken)
         {
+            // Note that Task.Delay(-1, cancellationToken) effectively waits until the cancellation token is cancelled. The -1 value
+            // just means that the task is allowed to run indefinitely.
             Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
 
             if (finishedTask is Task<T>)
             {
-                T result = await ((Task<T>)finishedTask).ConfigureAwait(false);
-
-                return result;
+                return await ((Task<T>)finishedTask).ConfigureAwait(false);
             }
 
             throw new OperationCanceledException();
